@@ -17,6 +17,7 @@ import {
   type TItem,
 } from "@/lib/run-view";
 import { CountUp } from "./count-up";
+import { PlanSkeleton } from "./loading";
 import { buttonSm, cx, ghostButton, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton, toolOutput, toolWell, userBubble } from "./ui";
 import type { AgentRole } from "@/lib/models";
 
@@ -28,10 +29,12 @@ type Props = {
   onDecide: (a: ApprovalItem, decision: "approve" | "approve_always" | "reject", note?: string) => void;
   onOpenArtifact: (artifactId: string, version: number) => void;
   onRevertSkill?: () => Promise<boolean>;
+  /** a run was started but its plan has not arrived: the plan area pulses (waiting on the crew) */
+  waitingForCrew?: boolean;
   onTemplate?: (goal: string) => void;
 };
 
-export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: Props) {
+export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill, waitingForCrew }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -52,12 +55,13 @@ export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpen
       aria-live="polite"
     >
       <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-4 py-5">
-        {view.transcript.length === 0 && <EmptyState />}
+        {view.transcript.length === 0 && !waitingForCrew && <EmptyState />}
         {view.transcript.map((item) => (
           <div key={item.seq} id={`tr-${item.seq}`} className={cx("scroll-mt-4", item.t === "plan" ? "nb-rise" : "nb-rise-fast")}>
             <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
           </div>
         ))}
+        <PlanSkeleton active={!!waitingForCrew} />
         <div ref={endRef} />
       </div>
     </div>

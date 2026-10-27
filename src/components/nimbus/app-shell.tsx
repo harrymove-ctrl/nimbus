@@ -8,6 +8,7 @@ import { buildView, type ApprovalItem, type QuestionItem, type Seg } from "@/lib
 import type { Workstream } from "@/lib/workstreams";
 import { ApprovalTray } from "./approval-tray";
 import { Boot } from "./boot";
+import { AmbientGlow } from "./loading";
 import { Composer, type Mode, type TierChoice } from "./composer";
 import { Inspector, type InspectorTab } from "./inspector";
 import { Rail } from "./rail";
@@ -28,6 +29,7 @@ export function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<InspectorTab>("artifact");
   const [selSeg, setSelSeg] = useState<SegRef | null>(null);
+  const [wsLoaded, setWsLoaded] = useState(false);
   const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number }>();
   const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
@@ -51,9 +53,18 @@ export function AppShell() {
   useEffect(() => {
     let alive = true;
     const minWait = new Promise((r) => setTimeout(r, 900));
-    Promise.all([fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>), minWait]).then(async ([d]) => {
+    const fetched = fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>);
+    // The boot cloud leaves when the workstreams arrive (at least 900 ms in), but never later than 3 s: on a slow
+    // network the shell shows and the rail has a skeleton instead of the person staring at the preloader.
+    void Promise.race([Promise.all([fetched, minWait]), new Promise((r) => setTimeout(r, 3000))]).then(() => {
+      if (!alive) return;
+      setBoot("fading");
+      setTimeout(() => alive && setBoot("gone"), 420);
+    });
+    void fetched.then(async (d) => {
       if (!alive) return;
       setWorkstreams(d.workstreams);
+      setWsLoaded(true);
       // Deep link from a chat reply: /?run=<id> opens that run in its workstream (the approval lives here).
       const rid = new URLSearchParams(window.location.search).get("run");
       if (rid) {
@@ -63,8 +74,6 @@ export function AppShell() {
           setRunByWs((m) => ({ ...m, [r.workstreamId]: rid }));
         }
       }
-      setBoot("fading");
-      setTimeout(() => alive && setBoot("gone"), 420);
     });
     return () => {
       alive = false;
@@ -219,10 +228,13 @@ export function AppShell() {
           onSelect={(id) => void openWorkstream(id)}
           onRun={(id) => void startRun({ saved: true }, id)}
           budget={budget}
+          loading={!wsLoaded}
           className={cx("z-40 xl:static xl:flex xl:w-[280px] xl:shrink-0", drawer === "rail" ? "nb-drawer-left fixed inset-y-12 left-0 flex w-[280px]" : "hidden")}
         />
 
-        <main className="flex min-w-0 flex-1 flex-col">
+        <main className="relative isolate flex min-w-0 flex-1 flex-col">
+          {/* ambient dither: behind the run view and the empty state only; never the boot screen, composer, cards or cloud */}
+          {boot === "gone" && <AmbientGlow paused={view.lanes.length >= 4 && clock} />}
           {!ws ? (
             <PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />
           ) : (
@@ -230,6 +242,7 @@ export function AppShell() {
               <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} />
               <Timeline view={view} now={now} selected={selSeg} onSelect={selectSeg} collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />
               <Transcript
+                waitingForCrew={!!runId && (events.length === 0 || (view.status === "planning" && !view.plan))}
                 view={view}
                 now={now}
                 onCancelPlan={() => void stop("cancel")}
@@ -295,6 +308,7 @@ export function AppShell() {
           setTab={setTab}
           selected={selSeg}
           focusArtifact={focusArtifact}
+          loading={!!runId && events.length === 0}
           className={cx("z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "nb-drawer-right fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden")}
         />
       </div>

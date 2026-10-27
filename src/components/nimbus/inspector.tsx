@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check, Copy } from "lucide-react";
 import type { Workstream } from "@/lib/workstreams";
 import { ROLE_COLOR, TIER_LABEL, fmtTokens, laneName, type Artifact, type RunView } from "@/lib/run-view";
+import { InspectorSkeleton } from "./loading";
 import { SkillDiff } from "./transcript";
 import { cx } from "./ui";
 import type { SegRef } from "./timeline";
@@ -18,6 +19,8 @@ type Props = {
   selected: SegRef | null;
   /** artifact id + version requested from the transcript; undefined = nothing requested */
   focusArtifact?: { id: string; version: number; n: number };
+  /** the run's events have not arrived yet: a sweep skeleton instead of an empty hint */
+  loading?: boolean;
   className?: string;
 };
 
@@ -27,7 +30,7 @@ const TABS: { key: InspectorTab; label: string }[] = [
   { key: "memory", label: "Memory & skill" },
 ];
 
-export function Inspector({ view, workstream, tab, setTab, selected, focusArtifact, className }: Props) {
+export function Inspector({ view, workstream, tab, setTab, selected, focusArtifact, loading, className }: Props) {
   return (
     <aside aria-label="Inspector" className={cx("flex min-h-0 w-full flex-col border-l border-white/10 bg-neutral-950", className)}>
       <div role="tablist" className="flex h-10 shrink-0 items-end gap-1 border-b border-white/10 px-3">
@@ -44,8 +47,14 @@ export function Inspector({ view, workstream, tab, setTab, selected, focusArtifa
         ))}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {tab === "artifact" && <ArtifactTab view={view} focus={focusArtifact} />}
-        {tab === "agent" && <AgentTab view={view} selected={selected} />}
+        {loading && tab !== "memory" ? (
+          <InspectorSkeleton active doc={tab === "artifact"} />
+        ) : (
+          <>
+            {tab === "artifact" && <ArtifactTab view={view} focus={focusArtifact} />}
+            {tab === "agent" && <AgentTab view={view} selected={selected} />}
+          </>
+        )}
         {tab === "memory" && <MemoryTab view={view} workstream={workstream} />}
       </div>
     </aside>

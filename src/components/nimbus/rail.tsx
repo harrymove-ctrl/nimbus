@@ -2,6 +2,7 @@
 
 import { Clock, Play } from "lucide-react";
 import type { Workstream } from "@/lib/workstreams";
+import { RailSkeleton } from "./loading";
 import { cx } from "./ui";
 
 export function Rail({
@@ -12,6 +13,7 @@ export function Rail({
   onSelect,
   onRun,
   budget,
+  loading,
   className,
 }: {
   workstreams: Workstream[];
@@ -21,11 +23,14 @@ export function Rail({
   onSelect: (id: string) => void;
   onRun: (id: string) => void;
   budget?: { todayUsd: number; dayCapUsd: number };
+  /** GET /api/workstreams is still in flight: a sweep skeleton instead of an empty column */
+  loading?: boolean;
   className?: string;
 }) {
   return (
     <nav aria-label="Workstreams" className={cx("flex min-h-0 w-full flex-col border-r border-white/10 bg-neutral-950", className)}>
       <p className="px-4 pb-2 pt-4 text-[11px] font-extrabold uppercase tracking-wider text-neutral-500">Workstreams</p>
+      <RailSkeleton active={!!loading && workstreams.length === 0} />
       <ul className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2">
         {workstreams.map((w, idx) => {
           const sel = w.id === selectedId;
