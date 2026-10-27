@@ -20,7 +20,7 @@ export function useAfter(ms: number, active: boolean) {
 }
 
 function Delayed({ active, label, children }: { active: boolean; label: string; children: ReactNode }) {
-  const show = useAfter(150, active);
+  const show = useAfter(typeof window !== "undefined" && window.location.search.includes("loaders") ? 0 : 150, active);
   if (!show) return null;
   return (
     <div aria-busy="true">

@@ -8,6 +8,7 @@ import { buildView, type ApprovalItem, type QuestionItem, type Seg } from "@/lib
 import type { Workstream } from "@/lib/workstreams";
 import { ApprovalTray } from "./approval-tray";
 import { Boot } from "./boot";
+import { EmptyState } from "@/components/dithercn/empty-state";
 import { AmbientGlow } from "./loading";
 import { Composer, type Mode, type TierChoice } from "./composer";
 import { Inspector, type InspectorTab } from "./inspector";
@@ -65,6 +66,9 @@ export function AppShell() {
     void fetched.then(async (d) => {
       if (!alive) return;
       setWorkstreams(d.workstreams);
+      // ?loaders=1 (the demo video): hold the rail skeleton for a visible beat instead of flashing it
+      if (new URLSearchParams(window.location.search).has("loaders")) await new Promise((r) => setTimeout(r, 900));
+      if (!alive) return;
       setWsLoaded(true);
       // Deep link from a chat reply: /?run=<id> opens that run in its workstream (the approval lives here).
       const rid = new URLSearchParams(window.location.search).get("run");
@@ -235,7 +239,7 @@ export function AppShell() {
 
         <main className="relative isolate flex min-w-0 flex-1 flex-col">
           {/* ambient dither: behind the run view and the empty state only; never the boot screen, composer, cards or cloud */}
-          {boot === "gone" && <AmbientGlow paused={view.lanes.length >= 4 && clock} />}
+          {boot === "gone" && <AmbientGlow paused={view.lanes.length >= 7 && clock} />}
           {!ws ? (
             <PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />
           ) : (
@@ -322,11 +326,10 @@ export function AppShell() {
 
 function PickWorkstream({ workstreams, onPick }: { workstreams: Workstream[]; onPick: (id: string) => void }) {
   return (
-    <div className="grid min-h-0 flex-1 place-items-center overflow-y-auto p-6">
-      <div className="w-full max-w-xl">
-        <h1 className="text-[22px] font-extrabold">Pick a workstream</h1>
-        <p className="mt-1 text-[14px] text-neutral-400">A workstream is a standing goal. Each run is a crew of Nemotron agents working on it, with you approving anything that acts.</p>
-        <ul className="mt-5 flex flex-col gap-2">
+    <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto p-6">
+      <div className="my-auto w-full max-w-xl">
+        <EmptyState illustration="planet" titleAs="h2" title="Pick a workstream" description="A workstream is a standing goal. Each run is a crew of Nemotron agents working on it, with you approving anything that acts." className="pb-4 pt-0" />
+        <ul className="mt-2 flex flex-col gap-2">
           {workstreams.map((w) => (
             <li key={w.id}>
               <button type="button" onClick={() => onPick(w.id)} className="flex w-full flex-col items-start gap-0.5 rounded-xl border border-white/10 px-4 py-3 text-left transition-colors hover:bg-white/5">

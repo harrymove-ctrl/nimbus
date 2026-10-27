@@ -1,5 +1,6 @@
 "use client";
 
+import { DitherNumber } from "@/components/dithercn/dither-number";
 import { fmtCost, fmtSecs, fmtTokens, type RunView, type ViewStatus } from "@/lib/run-view";
 import { cx } from "./ui";
 
@@ -33,7 +34,7 @@ export function RunHeader({ view, now, fallbackTitle, runCapUsd }: { view: RunVi
           <span className="hidden @[640px]:inline">{fmtSecs(elapsed)}</span>
           <span className="hidden @[900px]:inline">{fmtTokens(view.tokens)} tokens</span>
           <span className="inline-flex items-center gap-1.5" title={runCapUsd ? `Spent ${fmtCost(view.costUsd)} of this run's $${runCapUsd.toFixed(2)} cap (NIMBUS_RUN_CAP_USD)` : undefined}>
-            {fmtCost(view.costUsd)}
+            <DitherNumber value={view.costUsd} locales="en-US" format={{ style: "currency", currency: "USD", minimumFractionDigits: 3, maximumFractionDigits: 3 }} effect="resolve" trigger="mount" duration={380} stagger={20} aria-label={fmtCost(view.costUsd)} />
             {runCapUsd ? (
               <span className="relative hidden h-1 w-9 overflow-hidden rounded-full bg-white/12 sm:inline-block" aria-hidden="true">
                 <span className={cx("absolute inset-y-0 left-0 rounded-full", frac > 0.9 ? "bg-red-400" : frac > 0.6 ? "bg-orange-400" : "bg-[var(--rb-accent)]")} style={{ width: `${Math.max(frac * 100, view.costUsd > 0 ? 6 : 0)}%` }} />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { ArrowRight, Check, FileText, Shield, X } from "lucide-react";
 import {
   ROLE_COLOR,
@@ -16,7 +16,8 @@ import {
   type RunView,
   type TItem,
 } from "@/lib/run-view";
-import { CountUp } from "./count-up";
+import { DitherNumber } from "@/components/dithercn/dither-number";
+import { Divider } from "@/components/dithercn/divider";
 import { PlanSkeleton } from "./loading";
 import { buttonSm, cx, ghostButton, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton, toolOutput, toolWell, userBubble } from "./ui";
 import type { AgentRole } from "@/lib/models";
@@ -56,6 +57,7 @@ export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpen
     >
       <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-4 py-5">
         {view.transcript.length === 0 && !waitingForCrew && <EmptyState />}
+        {view.startedAt > 0 && view.transcript.length > 0 && <Divider label={runStamp(view.startedAt, view.trigger)} className="text-[12px] font-bold text-neutral-400" />}
         {view.transcript.map((item) => (
           <div key={item.seq} id={`tr-${item.seq}`} className={cx("scroll-mt-4", item.t === "plan" ? "nb-rise" : "nb-rise-fast")}>
             <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
@@ -239,7 +241,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
   const [rejecting, setRejecting] = useState(false);
   const [note, setNote] = useState("");
   const pending = item.status === "pending";
-  const d = item.action.details as { channel?: string; text?: string } | undefined;
+  const d = item.action.details as { channel?: string; text?: string; branch?: string; title?: string; body?: string; patchArtifactId?: string; path?: string; content?: string } | undefined;
   return (
     <div className={cx(panel, "relative")}>
       <span className={cx("absolute inset-y-0 left-0 z-10 w-[3px]", RISK_STRIPE[item.action.risk])} aria-hidden="true" />
@@ -256,6 +258,21 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
                 To <span className="text-neutral-100">{d.channel}</span> · {item.action.kind}
               </p>
               <p className="text-[14px]/[21px] text-neutral-200">{d.text}</p>
+            </>
+          ) : d?.branch ? (
+            <>
+              <p className="text-[12px] font-bold text-neutral-400">
+                Branch <span className="font-mono text-neutral-100">{d.branch}</span> → main · patch <span className="font-mono text-neutral-100">{d.patchArtifactId}</span>
+              </p>
+              <p className="text-[14px]/[21px] font-bold text-neutral-100">{d.title}</p>
+              <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-[13px]/[19px] text-neutral-300">{d.body}</pre>
+            </>
+          ) : d?.path ? (
+            <>
+              <p className="text-[12px] font-bold text-neutral-400">
+                Write <span className="font-mono text-neutral-100">{d.path}</span>
+              </p>
+              <pre className={toolOutput}>{d.content}</pre>
             </>
           ) : (
             <pre className={toolOutput}>{JSON.stringify(item.action.details, null, 2)}</pre>
@@ -312,15 +329,24 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
   );
 }
 
+/** "Tue Oct 27 · 09:00 · scheduled": where this run sits in time, drawn as a labelled dither rule at the top of the transcript. */
+function runStamp(startedAt: number, trigger?: string) {
+  const d = new Date(startedAt);
+  const day = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  return `${day} · ${time} · ${trigger === "cron" ? "scheduled" : trigger === "chat" ? "from chat" : trigger === "job" ? "job" : "you started it"}`;
+}
+
 function SummaryCard({ item, view, onRevert }: { item: Extract<TItem, { t: "summary" }>; view: RunView; onRevert?: () => Promise<boolean> }) {
   const [reverted, setReverted] = useState<"no" | "busy" | "yes" | "none">("no");
   const secs = view.endedMs ?? view.lastTMs;
-  const tiles: [string, number, (n: number) => string][] = [
-    ["Cost", view.costUsd, fmtCost],
-    ["Tokens", view.tokens, (n) => fmtTokens(Math.round(n))],
-    ["Time", secs, fmtSecs],
-    ["vs baseline", (view.savings ?? 0) * 100, (n) => (view.savings !== null ? `−${Math.round(n)}%` : "n/a")],
-    ["Routed hops", item.summary.routedHops, (n) => String(Math.round(n))],
+  // DitherNumber: the five tiles resolve cell by cell into their values (docs/DITHER.md "In the demo video")
+  const tiles: [string, number, Omit<ComponentProps<typeof DitherNumber>, "value"> | null][] = [
+    ["Cost", view.costUsd, { format: { style: "currency", currency: "USD", minimumFractionDigits: 3, maximumFractionDigits: 3 } }],
+    ["Tokens", view.tokens, { format: { notation: "compact", maximumFractionDigits: 1 } }],
+    ["Time", secs / 1000, { format: { minimumFractionDigits: 1, maximumFractionDigits: 1 }, suffix: "s" }],
+    ["vs baseline", Math.round((view.savings ?? 0) * 100), view.savings !== null ? { prefix: "−", suffix: "%" } : null],
+    ["Routed hops", item.summary.routedHops, {}],
   ];
   return (
     <div className={panel}>
@@ -329,11 +355,11 @@ function SummaryCard({ item, view, onRevert }: { item: Extract<TItem, { t: "summ
       </div>
       <div className={cx(panelBody, "gap-4 p-3")}>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {tiles.map(([k, val, fmt]) => (
+          {tiles.map(([k, val, num]) => (
             <div key={k} className="rounded-lg bg-white/5 px-3 py-2">
               <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">{k}</p>
-              <p className="text-[18px] font-extrabold">
-                <CountUp value={val} format={fmt} ms={600} />
+              <p className="text-[22px]/[30px] font-extrabold tabular-nums">
+                {num ? <DitherNumber value={val} locales="en-US" effect="resolve" trigger="mount" size="sm" duration={700} {...num} /> : "n/a"}
               </p>
             </div>
           ))}
