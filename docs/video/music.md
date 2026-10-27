@@ -96,3 +96,9 @@ Generate separately (it needs its own shape), same style and exclude fields.
 (320 kbps MP3 or WAV). Until they exist the build uses `click-120.wav`.
 If your Suno plan exports stems, also drop `music-full-stems/` (drums, bass,
 other) so the sub can duck under the impacts.
+
+# Note from the locked cut (Gate 3)
+
+The approve click in the full cut lands at 1:05.6 (the slow take), not 1:04.
+Pick the Suno take whose second drop lands nearest 1:05–1:06; the edit nudges
+the drop to the click by at most half a beat. In the X clip the click is at 0:20.

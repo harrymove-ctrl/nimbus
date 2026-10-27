@@ -1,3 +1,7 @@
+status: locked · 2026-10-27 · "Both cuts are right; lock them and wait for the music and the real run."
+locked: NimbusFull 2:16 (68 bars) · NimbusX 0:44 (22 bars) · commits 04023a2, 803aa87
+remaining before the final render: (1) Suno tracks music-full.mp3 and music-x.mp3 in video/public/audio/, (2) the final-day real run replayed as footage and its numbers replacing the "mock run" cards. No other changes.
+
 status: Gate 3 · previews for review · 2026-10-27
 cuts: NimbusFull (68 bars, 4080 f) · NimbusX (22 bars, 1320 f) · 1920 × 1080 · 30 fps
 previews (720p, h264 crf 24, AAC): `docs/demo/preview/nimbus-full-preview.mp4` (11.7 MB) · `docs/demo/preview/nimbus-x-preview.mp4` (3.4 MB)
