@@ -97,6 +97,14 @@ the build session runs continuously and stretch items stay out.
 - Not run: the real open_pr path (gh, push), `pnpm demo:video`, Docker, `pnpm smoke`, GitHub Actions.
 - Known gaps: the Analyst's question ignores the person's answer in mock mode (the script always fixes the router); the EmptyState uses a dithered planet; `/v1` default model is now ship-nimbus.
 
+## Rev F (2026-10-27 night, built; final-day items marked)
+
+- Built: Overview with seeded history, plan draft and live checklist, status pill (with Pause), loop view, timeline trace, scrub, replay, tick marks, drag-resize and keyboard, rail menu (Run now, Edit schedule, Archive), phone tabs, per-surface backgrounds, Token Factory watch, the router applying approved rules, template chips, impact line, record script v3 (beats.json), unread dot for runs that finish out of view.
+- Decision: approved router rules are written to `data/router-rules.json` (the running app's data), not to `src/runtime/router-rules.json`: a file under `src/` would hot-reload the dev server and dirty the repository on every approval. Applying a rule for good = copy it into the repository.
+- Final day: `pnpm smoke`; the real `open_pr` path with `gh` as harrymove-ctrl (needs the user's go, it pushes); `docker build` and the Nebius deploy; GitHub Actions run of `eval.yml`; OpenClaw against `/v1`.
+- Local environment: `eslint-plugin-react-hooks` no longer resolves from the project root in this `node_modules` (`pnpm lint` fails to load it; `next build` still passes). A fresh `pnpm install` hoists it again.
+- Known gaps: the mock Analyst question answers only Router and Golden (other answers fall back to the Router script); history rows are labelled seeds with minimal event logs; `ARC_PRO_TOKEN` not used; the EmptyState draws the cloud, the dithered objects are unused; spec §17.5 donut click opens the last run's agents, not a legend filter.
+
 ## Open risks
 
 - React Bits block names `-2/-5/-6-sorbet` still unverified on pro.reactbits.dev.
