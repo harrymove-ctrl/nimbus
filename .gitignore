@@ -16,3 +16,5 @@ next-env.d.ts
 evals/report.json
 docs/demo/.tmp-video/
 .playwright-browsers/
+docs/demo/*
+!docs/demo/README.md
