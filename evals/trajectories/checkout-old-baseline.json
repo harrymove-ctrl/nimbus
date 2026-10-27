@@ -1,0 +1,60 @@
+{
+ "name": "checkout-old-baseline",
+ "workstream": "ws-checkout",
+ "description": "The person picks the Oct 7 baseline for the researcher's question.",
+ "input": {
+  "answers": [
+   "Oct 7"
+  ]
+ },
+ "hops": [
+  {
+   "agent": "researcher",
+   "expect": [
+    {
+     "tool_called": "web_search"
+    },
+    {
+     "tool_called": "fetch_url"
+    },
+    {
+     "sources_at_least": 2
+    },
+    {
+     "judge": "the researcher cites a status-page source"
+    }
+   ]
+  },
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "iOS Safari"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "spawned_at_least": 4
+  },
+  {
+   "artifact_contains": "iOS Safari"
+  },
+  {
+   "max_cost_usd": 0.06
+  },
+  {
+   "max_seconds": 60
+  },
+  {
+   "message_contains": "Oct 7"
+  },
+  {
+   "approval_before": "send_message"
+  }
+ ]
+}

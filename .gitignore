@@ -13,3 +13,4 @@ data/
 *.tsbuildinfo
 next-env.d.ts
 .next-*/
+evals/report.json

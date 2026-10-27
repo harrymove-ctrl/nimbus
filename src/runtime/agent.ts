@@ -60,12 +60,12 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
       }
     }
     const hopNo = ++ctx.hop;
-    const { tier, reason } = await pickTier(ctx, { role, turn, brief: messages.map((m) => (typeof m.content === "string" ? m.content : "")).join("\n").slice(-1200), hasTools: Object.keys(tools).length > 0 }, ceiling);
+    const { tier, reason } = await pickTier(ctx, { role, turn, brief: messages.map((m) => (typeof m.content === "string" ? m.content : "")).join("\n").slice(-1200), hasTools: Object.keys(tools).length > 0, ws: ctx.workstreamId }, ceiling);
     ctx.emit("route", role, instance, { hop: hopNo, role, chosen: tier, ceiling, reason });
     if (tier !== ceiling) ctx.routedHops++;
 
     const segId = `${instance}-h${turn}`;
-    const label = hopLabel(role, turn);
+    const label = hopLabel(role, turn, ctx.workstreamId);
     ctx.emit(`segment.think`, role, instance, { segId, label, startMs: now() });
     let call;
     try {

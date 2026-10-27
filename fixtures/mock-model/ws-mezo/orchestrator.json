@@ -1,0 +1,103 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the watch",
+   "usage": {
+    "in": 2400,
+    "out": 480
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "researcher",
+        "brief": "Find new Mezo buildathon submissions."
+       },
+       {
+        "role": "checker",
+        "brief": "Verify the findings."
+       },
+       {
+        "role": "writer",
+        "brief": "Write the competitor note."
+       }
+      ],
+      "tools": [
+       "web_search",
+       "fetch_url",
+       "write_artifact"
+      ],
+      "estimate": {
+       "costUsd": 0.03,
+       "tokens": 19000,
+       "label": "≈ $0.03 · Ultra ×2 · Super ×3 · Nano ×2"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Starting the search",
+   "usage": {
+    "in": 1000,
+    "out": 140
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "spawn_agents",
+     "input": {
+      "agents": [
+       {
+        "role": "researcher",
+        "brief": "Search for new Mezo buildathon submissions since last week and group them by track."
+       },
+       {
+        "role": "checker",
+        "brief": "Wait for nothing: verify that the Mezo buildathon page and Devpost listing exist and are public."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing off to the Writer",
+   "usage": {
+    "in": 1400,
+    "out": 180
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "Three new submissions: Satoshi Pay (payments), Vault Kit (savings), Bridge Bot (agents). Flag the overlap with our agent idea."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Final judgment",
+   "usage": {
+    "in": 2000,
+    "out": 240
+   },
+   "complexity": 1,
+   "text": "Done. Three new Mezo submissions; one overlaps with our idea (Bridge Bot). Note is in the Artifact tab.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "3 new submissions; 1 overlap"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -20,7 +20,7 @@ if (!ws) {
 }
 if (opt("router")) process.env.NIMBUS_ROUTER = opt("router")!;
 if (opt("cache")) process.env.NIMBUS_CACHE = opt("cache")!;
-if (opt("record")) console.log(`(--record ${opt("record")}: stubbed until Phase 3b; the run will print normally and no golden is written)`);
+const recordName = opt("record");
 
 const goal = positional.join(" ").trim() || ws.goal;
 const yes = flag("yes");
@@ -114,6 +114,32 @@ const checks: [string, boolean][] = [
   ["run status done", runEnd?.type === "run.end" && runEnd.payload.status === "done"],
 ];
 for (const [n, ok] of checks) console.log(`${ok ? "✓" : "✗"} ${n}`);
+if (recordName) {
+  // Draft a golden from this run: every hop that acted is listed with an empty `expect` to fill in by hand.
+  const roles = [...new Set(ev.filter((e) => e.type === "agent.start").map((e) => e.agent))].filter((r) => r !== "orchestrator" && r !== "learner");
+  const observed = (role: string) => {
+    const mine = ev.filter((e) => e.agent === role && e.agentInstance !== "user");
+    return {
+      tools: [...new Set(mine.filter((e) => e.type === "tool.call").map((e) => (e.type === "tool.call" ? e.payload.tool : "")))],
+      artifacts: mine.filter((e) => e.type === "artifact.version").map((e) => (e.type === "artifact.version" ? `${e.payload.title} v${e.payload.version}` : "")),
+      messages: mine.filter((e) => e.type === "message").length,
+    };
+  };
+  const golden = {
+    name: recordName,
+    workstream: ws.id,
+    description: "Drafted by `pnpm demo --record`. Fill in the expect arrays, then run `pnpm eval --only " + recordName + "`.",
+    input: { ...(goal !== ws.goal ? { goal } : {}), ...(opt("mode") ? { mode: opt("mode") } : {}), ...(opt("tier") ? { tier: opt("tier") } : {}) },
+    hops: roles.map((agent) => ({ agent, expect: [], observed: observed(agent) })),
+    final: [],
+    observed: { status: runEnd?.type === "run.end" ? runEnd.payload.status : "?", spawned: ev.filter((e) => e.type === "agent.spawn").length, approvals, costUsd: Number(view.costUsd.toFixed(4)), seconds: Number((lastT / 1000).toFixed(1)) },
+  };
+  const { writeFileSync } = await import("node:fs");
+  const out = `evals/trajectories/${recordName}.json`;
+  writeFileSync(out, JSON.stringify(golden, null, 1) + "\n");
+  console.log(`\nrecorded ${out} (${roles.length} hop(s) with empty expect: fill them in)`);
+}
+
 const pass = checks.every(([, ok]) => ok);
 console.log(`\nEXIT TEST: ${pass ? "PASS" : "FAIL"}`);
 process.exit(pass ? 0 : 1);

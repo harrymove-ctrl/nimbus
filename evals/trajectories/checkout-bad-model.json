@@ -1,0 +1,31 @@
+{
+ "name": "checkout-bad-model",
+ "workstream": "ws-checkout",
+ "description": "The super tier's model id is invalid (404): immediate fall back to Nano, run completes.",
+ "input": {
+  "env": {
+   "NIMBUS_BAD_MODEL": "super"
+  }
+ },
+ "hops": [
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "iOS Safari"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "route_fallback": true
+  },
+  {
+   "approval_before": "send_message"
+  }
+ ]
+}

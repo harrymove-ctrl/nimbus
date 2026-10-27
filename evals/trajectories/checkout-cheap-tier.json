@@ -1,0 +1,33 @@
+{
+ "name": "checkout-cheap-tier",
+ "workstream": "ws-checkout",
+ "description": "Tier = Cheap: every hop routed to Nano, and the run is far cheaper.",
+ "requires_router": true,
+ "input": {
+  "tier": "cheap"
+ },
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "route_all": "nano"
+  },
+  {
+   "max_cost_usd": 0.012
+  },
+  {
+   "artifact_contains": "iOS Safari"
+  }
+ ]
+}

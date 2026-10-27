@@ -1,0 +1,31 @@
+{
+ "name": "checkout-fallback-429",
+ "workstream": "ws-checkout",
+ "description": "The researcher's third hop returns 429 twice: retry once, fall one tier down, finish.",
+ "input": {
+  "env": {
+   "NIMBUS_MOCK_FAIL": "researcher:3"
+  }
+ },
+ "hops": [
+  {
+   "agent": "researcher",
+   "expect": [
+    {
+     "tool_called": "fetch_url"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "route_fallback": true
+  },
+  {
+   "artifact_contains": "iOS Safari"
+  }
+ ]
+}

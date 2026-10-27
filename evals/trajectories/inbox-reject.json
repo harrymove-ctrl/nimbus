@@ -1,0 +1,36 @@
+{
+ "name": "inbox-reject",
+ "workstream": "ws-inbox",
+ "description": "Reject the send: the drafts exist, nothing is sent.",
+ "cheap": true,
+ "input": {
+  "approvals": [
+   "reject"
+  ],
+  "note": "Keep these as drafts."
+ },
+ "hops": [
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "Omar"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "no_side_effect": "send_message"
+  },
+  {
+   "approval_resolved_by": "you"
+  },
+  {
+   "artifact_contains": "Dana"
+  }
+ ]
+}

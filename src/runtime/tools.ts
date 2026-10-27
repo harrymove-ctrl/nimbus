@@ -118,8 +118,8 @@ export async function fetchUrl(url: string) {
  */
 export function runCode(ctx: RunCtx, i: { language: "python" | "node"; filename?: string; code: string }): Promise<{ ok: boolean; exitCode: number | null; stdout: string; stderr: string; workspace: string }> {
   mkdirSync(ctx.workspace, { recursive: true });
-  const data = fixturesDir("data.csv");
-  if (existsSync(data) && !existsSync(path.join(ctx.workspace, "data.csv"))) copyFileSync(data, path.join(ctx.workspace, "data.csv"));
+  // the workstream's attached data files (sample CSVs live in fixtures/)
+  for (const f of readdirSync(fixturesDir()).filter((n) => n.endsWith(".csv"))) if (!existsSync(path.join(ctx.workspace, f))) copyFileSync(fixturesDir(f), path.join(ctx.workspace, f));
   const file = (i.filename ?? (i.language === "python" ? "script.py" : "script.js")).replace(/[^\w.-]/g, "_");
   writeFileSync(path.join(ctx.workspace, file), i.code);
   return new Promise((resolve) => {

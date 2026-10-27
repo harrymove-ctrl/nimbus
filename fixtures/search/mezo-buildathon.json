@@ -1,0 +1,17 @@
+{
+ "match": [
+  "mezo"
+ ],
+ "results": [
+  {
+   "title": "Mezo Buildathon \u2014 Submissions",
+   "url": "https://devpost.example.com/mezo-buildathon/submissions",
+   "snippet": "Satoshi Pay, Vault Kit and Bridge Bot submitted this week."
+  },
+  {
+   "title": "Mezo Buildathon rules",
+   "url": "https://mezo.example.com/buildathon",
+   "snippet": "Tracks: payments, savings, agents."
+  }
+ ]
+}

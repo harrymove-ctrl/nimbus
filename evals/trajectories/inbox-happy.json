@@ -1,0 +1,48 @@
+{
+ "name": "inbox-happy",
+ "workstream": "ws-inbox",
+ "description": "Triage the inbox CSV, draft replies, ask before sending.",
+ "cheap": true,
+ "input": {},
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    },
+    {
+     "judge": "the analyst found the 4 urgent emails"
+    }
+   ]
+  },
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "Kim"
+    },
+    {
+     "judge": "the drafts name the people who are waiting"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_before": "send_message"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "artifact_contains": "Dana"
+  },
+  {
+   "max_cost_usd": 0.05
+  }
+ ]
+}

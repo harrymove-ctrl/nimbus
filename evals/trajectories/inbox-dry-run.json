@@ -1,0 +1,29 @@
+{
+ "name": "inbox-dry-run",
+ "workstream": "ws-inbox",
+ "description": "Dry run on the inbox: approval requested, nothing sent.",
+ "input": {
+  "mode": "dry"
+ },
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "no_side_effect": "send_message"
+  }
+ ]
+}

@@ -1,0 +1,41 @@
+{
+ "name": "checkout-steer",
+ "workstream": "ws-checkout",
+ "description": "A steering note is queued and acknowledged at the orchestrator's next turn.",
+ "input": {
+  "steer": "ignore refunds, only completed orders"
+ },
+ "hops": [
+  {
+   "agent": "researcher",
+   "expect": [
+    {
+     "tool_called": "web_search"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "spawned_at_least": 4
+  },
+  {
+   "artifact_contains": "iOS Safari"
+  },
+  {
+   "max_cost_usd": 0.06
+  },
+  {
+   "max_seconds": 60
+  },
+  {
+   "message_contains": "ignore refunds"
+  },
+  {
+   "message_contains": "Noted"
+  }
+ ]
+}

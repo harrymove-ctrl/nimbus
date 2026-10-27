@@ -35,6 +35,9 @@ function open(): Holder {
   const client = createClient({ url: `file:${path.join(dir, "nimbus.db")}` });
   const db = drizzle(client, { schema });
   const ready = (async () => {
+    // The dev server, the CLI and the evals can open the same file: wait for locks instead of failing, and allow readers beside a writer.
+    await client.execute("PRAGMA busy_timeout = 8000");
+    await client.execute("PRAGMA journal_mode = WAL").catch(() => {});
     for (const sql of DDL) await client.execute(sql);
     await client.execute("ALTER TABLE skills ADD COLUMN previous TEXT").catch(() => {}); // databases created before this column
     // Runs are in-memory; a run still marked running belonged to a process that is gone.

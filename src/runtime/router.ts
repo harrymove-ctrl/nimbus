@@ -19,7 +19,7 @@ export const routerOn = () => process.env.NIMBUS_ROUTER !== "off";
 const cacheOn = () => (process.env.NIMBUS_CACHE ? process.env.NIMBUS_CACHE === "on" : modelMode() === "nebius");
 const TTL_MS = 24 * 3600 * 1000;
 
-export type Hop = { role: AgentRole; turn: number; brief: string; hasTools: boolean; risk?: "low" | "medium" | "high" };
+export type Hop = { role: AgentRole; turn: number; brief: string; hasTools: boolean; risk?: "low" | "medium" | "high"; ws?: string };
 
 export async function pickTier(ctx: RunCtx, hop: Hop, ceiling: Tier): Promise<{ tier: Tier; reason: string }> {
   if (!routerOn()) return { tier: ceiling, reason: "router off → ceiling" };
@@ -36,7 +36,7 @@ export async function pickTier(ctx: RunCtx, hop: Hop, ceiling: Tier): Promise<{ 
 
 /** Nano classifier scoring 0–2. In mock mode the score comes from the script; real mode asks Nano (cached). */
 async function classify(hop: Hop): Promise<0 | 1 | 2> {
-  if (modelMode() === "mock") return mockTurn(hop.role, hop.turn)?.complexity ?? 1;
+  if (modelMode() === "mock") return mockTurn(hop.role, hop.turn, hop.ws)?.complexity ?? 1;
   const prompt = `Rate how hard this agent step is: 0 = routine, 1 = moderate, 2 = hard reasoning or high stakes. Reply with one digit.\nRole: ${hop.role}\nStep: ${hop.brief.slice(0, 600)}`;
   const key = sha(`classify|${prompt}`);
   const hit = await cacheGet(key);
@@ -92,7 +92,7 @@ export async function callHop(
       if (ctx.signal.aborted) throw ctx.signal.reason instanceof RunAborted ? ctx.signal.reason : new RunAborted("stop");
       try {
         const res = await generateText({
-          model: getModel({ tier, role: o.role, turn: o.turn, runKey: ctx.runId }),
+          model: getModel({ tier, role: o.role, turn: o.turn, runKey: ctx.runId, script: ctx.workstreamId }),
           system: o.system,
           messages: o.messages,
           tools: o.tools,

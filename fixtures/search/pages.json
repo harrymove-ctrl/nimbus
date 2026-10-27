@@ -1,5 +1,7 @@
 {
  "https://status.example.com/incidents/884": "INC-884: iOS Safari 17.x wallet sheet failed to open after release 2026.10.14. Mitigated 19:40 UTC by rolling back the wallet button.",
  "https://status.example.com/releases/2026-10-14": "Release 2026.10.14: moved the wallet button above the card form on mobile.",
- "https://blog.example.com/oct-14-sale": "Oct 14 sale: 20% off sitewide, push sent 13:00 UTC to 410k users."
+ "https://blog.example.com/oct-14-sale": "Oct 14 sale: 20% off sitewide, push sent 13:00 UTC to 410k users.",
+ "https://devpost.example.com/mezo-buildathon/submissions": "Mezo Buildathon submissions: Satoshi Pay (payments), Vault Kit (savings), Bridge Bot (agents). 3 new since last week.",
+ "https://mezo.example.com/buildathon": "Mezo Buildathon: tracks are payments, savings and agents."
 }

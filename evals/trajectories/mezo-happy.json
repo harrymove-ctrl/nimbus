@@ -1,0 +1,52 @@
+{
+ "name": "mezo-happy",
+ "workstream": "ws-mezo",
+ "description": "Weekly competitor watch: search, fetch, verify, write the note. No approval needed.",
+ "cheap": true,
+ "input": {},
+ "hops": [
+  {
+   "agent": "researcher",
+   "expect": [
+    {
+     "tool_called": "web_search"
+    },
+    {
+     "sources_at_least": 2
+    },
+    {
+     "judge": "new submissions are listed with their tracks"
+    }
+   ]
+  },
+  {
+   "agent": "checker",
+   "expect": []
+  },
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "Bridge Bot"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 0
+  },
+  {
+   "spawned_at_least": 3
+  },
+  {
+   "artifact_contains": "Bridge Bot"
+  },
+  {
+   "max_cost_usd": 0.05
+  }
+ ]
+}

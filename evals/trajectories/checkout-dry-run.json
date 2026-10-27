@@ -1,0 +1,32 @@
+{
+ "name": "checkout-dry-run",
+ "workstream": "ws-checkout",
+ "description": "Dry run: the approval is still requested but nothing is sent.",
+ "input": {
+  "mode": "dry"
+ },
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "no_side_effect": "send_message"
+  },
+  {
+   "artifact_contains": "iOS Safari"
+  }
+ ]
+}

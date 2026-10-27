@@ -1,0 +1,23 @@
+{
+ "name": "checkout-cancel-in-window",
+ "workstream": "ws-checkout",
+ "description": "Cancel inside the plan window: no agent is spawned and the run ends cancelled.",
+ "input": {
+  "cancel_after_ms": 200,
+  "env": {
+   "NIMBUS_PLAN_WINDOW_MS": "1500"
+  }
+ },
+ "hops": [],
+ "final": [
+  {
+   "status": "cancelled"
+  },
+  {
+   "spawned_at_most": 0
+  },
+  {
+   "no_side_effect": "send_message"
+  }
+ ]
+}

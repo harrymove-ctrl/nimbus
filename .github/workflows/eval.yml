@@ -1,0 +1,34 @@
+name: eval
+
+# Gate for pull requests: typecheck, then the six-golden --cheap trajectory eval.
+# NEBIUS_API_KEY is optional: when the secret is absent the mock model runs (no keys, $0), which still
+# checks the runtime, the router, approvals and the assertions. With the secret set, NIMBUS_MODEL=nebius
+# uses real Token Factory models (Nano judge) and spends a few cents. The goldens' deterministic assertions
+# were written against the scripted mock crew, so expect to adjust some of them on the first real-model run.
+on:
+  pull_request:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEBIUS_API_KEY: ${{ secrets.NEBIUS_API_KEY }}
+      NIMBUS_MODEL: ${{ secrets.NEBIUS_API_KEY != '' && 'nebius' || 'mock' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm eval --cheap
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: evals/report.json

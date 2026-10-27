@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { LanguageModel } from "ai";
@@ -40,15 +40,19 @@ export type MockTurn = {
 type Script = { role: string; turns: MockTurn[] };
 
 const scripts = new Map<string, Script>();
-export function mockScript(role: string): Script {
-  let s = scripts.get(role);
+/** fixtures/mock-model/<workstream>/<role>.json when it exists, else fixtures/mock-model/<role>.json (the Checkout crew). */
+export function mockScript(role: string, ws?: string): Script {
+  const key = `${ws ?? ""}/${role}`;
+  let s = scripts.get(key);
   if (!s) {
-    s = JSON.parse(readFileSync(path.join(process.cwd(), "fixtures", "mock-model", `${role}.json`), "utf8")) as Script;
-    scripts.set(role, s);
+    const specific = ws ? path.join(process.cwd(), "fixtures", "mock-model", ws, `${role}.json`) : "";
+    const file = specific && existsSync(specific) ? specific : path.join(process.cwd(), "fixtures", "mock-model", `${role}.json`);
+    s = JSON.parse(readFileSync(file, "utf8")) as Script;
+    scripts.set(key, s);
   }
   return s;
 }
-export const mockTurn = (role: string, turn: number): MockTurn | undefined => mockScript(role).turns[turn - 1];
+export const mockTurn = (role: string, turn: number, ws?: string): MockTurn | undefined => mockScript(role, ws).turns[turn - 1];
 
 const fast = () => process.env.NIMBUS_MOCK_FAST === "1";
 /** Deterministic 300–900 ms so the timeline animates the same way every time. */
@@ -72,14 +76,14 @@ export class MockHttpError extends Error {
   }
 }
 
-function mockModel(tier: Tier, role: string, turn: number, runKey: string): LanguageModel {
+function mockModel(tier: Tier, role: string, turn: number, runKey: string, ws?: string): LanguageModel {
   return new MockLanguageModelV4({
     provider: "mock",
     modelId: TIERS[tier],
     doGenerate: async () => {
       // NIMBUS_BAD_MODEL=super: that tier's model id is invalid (404 model not found), like a typo'd id on the real API.
       if (process.env.NIMBUS_BAD_MODEL === tier) throw new MockHttpError(404, `404 model not found: ${TIERS[tier]} (mock)`);
-      const t = mockTurn(role, turn) ?? { text: "Done.", usage: { in: 800, out: 40 } };
+      const t = mockTurn(role, turn, ws) ?? { text: "Done.", usage: { in: 800, out: 40 } };
       const failKey = `${runKey}:${role}:${turn}`;
       if (process.env.NIMBUS_MOCK_FAIL === `${role}:${turn}` && (failCounts.get(failKey) ?? 0) < 2) {
         failCounts.set(failKey, (failCounts.get(failKey) ?? 0) + 1);
@@ -102,13 +106,13 @@ function mockModel(tier: Tier, role: string, turn: number, runKey: string): Lang
   });
 }
 
-export function hopLabel(role: string, turn: number): string {
-  return modelMode() === "mock" ? (mockTurn(role, turn)?.label ?? "Thinking") : "Thinking";
+export function hopLabel(role: string, turn: number, ws?: string): string {
+  return modelMode() === "mock" ? (mockTurn(role, turn, ws)?.label ?? "Thinking") : "Thinking";
 }
 
 /** The one place a LanguageModel is made. `turn`/`role` only matter to the mock; `runKey` scopes forced failures. */
-export function getModel(opts: { tier: Tier; role: string; turn: number; runKey?: string }): LanguageModel {
-  if (modelMode() === "mock") return mockModel(opts.tier, opts.role, opts.turn, opts.runKey ?? "");
+export function getModel(opts: { tier: Tier; role: string; turn: number; runKey?: string; script?: string }): LanguageModel {
+  if (modelMode() === "mock") return mockModel(opts.tier, opts.role, opts.turn, opts.runKey ?? "", opts.script);
   return tokenFactory(process.env.NIMBUS_BAD_MODEL === opts.tier ? "nvidia/does-not-exist" : TIERS[opts.tier]);
 }
 
