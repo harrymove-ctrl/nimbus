@@ -12,6 +12,8 @@ export const workstreams = sqliteTable("workstreams", {
   createdAt: integer("created_at").notNull(),
 });
 
+export type UsageByTier = Record<"ultra" | "super" | "nano", { in: number; out: number; costUsd: number }>;
+
 export const runs = sqliteTable("runs", {
   id: text("id").primaryKey(),
   workstreamId: text("workstream_id").notNull(),
@@ -27,6 +29,8 @@ export const runs = sqliteTable("runs", {
   baselineUsd: real("baseline_usd").notNull().default(0),
   /** "mock" or "nebius": only real-model spend counts toward the day cap */
   model: text("model"),
+  /** tokens and spend per tier, for the Overview charts */
+  usageByTier: text("usage_by_tier", { mode: "json" }).$type<UsageByTier>(),
 });
 
 export const runEvents = sqliteTable(

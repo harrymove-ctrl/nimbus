@@ -3,7 +3,7 @@
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { dataDir, getDb, retryBusy, schema } from "@/db";
-import type { AnyRunEvent, PayloadMap, ProposedAction, RunEventType } from "@/lib/events";
+import type { AnyRunEvent, PayloadMap, ProposedAction, RunEventType, PlanStep } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
 import { modelMode } from "@/lib/tokenfactory";
 import { SpendCapError, inflight } from "./budget";
@@ -42,6 +42,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
   const pendingApprovals = new Map<string, { d: ReturnType<typeof deferred<ApprovalResult>>; action: ProposedAction; who: { role: AgentRole; instance: string } }>();
   const pendingQuestions = new Map<string, { d: ReturnType<typeof deferred<string>>; role: AgentRole; instance: string }>();
   const steering: { id: string; text: string }[] = [];
+  let planGate: ReturnType<typeof deferred<{ action: "approve" | "revise"; steps: PlanStep[] }>> | null = null;
 
   const ctx: RunCtx = {
     runId: id,
@@ -51,6 +52,11 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     allowedTools: input.tools ?? ["web_search", "fetch_url", "run_code", "write_artifact", "send_message", "read_repo", "open_pr"],
     tierChoice: input.tier ?? "auto",
     startedAt,
+    review: !!input.review,
+    awaitPlan() {
+      planGate = deferred();
+      return untilAborted(planGate.promise, signal);
+    },
     workspace: path.join(dataDir(), "workspaces", id),
     signal,
     emit,
@@ -60,6 +66,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     hop: 0,
     routedHops: 0,
     usage: { in: 0, out: 0, costUsd: 0, baselineUsd: 0 },
+    usageByTier: { ultra: { in: 0, out: 0, costUsd: 0 }, super: { in: 0, out: 0, costUsd: 0 }, nano: { in: 0, out: 0, costUsd: 0 } },
     artifactVersions: new Map(),
     artifactContent: new Map(),
     instances: new Set(["orchestrator"]),
@@ -152,7 +159,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       }
     }
     await persistChain;
-    await retryBusy(() => db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd }).where(eq(schema.runs.id, id)), 40); // patient: a lost final update leaves the run "running" forever
+    await retryBusy(() => db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd, usageByTier: ctx.usageByTier }).where(eq(schema.runs.id, id)), 40); // patient: a lost final update leaves the run "running" forever
     inflight.delete(id);
     if (process.env.NIMBUS_RECORD_REAL === "1") {
       try {
@@ -201,6 +208,13 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       }
       if (d.decision === "rejected" && d.note) emit("message", "orchestrator", "user", { id: `note-${++n}`, role: "user", text: d.note });
       p.d.resolve({ decision: d.decision, always: d.always, note: d.note, by: "you" });
+      return true;
+    },
+    planAction(a) {
+      if (finished || !planGate) return false;
+      const g = planGate;
+      planGate = null;
+      g.resolve(a);
       return true;
     },
     postMessage({ text, kind, questionId }) {

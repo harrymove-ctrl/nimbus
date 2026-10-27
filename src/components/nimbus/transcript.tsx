@@ -19,6 +19,7 @@ import {
 import { DitherNumber } from "@/components/dithercn/dither-number";
 import { Divider } from "@/components/dithercn/divider";
 import { PlanSkeleton } from "./loading";
+import { PlanCard } from "./plan-card";
 import { buttonSm, cx, ghostButton, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton, toolOutput, toolWell, userBubble } from "./ui";
 import type { AgentRole } from "@/lib/models";
 
@@ -26,6 +27,8 @@ type Props = {
   view: RunView;
   now: number;
   onCancelPlan: () => void;
+  /** the person approved the draft plan (possibly edited) or sent their edits back for another planning turn */
+  onPlan: (action: "approve" | "revise", steps: import("@/lib/events").PlanStep[]) => Promise<void> | void;
   onAnswer: (q: QuestionItem, text: string) => void;
   onDecide: (a: ApprovalItem, decision: "approve" | "approve_always" | "reject", note?: string) => void;
   onOpenArtifact: (artifactId: string, version: number) => void;
@@ -35,7 +38,7 @@ type Props = {
   onTemplate?: (goal: string) => void;
 };
 
-export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill, waitingForCrew }: Props) {
+export function Transcript({ view, now, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill, waitingForCrew }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -60,7 +63,7 @@ export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpen
         {view.startedAt > 0 && view.transcript.length > 0 && <Divider label={runStamp(view.startedAt, view.trigger)} className="text-[12px] font-bold text-neutral-400" />}
         {view.transcript.map((item) => (
           <div key={item.seq} id={`tr-${item.seq}`} className={cx("scroll-mt-4", item.t === "plan" ? "nb-rise" : "nb-rise-fast")}>
-            <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
+            <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onPlan={onPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
           </div>
         ))}
         <PlanSkeleton active={!!waitingForCrew} />
@@ -83,7 +86,7 @@ function Dot({ role }: { role: AgentRole }) {
   return <span className="mt-[7px] size-2 shrink-0 rounded-full" style={{ background: ROLE_COLOR[role] }} />;
 }
 
-function Item({ item, view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
+function Item({ item, view, now, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
   switch (item.t) {
     case "user":
       return (
@@ -103,7 +106,7 @@ function Item({ item, view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifac
         </div>
       );
     case "plan":
-      return <PlanCard item={item} view={view} now={now} onCancel={onCancelPlan} />;
+      return <PlanCard item={item} view={view} now={now} onCancel={onCancelPlan} onPlan={onPlan} />;
     case "handoff": {
       const from = view.lanes.find((l) => l.instance === item.from);
       const to = view.lanes.find((l) => l.instance === item.to);
@@ -154,47 +157,6 @@ function Item({ item, view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifac
         </div>
       );
   }
-}
-
-function PlanCard({ item, view, now, onCancel }: { item: PlanItem; view: RunView; now: number; onCancel: () => void }) {
-  const remaining = Math.max(0, Math.ceil((item.tMs + 3000 - (now - view.startedAt)) / 1000));
-  const cancelled = view.status === "cancelled";
-  const open = view.status === "planning" && remaining > 0;
-  return (
-    <div className={panel}>
-      <div className={panelHead}>
-        <p className="text-[15px] font-extrabold">Plan</p>
-        <span className="ms-auto rounded-full bg-white/10 px-2.5 py-0.5 text-[12px] font-bold tabular-nums text-neutral-100">{item.estimate.label}</span>
-      </div>
-      <div className={cx(panelBody, "gap-1 p-3")}>
-        {item.agents.map((a) => (
-          <div key={a.instance} className="flex items-start gap-2.5 py-1">
-            <Dot role={a.role} />
-            <p className="min-w-0 flex-1 text-[14px]/[20px]">
-              <span className="font-bold">{ROLE_LABEL[a.role]}</span> <span className="rounded bg-white/10 px-1.5 py-px text-[11px] font-extrabold text-neutral-300">{TIER_SHORT[a.tier]}</span>
-              <span className="text-neutral-400"> · {a.brief}</span>
-            </p>
-          </div>
-        ))}
-        <div className="mt-1 flex flex-wrap gap-1.5">
-          {item.tools.map((t) => (
-            <span key={t} className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[11px] text-neutral-300">
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-      <div className={cx(panelFoot, "justify-between")}>
-        <span className="tabular-nums">{cancelled ? "Cancelled" : open ? `Starting in ${remaining}s unless you cancel` : "Started"}</span>
-        {open && (
-          <button type="button" onClick={onCancel} className={cx(secondaryButton, buttonSm, "relative overflow-hidden")}>
-            Cancel
-            <span key={item.seq} aria-hidden="true" className="nb-countdown absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-current opacity-50" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
 }
 
 function QuestionCard({ item, onAnswer }: { item: QuestionItem; onAnswer: (q: QuestionItem, text: string) => void }) {

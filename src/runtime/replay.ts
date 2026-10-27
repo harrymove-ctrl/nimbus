@@ -140,6 +140,9 @@ export function createReplayRun(input: StartRunInput, file?: string): RunHandle 
       release();
       return true;
     },
+    planAction() {
+      return false; // a recorded run has no draft plan to edit
+    },
     postMessage({ text, kind, questionId }) {
       if (finished) return false;
       if (kind === "answer") {

@@ -22,7 +22,7 @@ export const SCHEMAS = {
   read_repo: z.object({ action: z.enum(["read", "list", "diff", "changed"]), path: z.string().optional(), ref: z.string().optional() }),
   open_pr: z.object({ branch: z.string(), title: z.string(), body: z.string(), patchArtifactId: z.string() }),
   ask_user: z.object({ text: z.string(), options: z.array(z.string()).optional() }),
-  plan: z.object({ agents: z.array(agentBrief), tools: z.array(z.string()), estimate: z.object({ costUsd: z.number(), tokens: z.number(), label: z.string() }) }),
+  plan: z.object({ agents: z.array(agentBrief), tools: z.array(z.string()), steps: z.array(z.object({ text: z.string(), role })).optional(), estimate: z.object({ costUsd: z.number(), tokens: z.number(), label: z.string() }) }),
   spawn_agents: z.object({ agents: z.array(agentBrief) }),
   handoff: z.object({ to: role, context: z.string() }),
   request_approval: z.object({
@@ -43,7 +43,7 @@ const DESCRIPTIONS: Record<ToolName, string> = {
   read_repo: "Read the repository, read-only: action read (a file), list (a directory), diff (git diff, optionally of one path or against a ref) or changed (files changed since HEAD). Never writes.",
   open_pr: "Open a pull request from a patch artifact: creates the branch, commits the patch and opens the PR. Always needs the person's approval.",
   ask_user: "Ask the person one short question when you cannot proceed. Offer options when you can.",
-  plan: "Your first call: the agents, tiers and tools you will use and a cost estimate. The person has 3 seconds to cancel.",
+  plan: "Your first call: the agents and tools you will use, the steps in order (steps: each a sentence and the agent that does it) and a cost estimate. The person may edit the steps and approve; if the result says revise, plan again with their edits.",
   spawn_agents: "Run several agents concurrently and get their reports.",
   handoff: "Hand one piece of work to one agent and wait for its report.",
   request_approval: "Ask the person to approve a side-effecting action before it happens.",

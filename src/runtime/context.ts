@@ -1,4 +1,4 @@
-import type { PayloadMap, ProposedAction, RunEventType } from "@/lib/events";
+import type { PayloadMap, PlanStep, ProposedAction, RunEventType } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
 
 export type Emit = <T extends RunEventType>(type: T, agent: AgentRole, instance: string, payload: PayloadMap[T]) => void;
@@ -17,6 +17,10 @@ export type RunCtx = {
   allowedTools: string[];
   tierChoice: "auto" | "cheap" | "max";
   startedAt: number;
+  /** started from the UI: the plan is a draft the person edits and approves before the crew acts (SPEC §17.2) */
+  review: boolean;
+  /** resolves when the person approves or sends back the draft plan */
+  awaitPlan(): Promise<{ action: "approve" | "revise"; steps: PlanStep[] }>;
   workspace: string;
   signal: AbortSignal;
   emit: Emit;
@@ -27,6 +31,8 @@ export type RunCtx = {
   hop: number;
   routedHops: number;
   usage: { in: number; out: number; costUsd: number; baselineUsd: number };
+  /** the same, split by the tier that answered (Overview charts) */
+  usageByTier: Record<"ultra" | "super" | "nano", { in: number; out: number; costUsd: number }>;
   artifactVersions: Map<string, number>;
   /** latest content per artifact id (open_pr reads its patch from here) */
   artifactContent: Map<string, string>;

@@ -1,7 +1,7 @@
 // The one interface the API routes and the UI depend on. Today it is backed by the
 // fixture replay (src/runtime/replay.ts); Phase 1 adds the live orchestrator behind
 // the same RunHandle and flips NIMBUS_RUN_SOURCE=live. No UI change is needed.
-import type { AnyRunEvent } from "@/lib/events";
+import type { AnyRunEvent, PlanStep } from "@/lib/events";
 import { createLiveRun } from "./live";
 import { createReplayRun } from "./replay";
 
@@ -14,6 +14,8 @@ export type StartRunInput = {
   tools?: string[];
   files?: string[];
   trigger?: "manual" | "cron" | "chat" | "job";
+  /** the plan is a draft until the person approves it (UI-started runs; scheduled, chat and CLI runs keep the 3 s window) */
+  review?: boolean;
 };
 
 export type ApprovalDecision = { decision: "approved" | "rejected"; always?: boolean; note?: string };
@@ -29,6 +31,7 @@ export interface RunHandle {
   onEvent(fn: (e: AnyRunEvent) => void): () => void;
   onDone(fn: () => void): () => void;
   resolveApproval(approvalId: string, d: ApprovalDecision): boolean;
+  planAction(a: { action: "approve" | "revise"; steps: PlanStep[] }): boolean;
   postMessage(m: { text: string; kind: "steer" | "answer"; questionId?: string }): boolean;
   stop(reason: "stop" | "cancel"): void;
 }

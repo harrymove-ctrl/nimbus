@@ -23,7 +23,8 @@
     "check:learning": "NIMBUS_MOCK_FAST=1 NIMBUS_DEBUG_PROMPTS=1 node --env-file-if-exists=.env.local --import tsx scripts/check-learning.mts",
     "check:tools": "node --env-file-if-exists=.env.local --import tsx scripts/check-tools.mts",
     "seed:run": "node --env-file-if-exists=.env.local --import tsx scripts/seed-run.mts",
-    "check:cases": "node --env-file-if-exists=.env.local --import tsx scripts/check-cases.mts"
+    "check:cases": "node --env-file-if-exists=.env.local --import tsx scripts/check-cases.mts",
+    "prune:runs": "node --env-file-if-exists=.env.local --import tsx scripts/prune-dev-runs.mts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.79",

@@ -9,6 +9,7 @@ import type { Workstream } from "@/lib/workstreams";
 import { ApprovalTray } from "./approval-tray";
 import { Boot } from "./boot";
 import { EmptyState } from "@/components/dithercn/empty-state";
+import { Overview } from "./overview";
 import { AmbientGlow } from "./loading";
 import { Composer, type Mode, type TierChoice } from "./composer";
 import { Inspector, type InspectorTab } from "./inspector";
@@ -145,6 +146,17 @@ export function AppShell() {
     [runByWs],
   );
 
+  /** open a finished or running run in its workstream (Overview clicks), optionally on an Inspector tab */
+  const openRun = useCallback((wsId: string, runId: string, t?: InspectorTab) => {
+    setSelectedId(wsId);
+    setDrawer(t ? "inspector" : null);
+    setSelSeg(null);
+    setWorkstreams((w) => w.map((x) => (x.id === wsId ? { ...x, unread: false } : x)));
+    void fetch(`/api/workstreams/${wsId}/read`, { method: "POST" });
+    setRunByWs((m) => ({ ...m, [wsId]: runId }));
+    if (t) setTab(t);
+  }, []);
+
   // New doc version arrives → show it in the Artifact tab, LATEST selected.
   const docVersions = view.artifacts.filter((a) => a.kind === "doc").reduce((n, a) => n + a.versions.length, 0);
   useEffect(() => {
@@ -241,6 +253,7 @@ export function AppShell() {
           pendingByWs={pendingByWs}
           busyWs={busyWs}
           onSelect={(id) => void openWorkstream(id)}
+          onOverview={() => (setSelectedId(null), setDrawer(null))}
           onRun={(id) => void startRun({ saved: true }, id)}
           budget={budget}
           loading={!wsLoaded}
@@ -251,7 +264,7 @@ export function AppShell() {
           {/* ambient dither: behind the run view and the empty state only; never the boot screen, composer, cards or cloud */}
           {boot === "gone" && <AmbientGlow paused={view.lanes.length >= 4 && clock} />}
           {!ws ? (
-            <PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />
+            <Overview titles={Object.fromEntries(workstreams.map((w) => [w.id, w.title]))} onOpenRun={openRun} refreshKey={view.status === "done" ? 1 : 0} empty={<PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />} />
           ) : (
             <>
               <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} />
@@ -261,6 +274,9 @@ export function AppShell() {
                 view={view}
                 now={now}
                 onCancelPlan={() => void stop("cancel")}
+                onPlan={async (action, steps) => {
+                  if (runId) await post(`/api/runs/${runId}/plan`, { steps, [action]: true });
+                }}
                 onAnswer={answer}
                 onDecide={(a, d, n) => void decide(a, d, n)}
                 onRevertSkill={async () => {
@@ -327,7 +343,7 @@ export function AppShell() {
           selected={selSeg}
           focusArtifact={focusArtifact}
           loading={!!runId && events.length === 0}
-          className={cx("z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "nb-drawer-right fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden")}
+          className={cx(!ws && "!hidden", "z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "nb-drawer-right fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden")}
         />
       </div>
     </div>

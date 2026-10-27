@@ -12,6 +12,9 @@ export type ProposedAction = {
   risk: Risk;
 };
 
+/** one line of the plan the person can edit (SPEC §17.2); steps tick as the orchestrator's actions finish */
+export type PlanStep = { id: string; text: string; role: AgentRole; tier: Tier };
+
 export type PlanAgent = { role: AgentRole; instance: string; tier: Tier; brief: string };
 
 export type RunSummary = {
@@ -56,7 +59,13 @@ export interface PayloadMap {
   };
   usage: { tier: Tier; in: number; out: number; cached?: boolean };
   route: { hop: number; role: AgentRole; chosen: Tier; ceiling: Tier; reason: string; fallback?: boolean };
-  plan: { agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string } };
+  plan: { agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string }; steps?: PlanStep[]; /** a person is reviewing the draft: the run waits for plan.approve */ awaiting?: boolean; revision?: number };
+  /** the person approved the plan (possibly edited: reordered, added, removed or reworded steps) */
+  "plan.approve": { steps: PlanStep[]; edited: boolean };
+  /** the person sent their edits back for another planning turn */
+  "plan.revise": { steps: PlanStep[] };
+  /** a plan step started, finished or failed */
+  step: { stepId: string; state: "running" | "done" | "failed" };
   question: { questionId: string; text: string; options?: string[] };
   policy: { rule: string };
 }

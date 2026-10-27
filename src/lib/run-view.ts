@@ -1,6 +1,6 @@
 // Pure reducer: the full RunEvent[] → everything the run view draws. The UI keeps no
 // other run state, so a refresh (replay from seq 0) rebuilds the same screen.
-import type { AnyRunEvent, PlanAgent, ProposedAction, RunEndStatus, RunSummary } from "./events";
+import type { AnyRunEvent, PlanAgent, PlanStep, ProposedAction, RunEndStatus, RunSummary } from "./events";
 import { ROLE_TIER, costUsd, type AgentRole, type Tier } from "./models";
 
 export type RouteInfo = { hop: number; chosen: Tier; ceiling: Tier; reason: string; fallback?: boolean };
@@ -50,7 +50,7 @@ export type Artifact = {
 export type TItem =
   | { t: "user"; seq: number; tMs: number; id: string; text: string; queued: boolean }
   | { t: "agent"; seq: number; tMs: number; instance: string; role: AgentRole; text: string }
-  | { t: "plan"; seq: number; tMs: number; agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string } }
+  | { t: "plan"; seq: number; tMs: number; agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string }; steps: PlanStep[]; /** a person is reviewing this draft */ awaiting: boolean; approved: boolean; edited: boolean; revision: number }
   | { t: "handoff"; seq: number; tMs: number; from: string; to: string; context: string }
   | { t: "question"; seq: number; tMs: number; instance: string; role: AgentRole; questionId: string; text: string; options?: string[]; answer?: string }
   | { t: "approval"; seq: number; tMs: number; approvalId: string; action: ProposedAction; status: "pending" | "approved" | "rejected"; always?: boolean; note?: string; by?: string; resolvedMs?: number }
@@ -85,6 +85,10 @@ export type RunView = {
   pendingApprovals: ApprovalItem[];
   openQuestion?: QuestionItem;
   plan?: PlanItem;
+  /** per plan step: where it is, and when it started and ended (ms since run start) */
+  stepState: Record<string, { state: "pending" | "running" | "done" | "failed"; startMs?: number; endMs?: number }>;
+  /** the run is waiting for the person to approve the draft plan */
+  planAwaiting: boolean;
   artifacts: Artifact[];
   policies: string[];
   summary?: RunSummary;
@@ -145,6 +149,8 @@ export function buildView(events: AnyRunEvent[]): RunView {
     connectors: [],
     transcript: [],
     pendingApprovals: [],
+    stepState: {},
+    planAwaiting: false,
     artifacts: [],
     policies: [],
     toolCalls: [],
@@ -313,9 +319,34 @@ export function buildView(events: AnyRunEvent[]): RunView {
         break;
       }
       case "plan": {
-        const item: PlanItem = { t: "plan", seq: e.seq, tMs: e.tMs, agents: e.payload.agents, tools: e.payload.tools, estimate: e.payload.estimate };
+        const p = e.payload;
+        const steps = p.steps ?? p.agents.map((a, i) => ({ id: `s${i + 1}`, text: `${ROLE_LABEL[a.role]}: ${a.brief}`, role: a.role, tier: a.tier }));
+        const item: PlanItem = { t: "plan", seq: e.seq, tMs: e.tMs, agents: p.agents, tools: p.tools, estimate: p.estimate, steps, awaiting: !!p.awaiting, approved: false, edited: false, revision: p.revision ?? 0 };
+        // a revised plan replaces the draft it revises (same card, new revision)
+        const at = v.plan && !v.plan.approved ? v.transcript.indexOf(v.plan) : -1;
+        if (at >= 0) v.transcript[at] = item;
+        else v.transcript.push(item);
         v.plan = item;
-        v.transcript.push(item);
+        for (const s of steps) v.stepState[s.id] ??= { state: "pending" };
+        break;
+      }
+      case "plan.approve": {
+        if (v.plan) {
+          v.plan.steps = e.payload.steps;
+          v.plan.awaiting = false;
+          v.plan.approved = true;
+          v.plan.edited = e.payload.edited;
+          v.stepState = Object.fromEntries(e.payload.steps.map((s) => [s.id, { state: "pending" as const }]));
+        }
+        break;
+      }
+      case "plan.revise":
+        break;
+      case "step": {
+        const s = (v.stepState[e.payload.stepId] ??= { state: "pending" });
+        s.state = e.payload.state;
+        if (e.payload.state === "running") s.startMs = e.tMs;
+        else s.endMs = e.tMs;
         break;
       }
       case "handoff":
@@ -402,10 +433,11 @@ export function buildView(events: AnyRunEvent[]): RunView {
   v.artifacts.sort((a, b) => a.id.localeCompare(b.id));
   v.savings = v.baselineUsd > 0 ? Math.max(0, 1 - v.costUsd / v.baselineUsd) : null;
 
+  v.planAwaiting = !!v.plan?.awaiting && !endStatus;
   if (v.startedAt === 0) v.status = "idle";
   else if (endStatus) v.status = STATUS_MAP[endStatus];
   else if (v.openQuestion) v.status = "asked";
-  else if (v.pendingApprovals.length > 0) v.status = "waiting";
+  else if (v.pendingApprovals.length > 0 || v.plan?.awaiting) v.status = "waiting";
   else if (v.spawned) v.status = "running";
   else v.status = "planning";
   return v;

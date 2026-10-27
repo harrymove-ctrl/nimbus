@@ -15,13 +15,15 @@ export async function POST(req: Request) {
     tier?: "auto" | "cheap" | "max";
     tools?: string[];
     files?: string[];
+    /** false: keep the 3 s window instead of a draft plan to approve (API clients that cannot edit plans) */
+    review?: boolean;
   };
   const ws = WORKSTREAMS.find((w) => w.id === body.workstreamId);
   if (!ws) return Response.json({ error: "unknown workstream" }, { status: 404 });
   const budget = await checkDayBudget();
   if (!budget.ok) return Response.json({ error: "day_cap", message: budget.message, spentUsd: budget.spentUsd, capUsd: budget.capUsd }, { status: 429 });
   const goal = body.goal?.trim() || ws.goal;
-  const run = startRun({ workstreamId: ws.id, title: ws.title, goal, mode: body.mode, tier: body.tier, tools: body.tools, files: body.files });
+  const run = startRun({ workstreamId: ws.id, title: ws.title, goal, mode: body.mode, tier: body.tier, tools: body.tools, files: body.files, review: body.review !== false, trigger: "manual" });
   return Response.json({ runId: run.id }, { status: 201 });
 }
 

@@ -83,7 +83,11 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
     ctx.emit("usage", role, instance, { tier: call.tier, in: call.usage.in, out: call.usage.out, cached: call.cached || undefined });
     ctx.usage.in += call.usage.in;
     ctx.usage.out += call.usage.out;
+    const bt = ctx.usageByTier[call.tier];
+    bt.in += call.usage.in;
+    bt.out += call.usage.out;
     if (!call.cached) {
+      bt.costUsd += costUsd(call.tier, call.usage.in, call.usage.out);
       ctx.usage.costUsd += costUsd(call.tier, call.usage.in, call.usage.out);
       ctx.usage.baselineUsd += costUsd(ceiling, call.usage.in, call.usage.out);
       inflight.set(ctx.runId, ctx.usage.costUsd);

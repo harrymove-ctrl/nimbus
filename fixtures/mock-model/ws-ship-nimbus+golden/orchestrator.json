@@ -40,7 +40,33 @@
        "costUsd": 0.09,
        "tokens": 52000,
        "label": "≈ $0.09 · Ultra ×1 · Super ×3 · Nano ×4"
-      }
+      },
+      "steps": [
+       {
+        "text": "Find which golden fails in CI",
+        "role": "researcher"
+       },
+       {
+        "text": "Reproduce it with pnpm eval and decide where to fix it",
+        "role": "analyst"
+       },
+       {
+        "text": "Write the patch and the PR text",
+        "role": "writer"
+       },
+       {
+        "text": "Verify the patch for real: apply, eval, typecheck",
+        "role": "checker"
+       },
+       {
+        "text": "Open the pull request (waits for you)",
+        "role": "writer"
+       },
+       {
+        "text": "Add the eval table to the PR",
+        "role": "writer"
+       }
+      ]
      }
     }
    ]

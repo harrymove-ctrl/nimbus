@@ -12,6 +12,8 @@ export type Workstream = {
   /** current SKILL.md content, shown in the Inspector's Memory tab */
   skill: string;
   unread?: boolean;
+  /** what the same work costs a person by hand, in minutes: an estimate, shown labelled as one (impact line, Overview) */
+  estimatedManualMinutes: number;
 };
 
 export const TOOL_LABELS: Record<string, string> = {
@@ -27,6 +29,7 @@ export const TOOL_LABELS: Record<string, string> = {
 export const WORKSTREAMS: Workstream[] = [
   {
     id: "ws-ship-nimbus",
+    estimatedManualMinutes: 45,
     slug: "ship-nimbus",
     title: "Ship Nimbus",
     goal: "Keep Nimbus shipping: run the evals, find what fails, fix it, and open a pull request for me to review.",
@@ -40,6 +43,7 @@ export const WORKSTREAMS: Workstream[] = [
   },
   {
     id: "ws-radar",
+    estimatedManualMinutes: 25,
     slug: "hackathon-radar",
     title: "Hackathon radar",
     goal: "Every morning: what changed on the Nebius × NVIDIA hackathon and the Mezo buildathon pages, who else is building a personal agent, and what we should say differently.",
@@ -56,6 +60,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-brief",
+    estimatedManualMinutes: 20,
     slug: "morning-brief",
     title: "Morning brief",
     goal: "At 08:00, read my inbox export, today's calendar and GitHub notifications; give me one page: what needs me today, drafts for the three replies that matter, and what can wait.",
@@ -71,6 +76,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-audit",
+    estimatedManualMinutes: 60,
     slug: "cost-audit",
     title: "Token Factory cost audit",
     goal: "Weekly: read our usage log, find the five most expensive hops, propose router rule changes, prove the saving with the evals.",
@@ -86,6 +92,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-release",
+    estimatedManualMinutes: 30,
     slug: "release-watch",
     title: "Release watch",
     goal: "Watch Next.js, the AI SDK and libsql releases; tell me what breaks us and open an upgrade PR when it is safe.",
@@ -99,6 +106,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-checkout",
+    estimatedManualMinutes: 40,
     slug: "checkout-drop",
     title: "Checkout conversion drop on Oct 14",
     goal: "Why did checkout conversion drop on Oct 14? Use data.csv, find the cause, and tell #growth.",
