@@ -2,9 +2,11 @@
 // Mock model by default (NIMBUS_MODEL=mock); NIMBUS_MODEL=nebius switches to Token Factory.
 import path from "node:path";
 import { eq } from "drizzle-orm";
-import { dataDir, getDb, schema } from "@/db";
+import { dataDir, getDb, retryBusy, schema } from "@/db";
 import type { AnyRunEvent, PayloadMap, ProposedAction, RunEventType } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
+import { modelMode } from "@/lib/tokenfactory";
+import { SpendCapError, inflight } from "./budget";
 import { RunAborted, deferred, untilAborted, type ApprovalResult, type RunCtx } from "./context";
 import { runLearner } from "./learner";
 import { topMemories } from "./memory";
@@ -25,7 +27,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
   let n = 0;
 
   const persist = (fn: (db: Awaited<ReturnType<typeof getDb>>) => Promise<unknown>) => {
-    persistChain = persistChain.then(async () => fn(await getDb())).catch((e) => console.error("[nimbus] persist failed:", e instanceof Error ? e.message : e));
+    persistChain = persistChain.then(async () => retryBusy(async () => fn(await getDb()))).catch((e) => console.error("[nimbus] persist failed:", e instanceof Error ? e.message : e));
   };
 
   function emit<T extends RunEventType>(type: T, agent: AgentRole, agentInstance: string, payload: PayloadMap[T]) {
@@ -102,18 +104,23 @@ export function createLiveRun(input: StartRunInput): RunHandle {
 
   void (async () => {
     const db = await getDb();
+    inflight.set(id, 0);
     // NIMBUS_FREEZE_CONTEXT=1 (tests only): no SKILL.md or memories in prompts, so identical runs hit the llm_cache.
     const freeze = process.env.NIMBUS_FREEZE_CONTEXT === "1";
     ctx.skill = freeze ? "" : await loadSkill(input.workstreamId);
     ctx.memories = freeze ? [] : await topMemories(input.workstreamId, input.goal);
-    await db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt });
+    await retryBusy(() => db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt, model: modelMode() }));
     emit("run.start", "orchestrator", "orchestrator", { title: input.title, workstreamId: input.workstreamId, goal: input.goal, startedAt, trigger: input.trigger ?? "manual", learned: { memories: ctx.memories.length, policies: policySection(ctx.skill).length } });
 
     let status: "done" | "failed" | "cancelled" | "stopped" = "done";
     try {
       await runOrchestrator(ctx);
     } catch (e) {
-      if (e instanceof RunAborted) status = e.reason === "cancel" ? "cancelled" : "stopped";
+      if (e instanceof SpendCapError) {
+        status = "failed";
+        emit("run.error", "orchestrator", "orchestrator", { message: "spend cap", kind: "spend_cap", spentUsd: e.spentUsd, capUsd: e.capUsd });
+        controller.abort(e); // concurrent agents stop at their next check
+      } else if (e instanceof RunAborted) status = e.reason === "cancel" ? "cancelled" : "stopped";
       else if (signal.aborted) status = "stopped";
       else {
         status = "failed";
@@ -133,10 +140,12 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       }
     }
     await persistChain;
-    await db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd }).where(eq(schema.runs.id, id));
+    await retryBusy(() => db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd }).where(eq(schema.runs.id, id)));
+    inflight.delete(id);
     finish();
   })().catch((e) => {
     console.error("[nimbus] run crashed:", e);
+    inflight.delete(id);
     finish();
   });
 

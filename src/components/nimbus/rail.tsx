@@ -11,6 +11,7 @@ export function Rail({
   busyWs,
   onSelect,
   onRun,
+  budget,
   className,
 }: {
   workstreams: Workstream[];
@@ -19,6 +20,7 @@ export function Rail({
   busyWs: Record<string, boolean>;
   onSelect: (id: string) => void;
   onRun: (id: string) => void;
+  budget?: { todayUsd: number; dayCapUsd: number };
   className?: string;
 }) {
   return (
@@ -60,7 +62,12 @@ export function Rail({
           );
         })}
       </ul>
-      <p className="border-t border-white/10 p-4 text-[12px]/[18px] text-neutral-500">
+      {budget && (
+        <p className="border-t border-white/10 px-4 pt-3 text-[12px] font-bold tabular-nums text-neutral-300" title="Daily spend across all runs (NIMBUS_DAY_CAP_USD)">
+          Today ${budget.todayUsd.toFixed(2)} of ${budget.dayCapUsd.toFixed(2)}
+        </p>
+      )}
+      <p className="p-4 pt-1.5 text-[12px]/[18px] text-neutral-500">
         Runs use the scripted mock model (no keys, $0) until NEBIUS_API_KEY is set.
       </p>
     </nav>

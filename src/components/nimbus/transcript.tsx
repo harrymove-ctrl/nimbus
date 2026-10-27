@@ -136,6 +136,17 @@ function Item({ item, view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifac
       return <SummaryCard item={item} view={view} onRevert={onRevertSkill} />;
     case "end":
       return <p className="text-center text-[13px] font-semibold text-neutral-400">Run {item.status}.</p>;
+    case "error":
+      return (
+        <div role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-3 py-2 text-[14px]/[20px] text-red-100">
+          <p className="font-extrabold">Stopped: {item.message}</p>
+          {item.capUsd !== undefined && item.spentUsd !== undefined && (
+            <p className="text-red-200/80">
+              This run spent ${item.spentUsd.toFixed(3)}, past its ${item.capUsd.toFixed(2)} cap. Raise NIMBUS_RUN_CAP_USD to allow more; nothing was sent.
+            </p>
+          )}
+        </div>
+      );
   }
 }
 

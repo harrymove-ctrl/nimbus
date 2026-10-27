@@ -28,6 +28,8 @@ export function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
   const [tab, setTab] = useState<InspectorTab>("artifact");
   const [selSeg, setSelSeg] = useState<SegRef | null>(null);
+  const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number }>();
+  const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
 
   const [draft, setDraft] = useState("");
@@ -72,6 +74,13 @@ export function AppShell() {
   useEffect(() => {
     if (ws) setTools(ws.tools);
   }, [ws]);
+
+  const refreshBudget = useCallback(() => {
+    fetch("/api/budget").then((r) => r.json() as Promise<{ todayUsd: number; dayCapUsd: number; runCapUsd: number }>).then(setBudget).catch(() => {});
+  }, []);
+  useEffect(() => {
+    if (boot === "gone") refreshBudget();
+  }, [boot, refreshBudget, view.status]);
 
   const refreshWorkstreams = useCallback(async () => {
     const d = await fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>).catch(() => null);
@@ -135,7 +144,15 @@ export function AppShell() {
       const goal = opts?.saved ? target.goal : draft.trim() || target.goal;
       lastDraft.current = opts?.saved ? "" : draft;
       const res = await post("/api/runs", { workstreamId: target.id, goal, mode, tier: opts?.max ? "max" : tier, tools, files });
+      if (res.status === 429) {
+        // Past the daily cap: say so in the composer area; the cloud stays blue (this is not an approval).
+        const j = (await res.json().catch(() => ({}))) as { message?: string };
+        setNotice(j.message ?? "Daily spend cap reached.");
+        refreshBudget();
+        return;
+      }
       if (!res.ok) return;
+      setNotice(null);
       const { runId: id } = (await res.json()) as { runId: string };
       setSelectedId(target.id);
       setRunByWs((m) => ({ ...m, [target.id]: id }));
@@ -144,7 +161,7 @@ export function AppShell() {
       setFiles([]);
       setDrawer(null);
     },
-    [draft, files, mode, tier, tools, selectedId, workstreams],
+    [draft, files, mode, tier, tools, selectedId, workstreams, refreshBudget],
   );
 
   const stop = (reason: "cancel" | "stop") => runId && post(`/api/runs/${runId}/stop`, { reason });
@@ -201,6 +218,7 @@ export function AppShell() {
           busyWs={busyWs}
           onSelect={(id) => void openWorkstream(id)}
           onRun={(id) => void startRun({ saved: true }, id)}
+          budget={budget}
           className={cx("z-40 xl:static xl:flex xl:w-[280px] xl:shrink-0", drawer === "rail" ? "nb-drawer-left fixed inset-y-12 left-0 flex w-[280px]" : "hidden")}
         />
 
@@ -209,7 +227,7 @@ export function AppShell() {
             <PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />
           ) : (
             <>
-              <RunHeader view={view} now={now} fallbackTitle={ws.title} />
+              <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} />
               <Timeline view={view} now={now} selected={selSeg} onSelect={selectSeg} collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />
               <Transcript
                 view={view}
@@ -229,6 +247,14 @@ export function AppShell() {
                 }}
               />
               <div className="flex shrink-0 flex-col gap-2 px-4 pb-4 pt-2">
+                {notice && (
+                  <div role="alert" className="mx-auto flex w-full max-w-[720px] items-start gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-3 py-2 text-[13px]/[19px] text-orange-100">
+                    <span className="flex-1">{notice}</span>
+                    <button type="button" aria-label="Dismiss" onClick={() => setNotice(null)} className="text-orange-200/80 hover:text-orange-100">
+                      ×
+                    </button>
+                  </div>
+                )}
                 <ApprovalTray
                   pending={view.pendingApprovals}
                   onApprove={(a) => void decide(a, "approve")}

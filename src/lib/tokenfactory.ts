@@ -76,11 +76,15 @@ export class MockHttpError extends Error {
   }
 }
 
+/** Tests only: what the router asked each mock call for (max tokens per tier). */
+export const mockCallLog: { role: string; tier: Tier; maxOutputTokens?: number }[] = [];
+
 function mockModel(tier: Tier, role: string, turn: number, runKey: string, ws?: string): LanguageModel {
   return new MockLanguageModelV4({
     provider: "mock",
     modelId: TIERS[tier],
-    doGenerate: async () => {
+    doGenerate: async (options) => {
+      if (process.env.NIMBUS_MOCK_LOG === "1") mockCallLog.push({ role, tier, maxOutputTokens: options.maxOutputTokens });
       // NIMBUS_BAD_MODEL=super: that tier's model id is invalid (404 model not found), like a typo'd id on the real API.
       if (process.env.NIMBUS_BAD_MODEL === tier) throw new MockHttpError(404, `404 model not found: ${TIERS[tier]} (mock)`);
       const t = mockTurn(role, turn, ws) ?? { text: "Done.", usage: { in: 800, out: 40 } };

@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { generateText, type ModelMessage, type ToolSet } from "ai";
 import { getDb, schema } from "@/db";
-import { TIERS, type Tier } from "@/lib/models";
+import { MAX_OUT_TOKENS, TIERS, type Tier } from "@/lib/models";
 import { getModel, MockHttpError, mockTurn, modelMode } from "@/lib/tokenfactory";
 import type { RunCtx } from "./context";
 import { RunAborted, sleep } from "./context";
@@ -30,8 +30,11 @@ export async function pickTier(ctx: RunCtx, hop: Hop, ceiling: Tier): Promise<{ 
   if (hop.role === "orchestrator" && hop.turn === 1) return { tier: ceiling, reason: "first orchestrator turn → ceiling" };
   if (!hop.hasTools && hop.brief.length < 400) return { tier: "nano", reason: "no tools, brief under 400 chars → nano" };
   const score = await classify(hop);
-  const tier = score === 0 ? "nano" : score === 1 ? minTier("super", ceiling) : ceiling;
-  return { tier, reason: `classifier: complexity ${score} → ${tier}` };
+  let tier = score === 0 ? "nano" : score === 1 ? minTier("super", ceiling) : ceiling;
+  let reason = `classifier: complexity ${score} → ${tier}`;
+  // docs/BUDGET.md: Ultra is never used for a hop whose brief is under 400 characters
+  if (tier === "ultra" && hop.brief.length < 400) (tier = "super", (reason = `brief under 400 chars: ultra → super`));
+  return { tier, reason };
 }
 
 /** Nano classifier scoring 0–2. In mock mode the score comes from the script; real mode asks Nano (cached). */
@@ -97,6 +100,7 @@ export async function callHop(
           messages: o.messages,
           tools: o.tools,
           maxRetries: 0,
+          maxOutputTokens: MAX_OUT_TOKENS[tier],
           abortSignal: AbortSignal.any([ctx.signal, AbortSignal.timeout(60_000)]),
         });
         const out: ModelCall = {

@@ -57,7 +57,8 @@ export type TItem =
   | { t: "policy"; seq: number; tMs: number; rule: string }
   | { t: "artifact"; seq: number; tMs: number; artifactId: string; title: string; version: number; kind: "doc" | "code" }
   | { t: "summary"; seq: number; tMs: number; summary: RunSummary }
-  | { t: "end"; seq: number; tMs: number; status: RunEndStatus };
+  | { t: "end"; seq: number; tMs: number; status: RunEndStatus }
+  | { t: "error"; seq: number; tMs: number; message: string; spentUsd?: number; capUsd?: number };
 
 export type ApprovalItem = Extract<TItem, { t: "approval" }>;
 export type QuestionItem = Extract<TItem, { t: "question" }>;
@@ -95,6 +96,9 @@ export type RunView = {
   routedHops: number;
   /** memories and policy lines this run loaded from earlier runs (the "learned" chip) */
   learned?: { memories: number; policies: number };
+  /** the run stopped because its spend passed NIMBUS_RUN_CAP_USD (header pill "Cap hit") */
+  capHit: boolean;
+  error?: string;
 };
 
 export const ROLE_LABEL: Record<AgentRole, string> = {
@@ -148,6 +152,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
     baselineUsd: 0,
     savings: null,
     routedHops: 0,
+    capHit: false,
   };
   const lanes = new Map<string, Lane>();
   const segs = new Map<string, Seg>();
@@ -214,8 +219,13 @@ export function buildView(events: AnyRunEvent[]): RunView {
         }
         break;
       }
-      case "run.error":
+      case "run.error": {
+        const p = e.payload;
+        v.error = p.message;
+        v.capHit = p.kind === "spend_cap";
+        v.transcript.push({ t: "error", seq: e.seq, tMs: e.tMs, message: p.message, spentUsd: p.spentUsd, capUsd: p.capUsd });
         break;
+      }
       case "agent.spawn": {
         const p = e.payload;
         const l = lane(p.instance, p.role);

@@ -25,6 +25,8 @@ export const runs = sqliteTable("runs", {
   tokensOut: integer("tokens_out").notNull().default(0),
   costUsd: real("cost_usd").notNull().default(0),
   baselineUsd: real("baseline_usd").notNull().default(0),
+  /** "mock" or "nebius": only real-model spend counts toward the day cap */
+  model: text("model"),
 });
 
 export const runEvents = sqliteTable(

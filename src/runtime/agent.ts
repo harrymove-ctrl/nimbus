@@ -8,6 +8,7 @@ import type { AgentRole } from "@/lib/models";
 import { ROLE_TIER, costUsd } from "@/lib/models";
 import { hopLabel, stripThink } from "@/lib/tokenfactory";
 import { RunAborted, type RunCtx } from "./context";
+import { SpendCapError, inflight, runCapUsd } from "./budget";
 import { callHop, pickTier } from "./router";
 import { CONTROL_TOOLS, ROLE_TOOLS, fetchUrl, runCode, sendMessage, toolLabel, toolSet, webSearch, writeArtifact, type ToolName } from "./tools";
 
@@ -85,6 +86,9 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
     if (!call.cached) {
       ctx.usage.costUsd += costUsd(call.tier, call.usage.in, call.usage.out);
       ctx.usage.baselineUsd += costUsd(ceiling, call.usage.in, call.usage.out);
+      inflight.set(ctx.runId, ctx.usage.costUsd);
+      // per-run spend cap: stop the whole run the moment its running cost passes it
+      if (ctx.usage.costUsd > runCapUsd()) throw new SpendCapError(ctx.usage.costUsd, runCapUsd());
     }
 
     const text = stripThink(call.text);
@@ -129,7 +133,7 @@ async function execTool(ctx: RunCtx, ref: AgentRef, tc: { toolCallId: string; to
     else output = await builtin(ctx, ref, name, input);
     if ((output as { ok?: boolean } | null)?.ok === false) ok = false;
   } catch (e) {
-    if (e instanceof RunAborted || ctx.signal.aborted) throw e;
+    if (e instanceof RunAborted || e instanceof SpendCapError || ctx.signal.aborted) throw e;
     ok = false;
     output = { error: e instanceof Error ? e.message : String(e) };
   }

@@ -12,7 +12,7 @@ export const dataDir = () => path.resolve(process.env.NIMBUS_DATA_DIR || "./data
 
 const DDL = [
   `CREATE TABLE IF NOT EXISTS workstreams (id TEXT PRIMARY KEY, title TEXT NOT NULL, goal TEXT NOT NULL, schedule_cron TEXT, schedule_label TEXT, tools TEXT NOT NULL, unread INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
-  `CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, workstream_id TEXT NOT NULL, title TEXT NOT NULL, goal TEXT NOT NULL, status TEXT NOT NULL, trigger TEXT NOT NULL, started_at INTEGER NOT NULL, ended_at INTEGER, tokens_in INTEGER NOT NULL DEFAULT 0, tokens_out INTEGER NOT NULL DEFAULT 0, cost_usd REAL NOT NULL DEFAULT 0, baseline_usd REAL NOT NULL DEFAULT 0)`,
+  `CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, workstream_id TEXT NOT NULL, title TEXT NOT NULL, goal TEXT NOT NULL, status TEXT NOT NULL, trigger TEXT NOT NULL, started_at INTEGER NOT NULL, ended_at INTEGER, tokens_in INTEGER NOT NULL DEFAULT 0, tokens_out INTEGER NOT NULL DEFAULT 0, cost_usd REAL NOT NULL DEFAULT 0, baseline_usd REAL NOT NULL DEFAULT 0, model TEXT)`,
   `CREATE TABLE IF NOT EXISTS run_events (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, seq INTEGER NOT NULL, t_ms INTEGER NOT NULL, agent TEXT NOT NULL, agent_instance TEXT NOT NULL, type TEXT NOT NULL, payload TEXT NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS run_events_run_t ON run_events (run_id, t_ms)`,
   `CREATE TABLE IF NOT EXISTS artifacts (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, artifact_id TEXT NOT NULL, kind TEXT NOT NULL, title TEXT NOT NULL, version INTEGER NOT NULL, content TEXT NOT NULL, language TEXT, created_at INTEGER NOT NULL)`,
@@ -21,6 +21,19 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS skills (workstream_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, previous TEXT, updated_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS llm_cache (key TEXT PRIMARY KEY, model TEXT NOT NULL, response TEXT NOT NULL, usage TEXT NOT NULL, created_at INTEGER NOT NULL)`,
 ];
+
+/** Several processes (dev server, cron, CLI, evals) share one SQLite file: retry a few times on lock contention. */
+export async function retryBusy<T>(fn: () => Promise<T>, tries = 12): Promise<T> {
+  for (let i = 0; ; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      const busy = /SQLITE_BUSY|database is locked/i.test(String((e as { message?: string })?.message ?? e));
+      if (!busy || i >= tries) throw e;
+      await new Promise((r) => setTimeout(r, 150 + i * 120));
+    }
+  }
+}
 
 export type Db = LibSQLDatabase<typeof schema>;
 type Holder = { client: Client; db: Db; ready: Promise<void> };
@@ -34,16 +47,20 @@ function open(): Holder {
   mkdirSync(dir, { recursive: true });
   const client = createClient({ url: `file:${path.join(dir, "nimbus.db")}` });
   const db = drizzle(client, { schema });
-  const ready = (async () => {
+  const ready = retryBusy(async () => {
     // The dev server, the CLI and the evals can open the same file: wait for locks instead of failing, and allow readers beside a writer.
     await client.execute("PRAGMA busy_timeout = 8000");
     await client.execute("PRAGMA journal_mode = WAL").catch(() => {});
     for (const sql of DDL) await client.execute(sql);
-    await client.execute("ALTER TABLE skills ADD COLUMN previous TEXT").catch(() => {}); // databases created before this column
-    // Runs are in-memory; a run still marked running belonged to a process that is gone.
-    await client.execute("UPDATE runs SET status = 'interrupted' WHERE status = 'running'");
+    // Columns added after the first release: alter only when missing (an ALTER takes a write lock even when it is a no-op).
+    const has = async (table: string, col: string) => (await client.execute(`PRAGMA table_info(${table})`)).rows.some((r) => r.name === col);
+    if (!(await has("skills", "previous"))) await client.execute("ALTER TABLE skills ADD COLUMN previous TEXT");
+    if (!(await has("runs", "model"))) await client.execute("ALTER TABLE runs ADD COLUMN model TEXT");
+    // Runs live in memory. A run still marked running after the 5 minute wall-clock cap belonged to a process that is
+    // gone. Younger ones may be alive in another process (dev server, cron), so they are left alone.
+    await client.execute({ sql: "UPDATE runs SET status = 'interrupted' WHERE status = 'running' AND started_at < ?", args: [Date.now() - 6 * 60_000] });
     await seedWorkstreams(db);
-  })();
+  });
   return { client, db, ready };
 }
 

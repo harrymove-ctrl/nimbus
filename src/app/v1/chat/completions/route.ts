@@ -4,6 +4,7 @@
 // the web composer (the gate stays real) and the run waits there.
 import { WORKSTREAMS } from "@/lib/workstreams";
 import type { AnyRunEvent } from "@/lib/events";
+import { checkDayBudget } from "@/runtime/budget";
 import { startRun, type RunHandle } from "@/runtime/source";
 
 export const runtime = "nodejs";
@@ -67,6 +68,8 @@ export async function POST(req: Request) {
   const goal = [...(body?.messages ?? [])].reverse().find((m) => m.role === "user");
   if (!body || !goal) return Response.json({ error: { message: "messages must include a user message", type: "invalid_request_error" } }, { status: 400 });
 
+  const budget = await checkDayBudget();
+  if (!budget.ok) return Response.json({ error: { message: budget.message, type: "insufficient_quota", code: "day_cap" } }, { status: 429 });
   const slug = (body.model ?? "").split("/").pop();
   const ws = WORKSTREAMS.find((w) => w.slug === slug) ?? WORKSTREAMS.find((w) => w.slug === DEFAULT_SLUG)!;
   const run = startRun({ workstreamId: ws.id, title: ws.title, goal: textOf(goal.content) || ws.goal, trigger: "chat", mode: "ask", tools: ws.tools });

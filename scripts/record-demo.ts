@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { chromium, type Locator, type Page } from "playwright";
-import { getDb, schema } from "../src/db";
+import { getDb, retryBusy, schema } from "../src/db";
 import { WORKSTREAMS } from "../src/lib/workstreams";
 
 const BASE = process.env.NIMBUS_URL ?? "http://localhost:3000";
@@ -36,8 +36,14 @@ async function resetLearning() {
   // A clean slate so run 1 has no memories and no policy: the approval card shows, and run 2 visibly learned something.
   const db = await getDb();
   const w = WORKSTREAMS.find((x) => x.id === "ws-checkout")!;
-  await db.delete(schema.memories).where(eq(schema.memories.workstreamId, w.id));
-  await db.update(schema.skills).set({ content: w.skill, previous: null }).where(eq(schema.skills.workstreamId, w.id));
+  // Other dev servers may hold the SQLite lock: retry for a while (retryBusy backs off), then say what to do.
+  try {
+    await retryBusy(() => db.delete(schema.memories).where(eq(schema.memories.workstreamId, w.id)), 40);
+    await retryBusy(() => db.update(schema.skills).set({ content: w.skill, previous: null }).where(eq(schema.skills.workstreamId, w.id)), 40);
+  } catch (e) {
+    console.error("Could not reset the demo workstream: the SQLite file is locked by another process (a stale `next dev`?). Stop other dev servers and retry.");
+    throw e;
+  }
 }
 
 async function glide(page: Page, target: Locator) {
@@ -60,7 +66,7 @@ async function runOnce(page: Page, goal: string, opts: { first: boolean }) {
   await click(page, page.getByRole("button", { name: /^RUN$/ }));
 
   // plan card and the 3 s cancel countdown
-  await page.getByText(/Starting in/).first().waitFor({ timeout: 20_000 });
+  await page.getByText(/Starting in|Started/).first().waitFor({ timeout: 20_000 }); // plan card footer
   await pause(opts.first ? 3600 : 2400);
 
   // lanes fill; open the Analyst's hop in the Inspector
@@ -87,7 +93,7 @@ async function runOnce(page: Page, goal: string, opts: { first: boolean }) {
     await pause(1600);
   } else {
     // run 2: the policy from run 1 is honored, so there is no approval card at all
-    await page.getByText(/Approved by policy/).first().waitFor({ timeout: 60_000 });
+    await page.getByText(/learned ·/).first().waitFor({ timeout: 60_000 }); // the ✦ learned chip on the orchestrator lane
     await pause(2200);
   }
 

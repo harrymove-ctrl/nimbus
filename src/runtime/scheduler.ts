@@ -4,6 +4,7 @@
 import cron, { type ScheduledTask } from "node-cron";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
+import { checkDayBudget } from "./budget";
 import { startRun, getRun } from "./source";
 
 declare global {
@@ -20,7 +21,9 @@ export async function startScheduler(): Promise<number> {
     const expr = process.env.NIMBUS_CRON_OVERRIDE || w.scheduleCron;
     if (!expr || !cron.validate(expr)) continue;
     tasks.push(
-      cron.schedule(expr, () => {
+      cron.schedule(expr, async () => {
+        const budget = await checkDayBudget();
+        if (!budget.ok) return console.log(`[nimbus] cron skipped ${w.id}: ${budget.message}`);
         const prev = active.get(w.id) && getRun(active.get(w.id)!);
         if (prev && !prev.finished) return; // one run per workstream at a time
         // Headless: low-risk actions auto-approve, anything else waits in the web composer.

@@ -12,6 +12,12 @@ if (!ws) {
   process.exit(2);
 }
 const yes = argv.includes("--yes");
+const { checkDayBudget } = await import("../src/runtime/budget");
+const budget = await checkDayBudget();
+if (!budget.ok) {
+  console.error(budget.message);
+  process.exit(3);
+}
 const run = startRun({ workstreamId: ws.id, title: ws.title, goal: ws.goal, trigger: "job", mode: yes ? "auto-low" : "ask", tools: ws.tools });
 console.log(`job ${run.id} · ${ws.title} · model ${process.env.NIMBUS_MODEL ?? "(auto)"}`);
 const act = (e: (typeof run.events)[number]) => {

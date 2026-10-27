@@ -15,8 +15,9 @@ const PILL: Record<ViewStatus, { label: string; cls: string }> = {
   stopped: { label: "Stopped", cls: "bg-white/10 text-neutral-300" },
 };
 
-export function RunHeader({ view, now, fallbackTitle }: { view: RunView; now: number; fallbackTitle: string }) {
-  const pill = PILL[view.status];
+export function RunHeader({ view, now, fallbackTitle, runCapUsd }: { view: RunView; now: number; fallbackTitle: string; runCapUsd?: number }) {
+  const pill = view.capHit ? { label: "Cap hit", cls: "bg-red-500/15 text-red-300" } : PILL[view.status];
+  const frac = runCapUsd ? Math.min(1, view.costUsd / runCapUsd) : 0;
   const elapsed = view.endedMs ?? (view.active ? now - view.startedAt : view.lastTMs);
   const hasRun = view.status !== "idle";
   return (
@@ -31,7 +32,14 @@ export function RunHeader({ view, now, fallbackTitle }: { view: RunView; now: nu
         <p className="flex shrink-0 items-center gap-x-3 whitespace-nowrap text-[13px] font-semibold tabular-nums text-neutral-300">
           <span className="hidden @[640px]:inline">{fmtSecs(elapsed)}</span>
           <span className="hidden @[900px]:inline">{fmtTokens(view.tokens)} tokens</span>
-          <span>{fmtCost(view.costUsd)}</span>
+          <span className="inline-flex items-center gap-1.5" title={runCapUsd ? `Spent ${fmtCost(view.costUsd)} of this run's $${runCapUsd.toFixed(2)} cap (NIMBUS_RUN_CAP_USD)` : undefined}>
+            {fmtCost(view.costUsd)}
+            {runCapUsd ? (
+              <span className="relative hidden h-1 w-9 overflow-hidden rounded-full bg-white/12 sm:inline-block" aria-hidden="true">
+                <span className={cx("absolute inset-y-0 left-0 rounded-full", frac > 0.9 ? "bg-red-400" : frac > 0.6 ? "bg-orange-400" : "bg-[var(--rb-accent)]")} style={{ width: `${Math.max(frac * 100, view.costUsd > 0 ? 6 : 0)}%` }} />
+              </span>
+            ) : null}
+          </span>
           {view.savings !== null && view.savings > 0.005 && (
             <span className="shrink-0 rounded-full bg-[color-mix(in_oklab,var(--rb-accent)_22%,transparent)] px-2 py-0.5 text-[12px] font-bold text-[var(--rb-accent)]" title="Spend vs pricing every hop at its role's ceiling tier">
               −{Math.round(view.savings * 100)}% vs baseline

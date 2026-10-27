@@ -4,6 +4,7 @@ import type { z } from "zod";
 import { ROLE_TIER, type AgentRole } from "@/lib/models";
 import { RunAborted, sleep, type RunCtx } from "./context";
 import { runAgent, type AgentRef, type Exec } from "./agent";
+import { SpendCapError } from "./budget";
 import { SCHEMAS, sendMessage } from "./tools";
 
 const ORCH: AgentRef = { role: "orchestrator", instance: "orchestrator" };
@@ -28,7 +29,7 @@ async function runChild(ctx: RunCtx, ref: AgentRef, brief: string, exec: Exec) {
   try {
     return { instance: ref.instance, report: await runAgent(ctx, ref, brief, exec) };
   } catch (e) {
-    if (e instanceof RunAborted || ctx.signal.aborted) throw e;
+    if (e instanceof RunAborted || e instanceof SpendCapError || ctx.signal.aborted) throw e;
     const message = e instanceof Error ? e.message : String(e);
     ctx.emit("agent.error", ref.role, ref.instance, { message });
     return { instance: ref.instance, report: `FAILED: ${message}` };
