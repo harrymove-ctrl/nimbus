@@ -20,7 +20,22 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     // Not in memory (server restarted, or a finished run from an earlier session): rebuild from the stored events.
     const rows = await (await getDb()).select().from(schema.runEvents).where(eq(schema.runEvents.runId, id)).orderBy(asc(schema.runEvents.seq));
     if (!rows.length) return new Response("run not found", { status: 404 });
-    const body = rows.filter((r) => r.seq >= since).map((r) => `id: ${r.seq}\ndata: ${JSON.stringify({ id: r.id, runId: r.runId, seq: r.seq, tMs: r.tMs, agent: r.agent, agentInstance: r.agentInstance, type: r.type, payload: r.payload })}\n\n`).join("") + "event: done\ndata: {}\n\n";
+    const events: Record<string, unknown>[] = rows.map((r) => ({ id: r.id, runId: r.runId, seq: r.seq, tMs: r.tMs, agent: r.agent, agentInstance: r.agentInstance, type: r.type, payload: r.payload }));
+    // A run whose server process died never wrote run.end (nobody can answer its question or approve its action any more).
+    // Close it for display so history does not show a run that is "running" forever. These two events are not stored.
+    if (!rows.some((r) => r.type === "run.end")) {
+      const last = rows[rows.length - 1];
+      let seq = rows.length;
+      const open = new Map<string, { agent: string; agentInstance: string }>();
+      for (const r of rows) {
+        const p = r.payload as { approvalId?: string };
+        if (r.type === "approval.request" && p.approvalId) open.set(p.approvalId, { agent: r.agent, agentInstance: r.agentInstance });
+        if (r.type === "approval.resolve" && p.approvalId) open.delete(p.approvalId);
+      }
+      for (const [approvalId, who] of open) events.push({ id: `${id}-x${seq}`, runId: id, seq: seq++, tMs: last.tMs, ...who, type: "approval.resolve", payload: { approvalId, decision: "rejected", by: "system", note: "Server restarted" } });
+      events.push({ id: `${id}-x${seq}`, runId: id, seq: seq++, tMs: last.tMs, agent: "orchestrator", agentInstance: "orchestrator", type: "run.end", payload: { status: "stopped" } });
+    }
+    const body = events.filter((e) => (e.seq as number) >= since).map((e) => `id: ${e.seq}\ndata: ${JSON.stringify(e)}\n\n`).join("") + "event: done\ndata: {}\n\n";
     return new Response(body, { headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform" } });
   }
 

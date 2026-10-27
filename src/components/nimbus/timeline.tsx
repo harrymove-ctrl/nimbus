@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
-import { ROLE_COLOR, TIER_LABEL, TIER_SHORT, fmtCost, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
+import { ROLE_COLOR, TIER_LABEL, TIER_SHORT, fmtCost3, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
 import { useTween } from "@/hooks/use-tween";
 import { cx } from "./ui";
 
@@ -14,7 +14,6 @@ const LANE_H = 66;
 const SEG_H = 26;
 const SEG_TOP = 14;
 const AXIS_H = 32;
-const PAD = 16;
 const RED = "oklch(0.68 0.21 25)";
 
 export type SegRef = { instance: string; id: string };
@@ -54,17 +53,37 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
   const live = view.active || running;
   const tNow = live ? Math.max(0, now - view.startedAt) : view.lastTMs;
   const extent = Math.max(tNow, view.lastTMs);
-  // Scale grows in 5 s steps so the playhead sits near 80 % of the width (sketch sheet 3: SC).
-  const targetWindowS = Math.max(10, Math.ceil(extent / 1000 / 0.8 / 5) * 5);
-  const windowS = useTween(targetWindowS, 300, "inOut"); // axis rescale: bars and ticks re-lay out together
-  const x = (ms: number) => PAD + (ms / 1000 / windowS) * (cw - PAD * 2);
+  // SPEC §15 scale: pxPerSec = (plotWidth − 24) / max(25, elapsed × 1.25) while running, recomputed when the
+  // playhead passes 80 % of the window and eased 300 ms; once the run is done, fit the whole run (× 1.04).
+  const plotW = Math.max(120, cw);
+  const windowRef = useRef({ run: "", s: 25 });
+  if (windowRef.current.run !== (view.runId ?? "")) windowRef.current = { run: view.runId ?? "", s: 25 };
+  let targetWindowS: number;
+  if (live) {
+    if (tNow / 1000 > 0.8 * windowRef.current.s) windowRef.current.s = Math.max(25, (tNow / 1000) * 1.25);
+    targetWindowS = windowRef.current.s;
+  } else {
+    targetWindowS = Math.max(10, (extent / 1000) * 1.04);
+    windowRef.current.s = targetWindowS;
+  }
+  const windowS = useTween(targetWindowS, 300, "inOut"); // bars and ticks re-lay out together
+  const pxPerSec = (plotW - 24) / windowS;
+  const x = (ms: number) => 12 + (ms / 1000) * pxPerSec;
   const playT = view.endedMs ?? tNow;
   const laneIdx = useMemo(() => new Map(view.lanes.map((l, i) => [l.instance, i])), [view.lanes]);
   const firstSegStart = (l?: Lane) => (l && l.segments.length ? Math.min(...l.segments.map((s) => s.startMs)) : undefined);
 
   const planning = view.status === "planning";
   const bodyH = view.lanes.length * LANE_H;
-  const ticks = Array.from({ length: Math.floor(targetWindowS / 5) + 1 }, (_, i) => i * 5);
+  // Major tick step: the smallest of these with step × pxPerSec ≥ 80 px, so labels can never pile up (SPEC §15).
+  const STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 300];
+  const step = STEPS.find((st) => st * ((plotW - 24) / targetWindowS) >= 80) ?? 300;
+  const visibleS = (plotW - 12) / pxPerSec;
+  const majors: number[] = [];
+  for (let t = 0; t <= visibleS; t += step) majors.push(t);
+  const minors: number[] = [];
+  if (step >= 10) for (let t = step / 5; t <= visibleS; t += step / 5) if (t % step !== 0) minors.push(t);
+  const fmtTick = (t: number) => (t < 60 ? `${t}s` : `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`);
 
   if (collapsed) {
     return (
@@ -148,7 +167,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                   {view.lanes.map((_, i) => (
                     <rect key={i} x={0} y={i * LANE_H} width={cw} height={LANE_H} fill="white" opacity={i % 2 === 1 ? 0.035 : 0} />
                   ))}
-                  {ticks.map((t) => (
+                  {majors.map((t) => (
                     <line key={t} x1={x(t * 1000)} x2={x(t * 1000)} y1={0} y2={bodyH} stroke="white" strokeOpacity={0.09} strokeDasharray="3 4" />
                   ))}
 
@@ -178,8 +197,10 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                       const y = i * LANE_H + SEG_TOP;
                       const color = ROLE_COLOR[l.role];
                       const isSel = selected?.instance === s.instance && selected.id === s.id;
-                      const maxChars = Math.floor((w - 20) / 6.6);
-                      const label = s.failed ? "" : maxChars >= 4 ? (s.label.length > maxChars ? `${s.label.slice(0, maxChars - 1)}…` : s.label) : "";
+                      // SPEC §15: the label starts after the 14 px cap + 8, and is drawn only when it fits with 30 px to spare;
+                      // waiting segments label themselves (centered) only at 160 px or wider. The tooltip always has the full text.
+                      const labelW = s.label.length * 6.4;
+                      const label = s.failed ? "" : s.kind === "wait" ? (w >= Math.max(160, labelW + 24) ? s.label : "") : w >= labelW + 30 ? s.label : "";
                       const routed = s.route && (s.route.chosen !== s.route.ceiling || s.route.fallback);
                       return (
                         <g
@@ -216,7 +237,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                             </text>
                           )}
                           {label && (
-                            <text x={x0 + 10} y={y + SEG_H / 2 + 4} fontSize={11} fontWeight={700} fill="oklch(0.2 0.01 285)" className="pointer-events-none select-none">
+                            <text x={s.kind === "wait" ? x0 + w / 2 : x0 + 14 + 8} textAnchor={s.kind === "wait" ? "middle" : "start"} y={y + SEG_H / 2 + 4} fontSize={11} fontWeight={700} fill="oklch(0.2 0.01 285)" className="pointer-events-none select-none">
                               {label}
                             </text>
                           )}
@@ -248,11 +269,23 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
           <div className="flex shrink-0 border-t border-white/10" style={{ height: AXIS_H }}>
             <div className="shrink-0" style={{ width: LEGEND_W }} />
             <svg width={cw} height={AXIS_H} className="block" aria-hidden="true">
-              {ticks.map((t) => (
-                <text key={t} x={x(t * 1000)} y={20} textAnchor={t === 0 ? "start" : "middle"} fontSize={11} fontWeight={600} fill="currentColor" opacity={0.55} className="tabular-nums">
-                  {t}s
-                </text>
+              {minors.map((t) => (
+                <line key={`m${t}`} x1={x(t * 1000)} x2={x(t * 1000)} y1={0} y2={4} stroke="white" strokeOpacity={0.4} />
               ))}
+              {majors.map((t, i) => {
+                const text = fmtTick(t);
+                const px = x(t * 1000);
+                // always label 0; drop a label whose text would cross the plot's right edge
+                if (i > 0 && px + (text.length * 6.4) / 2 > plotW - 2) return null;
+                return (
+                  <g key={t}>
+                    <line x1={px} x2={px} y1={0} y2={6} stroke="white" strokeOpacity={0.5} />
+                    <text x={px} y={20} textAnchor="middle" fontSize={11} fontWeight={600} fill="currentColor" opacity={0.6} style={{ fontVariantNumeric: "tabular-nums" }}>
+                      {text}
+                    </text>
+                  </g>
+                );
+              })}
               <circle cx={x(playT)} cy={6} r={5} fill="var(--color-neutral-950)" stroke="white" strokeWidth={1.75} />
             </svg>
           </div>
@@ -263,28 +296,32 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
 }
 
 function LegendRow({ lane, index }: { lane: Lane; index: number }) {
+  // One badge with the full model name; a ↓ (routed below ceiling) or ↻ (fell back) glyph sits inside it. Hover has the story.
+  const glyph = lane.routed ? (lane.fellBack ? "↻" : "↓") : null;
+  const hover = lane.routed
+    ? `${lane.fellBack ? "Fell back" : "Routed below ceiling"}: ${TIER_SHORT[lane.ceiling]} → ${TIER_SHORT[lane.tier]}${lane.routeReason ? ` · ${lane.routeReason}` : ""}`
+    : `${TIER_LABEL[lane.tier]} (this role's ceiling)`;
   return (
     <div className={cx("flex flex-col justify-center gap-0.5 px-4", index % 2 === 1 && "bg-white/[0.035]")} style={{ height: LANE_H }}>
       <div className="flex items-center gap-2">
         <span className="size-2 shrink-0 rounded-full" style={{ background: ROLE_COLOR[lane.role] }} />
-        <span className="truncate text-[14px] font-bold text-neutral-100">{laneName(lane.instance, lane.role)}</span>
+        <span className="min-w-0 truncate text-[14px] font-bold text-neutral-100">{laneName(lane.instance, lane.role)}</span>
         {lane.status === "running" && <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" aria-label="running" />}
       </div>
-      <div
-        className="flex items-center gap-1.5 ps-4"
-        title={lane.routed ? `Currently ${TIER_LABEL[lane.tier]}. This role's ceiling is ${TIER_LABEL[lane.ceiling]}; the router chose a cheaper tier for at least one hop.` : `${TIER_LABEL[lane.tier]} (this role's ceiling)`}
-      >
-        <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-[#76b900] text-[9px] font-black leading-none text-black" aria-hidden="true">
-          N
-        </span>
-        <span className="truncate text-[12px] font-semibold text-neutral-400">{TIER_LABEL[lane.tier]}</span>
-        {lane.routed && (
-          <span className="shrink-0 rounded-full bg-neutral-100 px-1.5 text-[10px] font-extrabold leading-4 text-neutral-900" title={`Ceiling: ${TIER_LABEL[lane.ceiling]}`}>
-            ↓ routed ({TIER_SHORT[lane.ceiling]})
+      <div className="ps-4">
+        <span title={hover} className="inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md bg-white/8 py-0.5 pe-2 ps-0.5 text-[12px] font-semibold text-neutral-300">
+          <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-[#76b900] text-[9px] font-black leading-none text-black" aria-hidden="true">
+            N
           </span>
-        )}
+          {glyph && (
+            <span className="font-extrabold text-neutral-50" aria-label={lane.fellBack ? "fell back" : "routed below ceiling"}>
+              {glyph}
+            </span>
+          )}
+          {TIER_LABEL[lane.tier]}
+        </span>
       </div>
-      <p className="ps-4 text-[11px] font-semibold tabular-nums text-neutral-500">{lane.tokens ? `${fmtTokens(lane.tokens)} tok · ${fmtCost(lane.costUsd)}` : "no spend yet"}</p>
+      <p className="ps-4 text-[11px] font-semibold tabular-nums text-neutral-500">{lane.tokens ? `${fmtTokens(lane.tokens)} tok · ${fmtCost3(lane.costUsd)}` : "—"}</p>
     </div>
   );
 }

@@ -31,6 +31,9 @@ export type Lane = {
   tier: Tier;
   ceiling: Tier;
   routed: boolean;
+  /** the latest routed-below-ceiling or fallback hop, for the legend hover */
+  routeReason?: string;
+  fellBack?: boolean;
 };
 
 export type ToolCall = { callId: string; instance: string; tool: string; input: unknown; startMs: number; endMs?: number; ok?: boolean; output?: unknown };
@@ -274,6 +277,8 @@ export function buildView(events: AnyRunEvent[]): RunView {
         l.ceiling = p.ceiling;
         if (p.chosen !== p.ceiling || p.fallback) {
           l.routed = true;
+          l.routeReason = p.reason;
+          l.fellBack = l.fellBack || !!p.fallback;
           v.routedHops++;
         }
         break;
@@ -393,3 +398,5 @@ export function buildView(events: AnyRunEvent[]): RunView {
 export const fmtSecs = (ms: number) => `${(Math.max(0, ms) / 1000).toFixed(1)}s`;
 export const fmtTokens = (n: number) => n.toLocaleString("en-US");
 export const fmtCost = (n: number) => `$${n < 0.1 ? n.toFixed(3) : n.toFixed(2)}`;
+/** Legend: three decimals, an em dash when nothing was spent. */
+export const fmtCost3 = (n: number) => (n > 0 ? `$${n.toFixed(3)}` : "—");
