@@ -6,7 +6,7 @@
 process.env.NIMBUS_MOCK_FAST = "1";
 process.env.NIMBUS_CACHE = "off";
 import { spawnSync } from "node:child_process";
-import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { eq } from "drizzle-orm";
@@ -40,10 +40,11 @@ if (patchFile && !process.env.NIMBUS_EVAL_OVERLAY) {
   for (const f of ["package.json", "tsconfig.json"]) cpSync(path.join(process.cwd(), f), path.join(overlay, f));
   symlinkSync(path.join(process.cwd(), "node_modules"), path.join(overlay, "node_modules"));
   const ap = spawnSync("git", ["apply", "--whitespace=nowarn", path.resolve(patchFile)], { cwd: overlay, encoding: "utf8" });
-  if (ap.status !== 0) (console.error(`patch does not apply:\n${ap.stderr}`), process.exit(1));
+  if (ap.status !== 0) (console.error(`patch does not apply:\n${ap.stderr}`), rmSync(overlay, { recursive: true, force: true }), process.exit(1));
   console.log(`patch ${path.basename(patchFile)} applied cleanly to a scratch copy`);
   const rest = argv.filter((a, i) => a !== "--patch" && argv[i - 1] !== "--patch");
   const r = spawnSync(process.execPath, ["--import", "tsx", "scripts/eval.mts", ...rest], { cwd: overlay, stdio: "inherit", env: { ...process.env, NIMBUS_EVAL_OVERLAY: "1" } });
+  rmSync(overlay, { recursive: true, force: true }); // the symlinked node_modules is removed as a link, not followed
   process.exit(r.status ?? 1);
 }
 
