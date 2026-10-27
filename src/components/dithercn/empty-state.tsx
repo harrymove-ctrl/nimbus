@@ -331,6 +331,8 @@ export type EmptyStateProps = Omit<ComponentProps<"div">, "title" | "color"> & {
   action?: ReactNode;
   /** The dithered object above the text: an open box, a magnifier, a folder or a ringed planet. Default `"box"`. */
   illustration?: EmptyStateIllustration;
+  /** Nimbus addition: your own picture (the Glow Cloud) in place of the dithered object. */
+  visual?: ReactNode;
   /** Colour of the illustration: a palette name or any CSS colour. Default `"ink"`. */
   color?: DitherColor;
   /** Threshold matrix: `bayer4` for crisp steps, `bayer8` for finer ones, `blue-noise` for grain. Default `"bayer4"`. */
@@ -350,6 +352,7 @@ export const EmptyState = ({
   description,
   action,
   illustration = "box",
+  visual,
   color = "ink",
   matrix = "bayer4",
   animate = true,
@@ -366,14 +369,18 @@ export const EmptyState = ({
     )}
     {...props}
   >
-    <div className="relative aspect-[112/72] w-full max-w-[336px]">
-      <Scene
-        illustration={illustration}
-        matrix={matrix}
-        color={color}
-        animate={animate}
-      />
-    </div>
+    {visual ? (
+      <div className="grid place-items-center">{visual}</div>
+    ) : (
+      <div className="relative aspect-[112/72] w-full max-w-[336px]">
+        <Scene
+          illustration={illustration}
+          matrix={matrix}
+          color={color}
+          animate={animate}
+        />
+      </div>
+    )}
     <div className="mt-3 flex max-w-sm flex-col gap-1.5">
       <Heading className="text-base font-semibold tracking-tight text-balance">
         {title}

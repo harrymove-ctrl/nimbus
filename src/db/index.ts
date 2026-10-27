@@ -122,6 +122,13 @@ async function seedRecordedRuns(db: Db) {
   if (!existsSync(dir)) return;
   for (const f of readdirSync(dir).filter((n) => n.endsWith(".json"))) {
     const s = JSON.parse(readFileSync(path.join(dir, f), "utf8")) as SeedRun;
+    const [own] = await db.select({ startedAt: schema.runs.startedAt }).from(schema.runs).where(eq(schema.runs.id, s.run.id));
+    if (own) {
+      // repair for databases seeded before the run.start event carried the seeded time (the transcript divider read it)
+      const i = s.events.findIndex((e) => e.type === "run.start");
+      if (i >= 0) await db.update(schema.runEvents).set({ payload: { ...(s.events[i].payload as object), startedAt: own.startedAt } as never }).where(eq(schema.runEvents.id, `${s.run.id}-${i}`));
+      continue;
+    }
     if ((await db.select({ id: schema.runs.id }).from(schema.runs).where(eq(schema.runs.workstreamId, s.workstreamId)).limit(1)).length) continue;
     const at = new Date();
     at.setHours(9, 0, 0, 0);
@@ -129,7 +136,7 @@ async function seedRecordedRuns(db: Db) {
     const startedAt = at.getTime();
     await db.insert(schema.runs).values({ id: s.run.id, workstreamId: s.workstreamId, title: s.run.title, goal: s.run.goal, status: s.run.status, trigger: s.run.trigger, startedAt, endedAt: startedAt + s.run.endMs, tokensIn: s.run.tokensIn, tokensOut: s.run.tokensOut, costUsd: s.run.costUsd, baselineUsd: s.run.baselineUsd, model: s.run.model });
     for (let i = 0; i < s.events.length; i += 50)
-      await db.insert(schema.runEvents).values(s.events.slice(i, i + 50).map((e, n) => ({ id: `${s.run.id}-${i + n}`, runId: s.run.id, seq: i + n, tMs: e.tMs, agent: e.agent, agentInstance: e.agentInstance, type: e.type, payload: e.payload as never })));
+      await db.insert(schema.runEvents).values(s.events.slice(i, i + 50).map((e, n) => ({ id: `${s.run.id}-${i + n}`, runId: s.run.id, seq: i + n, tMs: e.tMs, agent: e.agent, agentInstance: e.agentInstance, type: e.type, payload: (e.type === "run.start" ? { ...(e.payload as object), startedAt } : e.payload) as never })));
     for (const a of s.artifacts) await db.insert(schema.artifacts).values({ id: `${s.run.id}:${a.artifactId}:v${a.version}`, runId: s.run.id, artifactId: a.artifactId, kind: a.kind, title: a.title, version: a.version, content: a.content, language: a.language, createdAt: startedAt + s.run.endMs });
   }
 }

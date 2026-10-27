@@ -1,0 +1,11 @@
+--- a/evals/demo/router-fallback-404.json
++++ b/evals/demo/router-fallback-404.json
+@@ -16,7 +16,7 @@
+    "route_fallback": true
+   },
+   {
+-   "route_reason_contains": "ceiling"
++   "route_reason_contains": "fell back to"
+   }
+  ]
+ }

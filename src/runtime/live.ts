@@ -68,7 +68,11 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       const d = deferred<string>();
       pendingQuestions.set(questionId, { d, role, instance });
       emit("question", role, instance, { questionId, text, options });
-      return untilAborted(d.promise, signal);
+      const answer = await untilAborted(d.promise, signal);
+      // mock mode: the first answer picks the script variant ("Golden" → ws-ship-nimbus+golden, where that directory exists)
+      const slug = answer.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24);
+      if (slug && !ctx.script.includes("+")) ctx.script += `+${slug}`;
+      return answer;
     },
     async requestApproval(action, who) {
       const approvalId = `ap-${++n}`;

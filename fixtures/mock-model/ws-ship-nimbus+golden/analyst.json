@@ -1,0 +1,85 @@
+{
+ "role": "analyst",
+ "turns": [
+  {
+   "label": "Reproducing the failure",
+   "usage": {
+    "in": 6630,
+    "out": 357
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "pnpm eval --golden router-fallback-404"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Fixing my command",
+   "usage": {
+    "in": 7310,
+    "out": 204
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "pnpm eval --only router-fallback-404"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading the router",
+   "usage": {
+    "in": 11730,
+    "out": 306
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "read_repo",
+     "input": {
+      "action": "read",
+      "path": "src/runtime/router.ts"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Asking where to fix it",
+   "usage": {
+    "in": 16660,
+    "out": 578
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "ask_user",
+     "input": {
+      "text": "The 404 fallback reason never names the ceiling, so no eval can check that a fallback stays under it. Fix it in the router (safer) or relax the golden (faster)?",
+      "options": [
+       "Router",
+       "Golden"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 17680,
+    "out": 884
+   },
+   "complexity": 1,
+   "text": "Reproduced with pnpm eval --only router-fallback-404: route_reason_contains \"ceiling\" fails because the router's 404 reason never says \"ceiling\". You chose to fix the golden: change the assertion in evals/demo/router-fallback-404.json to \"fell back to\". One line; the router stays as it is, and the eval no longer checks the ceiling."
+  }
+ ]
+}

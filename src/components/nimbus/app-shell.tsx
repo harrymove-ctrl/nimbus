@@ -55,20 +55,30 @@ export function AppShell() {
   useEffect(() => {
     let alive = true;
     const minWait = new Promise((r) => setTimeout(r, 900));
+    let bootIsGone!: () => void;
+    const bootGone = new Promise<void>((r) => (bootIsGone = r));
     const fetched = fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>);
     // The boot cloud leaves when the workstreams arrive (at least 900 ms in), but never later than 3 s: on a slow
     // network the shell shows and the rail has a skeleton instead of the person staring at the preloader.
     void Promise.race([Promise.all([fetched, minWait]), new Promise((r) => setTimeout(r, 3000))]).then(() => {
       if (!alive) return;
       setBoot("fading");
-      setTimeout(() => alive && setBoot("gone"), 420);
+      setTimeout(() => {
+        if (!alive) return;
+        setBoot("gone");
+        bootIsGone();
+      }, 420);
     });
     void fetched.then(async (d) => {
       if (!alive) return;
-      setWorkstreams(d.workstreams);
-      // ?loaders=1 (the demo video): hold the rail skeleton for a visible beat instead of flashing it
-      if (new URLSearchParams(window.location.search).has("loaders")) await new Promise((r) => setTimeout(r, 900));
+      // ?loaders=1 (the demo video): once the boot cloud is gone, keep the rail on its sweep skeleton for 900 ms
+      // instead of letting it flash past
+      if (new URLSearchParams(window.location.search).has("loaders")) {
+        await bootGone;
+        await new Promise((r) => setTimeout(r, 900));
+      }
       if (!alive) return;
+      setWorkstreams(d.workstreams);
       setWsLoaded(true);
       // Deep link from a chat reply: /?run=<id> opens that run in its workstream (the approval lives here).
       const rid = new URLSearchParams(window.location.search).get("run");
@@ -239,7 +249,7 @@ export function AppShell() {
 
         <main className="relative isolate flex min-w-0 flex-1 flex-col">
           {/* ambient dither: behind the run view and the empty state only; never the boot screen, composer, cards or cloud */}
-          {boot === "gone" && <AmbientGlow paused={view.lanes.length >= 7 && clock} />}
+          {boot === "gone" && <AmbientGlow paused={view.lanes.length >= 4 && clock} />}
           {!ws ? (
             <PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />
           ) : (
@@ -328,7 +338,7 @@ function PickWorkstream({ workstreams, onPick }: { workstreams: Workstream[]; on
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto p-6">
       <div className="my-auto w-full max-w-xl">
-        <EmptyState illustration="planet" titleAs="h2" title="Pick a workstream" description="A workstream is a standing goal. Each run is a crew of Nemotron agents working on it, with you approving anything that acts." className="pb-4 pt-0" />
+        <EmptyState visual={<div className="size-40" aria-hidden={false}><GlowCloud color="blue" background={false} label="Nimbus" /></div>} titleAs="h2" title="Pick a workstream" description="A workstream is a standing goal. Each run is a crew of Nemotron agents working on it, with you approving anything that acts." className="pb-4 pt-0" />
         <ul className="mt-2 flex flex-col gap-2">
           {workstreams.map((w) => (
             <li key={w.id}>

@@ -42,17 +42,18 @@ type Script = { role: string; turns: MockTurn[] };
 const scripts = new Map<string, Script>();
 /**
  * Which script plays this agent. `ws` is the workstream id, plus "~2" once the run starts with memories (the second
- * run of a workstream behaves differently: it skips what it already learned). Lookup, first hit wins:
- *   fixtures/mock-model/<ws>/<instance>.json  (writer-2: the second Writer of a run)
- *   fixtures/mock-model/<ws>/<role>.json
- *   the same two without the "~2" suffix, then fixtures/mock-model/<role>.json (the Checkout crew).
+ * run of a workstream behaves differently: it skips what it already learned), plus "+<answer>" once the person has
+ * answered the run's first question (the choice changes what the crew does next: "+golden" patches the golden).
+ * Directories tried, first hit wins, each as <instance>.json (writer-2: the second Writer of a run) then <role>.json:
+ *   <ws>, <ws without +answer>, <ws without ~2>, <ws without either>; then fixtures/mock-model/<role>.json (Checkout).
  */
 export function mockScript(role: string, ws?: string, instance?: string): Script {
   const key = `${ws ?? ""}/${instance ?? role}`;
   let s = scripts.get(key);
   if (!s) {
     const root = path.join(process.cwd(), "fixtures", "mock-model");
-    const dirs = ws ? [ws, ws.replace(/~\d+$/, "")].filter((d, i, a) => a.indexOf(d) === i) : [];
+    const parts = ws?.match(/^([^~+]+)(~\d+)?(\+.+)?$/);
+    const dirs = parts ? [parts[1] + (parts[2] ?? "") + (parts[3] ?? ""), parts[1] + (parts[2] ?? ""), parts[1] + (parts[3] ?? ""), parts[1]].filter((d, i, a) => a.indexOf(d) === i) : [];
     const names = [...(instance ? [instance] : []), role];
     const hit = dirs.flatMap((d) => names.map((n) => path.join(root, d, `${n}.json`))).find((f) => existsSync(f)) ?? path.join(root, `${role}.json`);
     s = JSON.parse(readFileSync(hit, "utf8")) as Script;

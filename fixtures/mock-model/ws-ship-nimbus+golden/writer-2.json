@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Adding the eval table",
+   "usage": {
+    "in": 10880,
+    "out": 884
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "pr-body",
+      "kind": "doc",
+      "title": "PR: relax the 404 fallback golden",
+      "content": "## Relax the 404 fallback golden\n\n**Problem.** `router-fallback-404` asks for the word \"ceiling\" in the fallback reason. The router's reason text never said it, so the golden fails in CI.\n\n**Change.** The golden now asks for \"fell back to\", which the reason does say. One line in `evals/demo/router-fallback-404.json`; the router is untouched.\n\n**Trade-off.** This is the faster fix and the weaker check: the eval can no longer notice a fallback that ignores the ceiling. You chose it over changing the router.\n\n**Check.** `pnpm eval --only router-fallback-404` failed before and passes with this patch.\n\n## Evals\n\n| check | before | with the patch |\n|---|---|---|\n| `pnpm eval --only router-fallback-404` | ✗ route_reason_contains \"ceiling\" | ✓ 3 of 3 |\n| `git apply --check` | n/a | ✓ applies cleanly |\n| `pnpm typecheck` | ✓ | ✓ |\n\nPR: https://github.com/harrymove-ctrl/nimbus/pull/297"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 11900,
+    "out": 102
+   },
+   "complexity": 1,
+   "text": "The PR body now has the eval table and the link."
+  }
+ ]
+}

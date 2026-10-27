@@ -1,0 +1,48 @@
+{
+ "name": "ship-nimbus-golden",
+ "workstream": "ws-ship-nimbus",
+ "description": "The person answers Golden: the crew patches the golden (not the router), says the check gets weaker, and the patch really passes.",
+ "input": {
+  "answers": [
+   "Golden"
+  ],
+  "approvals": [
+   "approve"
+  ]
+ },
+ "hops": [
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "fell back to"
+    }
+   ]
+  },
+  {
+   "agent": "checker",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "artifact_contains": "weaker"
+  },
+  {
+   "max_cost_usd": 0.15
+  },
+  {
+   "max_seconds": 300
+  }
+ ]
+}
