@@ -19,15 +19,21 @@ pnpm dev                          # http://localhost:3000
 pnpm demo                         # headless run of the demo workstream, prints usage and cost
 ```
 
-Open the app, pick **Checkout conversion drop on Oct 14**, type a goal, press **RUN**. You get a plan with a 3 s
-cancel window, a timeline with one lane per agent, a question to answer, an approval card to accept, and a document
-that goes v1 → v2. Afterwards the Learner writes memories and rewrites the workstream's `SKILL.md`.
+Open the app: six workstreams, and **Hackathon radar** already has a finished run from 09:00 with an unread dot. Pick
+**Ship Nimbus**, type its goal, press **RUN**. The crew runs the evals on this repository for real (`pnpm eval --only`,
+`pnpm typecheck`), reproduces a failing demo golden, asks where to fix it, writes a patch, checks it in a scratch copy,
+and waits for you before opening a pull request (in mock mode the PR body goes to `data/outbox.log`). Afterwards the
+Learner writes memories and rewrites the workstream's `SKILL.md`; run it again and it skips the question and the approval.
 
 | Command | What it checks |
 |---|---|
 | `pnpm demo` | Phase 1 exit test: ≥ 3 agents concurrently, a doc artifact, one approval, under 60 s, usage and cost |
 | `pnpm demo:router` | Router: cost with it off vs on, forced 429 and bad model id fall one tier down, response cache |
-| `pnpm eval [--cheap] [--router on\|off] [--only a,b] [--ab]` | 15 trajectory goldens, per-hop assertions, `evals/report.json`; exit 1 under 90 % or any failed final |
+| `pnpm eval [--cheap] [--router on\|off] [--only a,b] [--ab]` | 17 trajectory goldens, per-hop assertions, `evals/report.json`; exit 1 under 90 % or any failed final |
+| `pnpm check:cases [--only ship,radar,brief,audit,release]` | The six workstreams end to end: Ship Nimbus twice (real eval and typecheck subprocesses; run two skips the question and the approval and costs less), the radar's rule, three concurrent approvals in the brief |
+| `pnpm check:tools` | `read_repo` is read-only, `run_code` shell mode only runs allow-listed commands, `pnpm eval --only … --patch` passes in a scratch copy, `open_pr` logs in mock mode |
+| `pnpm check:learning` | Memory & skill tab API: rule with its source run, memories with usage counts, FORGET and REVOKE change the next run |
+| `pnpm seed:run ws-radar radar` | Re-records the finished cron run the app opens with (`fixtures/seed-runs/`) |
 | `pnpm check:loop` | Run 2's prompt contains run 1's memories and SKILL.md; policy honored; revert works |
 | `pnpm check:budget` | Spend guards (run cap, day cap, max tokens per tier) and record → replay identity, all at $0 |
 | `pnpm check:cron` | A cron-triggered run appears without a click and sets the unread dot |

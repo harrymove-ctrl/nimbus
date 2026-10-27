@@ -91,6 +91,12 @@ the build session runs continuously and stretch items stay out.
 - 100+ golden trajectories before the deadline: 12–20, with the generator.
 - Mermaid in the sketch page: replaced by the page's own flow renderer.
 
+## Rev E (2026-10-27 night)
+
+- Built: read_repo, open_pr (mock), shell run_code with an allow-list, the six workstreams, the radar's recorded cron run, case fixtures, 17 goldens, DitherNumber/EmptyState/Divider, Memory & skill v2, video script v2.
+- Not run: the real open_pr path (gh, push), `pnpm demo:video`, Docker, `pnpm smoke`, GitHub Actions.
+- Known gaps: the Analyst's question ignores the person's answer in mock mode (the script always fixes the router); the EmptyState uses a dithered planet; `/v1` default model is now ship-nimbus.
+
 ## Open risks
 
 - React Bits block names `-2/-5/-6-sorbet` still unverified on pro.reactbits.dev.
