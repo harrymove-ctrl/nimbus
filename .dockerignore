@@ -11,5 +11,6 @@ data
 !.env.example
 evals/report.json
 docs
+video
 *.log
 .DS_Store

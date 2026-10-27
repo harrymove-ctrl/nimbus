@@ -484,8 +484,8 @@ function PickWorkstream({ workstreams, onPick }: { workstreams: Workstream[]; on
   return (
     <div className="relative isolate flex min-h-0 flex-1 flex-col items-center overflow-y-auto p-6">
       {/* the empty state's background: aurora, cell 4, low (SPEC §17.6) */}
-      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07]" aria-hidden="true">
-        <Aurora cell={4} intensity={0.6} glow={0.7} mask="bottom" className="absolute inset-0" />
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.1]" aria-hidden="true">
+        <Aurora cell={4} intensity={0.7} glow={0.8} mask="top" className="absolute inset-0" />
       </div>
       <div className="my-auto w-full max-w-xl">
         <EmptyState visual={<div className="size-40" aria-hidden={false}><GlowCloud color="blue" background={false} label="Nimbus" /></div>} titleAs="h2" title="Pick a workstream" description="A workstream is a standing goal. Each run is a crew of Nemotron agents working on it, with you approving anything that acts." className="pb-4 pt-0" />

@@ -9,7 +9,8 @@ The platform and preset ids come from `nebius ai platform list`.
 ```bash
 docker build -t nimbus .
 docker run --rm -p 3000:3000 -v nimbus-data:/data -e NIMBUS_API_TOKEN=change-me nimbus
-curl -s localhost:3000/api/workstreams | head -c 200     # three workstreams
+curl -s localhost:3000/api/workstreams | head -c 200     # seven workstreams
+curl -s localhost:3000/api/overview | head -c 200        # the Overview's numbers (seeded history, so the charts are not empty)
 curl -s localhost:3000/v1/models -H 'authorization: Bearer change-me'
 ```
 
@@ -63,7 +64,7 @@ Check the job shows "completed" in the Nebius console.
 
 ## 5. Checks after deploy
 
-- [ ] Endpoint URL loads the boot screen and the three workstreams.
-- [ ] A run completes there (the first run on real models also validates the goldens' assertions; see README).
+- [ ] Endpoint URL loads the boot screen, then the Overview (seven charts' worth of seeded history) and seven workstreams, Hackathon radar with its unread dot.
+- [ ] A run completes there (the first run on real models also validates the goldens' assertions; see README). Ship Nimbus runs `pnpm eval --only` and `pnpm typecheck` for real inside the container; in mock mode its `open_pr` only logs, and a real PR needs `gh` and git credentials that the image does not have, so leave that for the laptop.
 - [ ] `curl -N <url>/v1/chat/completions` with the bearer token streams a reply.
 - [ ] One Serverless Job shows "completed".

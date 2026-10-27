@@ -18,7 +18,8 @@ COPY . .
 RUN pnpm build
 
 FROM node:22-alpine AS run
-RUN corepack enable && apk add --no-cache python3
+# python3: the Analyst's run_code; git: git apply / git diff in Ship Nimbus (there is no repository in the image, so read_repo diff says so)
+RUN corepack enable && apk add --no-cache python3 git
 WORKDIR /app
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
@@ -28,11 +29,13 @@ ENV NODE_ENV=production \
 # Dev dependencies stay: next.config.ts needs typescript at start and `pnpm run:job` runs through tsx.
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
-COPY --from=build /app/package.json /app/next.config.ts /app/tsconfig.json ./
+COPY --from=build /app/package.json /app/next.config.ts /app/tsconfig.json /app/pnpm-lock.yaml ./
 COPY --from=build /app/public ./public
 COPY --from=build /app/src ./src
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/fixtures ./fixtures
+# Ship Nimbus really runs `pnpm eval --only` and `pnpm typecheck` inside the container: the goldens and the tsconfig must be there
+COPY --from=build /app/evals ./evals
 RUN mkdir -p /data && chown -R node:node /data /app/.next
 USER node
 VOLUME ["/data"]
