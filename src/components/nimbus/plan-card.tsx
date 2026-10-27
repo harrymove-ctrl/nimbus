@@ -34,7 +34,7 @@ function Header({ item, n, children }: { item: PlanItem; n: number; children?: R
         {item.edited && <span className="ms-2 rounded bg-[var(--rb-accent)]/20 px-1.5 py-px text-[11px] font-extrabold text-[var(--rb-accent)]">edited</span>}
       </p>
       {children}
-      <span className="ms-auto rounded-full bg-white/10 px-2.5 py-0.5 text-[12px] font-bold tabular-nums text-neutral-100">{item.estimate.label}</span>
+      <span data-demo="estimate" className="ms-auto rounded-full bg-white/10 px-2.5 py-0.5 text-[12px] font-bold tabular-nums text-neutral-100">{item.estimate.label}</span>
     </div>
   );
 }
@@ -69,7 +69,7 @@ function DraftPlan({ item, onPlan, onDraft }: Props) {
       <Header item={item} n={steps.length} />
       <div className={cx(panelBody, "gap-1 p-3")}>
         <p className="pb-1 text-[13px] text-neutral-400">This is a draft. Reword, reorder or add steps; the crew does nothing until you approve.</p>
-        <ol className="flex flex-col gap-1" aria-label="Plan steps">
+        <ol data-demo="plan" className="flex flex-col gap-1" aria-label="Plan steps">
           {steps.map((s, i) => (
             <li
               key={s.id}
@@ -128,7 +128,7 @@ function DraftPlan({ item, onPlan, onDraft }: Props) {
         >
           <Plus className="size-3.5" /> Add step
         </button>
-        <div className="mt-1 flex flex-wrap gap-1.5">
+        <div data-demo="tools" className="mt-1 flex flex-wrap gap-1.5">
           {item.tools.map((t) => (
             <span key={t} className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[11px] text-neutral-300">
               {t}

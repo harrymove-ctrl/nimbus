@@ -20,7 +20,7 @@ export function ApprovalTray({
   const first = pending[0];
   const lowCount = pending.filter((a) => a.action.risk === "low").length;
   return (
-    <div role="region" aria-label="Pending approvals" className="nimbus-tray mx-auto flex min-h-11 w-full max-w-[720px] items-center gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-3 py-1.5">
+    <div role="region" aria-label="Pending approvals" data-demo="tray" className="nimbus-tray mx-auto flex min-h-11 w-full max-w-[720px] items-center gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-3 py-1.5">
       <ShieldAlert className="size-4 shrink-0 text-orange-300" aria-hidden="true" />
       <span className="grid h-5 min-w-5 place-items-center rounded-full bg-orange-400 px-1.5 text-[11px] font-extrabold text-neutral-950 tabular-nums">{pending.length}</span>
       <p className="min-w-0 flex-1 truncate text-[14px] font-semibold text-neutral-100">

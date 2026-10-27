@@ -33,7 +33,7 @@ export function RunHeader({ view, now, fallbackTitle, runCapUsd }: { view: RunVi
         <p className="flex shrink-0 items-center gap-x-3 whitespace-nowrap text-[13px] font-semibold tabular-nums text-neutral-300">
           <span className="hidden @[640px]:inline">{fmtSecs(elapsed)}</span>
           <span className="hidden @[900px]:inline">{fmtTokens(view.tokens)} tokens</span>
-          <span className="inline-flex items-center gap-1.5" title={runCapUsd ? `Spent ${fmtCost(view.costUsd)} of this run's $${runCapUsd.toFixed(2)} cap (NIMBUS_RUN_CAP_USD)` : undefined}>
+          <span data-demo="run-cost" className="inline-flex items-center gap-1.5" title={runCapUsd ? `Spent ${fmtCost(view.costUsd)} of this run's $${runCapUsd.toFixed(2)} cap (NIMBUS_RUN_CAP_USD)` : undefined}>
             <DitherNumber value={view.costUsd} locales="en-US" format={{ style: "currency", currency: "USD", minimumFractionDigits: 3, maximumFractionDigits: 3 }} effect="resolve" trigger="mount" duration={380} stagger={20} aria-label={fmtCost(view.costUsd)} />
             {runCapUsd ? (
               <span className="relative hidden h-1 w-9 overflow-hidden rounded-full bg-white/12 sm:inline-block" aria-hidden="true">

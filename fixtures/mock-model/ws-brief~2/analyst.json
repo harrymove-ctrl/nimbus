@@ -1,0 +1,58 @@
+{
+  "role": "analyst",
+  "turns": [
+    {
+      "label": "Reading the inbox (what matters first)",
+      "usage": {
+        "in": 1500,
+        "out": 140
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "read_repo",
+          "input": {
+            "action": "read",
+            "path": "fixtures/inbox/01-dana.eml"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reading the calendar and GitHub mentions",
+      "usage": {
+        "in": 2400,
+        "out": 120
+      },
+      "complexity": 0,
+      "toolCalls": [
+        {
+          "name": "read_repo",
+          "input": {
+            "action": "read",
+            "path": "fixtures/calendar.ics"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Writing the brief",
+      "usage": {
+        "in": 3400,
+        "out": 620
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "write_artifact",
+          "input": {
+            "artifactId": "morning-brief",
+            "kind": "doc",
+            "title": "Morning brief · Wed Oct 28",
+            "content": "# Morning brief · Wed Oct 28\n\n## Needs you today\n\n1. **Dana (Acme): contract signature by Fri Nov 7.** Legal is waiting; you have a call with Dana at 14:00 today. Draft 1 asks to walk through the two open clauses on that call.\n2. **Priya (Nebius): confirm the 11:30 showcase dry run by 5 pm** and send the demo link. Draft 2 confirms and attaches the link.\n3. **Sam (DevShop): did the router fallback fix land?** One-word answer wanted before Thursday. Draft 3 says: not yet, a PR is open. It goes out under your rule, no approval needed.\n\n## Today\n\n| time | what |\n|---|---|\n| 09:00 | Standup |\n| 11:30 | Hackathon showcase dry run (Priya) |\n| 14:00 | Contract call with Dana |\n| 16:30 | Focus: submission video |\n\n## GitHub\n\nCI failed on the demo golden router-fallback-404 (mention). A review is requested on DevShop's staging pins.\n\n## Can wait\n\nOctober invoice ($18.40, autopay), the Tools Weekly digest, Sunday lunch with Linh.\n\nTwo drafts are waiting for your approval; the reply to Sam goes out under your rule."
+          }
+        }
+      ]
+    }
+  ]
+}

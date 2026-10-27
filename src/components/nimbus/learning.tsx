@@ -200,7 +200,7 @@ export function MemoryTab({ view, workstream }: { view: RunView; workstream?: Wo
         </div>
       )}
       {/* keyed by the text: a revert crossfades the cards in 120 ms */}
-      <div key={skill.content} className="nb-fade">
+      <div key={skill.content} data-demo="skill-file" className="nb-fade">
         {raw ? <pre className={cx(card, "overflow-auto whitespace-pre-wrap p-3 font-mono text-[12px]/[18px] text-neutral-300")}>{skill.content}</pre> : <SkillCards md={skill.content} />}
       </div>
 
@@ -347,7 +347,7 @@ function Memories({ memories, currentRunId, fresh, leaving, onForget }: { memori
       ) : shown.length === 0 ? (
         <p className="text-[14px]/[21px] text-neutral-400">No memory matches “{q}”.</p>
       ) : (
-        <ul className="flex flex-col">
+        <ul data-demo="memories" className="flex flex-col">
           {shown.map((m) => (
             <li key={m.id} className={fresh.has(m.id) ? "nb-rise-fast" : undefined}>
               <Collapse open={!leaving.has(`mem:${m.id}`)}>
@@ -363,7 +363,7 @@ function Memories({ memories, currentRunId, fresh, leaving, onForget }: { memori
                       {currentRunId && m.runId === currentRunId && <span className="rounded bg-[var(--rb-accent)]/20 px-1.5 text-[10px] font-extrabold tracking-wider text-[var(--rb-accent)]">NEW</span>}
                     </p>
                   </div>
-                  <button type="button" data-cuelume-close="" data-cuelume-emphasis="strong" onClick={() => onForget(m)} className={cx(ghost, "shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100")}>
+                  <button type="button" data-demo="forget" data-cuelume-close="" data-cuelume-emphasis="strong" onClick={() => onForget(m)} className={cx(ghost, "shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100")}>
                     Forget
                   </button>
                 </div>

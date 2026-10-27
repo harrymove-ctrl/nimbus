@@ -136,7 +136,7 @@ export function Overview({
 
         {/* 2 · spend by tier + tokens by tier */}
         <div className="grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <section ref={spendRef} className={cx(card, "transition-shadow", pulse && "shadow-[0_0_0_2px_var(--rb-accent)]")} aria-label="Spend by tier, 7 days">
+          <section ref={spendRef} data-demo="spend-chart" className={cx(card, "transition-shadow", pulse && "shadow-[0_0_0_2px_var(--rb-accent)]")} aria-label="Spend by tier, 7 days">
             <h2 className={eyebrow}>Spend by tier · 7 days</h2>
             <AreaChart
               data={areaData}
@@ -194,7 +194,7 @@ export function Overview({
             </div>
           </section>
 
-          <section className={card} aria-label="Router saving">
+          <section className={card} aria-label="Router saving" data-demo="router-gauge">
             <h2 className={eyebrow}>Router saving · this week</h2>
             <div className="grid place-items-center">
               <Gauge value={saved} label="saved vs every hop at its ceiling" unit="%" size={210} color="green" />

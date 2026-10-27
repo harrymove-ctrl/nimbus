@@ -1,0 +1,126 @@
+{
+  "role": "orchestrator",
+  "turns": [
+    {
+      "label": "Planning from what it learned",
+      "usage": {
+        "in": 3600,
+        "out": 360
+      },
+      "complexity": 2,
+      "toolCalls": [
+        {
+          "name": "plan",
+          "input": {
+            "agents": [
+              {
+                "role": "analyst",
+                "brief": "Read the inbox export, today's calendar and the GitHub notifications; write the one-page brief."
+              },
+              {
+                "role": "writer",
+                "brief": "Draft the three replies that matter; each needs your approval."
+              }
+            ],
+            "tools": [
+              "read_repo",
+              "fetch_url",
+              "write_artifact",
+              "send_message"
+            ],
+            "estimate": {
+              "costUsd": 0.02,
+              "tokens": 17000,
+              "label": "≈ $0.02 · Ultra ×1 · Super ×4"
+            },
+            "steps": [
+              {
+                "text": "Read the inbox, today's calendar and GitHub; write the one-page brief",
+                "role": "analyst"
+              },
+              {
+                "text": "Put invoices and digests under \"can wait\", no draft",
+                "role": "analyst"
+              },
+              {
+                "text": "Draft replies to Dana, Priya and Sam",
+                "role": "writer"
+              },
+              {
+                "text": "Send Dana's and Priya's after you approve; Sam's goes out under your rule",
+                "role": "writer"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reading the morning",
+      "usage": {
+        "in": 1200,
+        "out": 120
+      },
+      "complexity": 0,
+      "toolCalls": [
+        {
+          "name": "spawn_agents",
+          "input": {
+            "agents": [
+              {
+                "role": "analyst",
+                "brief": "Read fixtures/inbox/*.eml, fixtures/calendar.ics and the GitHub notifications; write the morning brief."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Drafting three replies",
+      "usage": {
+        "in": 2400,
+        "out": 200
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "spawn_agents",
+          "input": {
+            "agents": [
+              {
+                "role": "writer",
+                "brief": "Reply to Dana: sign this week, walk through two clauses on the 14:00 call."
+              },
+              {
+                "role": "writer",
+                "brief": "Reply to Priya: confirm the 11:30 dry run and send the demo link."
+              },
+              {
+                "role": "writer",
+                "brief": "Reply to Sam: the fix has not landed, a PR is open."
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "Final judgment",
+      "usage": {
+        "in": 3000,
+        "out": 160
+      },
+      "complexity": 1,
+      "text": "Done. The brief is in the Artifact tab; Sam's reply went out under your rule, Dana's and Priya's after your approval.",
+      "toolCalls": [
+        {
+          "name": "finish",
+          "input": {
+            "summary": "Brief written; 3 replies handled."
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -145,7 +145,7 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
         </button>
         <span className="ms-auto text-[11px] font-bold tabular-nums text-neutral-500">v{shown.version} of {latest.version}</span>
       </div>
-      <div key={`${art.id}-${shown.version}`} className="nimbus-fade min-h-0 flex-1 overflow-auto">
+      <div key={`${art.id}-${shown.version}`} data-demo={art.kind === "doc" ? "brief-doc" : undefined} className="nimbus-fade min-h-0 flex-1 overflow-auto">
         {art.kind === "doc" ? <Markdown text={shown.content} /> : <Code text={shown.content} />}
       </div>
     </div>
@@ -260,7 +260,7 @@ function AgentTab({ view, selected }: { view: RunView; selected: SegRef | null }
   return (
     <>
       {toggle}
-    <div className="flex flex-col gap-4 p-4">
+    <div data-demo="agent-io" className="flex flex-col gap-4 p-4">
       <div>
         <p className="flex items-center gap-2 text-[15px] font-extrabold">
           <span className="size-2.5 rounded-full" style={{ background: ROLE_COLOR[lane.role] }} />

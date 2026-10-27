@@ -54,14 +54,14 @@ export function Rail({
       <p className="px-4 pb-2 pt-4 text-[11px] font-extrabold uppercase tracking-wider text-neutral-500">Workstreams</p>
       <RailSkeleton active={!!loading && workstreams.length === 0} />
       {menu && <RailMenu menu={menu} ws={workstreams.find((w) => w.id === menu.id)} close={() => setMenu(null)} edit={() => setMenu((m) => (m ? { ...m, editing: true } : m))} onRun={onRun} onArchive={onArchive} onSchedule={onSchedule} />}
-      <ul className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2">
+      <ul data-demo="workstreams" className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2">
         {live.map((w, idx) => {
           const sel = w.id === selectedId;
           const pending = pendingByWs[w.id] ?? 0;
           return (
             <li key={w.id} style={{ animationDelay: `${idx * 30}ms` }} className="nb-slide-in group relative" onContextMenu={(e) => (e.preventDefault(), setMenu({ id: w.id, x: e.clientX, y: e.clientY, editing: false }))}>
               <button type="button" data-cuelume-navigate="" onClick={() => onSelect(w.id)} aria-current={sel ? "true" : undefined} className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-lg px-3 text-left transition-colors", sel ? "bg-white/10" : "hover:bg-white/5")}>
-                <span className={cx("size-1.5 shrink-0 rounded-full", w.unread && !sel ? "bg-[var(--rb-accent)]" : "bg-transparent")} aria-label={w.unread && !sel ? "Unread result" : undefined} />
+                <span data-demo={w.unread && !sel ? "unread-dot" : undefined} className={cx("size-1.5 shrink-0 rounded-full", w.unread && !sel ? "bg-[var(--rb-accent)]" : "bg-transparent")} aria-label={w.unread && !sel ? "Unread result" : undefined} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[14px] font-semibold text-neutral-100">{w.title}</span>
                   <span className="flex items-center gap-1 truncate text-[12px] text-neutral-500">

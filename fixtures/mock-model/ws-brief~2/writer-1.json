@@ -1,0 +1,50 @@
+{
+  "role": "writer",
+  "turns": [
+    {
+      "label": "Drafting the reply",
+      "usage": {
+        "in": 1800,
+        "out": 220
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "write_artifact",
+          "input": {
+            "artifactId": "reply-dana",
+            "kind": "doc",
+            "title": "Reply to Dana",
+            "content": "Hi Dana, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
+          }
+        }
+      ]
+    },
+    {
+      "label": "Sending (needs approval)",
+      "usage": {
+        "in": 2100,
+        "out": 120
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "send_message",
+          "input": {
+            "channel": "dana@example.com",
+            "text": "Hi Dana, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reporting",
+      "usage": {
+        "in": 2300,
+        "out": 40
+      },
+      "complexity": 1,
+      "text": "Reply drafted and handled."
+    }
+  ]
+}

@@ -241,6 +241,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
         <div className={cx("flex min-h-0 flex-1 flex-col", fill && "min-w-[780px]")}>
           <div
             ref={bodyRef}
+            data-demo="lanes"
             onScroll={(e) => {
               const el = e.currentTarget;
               followLanes.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
@@ -473,6 +474,7 @@ function LegendRow({ lane, index, learned }: { lane: Lane; index: number; learne
         {lane.status === "running" && <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" aria-label="running" />}
         {learned && (learned.memories > 0 || learned.policies > 0) && (
           <span
+            data-demo="learned-chip"
             className="nb-pop-slow ms-auto shrink-0 whitespace-nowrap rounded-full bg-[color-mix(in_oklab,var(--rb-accent)_22%,transparent)] px-2 py-0.5 text-[10px] font-extrabold text-[var(--rb-accent)]"
             title={`This run started with what earlier runs taught it: ${learned.memories} memories in its prompt and ${learned.policies} policy line${learned.policies === 1 ? "" : "s"} from SKILL.md.`}
           >
@@ -481,7 +483,7 @@ function LegendRow({ lane, index, learned }: { lane: Lane; index: number; learne
         )}
       </div>
       <div className="ps-4">
-        <span title={hover} className="inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md bg-white/8 py-0.5 pe-2 ps-0.5 text-[12px] font-semibold text-neutral-300">
+        <span title={hover} data-demo="model-badge" className="inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md bg-white/8 py-0.5 pe-2 ps-0.5 text-[12px] font-semibold text-neutral-300">
           <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-[#76b900] text-[9px] font-black leading-none text-black" aria-hidden="true">
             N
           </span>

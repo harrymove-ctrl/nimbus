@@ -133,7 +133,7 @@ function Item({ item, view, now, manualMinutes, onDraft, onCancelPlan, onPlan, o
       return <ApprovalCard item={item} onDecide={onDecide} />;
     case "policy":
       return (
-        <p className="flex items-center gap-2 text-[13px] font-semibold text-[var(--rb-accent)]">
+        <p data-demo="rule-line" className="flex items-center gap-2 text-[13px] font-semibold text-[var(--rb-accent)]">
           <Shield className="size-4" aria-hidden="true" /> Policy saved to SKILL.md: <code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-[12px] text-neutral-100">{item.rule}</code>
         </p>
       );
@@ -211,7 +211,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
   const pending = item.status === "pending";
   const d = item.action.details as { channel?: string; text?: string; branch?: string; title?: string; body?: string; patchArtifactId?: string; path?: string; content?: string } | undefined;
   return (
-    <div className={cx(panel, "relative")}>
+    <div data-demo={pending ? "approval-card" : undefined} className={cx(panel, "relative")}>
       <span className={cx("absolute inset-y-0 left-0 z-10 w-[3px]", RISK_STRIPE[item.action.risk])} aria-hidden="true" />
       <div className={panelHead}>
         <p className="text-[15px] font-extrabold">{pending ? "Needs approval" : item.status === "approved" ? "Approved" : "Rejected"}</p>
@@ -258,7 +258,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
         )}
       </div>
       {pending ? (
-        <div className={cx(panelFoot, "flex-wrap justify-end gap-2")}>
+        <div data-demo="approve-buttons" className={cx(panelFoot, "flex-wrap justify-end gap-2")}>
           {rejecting ? (
             <>
               <button type="button" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={() => setRejecting(false)} className={cx(ghostButton, buttonSm)}>
@@ -334,7 +334,7 @@ function SummaryCard({ item, view, onRevert, manualMinutes }: { item: Extract<TI
       <div className={cx(panelBody, "gap-4 p-3")}>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {tiles.map(([k, val, num]) => (
-            <div key={k} className="rounded-lg bg-white/5 px-3 py-2">
+            <div key={k} data-demo={k === "Cost" ? "summary-cost" : k === "vs baseline" ? "vs-baseline" : undefined} className="rounded-lg bg-white/5 px-3 py-2">
               <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">{k}</p>
               <p className="text-[22px]/[30px] font-extrabold tabular-nums">
                 {num ? <DitherNumber value={val} locales="en-US" effect="resolve" trigger="mount" size="sm" duration={700} {...num} /> : "n/a"}

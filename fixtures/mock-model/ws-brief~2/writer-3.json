@@ -1,0 +1,50 @@
+{
+  "role": "writer",
+  "turns": [
+    {
+      "label": "Drafting the reply",
+      "usage": {
+        "in": 1800,
+        "out": 220
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "write_artifact",
+          "input": {
+            "artifactId": "reply-sam",
+            "kind": "doc",
+            "title": "Reply to Sam",
+            "content": "Hi Sam, not yet: the PR is open and under review. I will tell you the moment it lands, well before Thursday."
+          }
+        }
+      ]
+    },
+    {
+      "label": "Sending under your rule (allowed: replies to sam@devshop.example)",
+      "usage": {
+        "in": 2100,
+        "out": 120
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "send_message",
+          "input": {
+            "channel": "sam@devshop.example",
+            "text": "Hi Sam, not yet: the PR is open and under review. I will tell you the moment it lands, well before Thursday."
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reporting",
+      "usage": {
+        "in": 2300,
+        "out": 40
+      },
+      "complexity": 1,
+      "text": "Sent under your rule: replies to Sam need no approval."
+    }
+  ]
+}
