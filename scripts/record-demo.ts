@@ -1,6 +1,12 @@
-// Records the product demo as a video against a RUNNING dev server in mock mode (no keys, $0).
-//   pnpm dev            # in one terminal
-//   pnpm demo:video     # NIMBUS_URL=http://localhost:3232 pnpm demo:video   (default port 3000)
+// Records the product demo as a video against a RUNNING dev server in mock mode (no keys, $0): docs/SUBMISSION.md
+// video script v2, minus the curl beat (the final video adds it in editing).
+//   Use a fresh database so the radar's recorded cron run and its unread dot are in the rail:
+//     NIMBUS_DATA_DIR=./data/video pnpm dev          # one terminal (rm -rf data/video first)
+//     NIMBUS_DATA_DIR=./data/video pnpm demo:video   # NIMBUS_URL=http://localhost:3232 for another port (default 3000)
+// Beats: boot and skeleton loaders → rail with six workstreams → Ship Nimbus run one (goal typed, plan card, lanes,
+// the failing and then real eval output in Agent I/O, the question, the diff, the PR approval with Approve & always
+// allow, the eval table, run summary) → Memory & skill tab → Hackathon radar from the rail → Ship Nimbus run two
+// (✦ learned chip, no question, no approval).
 // Output: docs/demo/nimbus-demo.webm, plus nimbus-demo.mp4 when ffmpeg is installed. Dev tooling only: nothing in
 // src/ imports this, so it never reaches the production bundle.
 import { execFileSync } from "node:child_process";
@@ -14,8 +20,7 @@ import { WORKSTREAMS } from "../src/lib/workstreams";
 const BASE = process.env.NIMBUS_URL ?? "http://localhost:3000";
 const OUT = path.join(process.cwd(), "docs", "demo");
 const TMP = path.join(OUT, ".tmp-video");
-const GOAL_1 = "Why did checkout conversion drop on Oct 14?";
-const GOAL_2 = "Same question, a week later: why did checkout conversion drop?";
+const SHIP = WORKSTREAMS.find((w) => w.id === "ws-ship-nimbus")!;
 
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -33,13 +38,14 @@ const CURSOR = `(() => {
 })();`;
 
 async function resetLearning() {
-  // A clean slate so run 1 has no memories and no policy: the approval card shows, and run 2 visibly learned something.
+  // A clean slate for the hero so run one has no memories and no rule (the question and the approval card show) and run
+  // two visibly learned something. The radar is left alone: its recorded run and unread dot are part of the shot.
   const db = await getDb();
-  const w = WORKSTREAMS.find((x) => x.id === "ws-checkout")!;
   // Other dev servers may hold the SQLite lock: retry for a while (retryBusy backs off), then say what to do.
   try {
-    await retryBusy(() => db.delete(schema.memories).where(eq(schema.memories.workstreamId, w.id)), 40);
-    await retryBusy(() => db.update(schema.skills).set({ content: w.skill, previous: null }).where(eq(schema.skills.workstreamId, w.id)), 40);
+    await retryBusy(() => db.delete(schema.memories).where(eq(schema.memories.workstreamId, SHIP.id)), 40);
+    await retryBusy(() => db.delete(schema.policies).where(eq(schema.policies.workstreamId, SHIP.id)), 40);
+    await retryBusy(() => db.update(schema.skills).set({ content: SHIP.skill, previous: null, updatedRunId: null }).where(eq(schema.skills.workstreamId, SHIP.id)), 40);
   } catch (e) {
     console.error("Could not reset the demo workstream: the SQLite file is locked by another process (a stale `next dev`?). Stop other dev servers and retry.");
     throw e;
@@ -58,52 +64,58 @@ async function click(page: Page, target: Locator) {
   await target.click({ delay: 90 });
 }
 
-async function runOnce(page: Page, goal: string, opts: { first: boolean }) {
+async function runShip(page: Page, opts: { first: boolean }) {
   await click(page, page.locator("textarea"));
-  await page.keyboard.type(goal, { delay: 32 });
-  await page.getByText(/≈ \$/).first().waitFor({ timeout: 10_000 }).catch(() => {}); // the cost pill
-  await pause(900);
+  await page.keyboard.type(SHIP.goal, { delay: 28 });
+  await page.getByText(/≈ \$/).first().waitFor({ timeout: 10_000 }).catch(() => {}); // the cost pill, before Enter
+  await pause(1200);
   // Enter runs (the spec's keyboard rule) and avoids the Inspector's fade overlay, which can sit over the RUN button.
   await page.locator("textarea").focus();
   await page.keyboard.press("Enter");
 
-  // plan card and the 3 s cancel countdown
-  await page.getByText(/Starting in|Started/).first().waitFor({ timeout: 20_000 }); // plan card footer
+  // plan card and its 3 s cancel countdown
+  await page.getByText(/Starting in|Started/).first().waitFor({ timeout: 20_000 });
   await pause(opts.first ? 3600 : 2400);
 
-  // lanes fill; open the Analyst's hop in the Inspector
+  // lanes fill; the Analyst's first run_code fails (a real wrong flag), the retry prints the real eval output
   const analyst = page.locator('g[role="button"][aria-label^="Analyst"]').first();
-  await analyst.waitFor({ timeout: 30_000 });
+  await analyst.waitFor({ timeout: 60_000 });
   await pause(opts.first ? 2600 : 1600);
   if (opts.first) {
-    await click(page, analyst);
-    await pause(3800);
-  }
+    const eval404 = page.locator('g[role="button"][aria-label*="pnpm eval --only"]').first();
+    await eval404.waitFor({ timeout: 60_000 });
+    await click(page, eval404);
+    await click(page, page.getByRole("tab", { name: "Agent I/O" }));
+    await pause(4200);
 
-  // the Researcher asks a question: answer with the chip
-  const chip = page.getByRole("button", { name: "30-day average" });
-  await chip.waitFor({ timeout: 45_000 });
-  await pause(opts.first ? 1800 : 900);
-  await click(page, chip);
+    // the question: fix in the router or in the golden
+    const chip = page.getByRole("button", { name: "Router", exact: true });
+    await chip.waitFor({ timeout: 90_000 });
+    await pause(1600);
+    await click(page, chip);
 
-  if (opts.first) {
-    // approval card: Approve & always allow
-    const always = page.getByRole("button", { name: /Approve & always allow/ }).first();
-    await always.waitFor({ timeout: 60_000 });
+    // the patch (CODE tab), then the PR approval: Approve & always allow writes the rule
+    await page.getByRole("tab", { name: "Artifact" }).click();
+    await page.getByRole("button", { name: /^code$/i }).first().waitFor({ timeout: 90_000 });
+    await click(page, page.getByRole("button", { name: /^code$/i }).first());
     await pause(3000);
+    const always = page.getByRole("button", { name: /Approve & always allow/ }).first();
+    await always.waitFor({ timeout: 120_000 });
+    await pause(3400);
     await click(page, always);
     await pause(1600);
+    await click(page, page.getByRole("button", { name: /^doc$/i }).first());
   } else {
-    // run 2: the policy from run 1 is honored, so there is no approval card at all
-    await page.getByText(/learned ·/).first().waitFor({ timeout: 60_000 }); // the ✦ learned chip on the orchestrator lane
-    await pause(2200);
+    // run two: the answer is remembered, the PR goes through under the rule, so there is no question and no approval card
+    await page.getByText(/learned ·/).first().waitFor({ timeout: 60_000 });
+    await pause(2600);
   }
 
-  // artifact v2, then the run summary with the SKILL.md diff
-  await page.getByText(/it was iOS Safari/).first().waitFor({ timeout: 90_000 });
+  // PR body v2 with the eval table, then the run summary (the tiles resolve cell by cell)
+  await page.getByText(/EVALS/i).first().waitFor({ timeout: 180_000 });
   await pause(2800);
   const summary = page.locator("p", { hasText: /^Run summary$/ });
-  await summary.waitFor({ timeout: 90_000 });
+  await summary.waitFor({ timeout: 120_000 });
   await summary.scrollIntoViewIfNeeded();
   await pause(opts.first ? 4200 : 3800);
 }
@@ -119,26 +131,33 @@ async function main() {
   const page = await ctx.newPage();
   const started = Date.now();
 
-  // beat 1: the boot cloud (2 s)
-  await page.goto(BASE);
+  // beat 1: the boot cloud, then the shell with the rail's sweep skeleton for a visible beat (?loaders=1)
+  await page.goto(`${BASE}/?loaders=1`);
   await pause(2400);
   await page.locator("nav").waitFor({ timeout: 20_000 });
+  await pause(2200); // six workstreams, the radar with its unread dot
 
-  // beat 2: pick the workstream
-  await click(page, page.locator("nav button", { hasText: "Checkout conversion drop" }).first());
-  await pause(1400);
+  // beat 2: the hero
+  await click(page, page.locator("nav button", { hasText: "Ship Nimbus" }).first());
+  await pause(1200);
+  await runShip(page, { first: true });
 
-  // beats 3–8: the full run
-  await runOnce(page, GOAL_1, { first: true });
-
-  // the Memory & skill tab: what was learned
+  // beat 3: Memory & skill: the rule card, the skill as cards, the diff, the memories
   await click(page, page.getByRole("tab", { name: "Memory & skill" }));
+  await pause(2600);
+  await click(page, page.getByRole("button", { name: /show diff/i }));
   await pause(3200);
   await click(page, page.getByRole("tab", { name: "Artifact" }));
-  await pause(800);
+  await pause(600);
 
-  // beat 9: run it again: ✦ learned chip, no approval card, same answer
-  await runOnce(page, GOAL_2, { first: false });
+  // beat 4: the radar from the rail: it ran at 09:00 on its own
+  await click(page, page.locator("nav button", { hasText: "Hackathon radar" }).first());
+  await pause(5200);
+
+  // beat 5: run two of Ship Nimbus
+  await click(page, page.locator("nav button", { hasText: "Ship Nimbus" }).first());
+  await pause(1200);
+  await runShip(page, { first: false });
   await page.locator('span:has-text("learned")').first().scrollIntoViewIfNeeded().catch(() => {});
   await pause(1500);
 
