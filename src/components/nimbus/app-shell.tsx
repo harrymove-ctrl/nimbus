@@ -53,6 +53,31 @@ export function AppShell() {
   const active = useActiveRuns();
   const { events } = useRunEvents(runId);
   const view = useMemo(() => buildView(events), [events]);
+  // Scrubbing a finished run (SPEC §17.5): the transcript and the Inspector show the run as it was at `scrub` ms; the
+  // timeline, header and composer keep the whole run. Replay walks `scrub` forward at 0.5×, 1× or 2×.
+  const [scrub, setScrub] = useState<number | null>(null);
+  const [replaying, setReplaying] = useState(false);
+  const [speed, setSpeed] = useState<0.5 | 1 | 2>(1);
+  const runEnd = view.endedMs ?? view.lastTMs;
+  const shown = useMemo(() => (scrub === null ? view : buildView(events.filter((e) => e.tMs <= scrub))), [view, events, scrub]);
+  useEffect(() => {
+    setScrub(null);
+    setReplaying(false);
+  }, [runId]);
+  useEffect(() => {
+    if (!replaying) return;
+    const t = setInterval(() => {
+      setScrub((p) => {
+        const next = (p ?? 0) + 60 * speed;
+        if (next >= runEnd) {
+          setReplaying(false);
+          return null;
+        }
+        return next;
+      });
+    }, 60);
+    return () => clearInterval(t);
+  }, [replaying, speed, runEnd]);
   const clock = view.active || view.status === "planning" || view.lanes.some((l) => l.status === "running");
   const now = useNow(clock, reduced ? 1000 : 60);
 
@@ -275,10 +300,10 @@ export function AppShell() {
           ) : (
             <>
               <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} />
-              <Timeline view={view} now={now} selected={selSeg} onSelect={selectSeg} collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />
+              <Timeline view={view} now={now} selected={selSeg} onSelect={selectSeg} onClearSelection={() => setSelSeg(null)} scrubMs={scrub} onScrub={(ms) => (setReplaying(false), setScrub(ms))} replay={{ playing: replaying, speed, onSpeed: setSpeed, onToggle: () => (replaying ? setReplaying(false) : (setScrub(0), setReplaying(true))) }} collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />
               <Transcript
                 waitingForCrew={!!runId && (events.length === 0 || (view.status === "planning" && !view.plan))}
-                view={view}
+                view={shown}
                 now={now}
                 manualMinutes={ws.estimatedManualMinutes}
                 onCancelPlan={() => void stop("cancel")}
@@ -349,7 +374,7 @@ export function AppShell() {
         </main>
 
         <Inspector
-          view={view}
+          view={shown}
           workstream={ws}
           tab={tab}
           setTab={setTab}

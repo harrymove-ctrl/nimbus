@@ -6,6 +6,7 @@ import type { Workstream } from "@/lib/workstreams";
 import { ROLE_COLOR, TIER_LABEL, fmtTokens, laneName, type Artifact, type RunView } from "@/lib/run-view";
 import { InspectorSkeleton } from "./loading";
 import { MemoryTab } from "./learning";
+import { LoopView } from "./loop-view";
 import { cx } from "./ui";
 import type { SegRef } from "./timeline";
 
@@ -216,6 +217,7 @@ function Markdown({ text }: { text: string }) {
 /* ---------- Agent I/O: the selected segment ---------- */
 
 function AgentTab({ view, selected }: { view: RunView; selected: SegRef | null }) {
+  const [mode, setMode] = useState<"calls" | "loop">("calls");
   const lane = view.lanes.find((l) => l.instance === selected?.instance);
   const seg = lane?.segments.find((s) => s.id === selected?.id);
   const data = useMemo(() => {
@@ -230,7 +232,25 @@ function AgentTab({ view, selected }: { view: RunView; selected: SegRef | null }
   if (!lane || !seg || !data) return <Empty>Click a segment on the timeline to see that hop: its brief, tool calls, result, tokens and tier.</Empty>;
   const routed = seg.route && (seg.route.chosen !== seg.route.ceiling || seg.route.fallback);
   const tier = seg.route?.chosen ?? lane.tier;
+  const toggle = (
+    <div role="group" aria-label="Agent I/O view" className="flex gap-1 border-b border-white/10 px-4 py-2">
+      {(["calls", "loop"] as const).map((m) => (
+        <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold uppercase tracking-wider", mode === m ? "bg-white text-neutral-950" : "text-neutral-300 hover:bg-white/10")}>
+          {m === "calls" ? "Calls" : "Loop"}
+        </button>
+      ))}
+    </div>
+  );
+  if (mode === "loop")
+    return (
+      <>
+        {toggle}
+        <LoopView view={view} lane={lane} seg={seg} />
+      </>
+    );
   return (
+    <>
+      {toggle}
     <div className="flex flex-col gap-4 p-4">
       <div>
         <p className="flex items-center gap-2 text-[15px] font-extrabold">
@@ -279,6 +299,7 @@ function AgentTab({ view, selected }: { view: RunView; selected: SegRef | null }
         </Block>
       )}
     </div>
+    </>
   );
 }
 

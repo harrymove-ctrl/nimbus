@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Play, Square } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
 import { ROLE_COLOR, TIER_LABEL, TIER_SHORT, fmtCost3, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
 import { useTween } from "@/hooks/use-tween";
@@ -23,12 +23,19 @@ type Props = {
   now: number;
   selected: SegRef | null;
   onSelect: (s: Seg) => void;
+  /** drop the selection (and with it the trace) */
+  onClearSelection?: () => void;
+  /** scrubbing a finished run: the playhead position in ms, or null for "at the end" (SPEC §17.5) */
+  scrubMs?: number | null;
+  onScrub?: (ms: number | null) => void;
+  replay?: { playing: boolean; speed: 0.5 | 1 | 2; onToggle: () => void; onSpeed: (s: 0.5 | 1 | 2) => void };
   collapsed: boolean;
   onToggle: () => void;
   reducedMotion: boolean;
 };
 
-export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, reducedMotion }: Props) {
+export function Timeline({ view, now, selected, onSelect, onClearSelection, scrubMs = null, onScrub, replay, collapsed, onToggle, reducedMotion }: Props) {
+  const dragging = useRef(false);
   const chartRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const followLanes = useRef(true);
@@ -69,7 +76,29 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
   const windowS = useTween(targetWindowS, 300, "inOut"); // bars and ticks re-lay out together
   const pxPerSec = (plotW - 24) / windowS;
   const x = (ms: number) => 12 + (ms / 1000) * pxPerSec;
-  const playT = view.endedMs ?? tNow;
+  const playT = scrubMs ?? view.endedMs ?? tNow;
+  const canScrub = !live && view.lanes.length > 0 && !!onScrub;
+  const scrubFromPointer = (clientX: number) => {
+    const r = chartRef.current?.getBoundingClientRect();
+    if (!r || !onScrub) return;
+    onScrub(Math.round(Math.min(extent, Math.max(0, ((clientX - r.left - 12) / pxPerSec) * 1000))));
+  };
+  // Trace (SPEC §17.5): the selected segment's lane, who spawned it (all the way up) and what it spawned (all the way down).
+  const trace = useMemo(() => {
+    if (!selected) return null;
+    const by = new Map(view.lanes.map((l) => [l.instance, l.spawnedBy]));
+    if (!by.has(selected.instance)) return null;
+    const set = new Set<string>([selected.instance]);
+    for (let p = by.get(selected.instance); p && !set.has(p); p = by.get(p)) set.add(p); // upstream: who spawned it, and who spawned them
+    const down = new Set<string>([selected.instance]); // downstream: what it spawned, recursively (not its siblings)
+    let grew = true;
+    while (grew) {
+      grew = false;
+      for (const [inst, parent] of by) if (parent && down.has(parent) && !down.has(inst)) (down.add(inst), set.add(inst), (grew = true));
+    }
+    return set;
+  }, [selected, view.lanes]);
+  const dim = (instance: string) => (trace && !trace.has(instance) ? 0.2 : 1);
   const laneIdx = useMemo(() => new Map(view.lanes.map((l, i) => [l.instance, i])), [view.lanes]);
   const firstSegStart = (l?: Lane) => (l && l.segments.length ? Math.min(...l.segments.map((s) => s.startMs)) : undefined);
 
@@ -119,10 +148,37 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
   }
 
   return (
-    <section aria-label="Run timeline" className="relative flex h-[240px] shrink-0 flex-col border-b border-white/10">
+    <section aria-label="Run timeline" className="relative flex h-[240px] shrink-0 flex-col border-b border-white/10" onKeyDown={(e) => e.key === "Escape" && trace && onClearSelection?.()}>
       <button type="button" onClick={onToggle} aria-label="Collapse timeline" aria-expanded className="absolute right-2 top-2 z-20 grid size-7 place-items-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
         <ChevronUp className="size-4" />
       </button>
+      {(trace && trace.size > 1) || canScrub ? (
+        <div className="absolute right-11 top-2 z-20 flex items-center gap-1.5 text-[12px] font-bold text-neutral-200">
+          {trace && trace.size > 1 && (
+            <button type="button" onClick={onClearSelection} className="rounded-full bg-white/10 px-2.5 py-1 hover:bg-white/16" title="Esc clears the trace">
+              Tracing {trace.size} lanes · clear
+            </button>
+          )}
+          {canScrub && replay && (
+            <>
+              <button type="button" onClick={replay.onToggle} aria-label={replay.playing ? "Stop replay" : "Replay the run"} className="flex h-7 items-center gap-1 rounded-full bg-white/10 px-2.5 hover:bg-white/16">
+                {replay.playing ? <Square className="size-3" /> : <Play className="size-3" />}
+                {replay.playing ? "Stop" : "Replay"}
+              </button>
+              {([0.5, 1, 2] as const).map((s) => (
+                <button key={s} type="button" aria-pressed={replay.speed === s} onClick={() => replay.onSpeed(s)} className={cx("h-7 rounded-full px-2 tabular-nums", replay.speed === s ? "bg-white text-neutral-950" : "bg-white/8 hover:bg-white/16")}>
+                  {s}×
+                </button>
+              ))}
+            </>
+          )}
+          {scrubMs !== null && (
+            <button type="button" onClick={() => onScrub?.(null)} className="rounded-full bg-[var(--rb-accent)]/25 px-2.5 py-1 text-[var(--rb-accent)] tabular-nums hover:bg-[var(--rb-accent)]/35">
+              {(scrubMs / 1000).toFixed(1)}s · back to the end
+            </button>
+          )}
+        </div>
+      ) : null}
 
       {view.lanes.length === 0 ? (
         <div className="grid flex-1 place-items-center text-[14px] text-neutral-500">The timeline fills as soon as a run starts.</div>
@@ -150,7 +206,9 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
             <div className="flex" style={{ height: Math.max(bodyH, 1) }}>
               <div className="shrink-0" style={{ width: LEGEND_W }}>
                 {view.lanes.map((l, i) => (
-                  <LegendRow key={l.instance} lane={l} index={i} learned={l.instance === "orchestrator" ? view.learned : undefined} />
+                  <div key={l.instance} style={{ opacity: dim(l.instance) }} className="transition-opacity duration-150">
+                    <LegendRow lane={l} index={i} learned={l.instance === "orchestrator" ? view.learned : undefined} />
+                  </div>
                 ))}
               </div>
               <div ref={chartRef} className="relative min-w-0 flex-1">
@@ -181,7 +239,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                     const start = firstSegStart(view.lanes[ci]);
                     const color = ROLE_COLOR[view.lanes[ci].role];
                     return (
-                      <g key={i}>
+                      <g key={i} opacity={trace ? (trace.has(c.from) && trace.has(c.to) ? 1 : 0.15) : 1} className="transition-opacity duration-150">
                         <line className="nb-draw" x1={cx0} x2={cx0} y1={y0} y2={y1} stroke={color} strokeWidth={1.5} strokeDasharray="2 3" />
                         {start !== undefined && x(start) > cx0 + 2 && <line x1={cx0} x2={x(start)} y1={y1} y2={y1} stroke={color} strokeWidth={1.5} strokeDasharray="2 3" />}
                         <circle className="nb-pop" cx={cx0} cy={y0} r={4} fill={color} />
@@ -205,7 +263,8 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                       return (
                         <g
                           key={`${s.instance}:${s.id}`}
-                          className="cursor-pointer outline-none"
+                          opacity={dim(s.instance)}
+                          className="cursor-pointer outline-none transition-opacity duration-150"
                           tabIndex={0}
                           role="button"
                           aria-label={`${laneName(l.instance, l.role)}: ${s.label}${s.failed ? " (failed)" : ""}`}
@@ -254,7 +313,21 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                     }),
                   )}
 
-                  <line x1={x(playT)} x2={x(playT)} y1={0} y2={bodyH} stroke="white" strokeWidth={1} />
+                  {/* tool-call ticks: a mark on the lane where each tool was called; hover names it */}
+                  {view.toolCalls.map((c) => {
+                    const li = laneIdx.get(c.instance);
+                    if (li === undefined || ["plan", "spawn_agents", "handoff", "finish"].includes(c.tool)) return null;
+                    const tx = x(c.startMs);
+                    const ty = li * LANE_H + SEG_TOP + SEG_H + 4;
+                    return (
+                      <g key={c.callId} opacity={dim(c.instance)} onMouseMove={(e) => { const r = chartRef.current?.getBoundingClientRect(); if (r) setTip({ x: e.clientX - r.left, y: li * LANE_H + SEG_H + 8, text: c.tool, sub: c.ok === false ? "failed" : c.endMs !== undefined ? `${((c.endMs - c.startMs) / 1000).toFixed(1)}s` : "running" }); }} onMouseLeave={() => setTip(null)}>
+                        <rect x={tx - 4} y={ty - 2} width={8} height={14} fill="transparent" />
+                        <line x1={tx} x2={tx} y1={ty} y2={ty + 8} stroke={c.ok === false ? RED : "white"} strokeOpacity={0.55} strokeWidth={1.5} strokeLinecap="round" />
+                      </g>
+                    );
+                  })}
+
+                  <line x1={x(playT)} x2={x(playT)} y1={0} y2={bodyH} stroke="white" strokeWidth={scrubMs !== null ? 1.75 : 1} />
                 </svg>
                 {tip && (
                   <div className="pointer-events-none absolute z-30 -translate-x-1/2 rounded-md bg-neutral-100 px-2 py-1 text-[12px] font-semibold text-neutral-900 shadow-lg" style={{ left: Math.min(Math.max(tip.x, 70), cw - 70), top: tip.y - 4 }}>
@@ -268,7 +341,31 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
 
           <div className="flex shrink-0 border-t border-white/10" style={{ height: AXIS_H }}>
             <div className="shrink-0" style={{ width: LEGEND_W }} />
-            <svg width={cw} height={AXIS_H} className="block" aria-hidden="true">
+            <svg
+              width={cw}
+              height={AXIS_H}
+              className={cx("block touch-none", canScrub && "cursor-ew-resize")}
+              aria-hidden={!canScrub}
+              role={canScrub ? "slider" : undefined}
+              aria-label={canScrub ? "Scrub the run" : undefined}
+              aria-valuemin={canScrub ? 0 : undefined}
+              aria-valuemax={canScrub ? Math.round(extent) : undefined}
+              aria-valuenow={canScrub ? Math.round(playT) : undefined}
+              tabIndex={canScrub ? 0 : undefined}
+              onPointerDown={(e) => {
+                if (!canScrub) return;
+                dragging.current = true;
+                (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+                scrubFromPointer(e.clientX);
+              }}
+              onPointerMove={(e) => dragging.current && scrubFromPointer(e.clientX)}
+              onPointerUp={() => (dragging.current = false)}
+              onKeyDown={(e) => {
+                if (!canScrub) return;
+                const k = e.key === "ArrowRight" ? 1000 : e.key === "ArrowLeft" ? -1000 : e.key === "End" ? Infinity : e.key === "Home" ? -Infinity : 0;
+                if (k) (e.preventDefault(), onScrub?.(Math.round(Math.min(extent, Math.max(0, playT + k)))));
+              }}
+            >
               {minors.map((t) => (
                 <line key={`m${t}`} x1={x(t * 1000)} x2={x(t * 1000)} y1={0} y2={4} stroke="white" strokeOpacity={0.4} />
               ))}
@@ -286,7 +383,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                   </g>
                 );
               })}
-              <circle cx={x(playT)} cy={6} r={5} fill="var(--color-neutral-950)" stroke="white" strokeWidth={1.75} />
+              <circle cx={x(playT)} cy={6} r={canScrub ? 6 : 5} fill="var(--color-neutral-950)" stroke="white" strokeWidth={1.75} />
             </svg>
           </div>
         </>
