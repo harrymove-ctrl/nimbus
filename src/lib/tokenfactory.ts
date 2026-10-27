@@ -105,7 +105,8 @@ function mockModel(tier: Tier, role: string, turn: number, runKey: string, ws?: 
       await new Promise((r) => setTimeout(r, mockDelayMs(role, turn)));
       const content: ({ type: "text"; text: string } | { type: "tool-call"; toolCallId: string; toolName: string; input: string })[] = [];
       if (t.text) content.push({ type: "text", text: t.text });
-      (t.toolCalls ?? []).forEach((c, i) => content.push({ type: "tool-call", toolCallId: `mock-${role}-${turn}-${i}`, toolName: c.name, input: JSON.stringify(c.input) }));
+      // ids per instance: three Writers in one run must not share them (React keys, the tool.result match)
+      (t.toolCalls ?? []).forEach((c, i) => content.push({ type: "tool-call", toolCallId: `mock-${instance ?? role}-${turn}-${i}`, toolName: c.name, input: JSON.stringify(c.input) }));
       return {
         content,
         finishReason: { unified: content.some((c) => c.type === "tool-call") ? "tool-calls" : "stop", raw: undefined },
