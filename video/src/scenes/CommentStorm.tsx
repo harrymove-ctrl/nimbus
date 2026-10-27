@@ -4,7 +4,9 @@
 // shakes, and folds the pile into its center; cut to black. Every position and time comes
 // from the tables below, so renders are identical.
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
-import { C, MANROPE } from "../theme";
+import { C, MANROPE, ROLE } from "../theme";
+
+const DOTS = [ROLE.analyst, ROLE.checker, ROLE.researcher, ROLE.writer];
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -69,7 +71,7 @@ function Pill({ text, ink, bg, size }: { text: string; ink: string; bg: string; 
         fontSize: size,
         fontWeight: 600,
         whiteSpace: "nowrap",
-        boxShadow: "0 18px 40px rgba(0,0,0,0.35)",
+        boxShadow: "0 18px 40px oklch(0 0 0 / 35%)",
       }}
     >
       {text}
@@ -102,7 +104,7 @@ export function CommentStorm({
   const openerTyped = opener.slice(0, Math.floor(frame / charFrames));
 
   return (
-    <AbsoluteFill style={{ background: "#0c0c0e", fontFamily: MANROPE, overflow: "hidden" }}>
+    <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE, overflow: "hidden" }}>
       {black ? null : (
         <AbsoluteFill
           style={{
@@ -134,7 +136,7 @@ export function CommentStorm({
                     transform: `translate(-50%, -50%) translate(${px}px, ${py}px) rotate(${it.tilt * s}deg) scale(${0.4 + 0.6 * s})`,
                   }}
                 >
-                  <Pill text={it.text} ink={C.paper} bg={C.card} size={34} />
+                  <Pill text={it.text} ink={C.ink} bg={C.raised} size={36} />
                 </div>
               );
             }
@@ -154,16 +156,17 @@ export function CommentStorm({
                     width: 460,
                     transform: `scaleY(${open})`,
                     transformOrigin: "top center",
-                    background: C.paper,
+                    background: C.card,
                     color: C.ink,
+                    border: `1px solid ${C.line}`,
                     borderRadius: 18,
                     padding: "20px 26px",
-                    boxShadow: "0 24px 50px rgba(0,0,0,0.4)",
+                    boxShadow: "0 24px 50px oklch(0 0 0 / 45%)",
                   }}
                 >
                   <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-                    <span style={{ width: 14, height: 14, borderRadius: 7, background: C.orange }} />
-                    <span style={{ width: 120, height: 14, borderRadius: 7, background: C.soft }} />
+                    <span style={{ width: 14, height: 14, borderRadius: 7, background: DOTS[i % DOTS.length] }} />
+                    <span style={{ width: 120, height: 14, borderRadius: 7, background: C.raised }} />
                   </div>
                   <div style={{ fontSize: 32, fontWeight: 600, minHeight: 40 }}>{typed}</div>
                 </div>
@@ -179,7 +182,7 @@ export function CommentStorm({
               zIndex: 100,
             }}
           >
-            <Pill text={openerTyped || " "} ink={C.ink} bg={C.paper} size={56} />
+            <Pill text={openerTyped || " "} ink={C.bg} bg={C.ink} size={56} />
           </div>
         </AbsoluteFill>
       )}

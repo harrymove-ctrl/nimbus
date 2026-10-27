@@ -1,0 +1,38 @@
+{
+  "note": "Section maps for the Tone.js temp score, in bars from 0 (120 BPM, 1 bar = 2 s). Mirrors docs/video/music.md rev C; edit both together. Section names: intro build silence swell groove drop verse breakdown calm playful lift outro.",
+  "full": {
+    "seconds": 176,
+    "sections": [
+      ["intro", 0, 3],
+      ["build", 3, 5],
+      ["groove", 5, 11],
+      ["verse", 11, 18],
+      ["drop", 18, 28],
+      ["verse", 28, 33],
+      ["breakdown", 33, 36],
+      ["drop", 36, 42],
+      ["groove", 42, 47],
+      ["calm", 47, 54],
+      ["groove", 54, 60],
+      ["playful", 60, 74],
+      ["build", 74, 77],
+      ["lift", 77, 79],
+      ["drop", 79, 82.75],
+      ["silence", 82.75, 83],
+      ["outro", 83, 88]
+    ]
+  },
+  "x": {
+    "seconds": 46,
+    "sections": [
+      ["intro", 0, 3],
+      ["build", 3, 5],
+      ["verse", 5, 8],
+      ["groove", 8, 10],
+      ["breakdown", 10, 11.5],
+      ["drop", 11.5, 19.75],
+      ["silence", 19.75, 20],
+      ["outro", 20, 23]
+    ]
+  }
+}

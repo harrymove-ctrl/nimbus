@@ -1,103 +1,104 @@
-// Every footage cut in the video, in one place, so a new take only changes this file.
-//
-// A take is a video file and, optionally, the beats.json written with it by
-// scripts/record-demo.ts ([{ beat, tStart, tEnd }] in seconds from the video start). With a
-// beats file, a shot is cut from its `beat`'s tStart (+ `lead`) to the tEnd of `until` (or of
-// `beat`); without one, the hand-timed `from`/`to` below are used. A beats file only ever
-// applies to its own take.
+// Every footage cut, in source seconds of the take in take.ts (generated from its beats.json),
+// so a new take only needs `node scripts/sync-take.mjs <file>` and a look at the fit.
+// Shots start inside their beats where the take waits (board.md "Fit against the take");
+// the composition plays each one fitted to its scene at MIN_RATE–MAX_RATE.
+import { BEATS, type Box, TAKE_FILE } from "./take";
 
-export type Take = { footage: string; beatsJson: string | null };
+export const TAKE = TAKE_FILE;
+export const TAKE_W = 1920;
+export const TAKE_H = 1080;
 
-// The take of 2026-10-27 21:32 (1920 × 1080, 351 s) and its beats. It runs slower than real
-// time in places (machine load), so shots start inside their beats (`lead`) and play up to
-// MAX_RATE. The hand timings below are the same cuts, so cues match with or without it.
-export const TAKE: Take = {
-  footage: "demo/raw/nimbus-demo-20261027-1432.webm",
-  beatsJson: "demo/raw/beats.json",
+const beat = (name: string) => {
+  const b = BEATS.find((x) => x.beat === name);
+  if (!b) throw new Error(`beats.json has no beat "${name}"`);
+  return b;
 };
+/** When a beat starts (sub-beats mark a click or an arrival). */
+export const at = (name: string) => beat(name).tStart;
+export const end = (name: string) => beat(name).tEnd;
 
-/** Width ÷ height of the take, used only if the browser cannot read it from the file. */
-export const FOOTAGE_ASPECT = 1920 / 1080;
-
-export type Beat = { beat: string; tStart: number; tEnd: number };
-
-export type Shot = {
-  /** The beat this shot starts in (keys from scripts/record-demo.ts). */
-  beat: string;
-  /** The beat it ends with, when the shot spans several. Defaults to `beat`. */
-  until?: string;
-  /** The same cut in source seconds, used when the take has no beats file. */
-  from: number;
-  to: number;
-  /** Seconds into the beat to start, when cutting from beats.json. */
-  lead?: number;
-};
-
-// Board takes `crew`, `plan`, `gate`, `chat-run`, `memory`, `run-two`.
-export const SHOTS = {
-  // Scene 6: lanes fill with Nemotron badges; the Analyst's verify fails (✕) in the Loop
-  // view and the retry passes.
-  crew: { beat: "ship1-checklist", lead: 6.08, until: "ship1-loop-view", from: 56, to: 92.81 },
-  // Scene 8: the plan as a draft (a step moved, one added), Approve plan. The goal typing in
-  // ship1-goal is followed by a long planning wait, so the shot starts at the draft.
-  plan: { beat: "ship1-plan-draft", from: 41.17, to: 49.92 },
-  // Scene 9: the cloud turns orange, the PR card, Approve & always allow.
-  gate: { beat: "ship1-pr-approval", lead: 48.09, from: 170, to: 184.56 },
-  // Scene 13: the run in the web timeline. No chat-triggered run is filmed; two bars of the
-  // status pill (Morning brief waiting, approved from the panel) stand in.
-  chatRun: { beat: "status-pill", lead: 5, from: 247.79, to: 263.74 },
-  // Scene 16: Memory & skill: the rule, the skill, the memories.
-  memory: { beat: "memory-skill", lead: 7, from: 223.16, to: 233.35 },
-  // Scene 17: run two: approved by policy, the cheaper summary, the learned chip.
-  runTwo: { beat: "ship2-summary", lead: -4.66, from: 334, to: 344.16 },
-  // The X clip's shorter run two: the summary and the learned chip.
-  runTwoX: { beat: "ship2-summary", lead: -0.16, from: 338.5, to: 344.16 },
-} satisfies Record<string, Shot>;
-
-export type ShotName = keyof typeof SHOTS;
-
-/** Moments inside the take that sounds, rings and snap zooms hit, in source seconds. */
-export const MOMENTS = {
-  /** Approve plan pressed. */
-  planApprove: 49.6,
-  /** The red ✕ on the Analyst's failed verify, in the Loop view. */
-  crewFail: 71.5,
-  /** The retry passing. */
-  crewPass: 81,
-  /** Approve & always allow pressed. */
-  gateApprove: 184,
-  /** Run two's learned chip in view. */
-  runTwoLearned: 342,
-};
-
-export type Cut = { from: number; to: number };
-
-/** The source window for a shot: beats.json when it names the beats, else the hand timing. */
-export function cutFor(name: ShotName, beats: Beat[] | null): Cut {
-  const shot: Shot = SHOTS[name];
-  const first = beats?.find((x) => x.beat === shot.beat);
-  const last = beats?.find((x) => x.beat === (shot.until ?? shot.beat));
-  if (first && last && last.tEnd > first.tStart) {
-    return { from: first.tStart + (shot.lead ?? 0), to: last.tEnd };
-  }
-  return { from: shot.from, to: shot.to };
+/** A callout target's box in take pixels: from `inBeat` if given, else the first beat that has it. */
+export function target(name: string, inBeat?: string): Box {
+  const b = inBeat ? beat(inBeat) : BEATS.find((x) => x.targets[name]);
+  const box = b?.targets[name];
+  if (!box) throw new Error(`beats.json has no target "${name}"${inBeat ? ` in ${inBeat}` : ""}`);
+  return box;
 }
 
-/**
- * Playback rate that fits a cut to a scene, clamped so footage never reads as fast-forward
- * or slow motion; past the clamp the cut is shortened instead.
- */
+export type Cut = { from: number; to: number };
+const cut = (from: number, to: number): Cut => ({ from, to });
+
+// Board rev C scenes → source windows. Comments say what each window shows.
+export const SHOTS = {
+  // 1 cold open: the brief open beside the approval cards, the tray, the cloud orange
+  cold: cut(at("brief1-approvals"), at("approve-dana")),
+  // 3 Overview: cards count up, the spend chart, the router gauge
+  overview: cut(at("overview"), end("overview")),
+  // 4 the goal types (after the page opens), then the plan draft through Approve plan
+  goal: cut(at("brief1-goal") + 3.7, at("brief1-goal") + 7.7),
+  plan: cut(at("brief1-plan-arrives") - 1, end("brief1-approve-plan")),
+  // 5 lanes fill, then Agent I/O on Dana's email
+  timeline: cut(at("brief1-timeline"), end("brief1-agent-io")),
+  // 6 the brief doc
+  doc: cut(at("brief1-doc") + 3, end("brief1-doc")), // the draft to Sam shows first; the brief opens ~3 s in
+  // 7 the cloud orange, the cards, Approve ×2, Approve & always allow, the rule line; the
+  // start is set so Approve (Dana) lands on the scene's bar 3 (the music's drop 2)
+  gate: cut(at("approve-dana") - 5.24, end("always-allow")),
+  // 8 the run summary
+  summary: cut(at("brief1-summary"), end("brief1-summary")),
+  // 9 Memory & skill
+  memory: cut(at("memory-skill") + 1.5, end("memory-skill")), // the panel is still loading for ~1.5 s
+  // 10 the next morning: the plan with the learned chip, then the end of run two
+  learned: cut(at("brief2-plan-arrives"), end("brief2-plan-arrives")),
+  run2End: cut(end("brief2-run") - 9, end("brief2-run")),
+  // 11 radar from the rail, the status pill, the approve from the pill (before the /v1 wait)
+  radar: cut(at("radar"), at("radar") + 4),
+  pill: cut(at("status-pill") + 1.5, end("status-pill")),
+  pillApprove: cut(at("pill-approve"), at("pill-approve") + 3),
+  // 12 behind the phone: the web app, blurred; then the same run in the web timeline, tagged chat
+  phoneBg: cut(at("chat-run"), end("chat-run")),
+  chatRun: cut(end("chat-run") - 6, end("chat-run")),
+  // 13 Token Factory watch: the routing table and its approval, then the Overview after it
+  // (the router gauge is not on screen during `watch`)
+  watch: cut(at("watch-approve") - 8, at("watch-approve") + 1),
+  overviewAfter: cut(at("overview-after"), at("overview-after") + 6),
+  // X clip variants
+  xPlan: cut(at("brief1-plan-arrives") - 1.2, end("brief1-approve-plan")),
+  xLanes: cut(at("brief1-timeline"), at("brief1-timeline") + 6),
+  xGate: cut(at("approve-dana") - 3, at("approve-dana") + 3),
+} satisfies Record<string, Cut>;
+export type ShotName = keyof typeof SHOTS;
+
+/** Clicks and arrivals the cut and the sound land on (the recorder's sub-beats). */
+export const MOMENTS = {
+  planArrives: at("brief1-plan-arrives"),
+  approvePlan: at("brief1-approve-plan"),
+  agentIo: at("brief1-agent-io"),
+  approveDana: at("approve-dana"),
+  approvePriya: at("approve-priya"),
+  alwaysAllow: at("always-allow"),
+  learnedPlan: at("brief2-plan-arrives"),
+  pillApprove: at("pill-approve") + 0.6,
+  watchApprove: at("watch-approve"),
+};
+
 export const MIN_RATE = 0.5;
 export const MAX_RATE = 1.5;
 
-export function fitCut(cut: Cut, sceneSeconds: number): Cut & { rate: number } {
-  const raw = (cut.to - cut.from) / sceneSeconds;
-  const rate = Math.min(MAX_RATE, Math.max(MIN_RATE, raw));
-  return { ...cut, to: cut.from + rate * sceneSeconds, rate };
+/** A cut fitted to a scene: its playback rate, clamped; past the clamp the cut is shortened. */
+export function fit(c: Cut, sceneSeconds: number): Cut & { rate: number } {
+  const rate = Math.min(MAX_RATE, Math.max(MIN_RATE, (c.to - c.from) / sceneSeconds));
+  return { from: c.from, to: c.from + rate * sceneSeconds, rate };
 }
 
-/** Scene frame of a source moment in a shot of `frames` (hand timings, as the cues use). */
-export function momentFrame(name: ShotName, frames: number, t: number, fps = 30) {
-  const cut = fitCut(cutFor(name, null), frames / fps);
-  return Math.round(((t - cut.from) / cut.rate) * fps);
+/** Frame inside a shot of `frames` where source second `t` plays. */
+export function momentFrame(shot: ShotName, frames: number, t: number, fps = 30) {
+  const c = fit(SHOTS[shot], frames / fps);
+  return Math.round(((t - c.from) / c.rate) * fps);
 }
+
+/** A target's centre as a camera focus point (0–1 of the take). */
+export const focus = (name: string, inBeat?: string) => {
+  const b = target(name, inBeat);
+  return { u: (b.x + b.w / 2) / TAKE_W, v: (b.y + b.h / 2) / TAKE_H };
+};

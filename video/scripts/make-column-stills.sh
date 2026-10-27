@@ -11,6 +11,6 @@ mkdir -p "$OUT"
 i=0
 for t in 17 21.5 58 70 110 228 241 250 256 348; do
   i=$((i + 1))
-  ffmpeg -v error -y -ss "$t" -i "$TAKE" -frames:v 1 -vf scale=960:-1 -q:v 4 "$OUT/$(printf %02d $i).jpg"
+  ffmpeg -v error -y -ss "$t" -i "$TAKE" -frames:v 1 -vf scale=1600:-1 -q:v 3 "$OUT/$(printf %02d $i).jpg"
 done
 ls "$OUT" | wc -l | xargs echo "column stills:"

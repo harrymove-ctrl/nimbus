@@ -19,8 +19,8 @@ const PAN_FROM = 160;
 const JUMP_GAPS = [15, 15, 12, 12, 12, 10, 10, 10, 10];
 const JUMP_FRAMES = 4;
 
-const STILL_W = 760;
-const STILL_H = 428;
+const STILL_W = 1320;
+const STILL_H = 743;
 const GAP = 36;
 
 /** Frames (inside the scene) the column jumps on: one shutter each. */
@@ -56,7 +56,7 @@ export function ColumnCut({
     const hl = lines[highlightLine];
     const lit = Math.round(interpolate(frame, [HL_FROM, HL_TO], [0, hl.length], clamp));
     return (
-      <AbsoluteFill style={{ background: C.ink, fontFamily: MANROPE }}>
+      <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE }}>
         <div style={{ position: "absolute", left: 300, top: 300, transform: `translateY(${drift}px)` }}>
           {lines.map((line, i) => {
             const at = i * beats(1);
@@ -70,7 +70,7 @@ export function ColumnCut({
                   fontSize: 72,
                   fontWeight: 700,
                   letterSpacing: "-0.01em",
-                  color: isHl ? C.paper : C.dim,
+                  color: isHl ? C.ink : C.dim,
                   opacity: p,
                   transform: `translateY(${(1 - p) * 40}px)`,
                   display: "flex",
@@ -80,7 +80,7 @@ export function ColumnCut({
               >
                 {isHl ? (
                   <>
-                    <span style={{ background: C.mint, color: C.ink, borderRadius: 6 }}>{line.slice(0, lit)}</span>
+                    <span style={{ background: C.mint, color: C.bg, borderRadius: 6 }}>{line.slice(0, lit)}</span>
                     <span>{line.slice(lit)}</span>
                     <span
                       style={{
@@ -116,7 +116,7 @@ export function ColumnCut({
     return { opacity: Math.min(1, p * 2), transform: `translateY(${(1 - p) * 30}px) scale(${0.9 + 0.1 * p})` };
   };
   return (
-    <AbsoluteFill style={{ background: C.ink, fontFamily: MANROPE, overflow: "hidden" }}>
+    <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE, overflow: "hidden" }}>
       <AbsoluteFill style={{ transform: `translateX(${pan}px)` }}>
         <div style={{ position: "absolute", left: 960 - STILL_W / 2, top: colY }}>
           {stills.map((s, i) => (
@@ -136,34 +136,30 @@ export function ColumnCut({
             />
           ))}
         </div>
-        <div
-          style={{
-            position: "absolute",
-            right: 960 + STILL_W / 2 + 44,
-            top: 510,
-            fontSize: 46,
-            fontWeight: 700,
-            color: C.paper,
-            whiteSpace: "nowrap",
-            ...word(LEFT_AT),
-          }}
-        >
-          {left}
-        </div>
-        <div
-          style={{
-            position: "absolute",
-            left: 960 + STILL_W / 2 + 44,
-            top: 510,
-            fontSize: 46,
-            fontWeight: 700,
-            color: C.mint,
-            whiteSpace: "nowrap",
-            ...word(RIGHT_AT),
-          }}
-        >
-          {right}
-        </div>
+        {[
+          { text: left, at: LEFT_AT, side: "left" as const, color: C.ink },
+          { text: right, at: RIGHT_AT, side: "right" as const, color: C.mint },
+        ].map((w) => (
+          <div
+            key={w.text}
+            style={{
+              position: "absolute",
+              [w.side]: 960 - STILL_W / 2 - 40,
+              bottom: 150,
+              fontSize: 54,
+              fontWeight: 700,
+              color: w.color,
+              whiteSpace: "nowrap",
+              background: `color-mix(in oklch, ${C.card} 92%, transparent)`,
+              border: `1px solid ${C.line}`,
+              borderRadius: 18,
+              padding: "16px 30px",
+              ...word(w.at),
+            }}
+          >
+            {w.text}
+          </div>
+        ))}
       </AbsoluteFill>
     </AbsoluteFill>
   );

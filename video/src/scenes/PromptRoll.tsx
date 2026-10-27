@@ -1,7 +1,8 @@
 // Prompt Roll (scene 1), written from the board's description: a prompt card pushes in while
 // the lead types; its last words become a pill that rolls through jobs, one per beat, each
 // in its own tint; a whip pan to a send button that draws itself in; a pointer presses it
-// into a halo; the arrow flies off as the frame washes white. A pure function of the frame.
+// into a halo; the arrow flies off into a 6-frame mint flash (dark-first, board rev B).
+// A pure function of the frame.
 import {
   AbsoluteFill,
   Easing,
@@ -12,7 +13,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { beats } from "../grid";
-import { C, MANROPE } from "../theme";
+import { C, DITHER_GLOW, MANROPE } from "../theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -28,9 +29,9 @@ const DRAW_AT = 92;
 const DRAW_FRAMES = 8;
 const PRESS_AT = 104;
 const FLY_AT = 106;
-const WASH_AT = 108;
+const WASH_AT = 114; // the flash: 6 frames into the cut
 
-const FONT = 56;
+const FONT = 64;
 const CHAR_W = FONT * 0.56; // Manrope 600, average advance; keeps the layout a pure function
 const pillWidth = (s: string) => s.length * CHAR_W + 56;
 
@@ -71,14 +72,14 @@ export function PromptRoll({
   const press = frame >= PRESS_AT && frame < PRESS_AT + 4 ? 0.9 : 1;
   const halo = interpolate(frame, [PRESS_AT, PRESS_AT + 12], [0, 1], clamp);
   const fly = interpolate(frame, [FLY_AT, FLY_AT + 8], [0, 1], { ...clamp, easing: Easing.in(Easing.cubic) });
-  const wash = interpolate(frame, [WASH_AT, WASH_AT + 12], [0, 1], { ...clamp, easing: Easing.in(Easing.quad) });
+  const wash = interpolate(frame, [WASH_AT, WASH_AT + 6], [0, 0.85], { ...clamp, easing: Easing.in(Easing.quad) });
 
-  const cardW = 1500;
+  const cardW = 1700;
   const btn = 150;
   const btnX = 960 + cardW / 2 + 120; // send button, right of the card
 
   return (
-    <AbsoluteFill style={{ background: C.paper, fontFamily: MANROPE, overflow: "hidden" }}>
+    <AbsoluteFill style={{ background: C.bg, backgroundImage: DITHER_GLOW, fontFamily: MANROPE, overflow: "hidden" }}>
       <AbsoluteFill
         style={{
           transform: `translateX(${panX}px) scale(${push})`,
@@ -90,13 +91,13 @@ export function PromptRoll({
           style={{
             position: "absolute",
             left: 960 - cardW / 2,
-            top: 540 - 120,
+            top: 540 - 140,
             width: cardW,
-            height: 240,
+            height: 280,
             borderRadius: 32,
-            background: "#ffffff",
-            boxShadow: "0 30px 80px rgba(9,9,11,0.10), 0 2px 0 rgba(9,9,11,0.04)",
-            border: `1px solid ${C.soft}`,
+            background: C.card,
+            boxShadow: "0 40px 90px oklch(0 0 0 / 45%)",
+            border: `1px solid ${C.line}`,
             display: "flex",
             alignItems: "center",
             padding: "0 64px",
@@ -109,7 +110,7 @@ export function PromptRoll({
         >
           <span>{typed}</span>
           {frame < typingDone ? (
-            <span style={{ display: "inline-block", width: 4, height: FONT * 0.9, background: C.ink, marginLeft: 4, opacity: frame % 16 < 9 ? 1 : 0 }} />
+            <span style={{ display: "inline-block", width: 4, height: FONT * 0.9, background: C.mint, marginLeft: 4, opacity: frame % 16 < 9 ? 1 : 0 }} />
           ) : (
             <span
               style={{
@@ -138,7 +139,7 @@ export function PromptRoll({
                       top: 0,
                       lineHeight: `${FONT * 1.35}px`,
                       transform: `translateY(${y}%)`,
-                      color: C.ink,
+                      color: C.bg,
                     }}
                   >
                     {o.text}
@@ -160,12 +161,12 @@ export function PromptRoll({
             <circle r={btn / 2 + halo * 90} fill="none" stroke={C.mint} strokeWidth={10 * (1 - halo)} opacity={1 - halo} />
           ) : null}
           <g transform={`scale(${press})`}>
-            <circle r={btn / 2} fill={draw >= 1 ? C.ink : "none"} stroke={C.ink} strokeWidth={6} strokeDasharray={Math.PI * btn} strokeDashoffset={(1 - draw) * Math.PI * btn} transform="rotate(-90)" />
+            <circle r={btn / 2} fill={draw >= 1 ? C.mint : "none"} stroke={C.mint} strokeWidth={6} strokeDasharray={Math.PI * btn} strokeDashoffset={(1 - draw) * Math.PI * btn} transform="rotate(-90)" />
             <g
               transform={`translate(${fly * 420}, ${-fly * 420}) rotate(${-45 + 0})`}
               opacity={draw >= 1 ? 1 - fly * 0.6 : 0}
             >
-              <path d="M -26 0 L 26 0 M 6 -20 L 26 0 L 6 20" stroke={draw >= 1 && fly === 0 ? C.paper : C.ink} strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <path d="M -26 0 L 26 0 M 6 -20 L 26 0 L 6 20" stroke={draw >= 1 && fly === 0 ? C.mintInk : C.mint} strokeWidth={9} strokeLinecap="round" strokeLinejoin="round" fill="none" />
             </g>
           </g>
         </svg>
@@ -183,10 +184,10 @@ export function PromptRoll({
             transform: `scale(${press})`,
           }}
         >
-          <path d="M2 2 L2 24 L8 18 L12 28 L16 26 L12 17 L20 17 Z" fill={C.ink} stroke={C.paper} strokeWidth={1.6} strokeLinejoin="round" />
+          <path d="M2 2 L2 24 L8 18 L12 28 L16 26 L12 17 L20 17 Z" fill={C.ink} stroke={C.bg} strokeWidth={1.6} strokeLinejoin="round" />
         </svg>
       </AbsoluteFill>
-      <AbsoluteFill style={{ background: "#ffffff", opacity: wash }} />
+      <AbsoluteFill style={{ background: `color-mix(in oklch, ${C.mint} 35%, white)`, opacity: wash }} />
     </AbsoluteFill>
   );
 }

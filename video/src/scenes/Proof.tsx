@@ -4,34 +4,33 @@ import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoCon
 import { MockTag } from "../components/cards";
 import { beats, bars } from "../grid";
 import { NUMBERS } from "../numbers";
-import { C, MANROPE, MONO } from "../theme";
+import { C, MANROPE, MONO, TIER } from "../theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 const TIERS = [
-  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", role: "plans", color: C.mint },
-  { name: "Nemotron 3 Super", id: "nvidia/nemotron-3-super-120b-a12b", role: "does the work", color: C.blue },
-  { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", role: "checks", color: C.orange },
+  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", role: "plans", color: TIER.ultra },
+  { name: "Nemotron 3 Super", id: "nvidia/nemotron-3-super-120b-a12b", role: "does the work", color: TIER.super },
+  { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", role: "checks", color: TIER.nano },
 ];
 
 /** Tiles rush in one per beat; each number counts up over one bar. */
-export const PROOF = { tiles: [0, beats(1), beats(2)], counts: [bars(1), bars(2)] };
+export const PROOF = { tiles: [0, beats(1), beats(2)], factory: beats(4), counts: [bars(2)] };
 
 export function Proof() {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
   const push = interpolate(frame, [0, durationInFrames], [1, 1.05], clamp);
   const stats = [
-    { at: PROOF.counts[0], to: NUMBERS.savingsPct, fmt: (n: number) => `−${Math.round(n)} %`, label: "cost vs the top model on every step" },
     {
-      at: PROOF.counts[1],
+      at: PROOF.counts[0],
       to: NUMBERS.checksPassed,
       fmt: (n: number) => `${Math.round(n)}/${NUMBERS.checksTotal}`,
-      label: "checks pass",
+      label: "trajectory evals pass · MIT",
     },
   ];
   return (
-    <AbsoluteFill style={{ background: C.ink, fontFamily: MANROPE, color: C.paper }}>
+    <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE, color: C.ink }}>
       <AbsoluteFill style={{ transform: `scale(${push})`, alignItems: "center", justifyContent: "center" }}>
         <div style={{ display: "flex", gap: 32 }}>
           {TIERS.map((t, i) => {
@@ -65,8 +64,8 @@ export function Proof() {
             );
           })}
         </div>
-        <div style={{ marginTop: 26, fontSize: 28, fontWeight: 600, color: C.muted, opacity: interpolate(frame, [beats(3), beats(3) + 8], [0, 1], clamp) }}>
-          every call through <span style={{ color: C.blue }}>Nebius Token Factory</span>
+        <div style={{ marginTop: 30, fontSize: 40, fontWeight: 700, color: C.mint, opacity: interpolate(frame, [PROOF.factory, PROOF.factory + 8], [0, 1], clamp) }}>
+          Nebius Token Factory
         </div>
         <div style={{ display: "flex", gap: 140, marginTop: 64 }}>
           {stats.map((st) => {
@@ -91,7 +90,7 @@ export function EndCard() {
   const { fps } = useVideoConfig();
   const s = spring({ frame, fps, durationInFrames: 10, config: { damping: 200 } });
   return (
-    <AbsoluteFill style={{ background: C.ink, fontFamily: MANROPE, color: C.paper, alignItems: "center", justifyContent: "center" }}>
+    <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE, color: C.ink, alignItems: "center", justifyContent: "center" }}>
       <div style={{ opacity: s, textAlign: "center" }}>
         <div style={{ fontSize: 128, fontWeight: 800, letterSpacing: "-0.04em" }}>
           Nimbus<span style={{ color: C.mint }}>.</span>

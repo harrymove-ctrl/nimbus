@@ -10,7 +10,7 @@ import {
 } from "remotion";
 import { TextHighlight, type TextHighlightPreset } from "@/components/snap-cn/text-highlight";
 import { NUMBERS } from "../numbers";
-import { C, MANROPE, manropeReady, SORBET } from "../theme";
+import { C, DITHER_GLOW, MANROPE, manropeReady, SORBET } from "../theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -35,9 +35,6 @@ export function Drift({ to = 1.05, children }: { to?: number; children: React.Re
   const scale = interpolate(frame, [0, durationInFrames], [1, to], clamp);
   return <AbsoluteFill style={{ transform: `scale(${scale})` }}>{children}</AbsoluteFill>;
 }
-
-// The 3 % dither-glow behind cards: a low mint wash, no texture of its own.
-const glow = `radial-gradient(ellipse 60% 50% at 50% 60%, color-mix(in oklch, ${C.mint} 7%, transparent), transparent 70%)`;
 
 export type Emphasis = {
   before?: string;
@@ -68,7 +65,7 @@ export function Card({
   const fade = interpolate(frame, [0, 8], [0, 1], clamp);
   const lineH = size * 1.25;
   return (
-    <AbsoluteFill style={{ background: C.ink, backgroundImage: glow, fontFamily: MANROPE }}>
+    <AbsoluteFill style={{ background: C.bg, backgroundImage: DITHER_GLOW, fontFamily: MANROPE }}>
       <Drift to={1.1}>
         <AbsoluteFill style={{ opacity: fade, transform: `translateY(${rise}px)` }}>
           {chapter ? (
@@ -97,9 +94,9 @@ export function Card({
             fontSize={size}
             fontWeight={700}
             fontFamily={MANROPE}
-            baseColor={C.paper}
+            baseColor={C.ink}
             accentColor={C.mint}
-            highlightedTextColor={line.preset === "marker" ? C.ink : undefined}
+            highlightedTextColor={line.preset === "marker" ? C.bg : undefined}
             theme={SORBET}
             mode="dark"
           />
@@ -170,7 +167,7 @@ export function FootageLabel({ text, from, to }: { text: string; from: number; t
         style={{
           opacity: o,
           background:
-            "radial-gradient(ellipse 70% 60% at 0% 100%, rgba(9,9,11,0.82), rgba(9,9,11,0) 70%)",
+            `radial-gradient(ellipse 70% 60% at 0% 100%, color-mix(in oklch, ${C.bg} 82%, transparent), transparent 70%)`,
         }}
       />
       <div
@@ -181,7 +178,7 @@ export function FootageLabel({ text, from, to }: { text: string; from: number; t
           maxWidth: 860,
           opacity: o,
           transform: `translateY(${(1 - inP) * 12}px)`,
-          background: "rgba(24,24,27,0.88)",
+          background: `color-mix(in oklch, ${C.card} 90%, transparent)`,
           border: `1px solid ${C.line}`,
           borderRadius: 16,
           padding: "22px 30px",
@@ -189,7 +186,7 @@ export function FootageLabel({ text, from, to }: { text: string; from: number; t
           fontSize: 32,
           fontWeight: 600,
           lineHeight: 1.3,
-          color: C.paper,
+          color: C.ink,
         }}
       >
         {text}

@@ -1,7 +1,7 @@
-// The sound: a click track standing in for the Suno music (same BPM, so nothing re-times
-// when the track drops in) and the SFX cue sheet of docs/video/sfx.md. Every SFX file is
-// peak-normalised to -1 dBFS (scripts/make-audio.sh); a cue's level in dB becomes a gain
-// against REF, the short-term loudness a normalised file reads at its hit.
+// The sound: the music bed and the SFX cue sheet of docs/video/sfx.md. Every SFX file is a
+// cuelume cue or a designed Tone.js sound, peak-normalised to -1 dBFS (scripts/make-sound.mjs);
+// a cue's level in dB becomes a gain against REF. The master is levelled to −14 LUFS after
+// the render (scripts/master.sh).
 import { Audio, Sequence, staticFile } from "remotion";
 
 export type Cue = {
@@ -19,9 +19,9 @@ export type Cue = {
   frames?: number;
 };
 
-const REF = -10;
+const REF = -16;
 /** One trim for every SFX, set from the loudness check. */
-export const SFX_TRIM_DB = 4;
+export const SFX_TRIM_DB = 0;
 export const gain = (db: number) => Math.min(1, 10 ** ((db + SFX_TRIM_DB - REF) / 20));
 
 export function SfxTrack({ cues }: { cues: Cue[] }) {
@@ -41,9 +41,12 @@ export function SfxTrack({ cues }: { cues: Cue[] }) {
   );
 }
 
-/** The music stand-in, muted through the cue sheet's silences ([from, to) frames). */
-export function ClickTrack({ silences, volume }: { silences: [number, number][]; volume: number }) {
-  const v = (f: number) => (silences.some(([a, b]) => f >= a && f < b) ? 0 : volume);
-  return <Audio src={staticFile("audio/click-120.wav")} volume={v} />;
+/**
+ * The music bed: the Suno track once it exists (music-full.mp3 / music-x.mp3), until then the
+ * Tone.js temp score. About 2 dB lower under footage than on title cards (sound.md: −18 under
+ * footage, −14 on cards, after mastering). The click track is never rendered.
+ */
+export function MusicBed({ src, footage }: { src: string; footage: [number, number][] }) {
+  const v = (f: number) => (footage.some(([a, b]) => f >= a && f < b) ? 0.8 : 1);
+  return <Audio src={staticFile(src)} volume={v} />;
 }
-
