@@ -1,0 +1,37 @@
+{
+  "captured": "2026-10-27",
+  "endpoint": "/v1/chat/completions",
+  "model": "nimbus",
+  "user": "nimbus-video-demo-2",
+  "mode": "mock (example data)",
+  "placeholder": false,
+  "exchanges": [
+    {
+      "role": "user",
+      "text": "what needs me?"
+    },
+    {
+      "role": "nimbus",
+      "text": "Nothing is running or waiting.\nLast: Ship Nimbus, done 16 min ago.",
+      "seconds": 1.7
+    },
+    {
+      "role": "user",
+      "text": "run morning brief"
+    },
+    {
+      "role": "nimbus",
+      "text": "On it: Morning brief.\nPlan: analyst, writer.\nNeeds your OK: Send message to dana@example.com.\n2 more waiting after this.\nReply approve or deny.\nhttp://localhost:3241/?run=run_13edd9f6",
+      "seconds": 9.1
+    },
+    {
+      "role": "user",
+      "text": "approve all"
+    },
+    {
+      "role": "nimbus",
+      "text": "Approved: Send message to dana@example.com; Send message to priya@nebius.example; Send message to sam@devshop.example.\nMorning brief · Tue Oct 27\nNeeds you today\n1. Dana (Acme): contract signature by Fri Nov 7. Legal is waiting; you have a call with Dana at 14:00 today. Draft 1 asks to walk through the two open clauses on that call.\n2. Priya (Nebius): confirm the 11:30 showcase dry run by 5 pm and send the demo link. Draft 2 confirms and attaches the link.\n3. Sam (DevShop): did the router fallback fix land? One-word answer wanted before Thursday. Draft 3 says: not yet, a PR is open.\nToday …\nhttp://localhost:3241/?run=run_13edd9f6",
+      "seconds": 1.2
+    }
+  ]
+}
