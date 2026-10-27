@@ -15,7 +15,7 @@
       "memories": [
        "The catalog page lists price per tier with the effective date; compare all three tiers every day.",
        "Price the week of usage at the new prices before proposing a rule.",
-       "A rule that moves the Orchestrator off Ultra needs `pnpm eval:ab --cheap` before and after.",
+       "A rule that moves the Analyst to Nano needs `pnpm eval:ab --cheap` before and after.",
        "Writing router-rules.json always needs approval."
       ],
       "skill": "## Token Factory watch\n1. Fetch the catalog and compare each tier's price and the model list with last time.\n2. Price the usage export at the new prices; propose a rule only with the saving shown.\n3. Writing router-rules.json needs approval; say it is an estimate.\n\n## Policy\n(none yet)"

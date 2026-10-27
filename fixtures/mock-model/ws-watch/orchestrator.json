@@ -102,12 +102,12 @@
      "input": {
       "action": {
        "kind": "write_file",
-       "summary": "Write router-rules.json (if applied: −29.2 %)",
+       "summary": "Write router-rules.json (if applied: −19.4 %)",
        "risk": "medium",
        "details": {
         "path": "router-rules.json",
-        "content": "{\n  \"rules\": [\n    {\n      \"role\": \"orchestrator\",\n      \"afterTurn\": 1,\n      \"maxTier\": \"super\",\n      \"note\": \"the plan turn stays on Ultra; later turns run on Super\"\n    }\n  ],\n  \"expectedSavingPct\": 29.2,\n  \"basis\": \"fixtures/usage-export.json, week 2026-10-19/25, priced at the Oct 29 catalog\"\n}",
-        "expectedSavingPct": 29.2
+        "content": "{\n  \"rules\": [\n    {\n      \"role\": \"analyst\",\n      \"afterTurn\": 2,\n      \"maxTier\": \"nano\",\n      \"note\": \"the Analyst's third hop on reads results and reports: Nano is enough\"\n    }\n  ],\n  \"expectedSavingPct\": 19.4,\n  \"basis\": \"fixtures/usage-export.json, week 2026-10-19/25, priced at the Oct 29 catalog\"\n}",
+        "expectedSavingPct": 19.4
        }
       }
      }
@@ -121,12 +121,12 @@
     "out": 200
    },
    "complexity": 1,
-   "text": "Done. Super gets cheaper on Oct 29; with one router rule the week would cost 29.2 % less. The proposal is in the Artifact tab.",
+   "text": "Done. Super gets cheaper on Oct 29; with one router rule (the Analyst's later hops on Nano) the week would cost 19.4 % less. The proposal is in the Artifact tab.",
    "toolCalls": [
     {
      "name": "finish",
      "input": {
-      "summary": "One price change; one rule proposed, −29.2 % if applied."
+      "summary": "One price change; one rule proposed, −19.4 % if applied."
      }
     }
    ]

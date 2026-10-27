@@ -24,7 +24,8 @@
     "check:tools": "node --env-file-if-exists=.env.local --import tsx scripts/check-tools.mts",
     "seed:run": "node --env-file-if-exists=.env.local --import tsx scripts/seed-run.mts",
     "check:cases": "node --env-file-if-exists=.env.local --import tsx scripts/check-cases.mts",
-    "prune:runs": "node --env-file-if-exists=.env.local --import tsx scripts/prune-dev-runs.mts"
+    "prune:runs": "node --env-file-if-exists=.env.local --import tsx scripts/prune-dev-runs.mts",
+    "check:rules": "node --env-file-if-exists=.env.local --import tsx scripts/check-rules.mts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.79",

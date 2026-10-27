@@ -9,6 +9,7 @@ import { MAX_OUT_TOKENS, TIERS, type Tier } from "@/lib/models";
 import { getModel, MockHttpError, mockTurn, modelMode } from "@/lib/tokenfactory";
 import type { RunCtx } from "./context";
 import { RunAborted, sleep } from "./context";
+import { ruleFor } from "./router-rules";
 import type { AgentRole } from "@/lib/models";
 
 const ORDER: Tier[] = ["nano", "super", "ultra"];
@@ -22,6 +23,14 @@ const TTL_MS = 24 * 3600 * 1000;
 export type Hop = { role: AgentRole; turn: number; brief: string; hasTools: boolean; risk?: "low" | "medium" | "high"; ws?: string; instance?: string };
 
 export async function pickTier(ctx: RunCtx, hop: Hop, ceiling: Tier): Promise<{ tier: Tier; reason: string }> {
+  const base = await pickBase(ctx, hop, ceiling);
+  // an approved router rule (data/router-rules.json) caps the tier; "Max" and router-off are the person's own override
+  if (!routerOn() || ctx.tierChoice === "max") return base;
+  const rule = ruleFor(hop.role, hop.turn, base.tier);
+  return rule ? { tier: rule.maxTier, reason: `${base.reason} · rule: ${rule.role} after turn ${rule.afterTurn ?? 0} → ${rule.maxTier} (router-rules.json)` } : base;
+}
+
+async function pickBase(ctx: RunCtx, hop: Hop, ceiling: Tier): Promise<{ tier: Tier; reason: string }> {
   if (!routerOn()) return { tier: ceiling, reason: "router off → ceiling" };
   if (ctx.tierChoice === "max") return { tier: ceiling, reason: "tier = Max → ceiling" };
   if (ctx.tierChoice === "cheap") return { tier: "nano", reason: "tier = Cheap → nano" };

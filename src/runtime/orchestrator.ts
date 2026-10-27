@@ -135,7 +135,7 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
           }
           mkdirSync(dataDir(), { recursive: true });
           writeFileSync(path.join(dataDir(), "router-rules.json"), JSON.stringify({ ...(rules as object), expectedSavingPct: d.expectedSavingPct, appliedAt: Date.now(), runId: ctx.runId }, null, 2));
-          return { decision: "approved", written: "data/router-rules.json", note: "recorded for the Overview; the router does not read it yet" };
+          return { decision: "approved", written: "data/router-rules.json", note: "recorded in data/router-rules.json; the router applies it from the next run" };
         }
         return { decision: "approved", written: false, note: "demo mode: nothing was written" };
       }

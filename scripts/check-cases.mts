@@ -94,7 +94,7 @@ if (want("watch")) {
   check("a write_file approval for router-rules.json carries the expected saving and is recorded on approval", r.events.some((e) => e.type === "approval.request" && e.payload.action.kind === "write_file" && typeof (e.payload.action.details as { expectedSavingPct?: number }).expectedSavingPct === "number") && existsSync(path.join(dataDir(), "router-rules.json")));
   const ov = (await import("../src/runtime/overview")).getOverview;
   const o = await ov();
-  check("the Overview shows the rule as recorded, with the saving", !!o.rules && o.rules.applied && o.rules.expectedSavingPct > 20, JSON.stringify(o.rules));
+  check("the Overview shows the rule as recorded, with the saving", !!o.rules && o.rules.applied && o.rules.expectedSavingPct > 10, JSON.stringify(o.rules));
 }
 if (want("release")) {
   console.log("— Release watch");
