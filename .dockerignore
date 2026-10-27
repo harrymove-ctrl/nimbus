@@ -1,0 +1,15 @@
+node_modules
+.next
+.next-*
+data
+.git
+.github
+.agents
+.claude
+.env
+.env.*
+!.env.example
+evals/report.json
+docs
+*.log
+.DS_Store
