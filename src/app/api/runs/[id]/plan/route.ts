@@ -13,6 +13,13 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   const run = getRun(id);
   if (!run) return Response.json({ error: "run not found" }, { status: 404 });
   const body = (await req.json().catch(() => ({}))) as { steps?: Partial<PlanStep>[]; approve?: boolean; revise?: boolean };
+  // `{ approve: true }` alone approves the draft as it stands (API clients that do not edit plans)
+  if (body.approve && body.steps === undefined) {
+    const draft = [...run.events].reverse().find((e) => e.type === "plan");
+    const steps = draft?.type === "plan" ? draft.payload.steps : undefined;
+    if (!steps?.length) return Response.json({ error: "no draft plan to approve" }, { status: 409 });
+    return run.planAction({ action: "approve", steps }) ? Response.json({ ok: true }) : Response.json({ error: "no plan is waiting for you" }, { status: 409 });
+  }
   if (!Array.isArray(body.steps) || body.steps.length === 0 || body.steps.length > 20) return Response.json({ error: "steps: 1 to 20 steps" }, { status: 400 });
   const steps: PlanStep[] = [];
   for (const [i, s] of body.steps.entries()) {
