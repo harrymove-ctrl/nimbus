@@ -76,6 +76,13 @@ const PLACEHOLDER: Record<ComposerState, string> = {
   waiting: "Steer the crew…",
 };
 
+/** Three plain goals on an empty workstream (SPEC §17.7); the plan card does the rest. */
+const TEMPLATES: { label: string; goal: string }[] = [
+  { label: "Fix what's failing", goal: "Run the checks, find what fails, fix it, and open a pull request for me to review." },
+  { label: "Watch …", goal: "Watch the pages I care about and tell me what changed since yesterday and what we should do about it." },
+  { label: "Brief me every morning", goal: "Read my inbox, calendar and notifications and give me one page: what needs me today, drafts for the replies that matter, and what can wait." },
+];
+
 export function Composer(p: ComposerProps) {
   const { view } = p;
   const [menuClosed, setMenuClosed] = useState(false);
@@ -219,6 +226,21 @@ export function Composer(p: ComposerProps) {
 
   return (
     <div className="mx-auto w-full max-w-[720px]">
+      {state === "idle" && !view.runId && (
+        <div className="mb-2 flex flex-wrap gap-1.5" role="group" aria-label="Goal templates">
+          {TEMPLATES.map((t, i) => (
+            <button
+              key={t.label}
+              type="button"
+              style={{ animationDelay: `${i * 50}ms` }}
+              onClick={() => (p.setDraft(t.goal), areaRef.current?.focus())}
+              className="nb-rise-fast rounded-full border border-white/12 bg-neutral-900 px-3 py-1.5 text-[13px] font-bold text-neutral-200 transition-colors hover:bg-white/10"
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
       <div
         onDragOver={(e) => {
           e.preventDefault();
