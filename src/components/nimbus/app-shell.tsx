@@ -326,6 +326,17 @@ export function AppShell() {
           onSelect={(id) => void openWorkstream(id)}
           onOverview={() => (setSelectedId(null), setDrawer(null))}
           onRun={(id) => void startRun({ saved: true }, id)}
+          onArchive={async (id, archived) => {
+            await fetch(`/api/workstreams/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ archived }) });
+            if (archived && selectedId === id) setSelectedId(null);
+            await refreshWorkstreams();
+          }}
+          onSchedule={async (id, schedule) => {
+            const r = await fetch(`/api/workstreams/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ schedule }) });
+            if (!r.ok) return ((await r.json().catch(() => ({}))) as { error?: string }).error ?? "could not save the schedule";
+            await refreshWorkstreams();
+            return null;
+          }}
           budget={budget}
           loading={!wsLoaded}
           className={cx("z-40 xl:static xl:flex xl:w-[280px] xl:shrink-0", drawer === "rail" ? "nb-drawer-left fixed inset-y-12 left-0 flex w-[280px]" : "hidden")}

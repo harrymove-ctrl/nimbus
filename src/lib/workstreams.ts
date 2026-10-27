@@ -12,6 +12,8 @@ export type Workstream = {
   /** current SKILL.md content, shown in the Inspector's Memory tab */
   skill: string;
   unread?: boolean;
+  /** hidden from the rail (rail menu: Archive) */
+  archived?: boolean;
   /** the colour of this workstream's ring in the status pill */
   color: string;
   /** what the same work costs a person by hand, in minutes: an estimate, shown labelled as one (impact line, Overview) */

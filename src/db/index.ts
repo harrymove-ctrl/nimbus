@@ -12,7 +12,7 @@ export { schema };
 export const dataDir = () => path.resolve(process.env.NIMBUS_DATA_DIR || "./data");
 
 const DDL = [
-  `CREATE TABLE IF NOT EXISTS workstreams (id TEXT PRIMARY KEY, title TEXT NOT NULL, goal TEXT NOT NULL, schedule_cron TEXT, schedule_label TEXT, tools TEXT NOT NULL, unread INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS workstreams (id TEXT PRIMARY KEY, title TEXT NOT NULL, goal TEXT NOT NULL, schedule_cron TEXT, schedule_label TEXT, tools TEXT NOT NULL, unread INTEGER NOT NULL DEFAULT 0, archived INTEGER NOT NULL DEFAULT 0, schedule_edited INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, workstream_id TEXT NOT NULL, title TEXT NOT NULL, goal TEXT NOT NULL, status TEXT NOT NULL, trigger TEXT NOT NULL, started_at INTEGER NOT NULL, ended_at INTEGER, tokens_in INTEGER NOT NULL DEFAULT 0, tokens_out INTEGER NOT NULL DEFAULT 0, cost_usd REAL NOT NULL DEFAULT 0, baseline_usd REAL NOT NULL DEFAULT 0, model TEXT, usage_by_tier TEXT)`,
   `CREATE TABLE IF NOT EXISTS run_events (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, seq INTEGER NOT NULL, t_ms INTEGER NOT NULL, agent TEXT NOT NULL, agent_instance TEXT NOT NULL, type TEXT NOT NULL, payload TEXT NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS run_events_run_t ON run_events (run_id, t_ms)`,
@@ -57,6 +57,8 @@ function open(): Holder {
     // Columns added after the first release: alter only when missing (an ALTER takes a write lock even when it is a no-op).
     const has = async (table: string, col: string) => (await client.execute(`PRAGMA table_info(${table})`)).rows.some((r) => r.name === col);
     if (!(await has("skills", "previous"))) await client.execute("ALTER TABLE skills ADD COLUMN previous TEXT");
+    if (!(await has("workstreams", "archived"))) await client.execute("ALTER TABLE workstreams ADD COLUMN archived INTEGER NOT NULL DEFAULT 0");
+    if (!(await has("workstreams", "schedule_edited"))) await client.execute("ALTER TABLE workstreams ADD COLUMN schedule_edited INTEGER NOT NULL DEFAULT 0");
     if (!(await has("skills", "updated_run_id"))) await client.execute("ALTER TABLE skills ADD COLUMN updated_run_id TEXT");
     if (!(await has("memories", "used_count"))) await client.execute("ALTER TABLE memories ADD COLUMN used_count INTEGER NOT NULL DEFAULT 0");
     if (!(await has("runs", "usage_by_tier"))) await client.execute("ALTER TABLE runs ADD COLUMN usage_by_tier TEXT");
@@ -85,7 +87,8 @@ export async function seedWorkstreams(db: Db) {
   for (const w of WORKSTREAMS) {
     const exists = await db.select({ id: schema.workstreams.id }).from(schema.workstreams).where(eq(schema.workstreams.id, w.id));
     if (exists.length) {
-      await db.update(schema.workstreams).set({ title: w.title, goal: w.goal, scheduleCron: w.scheduleCron ?? null, scheduleLabel: w.scheduleLabel ?? null, tools: w.tools }).where(eq(schema.workstreams.id, w.id));
+      const [cur] = await db.select({ edited: schema.workstreams.scheduleEdited }).from(schema.workstreams).where(eq(schema.workstreams.id, w.id));
+      await db.update(schema.workstreams).set({ title: w.title, goal: w.goal, tools: w.tools, ...(cur?.edited ? {} : { scheduleCron: w.scheduleCron ?? null, scheduleLabel: w.scheduleLabel ?? null }) }).where(eq(schema.workstreams.id, w.id));
       continue;
     }
     await db.insert(schema.workstreams).values({

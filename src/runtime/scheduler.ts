@@ -11,6 +11,13 @@ declare global {
   var __nimbusCron: ScheduledTask[] | undefined;
 }
 
+/** After a schedule was edited: stop the timers and register the current ones. */
+export async function restartScheduler(): Promise<number> {
+  for (const t of globalThis.__nimbusCron ?? []) t.stop();
+  globalThis.__nimbusCron = undefined;
+  return startScheduler();
+}
+
 export async function startScheduler(): Promise<number> {
   if (process.env.NIMBUS_SCHEDULER === "off") return 0;
   if (globalThis.__nimbusCron) return globalThis.__nimbusCron.length;

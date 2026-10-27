@@ -9,6 +9,10 @@ export const workstreams = sqliteTable("workstreams", {
   scheduleLabel: text("schedule_label"),
   tools: text("tools", { mode: "json" }).$type<string[]>().notNull(),
   unread: integer("unread").notNull().default(0),
+  /** hidden from the rail until restored (rail menu: Archive) */
+  archived: integer("archived").notNull().default(0),
+  /** the person changed the schedule (rail menu: Edit schedule); the seed leaves it alone */
+  scheduleEdited: integer("schedule_edited").notNull().default(0),
   createdAt: integer("created_at").notNull(),
 });
 
