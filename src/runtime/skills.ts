@@ -13,7 +13,7 @@ export async function loadSkill(workstreamId: string): Promise<string> {
 export async function saveSkill(workstreamId: string, content: string) {
   const db = await getDb();
   const [row] = await db.select().from(schema.skills).where(eq(schema.skills.workstreamId, workstreamId));
-  if (row) await db.update(schema.skills).set({ content, version: row.version + 1, updatedAt: Date.now() }).where(eq(schema.skills.workstreamId, workstreamId));
+  if (row) await db.update(schema.skills).set({ content, previous: row.content, version: row.version + 1, updatedAt: Date.now() }).where(eq(schema.skills.workstreamId, workstreamId));
   else await db.insert(schema.skills).values({ workstreamId, content, version: 1, updatedAt: Date.now() });
 }
 
@@ -67,4 +67,13 @@ export function diffLines(a: string, b: string): { op: "+" | "-" | " "; text: st
   while (i < x.length) out.push({ op: "-", text: x[i++] });
   while (j < y.length) out.push({ op: "+", text: y[j++] });
   return out.filter((r) => r.text !== "" || r.op !== " ");
+}
+
+/** "Revert skill change": put back the SKILL.md from before the latest rewrite. Returns the restored text, or null if there is nothing to revert. */
+export async function revertSkill(workstreamId: string): Promise<string | null> {
+  const db = await getDb();
+  const [row] = await db.select().from(schema.skills).where(eq(schema.skills.workstreamId, workstreamId));
+  if (!row?.previous) return null;
+  await db.update(schema.skills).set({ content: row.previous, previous: null, version: row.version + 1, updatedAt: Date.now() }).where(eq(schema.skills.workstreamId, workstreamId));
+  return row.previous;
 }

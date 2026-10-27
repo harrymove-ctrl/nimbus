@@ -7,6 +7,7 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { dataDir, getDb, schema } from "../src/db";
 import { startRun } from "../src/runtime/source";
+import { loadSkill, revertSkill } from "../src/runtime/skills";
 import type { AnyRunEvent } from "../src/lib/events";
 
 const db = await getDb();
@@ -50,6 +51,18 @@ const sum1 = r1.events.find((e) => e.type === "message" && e.payload.card === "s
 check("run 1's summary has memories and a SKILL.md diff with an added line", !!sum1 && sum1.type === "message" && (sum1.payload.summary?.memories.length ?? 0) >= 5 && !!sum1.payload.summary?.skillDiff.some((d) => d.op === "+"));
 const mems = await db.select().from(schema.memories).where(eq(schema.memories.workstreamId, "ws-checkout"));
 check("memories are stored once (no duplicates after two runs)", mems.length === 5);
+
+// Revert, tested with two known saves (in mock mode the Learner's rewrite on run 2 is identical to run 1's).
+const { saveSkill } = await import("../src/runtime/skills");
+await saveSkill("ws-checkout", "## A");
+await saveSkill("ws-checkout", "## B");
+const restored = await revertSkill("ws-checkout");
+check("Revert skill change restores the SKILL.md from before the latest rewrite", restored === "## A" && (await loadSkill("ws-checkout")) === "## A");
+check("a second revert has nothing to undo", (await revertSkill("ws-checkout")) === null);
+
+// leave the workstream as freshly seeded (no test residue in the Memory tab)
+await db.delete(schema.memories).where(eq(schema.memories.workstreamId, "ws-checkout"));
+await db.update(schema.skills).set({ content: w.skill, previous: null }).where(eq(schema.skills.workstreamId, "ws-checkout"));
 
 const pass = checks.every(([, ok]) => ok);
 console.log(`\nLOOP CHECK: ${pass ? "PASS" : "FAIL"}`);

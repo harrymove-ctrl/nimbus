@@ -77,6 +77,8 @@ export const skills = sqliteTable("skills", {
   workstreamId: text("workstream_id").primaryKey(),
   content: text("content").notNull(),
   version: integer("version").notNull().default(1),
+  /** SKILL.md as it was before the latest rewrite, for "Revert skill change" */
+  previous: text("previous"),
   updatedAt: integer("updated_at").notNull(),
 });
 

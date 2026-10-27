@@ -27,10 +27,11 @@ type Props = {
   onAnswer: (q: QuestionItem, text: string) => void;
   onDecide: (a: ApprovalItem, decision: "approve" | "approve_always" | "reject", note?: string) => void;
   onOpenArtifact: (artifactId: string, version: number) => void;
+  onRevertSkill?: () => Promise<boolean>;
   onTemplate?: (goal: string) => void;
 };
 
-export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact }: Props) {
+export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -54,7 +55,7 @@ export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpen
         {view.transcript.length === 0 && <EmptyState />}
         {view.transcript.map((item) => (
           <div key={item.seq} id={`tr-${item.seq}`} className={cx("scroll-mt-4", item.t === "plan" ? "nb-rise" : "nb-rise-fast")}>
-            <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} />
+            <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
           </div>
         ))}
         <div ref={endRef} />
@@ -76,7 +77,7 @@ function Dot({ role }: { role: AgentRole }) {
   return <span className="mt-[7px] size-2 shrink-0 rounded-full" style={{ background: ROLE_COLOR[role] }} />;
 }
 
-function Item({ item, view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
+function Item({ item, view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
   switch (item.t) {
     case "user":
       return (
@@ -132,7 +133,7 @@ function Item({ item, view, now, onCancelPlan, onAnswer, onDecide, onOpenArtifac
         </button>
       );
     case "summary":
-      return <SummaryCard item={item} view={view} />;
+      return <SummaryCard item={item} view={view} onRevert={onRevertSkill} />;
     case "end":
       return <p className="text-center text-[13px] font-semibold text-neutral-400">Run {item.status}.</p>;
   }
@@ -296,7 +297,8 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
   );
 }
 
-function SummaryCard({ item, view }: { item: Extract<TItem, { t: "summary" }>; view: RunView }) {
+function SummaryCard({ item, view, onRevert }: { item: Extract<TItem, { t: "summary" }>; view: RunView; onRevert?: () => Promise<boolean> }) {
+  const [reverted, setReverted] = useState<"no" | "busy" | "yes" | "none">("no");
   const secs = view.endedMs ?? view.lastTMs;
   const tiles: [string, number, (n: number) => string][] = [
     ["Cost", view.costUsd, fmtCost],
@@ -333,7 +335,22 @@ function SummaryCard({ item, view }: { item: Extract<TItem, { t: "summary" }>; v
           </ul>
         </div>
         <div>
-          <p className="mb-1 text-[12px] font-bold uppercase tracking-wide text-neutral-400">SKILL.md diff</p>
+          <p className="mb-1 flex items-center text-[12px] font-bold uppercase tracking-wide text-neutral-400">
+            SKILL.md diff
+            {onRevert && (
+              <button
+                type="button"
+                disabled={reverted === "busy" || reverted === "yes"}
+                onClick={async () => {
+                  setReverted("busy");
+                  setReverted((await onRevert()) ? "yes" : "none");
+                }}
+                className="ms-auto rounded-md px-2 py-1 text-[11px] font-extrabold normal-case tracking-normal text-neutral-200 hover:bg-white/10 disabled:opacity-60"
+              >
+                {reverted === "yes" ? "Reverted" : reverted === "none" ? "Nothing to revert" : reverted === "busy" ? "Reverting…" : "Revert skill change"}
+              </button>
+            )}
+          </p>
           <SkillDiff rows={item.summary.skillDiff} />
         </div>
       </div>

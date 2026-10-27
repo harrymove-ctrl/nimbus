@@ -77,6 +77,8 @@ function mockModel(tier: Tier, role: string, turn: number, runKey: string): Lang
     provider: "mock",
     modelId: TIERS[tier],
     doGenerate: async () => {
+      // NIMBUS_BAD_MODEL=super: that tier's model id is invalid (404 model not found), like a typo'd id on the real API.
+      if (process.env.NIMBUS_BAD_MODEL === tier) throw new MockHttpError(404, `404 model not found: ${TIERS[tier]} (mock)`);
       const t = mockTurn(role, turn) ?? { text: "Done.", usage: { in: 800, out: 40 } };
       const failKey = `${runKey}:${role}:${turn}`;
       if (process.env.NIMBUS_MOCK_FAIL === `${role}:${turn}` && (failCounts.get(failKey) ?? 0) < 2) {
@@ -106,7 +108,8 @@ export function hopLabel(role: string, turn: number): string {
 
 /** The one place a LanguageModel is made. `turn`/`role` only matter to the mock; `runKey` scopes forced failures. */
 export function getModel(opts: { tier: Tier; role: string; turn: number; runKey?: string }): LanguageModel {
-  return modelMode() === "mock" ? mockModel(opts.tier, opts.role, opts.turn, opts.runKey ?? "") : tokenFactory(TIERS[opts.tier]);
+  if (modelMode() === "mock") return mockModel(opts.tier, opts.role, opts.turn, opts.runKey ?? "");
+  return tokenFactory(process.env.NIMBUS_BAD_MODEL === opts.tier ? "nvidia/does-not-exist" : TIERS[opts.tier]);
 }
 
 /* ---------------- embeddings ---------------- */

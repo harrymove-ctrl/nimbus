@@ -19,4 +19,11 @@ while (Date.now() - t0 < 12_000) {
 const ok = rows.length > 0;
 console.log(`${ok ? "✓" : "✗"} a run with trigger=cron appeared in the runs table without a click: ${rows.map((r) => `${r.id} (${r.workstreamId})`).join(", ") || "none"}`);
 console.log("  (it waits at its medium-risk approval: headless runs only auto-approve low risk, so the unread dot appears once it finishes)");
-process.exit(ok ? 0 : 1);
+let unread = 0;
+for (let i = 0; i < 24 && ok; i++) {
+  unread = (await db.select().from(schema.workstreams).where(eq(schema.workstreams.unread, 1))).length;
+  if (unread) break;
+  await new Promise((r) => setTimeout(r, 500));
+}
+console.log(`${unread ? "✓" : "✗"} the rail's unread dot is set (${unread} workstream(s) flagged unread) once the run needs a person or ends`);
+process.exit(ok && unread ? 0 : 1);

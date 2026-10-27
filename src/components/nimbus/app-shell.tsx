@@ -73,6 +73,17 @@ export function AppShell() {
     if (ws) setTools(ws.tools);
   }, [ws]);
 
+  const refreshWorkstreams = useCallback(async () => {
+    const d = await fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>).catch(() => null);
+    if (d) setWorkstreams(d.workstreams.map((w) => (w.id === selectedId ? { ...w, unread: false } : w)));
+  }, [selectedId]);
+
+  // The Learner rewrites SKILL.md after run.end: show the new text in the Memory tab.
+  const hasSummary = !!view.summary;
+  useEffect(() => {
+    if (hasSummary) void refreshWorkstreams();
+  }, [hasSummary, refreshWorkstreams]);
+
   // Scheduled runs finish while you are away: refresh the rail's unread dots.
   useEffect(() => {
     if (boot !== "gone") return;
@@ -206,6 +217,11 @@ export function AppShell() {
                 onCancelPlan={() => void stop("cancel")}
                 onAnswer={answer}
                 onDecide={(a, d, n) => void decide(a, d, n)}
+                onRevertSkill={async () => {
+                  const r = await fetch(`/api/workstreams/${ws.id}/skill/revert`, { method: "POST" });
+                  if (r.ok) void refreshWorkstreams();
+                  return r.ok;
+                }}
                 onOpenArtifact={(id, version) => {
                   setTab("artifact");
                   setFocusArtifact({ id, version, n: ++focusN.current });

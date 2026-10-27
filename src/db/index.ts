@@ -18,7 +18,7 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS artifacts (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, artifact_id TEXT NOT NULL, kind TEXT NOT NULL, title TEXT NOT NULL, version INTEGER NOT NULL, content TEXT NOT NULL, language TEXT, created_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS approvals (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, action TEXT NOT NULL, status TEXT NOT NULL, always INTEGER NOT NULL DEFAULT 0, note TEXT, decided_at INTEGER)`,
   `CREATE TABLE IF NOT EXISTS memories (id TEXT PRIMARY KEY, workstream_id TEXT NOT NULL, text TEXT NOT NULL, embedding TEXT NOT NULL, source_run_id TEXT NOT NULL, created_at INTEGER NOT NULL)`,
-  `CREATE TABLE IF NOT EXISTS skills (workstream_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, updated_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS skills (workstream_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, previous TEXT, updated_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS llm_cache (key TEXT PRIMARY KEY, model TEXT NOT NULL, response TEXT NOT NULL, usage TEXT NOT NULL, created_at INTEGER NOT NULL)`,
 ];
 
@@ -36,6 +36,7 @@ function open(): Holder {
   const db = drizzle(client, { schema });
   const ready = (async () => {
     for (const sql of DDL) await client.execute(sql);
+    await client.execute("ALTER TABLE skills ADD COLUMN previous TEXT").catch(() => {}); // databases created before this column
     // Runs are in-memory; a run still marked running belonged to a process that is gone.
     await client.execute("UPDATE runs SET status = 'interrupted' WHERE status = 'running'");
     await seedWorkstreams(db);

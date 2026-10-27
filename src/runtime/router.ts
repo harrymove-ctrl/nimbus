@@ -80,6 +80,7 @@ export async function callHop(
 ): Promise<ModelCall> {
   let tier = o.tier;
   let fellBack = false;
+  let lastStatus: number | undefined;
   for (;;) {
     const key = sha([TIERS[tier], o.system, JSON.stringify(o.messages), Object.keys(o.tools).join(","), modelMode() === "mock" ? `${o.role}:${o.turn}` : ""].join("|"));
     const hit = await cacheGet(key);
@@ -110,13 +111,16 @@ export async function callHop(
         return out;
       } catch (e) {
         if (ctx.signal.aborted) throw ctx.signal.reason instanceof RunAborted ? ctx.signal.reason : new RunAborted("stop");
+        // A bad model id (404) will not fix itself: skip the retry and fall one tier down straight away.
+        lastStatus = statusOf(e);
+        if (lastStatus === 404) break;
         if (!retryable(e)) throw e;
         if (attempt === 0) await sleep(process.env.NIMBUS_MOCK_FAST === "1" ? 0 : 400, ctx.signal); // backoff, then one retry
       }
     }
     const lower = lowerTier(tier);
     if (!lower) throw new Error(`${TIERS[tier]} kept failing and there is no lower tier`);
-    o.onFallback(lower, `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`);
+    o.onFallback(lower, lastStatus === 404 ? `${tier} model id not found (404) → fell back to ${lower}` : `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`);
     tier = lower;
     fellBack = true;
   }

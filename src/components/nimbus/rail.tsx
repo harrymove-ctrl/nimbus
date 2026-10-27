@@ -61,7 +61,7 @@ export function Rail({
         })}
       </ul>
       <p className="border-t border-white/10 p-4 text-[12px]/[18px] text-neutral-500">
-        Replay mode: runs replay a recorded demo through the same API the live runtime will use.
+        Runs use the scripted mock model (no keys, $0) until NEBIUS_API_KEY is set.
       </p>
     </nav>
   );

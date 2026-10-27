@@ -45,6 +45,12 @@ console.log(`  ${fbEv && fbEv.type === "route" ? `${fbEv.payload.chosen} (ceilin
 check("a 429 retries once, then falls one tier down, and the run completes", !!fbEv && fb.status === "done");
 check("fallback never goes up", fb.ev.filter((e) => e.type === "route" && e.payload.fallback).every((e) => e.type === "route" && ["nano", "super", "ultra"].indexOf(e.payload.chosen) < ["nano", "super", "ultra"].indexOf(e.payload.ceiling)));
 
+console.log("\nBad model id: the super tier's id is invalid (404)");
+const bad = await once({ NIMBUS_ROUTER: "off", NIMBUS_CACHE: "off", NIMBUS_BAD_MODEL: "super" });
+const badFb = bad.ev.filter((e) => e.type === "route" && e.payload.fallback);
+console.log(`  ${badFb.length} fallback route event(s); first: ${badFb[0] && badFb[0].type === "route" ? `${badFb[0].payload.chosen} (ceiling ${badFb[0].payload.ceiling}) · ${badFb[0].payload.reason}` : "none"}`);
+check("a bad model id (404) falls one tier down immediately and the run completes", badFb.length > 0 && bad.status === "done");
+
 console.log("\nllm_cache: the same run twice with the cache on");
 await once({ NIMBUS_ROUTER: "on", NIMBUS_CACHE: "on", NIMBUS_FREEZE_CONTEXT: "1" });
 const c2 = await once({ NIMBUS_ROUTER: "on", NIMBUS_CACHE: "on", NIMBUS_FREEZE_CONTEXT: "1" });

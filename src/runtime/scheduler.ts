@@ -26,7 +26,15 @@ export async function startScheduler(): Promise<number> {
         // Headless: low-risk actions auto-approve, anything else waits in the web composer.
         const run = startRun({ workstreamId: w.id, title: w.title, goal: w.goal, trigger: "cron", mode: "auto-low", tools: w.tools });
         active.set(w.id, run.id);
-        void run.settled.then(async () => (await getDb()).update(schema.workstreams).set({ unread: 1 }).where(eq(schema.workstreams.id, w.id)));
+        // Unread dot as soon as the run needs a person (approval or question) or ends, whichever is first.
+        let marked = false;
+        const mark = async () => {
+          if (marked) return;
+          marked = true;
+          await (await getDb()).update(schema.workstreams).set({ unread: 1 }).where(eq(schema.workstreams.id, w.id));
+        };
+        run.onEvent((e) => e.type === "approval.request" || e.type === "question" || e.type === "run.end" ? void mark() : undefined);
+        void run.settled.then(mark);
         console.log(`[nimbus] cron started ${run.id} for ${w.id}`);
       }),
     );

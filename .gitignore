@@ -12,3 +12,4 @@ data/
 # build / tooling
 *.tsbuildinfo
 next-env.d.ts
+.next-*/
