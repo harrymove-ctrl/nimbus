@@ -28,6 +28,7 @@ const TPL: Record<string, Tpl> = {
   "ws-brief": { tier: { ultra: [7000, 800], super: [20000, 1900], nano: [6000, 500] }, secs: 35, saving: 0.38, docs: 1, sends: 3, prs: 0 },
   "ws-audit": { tier: { ultra: [8000, 900], super: [28000, 2500], nano: [9000, 800] }, secs: 90, saving: 0.4, docs: 1, sends: 0, prs: 0 },
   "ws-release": { tier: { ultra: [8500, 900], super: [18000, 1500], nano: [6000, 400] }, secs: 50, saving: 0.35, docs: 1, sends: 0, prs: 1 },
+  "ws-watch": { tier: { ultra: [6000, 700], super: [15000, 1400], nano: [4000, 300] }, secs: 45, saving: 0.33, docs: 1, sends: 0, prs: 0 },
   "ws-checkout": { tier: { ultra: [8000, 700], super: [16000, 1500], nano: [13000, 1400] }, secs: 45, saving: 0.45, docs: 1, sends: 1, prs: 0 },
 };
 
@@ -44,6 +45,7 @@ function plan(): Plan[] {
     const key = `${day.getFullYear()}${day.getMonth()}${day.getDate()}`;
     const dow = day.getDay();
     out.push({ ws: "ws-radar", at: at(9), trigger: "cron" });
+    out.push({ ws: "ws-watch", at: at(7), trigger: "cron" });
     if (dow >= 1 && dow <= 5) out.push({ ws: "ws-brief", at: at(8), trigger: "cron" });
     if (dow === 1) out.push({ ws: "ws-audit", at: at(10), trigger: "cron" });
     if (rnd(`ship${key}`) < 0.4) out.push({ ws: "ws-ship-nimbus", at: at(14, Math.floor(rnd(`m${key}`) * 50)), trigger: "manual" });
@@ -55,11 +57,13 @@ function plan(): Plan[] {
 
 export async function seedHistory(db: Db) {
   const existing = await db.select({ id: schema.runs.id }).from(schema.runs);
-  if (existing.some((r) => r.id.startsWith("run_hist_"))) return; // seeded once
+  // seeded once per workstream: a workstream added later gets its history without touching the others
+  const have = new Set(existing.filter((r) => r.id.startsWith("run_hist_")).map((r) => r.id.replace(/_\d{8}$/, "")));
   const runs: (typeof schema.runs.$inferInsert)[] = [];
   const events: (typeof schema.runEvents.$inferInsert)[] = [];
   const approvals: (typeof schema.approvals.$inferInsert)[] = [];
   for (const p of plan()) {
+    if (have.has(`run_hist_${p.ws.slice(3)}`)) continue;
     const w = WORKSTREAMS.find((x) => x.id === p.ws)!;
     const t = TPL[p.ws];
     const id = `run_hist_${p.ws.slice(3)}_${p.at.getFullYear()}${String(p.at.getMonth() + 1).padStart(2, "0")}${String(p.at.getDate()).padStart(2, "0")}`;

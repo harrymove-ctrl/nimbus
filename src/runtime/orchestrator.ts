@@ -7,6 +7,9 @@ import { modelMode } from "@/lib/tokenfactory";
 import { RunAborted, sleep, type RunCtx } from "./context";
 import { runAgent, type AgentRef, type Exec } from "./agent";
 import { SpendCapError } from "./budget";
+import { mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import { dataDir } from "@/db";
 import { SCHEMAS, openPr, sendMessage } from "./tools";
 
 const ORCH: AgentRef = { role: "orchestrator", instance: "orchestrator" };
@@ -120,6 +123,22 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
       const a = await ctx.requestApproval(action, ORCH);
       if (a.decision !== "approved") return { decision: "rejected", note: a.note ?? null, sent: false };
       if (action.kind === "send_message") return { decision: "approved", ...sendMessage(ctx, action.details as { channel: string; text: string }) };
+      if (action.kind === "write_file") {
+        // Router rules: recorded in data/router-rules.json (the Overview shows the saving); the router does not read the file yet.
+        const d = action.details as { path?: string; content?: string; expectedSavingPct?: number };
+        if (d.path?.endsWith("router-rules.json") && ctx.mode !== "dry") {
+          let rules: unknown = {};
+          try {
+            rules = JSON.parse(d.content ?? "{}");
+          } catch {
+            rules = { raw: d.content };
+          }
+          mkdirSync(dataDir(), { recursive: true });
+          writeFileSync(path.join(dataDir(), "router-rules.json"), JSON.stringify({ ...(rules as object), expectedSavingPct: d.expectedSavingPct, appliedAt: Date.now(), runId: ctx.runId }, null, 2));
+          return { decision: "approved", written: "data/router-rules.json", note: "recorded for the Overview; the router does not read it yet" };
+        }
+        return { decision: "approved", written: false, note: "demo mode: nothing was written" };
+      }
       if (action.kind === "open_pr") return { decision: "approved", ...(await openPr(ctx, action.details as { branch: string; title: string; body: string; patchArtifactId: string })) };
       return { decision: "approved" };
     }),

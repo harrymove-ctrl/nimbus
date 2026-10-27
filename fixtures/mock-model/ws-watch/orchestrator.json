@@ -1,0 +1,135 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the watch",
+   "usage": {
+    "in": 3900,
+    "out": 420
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "analyst",
+        "brief": "Read the catalog and our usage; price the week at the new prices."
+       },
+       {
+        "role": "writer",
+        "brief": "Write the proposal with a before and after table."
+       }
+      ],
+      "tools": [
+       "fetch_url",
+       "read_repo",
+       "run_code",
+       "write_artifact"
+      ],
+      "steps": [
+       {
+        "text": "Read the catalog and compare prices with last time",
+        "role": "analyst"
+       },
+       {
+        "text": "Price the week of usage at the new prices",
+        "role": "analyst"
+       },
+       {
+        "text": "Write the proposal with a before and after table",
+        "role": "writer"
+       },
+       {
+        "text": "Write the router rule (waits for you)",
+        "role": "writer"
+       }
+      ],
+      "estimate": {
+       "costUsd": 0.05,
+       "tokens": 30000,
+       "label": "≈ $0.05 · Ultra ×1 · Super ×3"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing to the Analyst",
+   "usage": {
+    "in": 1600,
+    "out": 170
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "analyst",
+      "context": "Fetch the Token Factory catalog, compare each tier with last time, read fixtures/usage-export.json and price the week at the new prices."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing to the Writer",
+   "usage": {
+    "in": 3300,
+    "out": 230
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "Write the proposal: the one price change, the before and after table, the rule, and the saving if applied."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Asking to write the rule",
+   "usage": {
+    "in": 4300,
+    "out": 380
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "request_approval",
+     "input": {
+      "action": {
+       "kind": "write_file",
+       "summary": "Write router-rules.json (if applied: −29.2 %)",
+       "risk": "medium",
+       "details": {
+        "path": "router-rules.json",
+        "content": "{\n  \"rules\": [\n    {\n      \"role\": \"orchestrator\",\n      \"afterTurn\": 1,\n      \"maxTier\": \"super\",\n      \"note\": \"the plan turn stays on Ultra; later turns run on Super\"\n    }\n  ],\n  \"expectedSavingPct\": 29.2,\n  \"basis\": \"fixtures/usage-export.json, week 2026-10-19/25, priced at the Oct 29 catalog\"\n}",
+        "expectedSavingPct": 29.2
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Final judgment",
+   "usage": {
+    "in": 4900,
+    "out": 200
+   },
+   "complexity": 1,
+   "text": "Done. Super gets cheaper on Oct 29; with one router rule the week would cost 29.2 % less. The proposal is in the Artifact tab.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "One price change; one rule proposed, −29.2 % if applied."
+     }
+    }
+   ]
+  }
+ ]
+}

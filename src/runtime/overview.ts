@@ -1,6 +1,8 @@
 // Numbers for the Overview screen (docs/SPEC.md §17.1). Everything comes from SQLite; nothing is invented here.
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { and, eq, gte } from "drizzle-orm";
-import { getDb, schema } from "@/db";
+import { dataDir, getDb, schema } from "@/db";
 import type { UsageByTier } from "@/db/schema";
 import { costUsd } from "@/lib/models";
 import { modelMode } from "@/lib/tokenfactory";
@@ -38,6 +40,8 @@ export type Overview = {
   health: { workstreamId: string; title: string; schedule: string; days: HealthDay[] }[];
   router: { costUsd: number; atCeilingsUsd: number; savedFraction: number; runs: number };
   impact: { prs: number; messages: number; docs: number; savedUsd: number; manualMinutes: number; runs: number };
+  /** router rules proposed by a run (waiting for approval, or approved: recorded in data/router-rules.json) */
+  rules: { expectedSavingPct: number; applied: boolean; workstreamId: string; runId: string } | null;
   runsByDay: Record<string, RunRef[]>;
   lastRun: { id: string; workstreamId: string } | null;
   empty: boolean;
@@ -150,6 +154,25 @@ export async function getOverview(): Promise<Overview> {
     memoriesWeek: mem7.reduce((a, b) => a + b, 0),
     spark: { spend: spend7.map((s) => +(s.ultra + s.super + s.nano).toFixed(4)), runs: runs7, approvals: approvals7, memories: mem7 },
   };
+  // router rules: the latest proposal (a write_file approval for router-rules.json) and whether it was recorded
+  let rulesInfo: Overview["rules"] = null;
+  const proposals = await db.select({ runId: schema.runEvents.runId, payload: schema.runEvents.payload }).from(schema.runEvents).where(eq(schema.runEvents.type, "approval.request"));
+  const withTime = proposals
+    .map((p) => ({ ...p, a: (p.payload as { action?: { kind?: string; details?: { path?: string; expectedSavingPct?: number } } }).action, r: runRows.get(p.runId) }))
+    .filter((p) => p.a?.kind === "write_file" && p.a.details?.path?.endsWith("router-rules.json") && typeof p.a.details.expectedSavingPct === "number" && p.r)
+    .sort((a, b) => b.r!.startedAt - a.r!.startedAt)[0];
+  if (withTime) {
+    const file = path.join(dataDir(), "router-rules.json");
+    let applied = false;
+    if (existsSync(file)) {
+      try {
+        applied = (JSON.parse(readFileSync(file, "utf8")) as { runId?: string }).runId === withTime.runId;
+      } catch {
+        applied = false;
+      }
+    }
+    rulesInfo = { expectedSavingPct: withTime.a!.details!.expectedSavingPct!, applied, workstreamId: withTime.r!.workstreamId, runId: withTime.runId };
+  }
   const latest = [...rows].sort((a, b) => b.startedAt - a.startedAt)[0];
   void costUsd;
   return {
@@ -162,6 +185,7 @@ export async function getOverview(): Promise<Overview> {
     health,
     router: { ...router, savedFraction: router.atCeilingsUsd > 0 ? 1 - router.costUsd / router.atCeilingsUsd : 0 },
     impact: { prs, messages, docs: docs.size, savedUsd: +savedUsd.toFixed(3), manualMinutes: manual, runs: router.runs },
+    rules: rulesInfo,
     runsByDay: byDay,
     lastRun: latest ? { id: latest.id, workstreamId: latest.workstreamId } : null,
     empty: rows.length === 0,

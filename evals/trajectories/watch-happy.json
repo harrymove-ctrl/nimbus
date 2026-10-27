@@ -1,0 +1,42 @@
+{
+ "name": "watch-happy",
+ "workstream": "ws-watch",
+ "description": "Token Factory watch: read the catalog and the usage, price the week for real, propose a router rule and ask before writing it.",
+ "cheap": false,
+ "input": {},
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "fetch_url"
+    },
+    {
+     "tool_called": "run_code"
+    }
+   ]
+  },
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "If applied"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "artifact_contains": "$0.24"
+  },
+  {
+   "max_cost_usd": 0.08
+  }
+ ]
+}

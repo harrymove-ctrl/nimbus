@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Writing the proposal",
+   "usage": {
+    "in": 4100,
+    "out": 760
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "tf-watch-proposal",
+      "kind": "doc",
+      "title": "Token Factory watch · Tue Oct 27",
+      "content": "# Token Factory watch · Tue Oct 27\n\n**One price changed for a role we use.** Nemotron 3 Super (Researcher, Analyst, Writer) goes from $0.30 / $0.90 to **$0.24 / $0.72** per 1M tokens on Oct 29. Ultra and Nano are unchanged; no model was added or removed.\n\n## What it does to our week\n\n| | week's cost | change |\n|---|---|---|\n| at today's prices | $0.0619 | |\n| at the Oct 29 prices | $0.0581 | −6.1 % |\n| plus the proposed rule | $0.0439 | −29.2 % in all |\n\n## Proposed router rule\n\nKeep the Orchestrator's **plan** turn on Ultra and run its later turns (spawn, handoff, approval, final judgment) on Super. The usage export has 5 Orchestrator hops; all but the first of each workstream would move.\n\n*If applied: −29.2 %.* This is an estimate from one week of mock-model usage. It also trades some judgment on the final summary for cost: run `pnpm eval:ab --cheap` before and after.\n\nApproving records the rule in `data/router-rules.json` so the saving can be tracked. The router does not read that file yet: applying it is a code change."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 4800,
+    "out": 60
+   },
+   "complexity": 1,
+   "text": "Proposal written."
+  }
+ ]
+}

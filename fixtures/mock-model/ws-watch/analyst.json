@@ -1,0 +1,65 @@
+{
+ "role": "analyst",
+ "turns": [
+  {
+   "label": "Reading the catalog",
+   "usage": {
+    "in": 1400,
+    "out": 110
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://tokenfactory.example.com/catalog"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading our usage",
+   "usage": {
+    "in": 2500,
+    "out": 110
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "read_repo",
+     "input": {
+      "action": "read",
+      "path": "fixtures/usage-export.json"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Pricing the week",
+   "usage": {
+    "in": 3900,
+    "out": 520
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "python",
+      "filename": "price_week.py",
+      "code": "rows = [\n    (\"ws-ship-nimbus\", \"orchestrator\", \"ultra\", 6200, 620),\n    (\"ws-ship-nimbus\", \"orchestrator\", \"ultra\", 7400, 520),\n    (\"ws-ship-nimbus\", \"orchestrator\", \"ultra\", 8900, 300),\n    (\"ws-ship-nimbus\", \"analyst\", \"super\", 10400, 520),\n    (\"ws-ship-nimbus\", \"analyst\", \"super\", 9800, 340),\n    (\"ws-ship-nimbus\", \"writer\", \"super\", 5900, 480),\n    (\"ws-ship-nimbus\", \"researcher\", \"super\", 4100, 380),\n    (\"ws-radar\", \"orchestrator\", \"ultra\", 5400, 480),\n    (\"ws-radar\", \"writer\", \"super\", 6100, 720),\n    (\"ws-radar\", \"researcher\", \"super\", 5200, 300),\n    (\"ws-brief\", \"writer\", \"super\", 4400, 380),\n    (\"ws-brief\", \"analyst\", \"super\", 6600, 520),\n    (\"ws-checkout\", \"orchestrator\", \"ultra\", 6900, 560),\n    (\"ws-checkout\", \"learner\", \"nano\", 6900, 1100),\n]\nold = {\"ultra\": (1.00, 3.00), \"super\": (0.30, 0.90), \"nano\": (0.06, 0.24)}\nnew = {\"ultra\": (1.00, 3.00), \"super\": (0.24, 0.72), \"nano\": (0.06, 0.24)}\ndef cost(p, tier, i, o):\n    return (i * p[tier][0] + o * p[tier][1]) / 1e6\nbase = sum(cost(old, t, i, o) for _, _, t, i, o in rows)\nafter_price = sum(cost(new, t, i, o) for _, _, t, i, o in rows)\nseen = set(); after_rule = 0.0\nfor ws, role, t, i, o in rows:\n    first = role == \"orchestrator\" and ws not in seen\n    if role == \"orchestrator\": seen.add(ws)\n    after_rule += cost(new, \"super\" if role == \"orchestrator\" and not first else t, i, o)\nprint(\"week at old prices          $%.4f\" % base)\nprint(\"week at the new prices      $%.4f   (%.1f%% less)\" % (after_price, (1 - after_price / base) * 100))\nprint(\"plus the rule below         $%.4f   (%.1f%% less than the new prices, %.1f%% less than now)\" % (after_rule, (1 - after_rule / after_price) * 100, (1 - after_rule / base) * 100))\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 5200,
+    "out": 320
+   },
+   "complexity": 1,
+   "text": "One price changed: Nemotron 3 Super $0.30/$0.90 → $0.24/$0.72 per 1M from Oct 29; Ultra and Nano are unchanged. Priced at the new prices, last week costs 6.1 % less; moving the Orchestrator's later turns to Super would take it 29.2 % below today's cost."
+  }
+ ]
+}

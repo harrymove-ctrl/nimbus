@@ -196,6 +196,12 @@ export function Overview({
             <p className="mt-1 text-center text-[12px]/[18px] text-neutral-400" title="1 − spend with the router ÷ what the same hops cost at their ceiling tier">
               {usd(d.router.costUsd, 2)} spent · {usd(d.router.atCeilingsUsd, 2)} at the ceilings · {d.router.runs} runs
             </p>
+            {d.rules && (
+              <button type="button" onClick={() => onOpenRun(d.rules!.workstreamId, d.rules!.runId)} className="mt-2 w-full rounded-md border border-white/10 px-2 py-1.5 text-left text-[12px]/[17px] text-neutral-200 hover:bg-white/8">
+                {d.rules.applied ? <>Router rule recorded · expected <b>−{d.rules.expectedSavingPct} %</b> more</> : <>Proposed rule · if applied <b>−{d.rules.expectedSavingPct} %</b></>}
+                <span className="text-neutral-400"> · Token Factory watch ›</span>
+              </button>
+            )}
           </section>
         </div>
 

@@ -46,7 +46,7 @@ export type Scenario = {
 
 export type Golden = {
   name: string;
-  workstream: "ws-ship-nimbus" | "ws-radar" | "ws-brief" | "ws-audit" | "ws-release" | "ws-checkout";
+  workstream: "ws-ship-nimbus" | "ws-radar" | "ws-brief" | "ws-audit" | "ws-watch" | "ws-release" | "ws-checkout";
   description?: string;
   /** tests a router feature (Tier = Cheap): skipped when the router is off, since off pins every hop to its ceiling */
   requires_router?: boolean;

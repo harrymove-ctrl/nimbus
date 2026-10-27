@@ -1,11 +1,11 @@
 // The six workstreams (docs/CASES.md) end to end in mock mode ($0, real subprocesses for Ship Nimbus's evals and
 // typecheck): the hero twice (run two must skip the question and the approval and cost less), then the other cases.
-//   pnpm check:cases [--only ship,radar,brief,audit,release]
+//   pnpm check:cases [--only ship,radar,brief,audit,watch,release]
 process.env.NIMBUS_DATA_DIR = "./data/check-cases"; // own database; .env.local already names ./data
 process.env.NIMBUS_MODEL = "mock";
 process.env.NIMBUS_MOCK_FAST = "1";
 process.env.NIMBUS_CACHE = "off";
-import { readFileSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { dataDir } from "../src/db";
 import type { AnyRunEvent } from "../src/lib/events";
@@ -86,6 +86,15 @@ if (want("audit")) {
   const r = await go("ws-audit");
   check("real python ranked the hops; eval:ab ran for real", results(r.events).some((t) => /top five/.test(text(t.payload.output))) && results(r.events).some((t) => /router on vs off/.test(text(t.payload.output))));
   check("writing the rules file waits for approval (write_file)", r.events.some((e) => e.type === "approval.request" && e.payload.action.kind === "write_file") && r.view.status === "done");
+}
+if (want("watch")) {
+  console.log("— Token Factory watch");
+  const r = await go("ws-watch");
+  check("the catalog was fetched and the week priced by real python", results(r.events).some((t) => t.payload.tool === "fetch_url" && /Oct 29/.test(text(t.payload.output))) && results(r.events).some((t) => /week at the new prices/.test(text(t.payload.output))));
+  check("a write_file approval for router-rules.json carries the expected saving and is recorded on approval", r.events.some((e) => e.type === "approval.request" && e.payload.action.kind === "write_file" && typeof (e.payload.action.details as { expectedSavingPct?: number }).expectedSavingPct === "number") && existsSync(path.join(dataDir(), "router-rules.json")));
+  const ov = (await import("../src/runtime/overview")).getOverview;
+  const o = await ov();
+  check("the Overview shows the rule as recorded, with the saving", !!o.rules && o.rules.applied && o.rules.expectedSavingPct > 20, JSON.stringify(o.rules));
 }
 if (want("release")) {
   console.log("— Release watch");

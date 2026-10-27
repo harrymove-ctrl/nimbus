@@ -97,6 +97,23 @@ allow: send_message to #team for this workstream`,
 (none yet)`,
   },
   {
+    id: "ws-watch",
+    color: "#38bdf8",
+    estimatedManualMinutes: 40,
+    slug: "token-factory-watch",
+    title: "Token Factory watch",
+    goal: "Watch the Token Factory catalog and our usage: tell me when a price or model changes for one of our roles, propose router rule changes, and show the saving.",
+    scheduleCron: "0 7 * * *",
+    scheduleLabel: "Daily 07:00",
+    tools: ["fetch_url", "read_repo", "run_code", "write_artifact"],
+    skill: `## Token Factory watch
+1. Fetch the catalog and compare each of our three tiers' prices with last time.
+2. Price the week's usage at the new prices and propose router rules; writing router-rules.json needs approval.
+
+## Policy
+(none yet)`,
+  },
+  {
     id: "ws-release",
     color: "#f472b6",
     estimatedManualMinutes: 30,
