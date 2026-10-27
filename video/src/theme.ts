@@ -7,40 +7,42 @@ const manrope = loadFont("normal", {
   subsets: ["latin"],
 });
 export const MANROPE = manrope.fontFamily;
-/** Resolves once every Manrope weight is in document.fonts (see FontGate in NimbusDemo). */
+/** Resolves once every Manrope weight is in document.fonts (see FontGate). */
 export const manropeReady = manrope.waitUntilDone;
+export const MONO = "ui-monospace, SFMono-Regular, Menlo, monospace";
 
-// Sorbet (docs/assets/reactbits-sorbet.css): the Zinc ramp and the mint accent, dark end.
-// Cloud blue and orange are the app's dither colours (src/app/globals.css, dark) and the
-// only other colours the video uses.
+// docs/video/board.md: Sorbet neutrals, the mint accent, cloud blue and orange; lilac only
+// on the Prompt Roll pill. Nothing else.
 export const C = {
-  bg: "#09090b", // neutral-950
+  paper: "#fafafa", // neutral-50
+  ink: "#09090b", // neutral-950
   card: "#18181b", // neutral-900
   line: "#27272a", // neutral-800
   dim: "#52525b", // neutral-600
   muted: "#a1a1aa", // neutral-400
-  ink: "#fafafa", // neutral-50
-  mint: "oklch(81% 0.16 163)",
-  mintInk: "oklch(26% 0.06 168)",
-  blue: "oklch(72% 0.14 240)",
-  orange: "oklch(79% 0.15 62)",
+  soft: "#e4e4e7", // neutral-200
+  mint: "oklch(81% 0.16 163)", // --rb-accent (dark)
+  mintInk: "oklch(26% 0.06 168)", // --rb-accent-fg
+  blue: "#18b2ff",
+  orange: "#fa7342",
+  lilac: "#b8a4ff",
 } as const;
 
 export const SORBET: Partial<SnapCnTheme> = {
-  background: C.bg,
-  foreground: C.ink,
+  background: C.ink,
+  foreground: C.paper,
   card: C.card,
-  cardForeground: C.ink,
+  cardForeground: C.paper,
   popover: C.card,
-  popoverForeground: C.ink,
+  popoverForeground: C.paper,
   primary: C.mint,
   primaryForeground: C.mintInk,
   secondary: C.line,
-  secondaryForeground: C.ink,
+  secondaryForeground: C.paper,
   muted: C.line,
   mutedForeground: C.muted,
   accent: C.line,
-  accentForeground: C.ink,
+  accentForeground: C.paper,
   border: C.line,
   input: C.line,
   ring: C.mint,

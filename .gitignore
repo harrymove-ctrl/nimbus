@@ -18,3 +18,7 @@ docs/demo/.tmp-video/
 .playwright-browsers/
 docs/demo/*
 !docs/demo/README.md
+
+# demo video (Remotion project in video/)
+video/node_modules
+video/out

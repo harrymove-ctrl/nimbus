@@ -1,0 +1,118 @@
+// Scene 18 (count-grid, adapted: its rush-and-settle on three tier tiles, then counters) and
+// scene 19's end card.
+import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { MockTag } from "../components/cards";
+import { beats, bars } from "../grid";
+import { NUMBERS } from "../numbers";
+import { C, MANROPE, MONO } from "../theme";
+
+const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
+
+const TIERS = [
+  { name: "Nemotron 3 Ultra", id: "nvidia/Nemotron-3-Ultra-550b-a55b", role: "plans", color: C.mint },
+  { name: "Nemotron 3 Super", id: "nvidia/nemotron-3-super-120b-a12b", role: "does the work", color: C.blue },
+  { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", role: "checks", color: C.orange },
+];
+
+/** Tiles rush in one per beat; each number counts up over one bar. */
+export const PROOF = { tiles: [0, beats(1), beats(2)], counts: [bars(1), bars(2)] };
+
+export function Proof() {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames } = useVideoConfig();
+  const push = interpolate(frame, [0, durationInFrames], [1, 1.05], clamp);
+  const stats = [
+    { at: PROOF.counts[0], to: NUMBERS.savingsPct, fmt: (n: number) => `−${Math.round(n)} %`, label: "cost vs the top model on every step" },
+    {
+      at: PROOF.counts[1],
+      to: NUMBERS.checksPassed,
+      fmt: (n: number) => `${Math.round(n)}/${NUMBERS.checksTotal}`,
+      label: "checks pass",
+    },
+  ];
+  return (
+    <AbsoluteFill style={{ background: C.ink, fontFamily: MANROPE, color: C.paper }}>
+      <AbsoluteFill style={{ transform: `scale(${push})`, alignItems: "center", justifyContent: "center" }}>
+        <div style={{ display: "flex", gap: 32 }}>
+          {TIERS.map((t, i) => {
+            const s = spring({ frame: frame - PROOF.tiles[i], fps, config: { damping: 15, stiffness: 130, mass: 0.8 } });
+            const smear = Math.min(22, Math.abs(1 - s) * 50);
+            return (
+              <div
+                key={t.name}
+                style={{
+                  width: 520,
+                  height: 250,
+                  padding: "34px 38px",
+                  borderRadius: 22,
+                  background: C.card,
+                  border: `1px solid ${C.line}`,
+                  boxShadow: `inset 0 3px 0 ${t.color}`,
+                  transform: `translateX(${(1 - s) * 900}px)`,
+                  filter: smear > 0.5 ? `blur(${smear}px)` : undefined,
+                  opacity: frame < PROOF.tiles[i] ? 0 : 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ fontSize: 24, fontWeight: 700, color: t.color, textTransform: "uppercase", letterSpacing: "0.03em" }}>{t.role}</div>
+                <div>
+                  <div style={{ fontSize: 44, fontWeight: 800, letterSpacing: "-0.02em" }}>{t.name}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 19, color: C.muted, marginTop: 8 }}>{t.id}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ marginTop: 26, fontSize: 28, fontWeight: 600, color: C.muted, opacity: interpolate(frame, [beats(3), beats(3) + 8], [0, 1], clamp) }}>
+          every call through <span style={{ color: C.blue }}>Nebius Token Factory</span>
+        </div>
+        <div style={{ display: "flex", gap: 140, marginTop: 64 }}>
+          {stats.map((st) => {
+            const p = interpolate(frame, [st.at, st.at + bars(1)], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+            return (
+              <div key={st.label} style={{ textAlign: "center", opacity: interpolate(frame, [st.at - 4, st.at + 4], [0, 1], clamp) }}>
+                <div style={{ fontSize: 110, fontWeight: 800, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>{st.fmt(st.to * p)}</div>
+                <div style={{ fontSize: 30, color: C.muted, fontWeight: 600 }}>{st.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </AbsoluteFill>
+      <MockTag />
+    </AbsoluteFill>
+  );
+}
+
+/** The end card: held still on purpose (board: 3 bars, the only allowed hold). */
+export function EndCard() {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const s = spring({ frame, fps, durationInFrames: 10, config: { damping: 200 } });
+  return (
+    <AbsoluteFill style={{ background: C.ink, fontFamily: MANROPE, color: C.paper, alignItems: "center", justifyContent: "center" }}>
+      <div style={{ opacity: s, textAlign: "center" }}>
+        <div style={{ fontSize: 128, fontWeight: 800, letterSpacing: "-0.04em" }}>
+          Nimbus<span style={{ color: C.mint }}>.</span>
+        </div>
+        <div style={{ fontSize: 50, fontWeight: 700, marginTop: 20 }}>github.com/harrymove-ctrl/nimbus</div>
+        <div
+          style={{
+            display: "inline-block",
+            marginTop: 30,
+            fontFamily: MONO,
+            fontSize: 40,
+            color: C.mint,
+            background: C.card,
+            border: `1px solid ${C.line}`,
+            borderRadius: 14,
+            padding: "12px 28px",
+          }}
+        >
+          pnpm dev
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+}
