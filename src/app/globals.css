@@ -192,3 +192,37 @@
 body {
   font-family: var(--rb-font-sans);
 }
+
+/* Open segments breathe a little so a live lane reads as live (disabled with prefers-reduced-motion). */
+@keyframes nimbus-seg-live {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+.nimbus-seg-live {
+  animation: nimbus-seg-live 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nimbus-seg-live { animation: none; }
+}
+
+@keyframes nimbus-tray-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.nimbus-tray {
+  animation: nimbus-tray-in 160ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nimbus-tray { animation: none; }
+}
+
+@keyframes nimbus-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.nimbus-fade {
+  animation: nimbus-fade 120ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nimbus-fade { animation: none; }
+}
