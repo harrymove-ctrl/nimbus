@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
-import { ROLE_COLOR, TIER_LABEL, fmtCost, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
+import { ROLE_COLOR, TIER_LABEL, TIER_SHORT, fmtCost, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
 import { useTween } from "@/hooks/use-tween";
 import { cx } from "./ui";
 
@@ -31,6 +31,8 @@ type Props = {
 
 export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, reducedMotion }: Props) {
   const chartRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const followLanes = useRef(true);
   const [cw, setCw] = useState(640);
   const [tip, setTip] = useState<{ x: number; y: number; text: string; sub: string } | null>(null);
 
@@ -41,6 +43,12 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
     ro.observe(el);
     return () => ro.disconnect();
   }, [collapsed]);
+
+  // New lanes (spawned agents, the Learner after run.end) scroll into view unless the person scrolled up.
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (el && followLanes.current) el.scrollTo({ top: el.scrollHeight, behavior: reducedMotion ? "auto" : "smooth" });
+  }, [view.lanes.length, reducedMotion, collapsed]);
 
   const running = view.lanes.some((l) => l.status === "running");
   const live = view.active || running;
@@ -101,7 +109,14 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
         <div className="grid flex-1 place-items-center text-[14px] text-neutral-500">The timeline fills as soon as a run starts.</div>
       ) : (
         <>
-          <div className="relative min-h-0 flex-1 overflow-y-auto">
+          <div
+            ref={bodyRef}
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              followLanes.current = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+            }}
+            className="relative min-h-0 flex-1 overflow-y-auto"
+          >
             {planning && (
               <div className="absolute inset-0 z-10 grid place-items-center bg-neutral-950/80 backdrop-blur-[2px]">
                 <div className="flex flex-col items-center gap-1">
@@ -255,14 +270,17 @@ function LegendRow({ lane, index }: { lane: Lane; index: number }) {
         <span className="truncate text-[14px] font-bold text-neutral-100">{laneName(lane.instance, lane.role)}</span>
         {lane.status === "running" && <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" aria-label="running" />}
       </div>
-      <div className="flex items-center gap-1.5 ps-4">
+      <div
+        className="flex items-center gap-1.5 ps-4"
+        title={lane.routed ? `Currently ${TIER_LABEL[lane.tier]}. This role's ceiling is ${TIER_LABEL[lane.ceiling]}; the router chose a cheaper tier for at least one hop.` : `${TIER_LABEL[lane.tier]} (this role's ceiling)`}
+      >
         <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-[#76b900] text-[9px] font-black leading-none text-black" aria-hidden="true">
           N
         </span>
         <span className="truncate text-[12px] font-semibold text-neutral-400">{TIER_LABEL[lane.tier]}</span>
         {lane.routed && (
-          <span className="shrink-0 rounded-full bg-neutral-100 px-1.5 text-[10px] font-extrabold leading-4 text-neutral-900" title="At least one hop was routed below this role's ceiling">
-            ↓ routed
+          <span className="shrink-0 rounded-full bg-neutral-100 px-1.5 text-[10px] font-extrabold leading-4 text-neutral-900" title={`Ceiling: ${TIER_LABEL[lane.ceiling]}`}>
+            ↓ routed ({TIER_SHORT[lane.ceiling]})
           </span>
         )}
       </div>
