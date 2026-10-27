@@ -43,12 +43,12 @@ export function AppShell() {
   const { events } = useRunEvents(runId);
   const view = useMemo(() => buildView(events), [events]);
   const clock = view.active || view.status === "planning" || view.lanes.some((l) => l.status === "running");
-  const now = useNow(clock);
+  const now = useNow(clock, reduced ? 1000 : 60);
 
   // Boot: first GET /api/workstreams resolves → cloud fades out (kept up at least 1.2 s so it reads as a preloader).
   useEffect(() => {
     let alive = true;
-    const minWait = new Promise((r) => setTimeout(r, 1200));
+    const minWait = new Promise((r) => setTimeout(r, 900));
     Promise.all([fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>), minWait]).then(([d]) => {
       if (!alive) return;
       setWorkstreams(d.workstreams);
@@ -153,7 +153,7 @@ export function AppShell() {
           busyWs={busyWs}
           onSelect={(id) => (setSelectedId(id), setDrawer(null), setSelSeg(null), setWorkstreams((w) => w.map((x) => (x.id === id ? { ...x, unread: false } : x))))}
           onRun={(id) => void startRun({ saved: true }, id)}
-          className={cx("z-40 xl:static xl:flex xl:w-[280px] xl:shrink-0", drawer === "rail" ? "fixed inset-y-12 left-0 flex w-[280px]" : "hidden")}
+          className={cx("z-40 xl:static xl:flex xl:w-[280px] xl:shrink-0", drawer === "rail" ? "nb-drawer-left fixed inset-y-12 left-0 flex w-[280px]" : "hidden")}
         />
 
         <main className="flex min-w-0 flex-1 flex-col">
@@ -216,7 +216,7 @@ export function AppShell() {
           setTab={setTab}
           selected={selSeg}
           focusArtifact={focusArtifact}
-          className={cx("z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden")}
+          className={cx("z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "nb-drawer-right fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden")}
         />
       </div>
     </div>

@@ -117,7 +117,7 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
       </div>
       <div className="flex h-9 shrink-0 items-center gap-1 border-b border-white/10 px-3" role="tablist" aria-label="Versions">
         {art.versions.map((v) => (
-          <button key={v.version} role="tab" aria-selected={ver !== "latest" && shown.version === v.version} onClick={() => setVer(v.version)} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold", ver !== "latest" && shown.version === v.version ? "bg-white/15 text-neutral-100" : "text-neutral-400 hover:text-neutral-200")}>
+          <button key={v.version} role="tab" aria-selected={ver !== "latest" && shown.version === v.version} onClick={() => setVer(v.version)} className={cx("nb-pop-slow h-7 rounded-md px-2.5 text-[11px] font-extrabold", ver !== "latest" && shown.version === v.version ? "bg-white/15 text-neutral-100" : "text-neutral-400 hover:text-neutral-200")}>
             V{v.version}
           </button>
         ))}

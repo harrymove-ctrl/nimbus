@@ -25,11 +25,11 @@ export function Rail({
     <nav aria-label="Workstreams" className={cx("flex min-h-0 w-full flex-col border-r border-white/10 bg-neutral-950", className)}>
       <p className="px-4 pb-2 pt-4 text-[11px] font-extrabold uppercase tracking-wider text-neutral-500">Workstreams</p>
       <ul className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2">
-        {workstreams.map((w) => {
+        {workstreams.map((w, idx) => {
           const sel = w.id === selectedId;
           const pending = pendingByWs[w.id] ?? 0;
           return (
-            <li key={w.id} className="group relative">
+            <li key={w.id} style={{ animationDelay: `${idx * 30}ms` }} className="nb-slide-in group relative">
               <button type="button" onClick={() => onSelect(w.id)} aria-current={sel ? "true" : undefined} className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-lg px-3 text-left transition-colors", sel ? "bg-white/10" : "hover:bg-white/5")}>
                 <span className={cx("size-1.5 shrink-0 rounded-full", w.unread && !sel ? "bg-[var(--rb-accent)]" : "bg-transparent")} aria-label={w.unread && !sel ? "Unread result" : undefined} />
                 <span className="min-w-0 flex-1">
@@ -44,7 +44,7 @@ export function Rail({
                     )}
                   </span>
                 </span>
-                {pending > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-orange-400 px-1.5 text-[11px] font-extrabold text-neutral-950">{pending}</span>}
+                {pending > 0 && <span key={pending} className="nb-pop-slow grid h-5 min-w-5 place-items-center rounded-full bg-orange-400 px-1.5 text-[11px] font-extrabold text-neutral-950">{pending}</span>}
               </button>
               <button
                 type="button"

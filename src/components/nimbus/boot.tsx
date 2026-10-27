@@ -19,7 +19,7 @@ export function Boot({ fading }: { fading: boolean }) {
         <div className="size-72 sm:size-80">
           <GlowCloud color="blue" background={false} label="Nimbus is waking up" />
         </div>
-        <div className="text-center">
+        <div className="nb-fade-late text-center" style={{ animationDuration: "400ms" }}>
           <h1 className="text-3xl font-semibold tracking-tight">Nimbus</h1>
           <p className="mt-1 text-sm text-white/75">waking the crew…</p>
         </div>

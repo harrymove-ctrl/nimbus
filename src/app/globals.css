@@ -226,3 +226,43 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .nimbus-fade { animation: none; }
 }
+
+/* ---- Motion (docs/EXPERIENCE.md §5): motion reports state, it never decorates ---- */
+:root {
+  --m-fast: 120ms;
+  --m-base: 160ms;
+  --m-slow: 240ms;
+  --m-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --m-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoot about 1.05 */
+}
+@keyframes nb-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes nb-slide-in { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+@keyframes nb-drawer-right { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
+@keyframes nb-drawer-left { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: none; } }
+@keyframes nb-pop { 0% { opacity: 0; transform: scale(0.2); } 70% { opacity: 1; transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+@keyframes nb-scale-in { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes nb-draw { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes nb-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nb-flash { 0%, 100% { stroke-opacity: 1; } 40% { stroke-opacity: 0.2; } 70% { stroke-opacity: 1; } }
+@keyframes nb-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+.nb-rise { animation: nb-rise var(--m-slow) var(--m-ease) both; }
+.nb-rise-fast { animation: nb-rise var(--m-base) var(--m-ease) both; }
+.nb-slide-in { animation: nb-slide-in var(--m-base) var(--m-ease) both; }
+.nb-drawer-right { animation: nb-drawer-right var(--m-slow) var(--m-ease) both; }
+.nb-drawer-left { animation: nb-drawer-left var(--m-slow) var(--m-ease) both; }
+.nb-pop { animation: nb-pop var(--m-base) var(--m-spring) both; transform-box: fill-box; transform-origin: center; }
+.nb-pop-slow { animation: nb-pop var(--m-slow) var(--m-spring) both; }
+.nb-scale-in { animation: nb-scale-in var(--m-fast) var(--m-ease) both; transform-origin: bottom left; }
+.nb-draw { animation: nb-draw 220ms linear both; transform-box: fill-box; transform-origin: top; }
+.nb-fade { animation: nb-fade var(--m-fast) ease-out both; }
+.nb-fade-late { animation: nb-fade var(--m-fast) ease-out 300ms both; }
+.nb-flash { animation: nb-flash 300ms ease-in-out 1; }
+.nb-countdown { animation: nb-countdown 3s linear both; transform-origin: left; }
+
+/* Reduced motion: every transition becomes a cut (the hatch drift stays, per the spec). */
+@media (prefers-reduced-motion: reduce) {
+  .nb-rise, .nb-rise-fast, .nb-slide-in, .nb-drawer-right, .nb-drawer-left, .nb-pop, .nb-pop-slow,
+  .nb-scale-in, .nb-draw, .nb-fade, .nb-fade-late, .nb-flash { animation: none !important; }
+  .nb-countdown { animation: none !important; }
+}

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowUp, Gauge, Paperclip, ShieldCheck, Square, Wrench, X } from "lucide-react";
 import { TOOL_LABELS, type Workstream } from "@/lib/workstreams";
 import type { RunView } from "@/lib/run-view";
+import { CountUp } from "./count-up";
 import { cx, ghostButton, primaryButton, secondaryButton } from "./ui";
 
 // The composer never changes shape; only placeholder, primary button, secondary button and
@@ -80,12 +81,12 @@ export function Composer(p: ComposerProps) {
   const [menuClosed, setMenuClosed] = useState(false);
   const [menuIdx, setMenuIdx] = useState(0);
   const [confirmStop, setConfirmStop] = useState(false);
-  const [estimate, setEstimate] = useState<string | null>(null);
+  const [estimate, setEstimate] = useState<{ cost: number; rest: string } | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const lastEsc = useRef(0);
-  const cache = useRef(new Map<string, string>());
+  const cache = useRef(new Map<string, { cost: number; rest: string }>());
 
   const state = deriveComposerState(view, p.draft, p.files, menuClosed);
   const live = state === "running" || state === "asked" || state === "waiting";
@@ -113,9 +114,10 @@ export function Composer(p: ComposerProps) {
     const t = setTimeout(async () => {
       try {
         const r = await fetch("/api/estimate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ draft: p.draft, tier: p.tier }), signal: ctl.signal });
-        const j = (await r.json()) as { label: string };
-        cache.current.set(key, j.label);
-        setEstimate(j.label);
+        const j = (await r.json()) as { costUsd: number; label: string };
+        const e = { cost: j.costUsd, rest: j.label.split(" · ").slice(1).join(" · ") };
+        cache.current.set(key, e);
+        setEstimate(e);
       } catch {}
     }, 400);
     return () => {
@@ -231,7 +233,7 @@ export function Composer(p: ComposerProps) {
         className={cx("relative flex min-h-[100px] max-h-[220px] flex-col rounded-2xl border bg-neutral-900 shadow-[0_8px_30px_-12px_rgb(0_0_0/0.6)] transition-colors", dragOver ? "border-[var(--rb-accent)]" : "border-white/10 focus-within:border-white/25")}
       >
         {state === "slash" && menu.length > 0 && (
-          <ul role="listbox" aria-label="Commands" className="absolute inset-x-0 bottom-full z-30 mb-2 overflow-hidden rounded-xl border border-white/10 bg-neutral-900 p-1 shadow-xl">
+          <ul role="listbox" aria-label="Commands" className="nb-scale-in absolute inset-x-0 bottom-full z-30 mb-2 overflow-hidden rounded-xl border border-white/10 bg-neutral-900 p-1 shadow-xl">
             {menu.slice(0, 6).map((m, i) => (
               <li key={m.cmd} role="option" aria-selected={i === menuIdx}>
                 <button type="button" onMouseEnter={() => setMenuIdx(i)} onClick={() => pick(m)} className={cx("flex w-full items-baseline gap-3 rounded-lg px-3 py-1.5 text-left", i === menuIdx && "bg-white/10")}>
@@ -299,7 +301,7 @@ export function Composer(p: ComposerProps) {
           <div className="ms-auto flex items-center gap-2">
             {estimate && (state === "drafting" || state === "slash") && (
               <span className="hidden max-w-[260px] truncate rounded-full bg-white/8 px-2.5 py-1 text-[12px] font-bold tabular-nums text-neutral-300 sm:block" title="Estimated by Nano; cached per draft">
-                {estimate}
+                <CountUp value={estimate.cost} format={(n) => `≈ $${n.toFixed(2)}`} ms={300} /> · {estimate.rest}
               </span>
             )}
             {live && !confirmStop && (
@@ -311,10 +313,13 @@ export function Composer(p: ComposerProps) {
               type="button"
               disabled={primary.disabled}
               onClick={primary.onClick}
-              className={cx(state === "planning" ? secondaryButton : primaryButton, "h-9 gap-1.5 rounded-[var(--rb-r-lg)] px-4 text-[13px] font-extrabold tabular-nums")}
+              className={cx(state === "planning" ? secondaryButton : primaryButton, "relative h-9 gap-1.5 overflow-hidden rounded-[var(--rb-r-lg)] px-4 text-[13px] font-extrabold tabular-nums")}
             >
-              {state !== "planning" && <ArrowUp className="size-3.5" aria-hidden="true" />}
-              {primary.label}
+              <span key={primary.label.split(" ")[0]} className="nb-fade inline-flex items-center gap-1.5">
+                {state !== "planning" && <ArrowUp className="size-3.5" aria-hidden="true" />}
+                {primary.label}
+              </span>
+              {state === "planning" && view.plan && remaining > 0 && <span key={view.plan.seq} aria-hidden="true" className="nb-countdown absolute inset-x-3 bottom-1 h-0.5 rounded-full bg-current opacity-50" />}
             </button>
           </div>
         </div>

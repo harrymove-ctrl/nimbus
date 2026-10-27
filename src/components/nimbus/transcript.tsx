@@ -16,6 +16,7 @@ import {
   type RunView,
   type TItem,
 } from "@/lib/run-view";
+import { CountUp } from "./count-up";
 import { buttonSm, cx, ghostButton, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton, toolOutput, toolWell, userBubble } from "./ui";
 import type { AgentRole } from "@/lib/models";
 
@@ -52,7 +53,7 @@ export function Transcript({ view, now, onCancelPlan, onAnswer, onDecide, onOpen
       <div className="mx-auto flex w-full max-w-[720px] flex-col gap-4 px-4 py-5">
         {view.transcript.length === 0 && <EmptyState />}
         {view.transcript.map((item) => (
-          <div key={item.seq} id={`tr-${item.seq}`} className="scroll-mt-4">
+          <div key={item.seq} id={`tr-${item.seq}`} className={cx("scroll-mt-4", item.t === "plan" ? "nb-rise" : "nb-rise-fast")}>
             <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} />
           </div>
         ))}
@@ -168,8 +169,9 @@ function PlanCard({ item, view, now, onCancel }: { item: PlanItem; view: RunView
       <div className={cx(panelFoot, "justify-between")}>
         <span className="tabular-nums">{cancelled ? "Cancelled" : open ? `Starting in ${remaining}s unless you cancel` : "Started"}</span>
         {open && (
-          <button type="button" onClick={onCancel} className={cx(secondaryButton, buttonSm)}>
+          <button type="button" onClick={onCancel} className={cx(secondaryButton, buttonSm, "relative overflow-hidden")}>
             Cancel
+            <span key={item.seq} aria-hidden="true" className="nb-countdown absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-current opacity-50" />
           </button>
         )}
       </div>
@@ -280,7 +282,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
           )}
         </div>
       ) : (
-        <div className={cx(panelFoot, "gap-2")}>
+        <div className={cx(panelFoot, "nb-fade gap-2")}>
           {item.status === "approved" ? <Check className="size-4 text-emerald-400" aria-hidden="true" /> : <X className="size-4 text-red-400" aria-hidden="true" />}
           <span>
             {item.status === "approved" ? "Approved" : "Rejected"} by {item.by ?? "you"}
@@ -296,12 +298,12 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
 
 function SummaryCard({ item, view }: { item: Extract<TItem, { t: "summary" }>; view: RunView }) {
   const secs = view.endedMs ?? view.lastTMs;
-  const tiles: [string, string][] = [
-    ["Cost", fmtCost(view.costUsd)],
-    ["Tokens", fmtTokens(view.tokens)],
-    ["Time", fmtSecs(secs)],
-    ["vs baseline", view.savings !== null ? `−${Math.round(view.savings * 100)}%` : "n/a"],
-    ["Routed hops", String(item.summary.routedHops)],
+  const tiles: [string, number, (n: number) => string][] = [
+    ["Cost", view.costUsd, fmtCost],
+    ["Tokens", view.tokens, (n) => fmtTokens(Math.round(n))],
+    ["Time", secs, fmtSecs],
+    ["vs baseline", (view.savings ?? 0) * 100, (n) => (view.savings !== null ? `−${Math.round(n)}%` : "n/a")],
+    ["Routed hops", item.summary.routedHops, (n) => String(Math.round(n))],
   ];
   return (
     <div className={panel}>
@@ -310,10 +312,12 @@ function SummaryCard({ item, view }: { item: Extract<TItem, { t: "summary" }>; v
       </div>
       <div className={cx(panelBody, "gap-4 p-3")}>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {tiles.map(([k, val]) => (
+          {tiles.map(([k, val, fmt]) => (
             <div key={k} className="rounded-lg bg-white/5 px-3 py-2">
               <p className="text-[11px] font-bold uppercase tracking-wide text-neutral-400">{k}</p>
-              <p className="text-[18px] font-extrabold tabular-nums">{val}</p>
+              <p className="text-[18px] font-extrabold">
+                <CountUp value={val} format={fmt} ms={600} />
+              </p>
             </div>
           ))}
         </div>
@@ -341,7 +345,7 @@ export function SkillDiff({ rows }: { rows: { op: "+" | "-" | " "; text: string 
   return (
     <div className="overflow-hidden rounded-lg border border-white/10 font-mono text-[12px]/[22px]">
       {rows.map((r, i) => (
-        <div key={i} className={cx("flex gap-2 px-2", r.op === "+" && "bg-emerald-500/12 text-emerald-200", r.op === "-" && "bg-red-500/12 text-red-200 line-through decoration-red-300/40", r.op === " " && "text-neutral-400")}>
+        <div key={i} style={{ animationDelay: `${i * 40}ms` }} className={cx("nb-rise-fast flex gap-2 px-2", r.op === "+" && "bg-emerald-500/12 text-emerald-200", r.op === "-" && "bg-red-500/12 text-red-200 line-through decoration-red-300/40", r.op === " " && "text-neutral-400")}>
           <span className="w-3 shrink-0 select-none">{r.op === " " ? "" : r.op}</span>
           <span className="min-w-0 [overflow-wrap:anywhere]">{r.text}</span>
         </div>

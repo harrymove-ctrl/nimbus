@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
 import { ROLE_COLOR, TIER_LABEL, fmtCost, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
+import { useTween } from "@/hooks/use-tween";
 import { cx } from "./ui";
 
 // Geometry from UI-SKETCH sheet 3: legend W2 240 · lane pitch P1 66 · segment H3 26 (pill R4 13)
@@ -46,7 +47,8 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
   const tNow = live ? Math.max(0, now - view.startedAt) : view.lastTMs;
   const extent = Math.max(tNow, view.lastTMs);
   // Scale grows in 5 s steps so the playhead sits near 80 % of the width (sketch sheet 3: SC).
-  const windowS = Math.max(10, Math.ceil(extent / 1000 / 0.8 / 5) * 5);
+  const targetWindowS = Math.max(10, Math.ceil(extent / 1000 / 0.8 / 5) * 5);
+  const windowS = useTween(targetWindowS, 300, "inOut"); // axis rescale: bars and ticks re-lay out together
   const x = (ms: number) => PAD + (ms / 1000 / windowS) * (cw - PAD * 2);
   const playT = view.endedMs ?? tNow;
   const laneIdx = useMemo(() => new Map(view.lanes.map((l, i) => [l.instance, i])), [view.lanes]);
@@ -54,7 +56,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
 
   const planning = view.status === "planning";
   const bodyH = view.lanes.length * LANE_H;
-  const ticks = Array.from({ length: Math.floor(windowS / 5) + 1 }, (_, i) => i * 5);
+  const ticks = Array.from({ length: Math.floor(targetWindowS / 5) + 1 }, (_, i) => i * 5);
 
   if (collapsed) {
     return (
@@ -104,7 +106,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
               <div className="absolute inset-0 z-10 grid place-items-center bg-neutral-950/80 backdrop-blur-[2px]">
                 <div className="flex flex-col items-center gap-1">
                   {/* Z6: 160 px cloud in the timeline header until the crew is spawned */}
-                  <div className="size-40">
+                  <div className="nb-pop-slow size-40">
                     <GlowCloud color="blue" background={false} label="Planning the run" />
                   </div>
                   <p className="text-[13px] font-semibold text-neutral-300">Planning the run…</p>
@@ -124,6 +126,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                       <pattern key={role} id={`hatch-${role}`} patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)">
                         <rect width="7" height="7" fill={c} opacity="0.16" />
                         <line x1="0" y1="0" x2="0" y2="7" stroke={c} strokeWidth="2.5" opacity="0.6" />
+                        <animateTransform attributeName="patternTransform" type="translate" additive="sum" from="0 0" to="7 0" dur="1.2s" repeatCount="indefinite" />
                       </pattern>
                     ))}
                   </defs>
@@ -145,9 +148,9 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                     const color = ROLE_COLOR[view.lanes[ci].role];
                     return (
                       <g key={i}>
-                        <line x1={cx0} x2={cx0} y1={y0} y2={y1} stroke={color} strokeWidth={1.5} strokeDasharray="2 3" />
+                        <line className="nb-draw" x1={cx0} x2={cx0} y1={y0} y2={y1} stroke={color} strokeWidth={1.5} strokeDasharray="2 3" />
                         {start !== undefined && x(start) > cx0 + 2 && <line x1={cx0} x2={x(start)} y1={y1} y2={y1} stroke={color} strokeWidth={1.5} strokeDasharray="2 3" />}
-                        <circle cx={cx0} cy={y0} r={4} fill={color} />
+                        <circle className="nb-pop" cx={cx0} cy={y0} r={4} fill={color} />
                       </g>
                     );
                   })}
@@ -189,11 +192,11 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                             fillOpacity={s.kind === "tool" ? 0.78 : 0.95}
                             stroke={s.failed ? RED : s.kind === "wait" ? color : "none"}
                             strokeWidth={s.failed ? 1.75 : 1}
-                            className={cx(!reducedMotion && s.endMs === undefined && "nimbus-seg-live")}
+                            className={cx(!reducedMotion && s.endMs === undefined && "nimbus-seg-live", s.failed && "nb-flash")}
                           />
                           {isSel && <rect x={x0 - 2.5} y={y - 2.5} width={w + 5} height={SEG_H + 5} rx={(SEG_H + 5) / 2} fill="none" stroke="white" strokeWidth={1.5} />}
                           {s.failed && (
-                            <text x={x0 + w / 2} y={y + SEG_H / 2 + 5} textAnchor="middle" fontSize={14} fontWeight={700} fill={RED}>
+                            <text className="nb-fade-late" x={x0 + w / 2} y={y + SEG_H / 2 + 5} textAnchor="middle" fontSize={14} fontWeight={700} fill={RED}>
                               ✕
                             </text>
                           )}
@@ -203,7 +206,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
                             </text>
                           )}
                           {routed && (
-                            <g>
+                            <g className="nb-pop">
                               <circle cx={x0 + 2} cy={y - 1} r={7} fill="var(--color-neutral-100)" stroke="oklch(0.2 0.01 285)" strokeWidth={0.75} />
                               <text x={x0 + 2} y={y + 3} textAnchor="middle" fontSize={10} fontWeight={800} fill="oklch(0.2 0.01 285)" className="pointer-events-none">
                                 {s.route?.fallback ? "↻" : "↓"}
