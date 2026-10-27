@@ -10,7 +10,7 @@
   "id": "2",
   "reason": "mention",
   "repo": "harrymove-ctrl/nimbus",
-  "title": "CI: eval failed on the demo golden router-fallback-404",
+  "title": "CI: checkout tests failed",
   "unread": true
  },
  {

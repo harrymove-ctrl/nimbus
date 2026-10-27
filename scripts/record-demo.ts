@@ -155,8 +155,12 @@ async function briefOne(page: Page) {
 
   // the Analyst's segment that read Dana's email: Agent I/O shows what it read
   await click(page, page.locator('g[role="button"][aria-label*="Reading the three that matter"]').first(), "brief1-agent-io");
-  await pause(1400);
-  await targets(page, { "agent-io": demo(page, "agent-io") });
+  await pause(1200);
+  // the ring goes on Dana's email itself: scroll the Inspector so its first lines sit near the top, then read the box
+  const email = demo(page, "agent-io").locator("pre", { hasText: "dana@example.com" }).first();
+  await email.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "smooth" })).catch(() => {});
+  await pause(700);
+  await targets(page, { "agent-io": email });
   await pause(2600);
 
   // the brief itself: Needs you today, ranked; Can wait
@@ -326,7 +330,12 @@ async function main() {
   mark("overview");
   await pause(2600);
   await targets(page, { workstreams: demo(page, "workstreams"), "spend-chart": demo(page, "spend-chart"), "router-gauge": demo(page, "router-gauge") });
-  await pause(3400);
+  // about 12 s: the pointer rests on the spend chart, then on the router gauge (one callout each)
+  await pause(1400);
+  await glide(page, demo(page, "spend-chart"));
+  await pause(3200);
+  await glide(page, demo(page, "router-gauge"));
+  await pause(3000);
 
   await briefOne(page);
 

@@ -15,7 +15,7 @@
             "artifactId": "reply-sam",
             "kind": "doc",
             "title": "Reply to Sam",
-            "content": "Hi Sam, not yet: the PR is open and under review. I will tell you the moment it lands, well before Thursday."
+            "content": "Hi Sam, not yet: the fix is in review. I will tell you the moment it ships, well before Thursday."
           }
         }
       ]
@@ -32,7 +32,7 @@
           "name": "send_message",
           "input": {
             "channel": "sam@devshop.example",
-            "text": "Hi Sam, not yet: the PR is open and under review. I will tell you the moment it lands, well before Thursday."
+            "text": "Hi Sam, not yet: the fix is in review. I will tell you the moment it ships, well before Thursday."
           }
         }
       ]

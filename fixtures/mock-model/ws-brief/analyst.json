@@ -1,100 +1,100 @@
 {
- "role": "analyst",
- "turns": [
-  {
-   "label": "Listing the inbox",
-   "usage": {
-    "in": 1300,
-    "out": 100
-   },
-   "complexity": 0,
-   "toolCalls": [
+  "role": "analyst",
+  "turns": [
     {
-     "name": "read_repo",
-     "input": {
-      "action": "list",
-      "path": "fixtures/inbox"
-     }
-    }
-   ]
-  },
-  {
-   "label": "Reading the three that matter",
-   "usage": {
-    "in": 2100,
-    "out": 180
-   },
-   "complexity": 1,
-   "toolCalls": [
+      "label": "Listing the inbox",
+      "usage": {
+        "in": 1300,
+        "out": 100
+      },
+      "complexity": 0,
+      "toolCalls": [
+        {
+          "name": "read_repo",
+          "input": {
+            "action": "list",
+            "path": "fixtures/inbox"
+          }
+        }
+      ]
+    },
     {
-     "name": "read_repo",
-     "input": {
-      "action": "read",
-      "path": "fixtures/inbox/01-dana.eml"
-     }
-    }
-   ]
-  },
-  {
-   "label": "Reading the calendar",
-   "usage": {
-    "in": 3200,
-    "out": 120
-   },
-   "complexity": 0,
-   "toolCalls": [
+      "label": "Reading the three that matter",
+      "usage": {
+        "in": 2100,
+        "out": 180
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "read_repo",
+          "input": {
+            "action": "read",
+            "path": "fixtures/inbox/01-dana.eml"
+          }
+        }
+      ]
+    },
     {
-     "name": "read_repo",
-     "input": {
-      "action": "read",
-      "path": "fixtures/calendar.ics"
-     }
-    }
-   ]
-  },
-  {
-   "label": "Reading GitHub notifications",
-   "usage": {
-    "in": 4100,
-    "out": 120
-   },
-   "complexity": 0,
-   "toolCalls": [
+      "label": "Reading the calendar",
+      "usage": {
+        "in": 3200,
+        "out": 120
+      },
+      "complexity": 0,
+      "toolCalls": [
+        {
+          "name": "read_repo",
+          "input": {
+            "action": "read",
+            "path": "fixtures/calendar.ics"
+          }
+        }
+      ]
+    },
     {
-     "name": "fetch_url",
-     "input": {
-      "url": "https://api.github.com/notifications"
-     }
-    }
-   ]
-  },
-  {
-   "label": "Writing the brief",
-   "usage": {
-    "in": 5200,
-    "out": 760
-   },
-   "complexity": 1,
-   "toolCalls": [
+      "label": "Reading GitHub notifications",
+      "usage": {
+        "in": 4100,
+        "out": 120
+      },
+      "complexity": 0,
+      "toolCalls": [
+        {
+          "name": "fetch_url",
+          "input": {
+            "url": "https://api.github.com/notifications"
+          }
+        }
+      ]
+    },
     {
-     "name": "write_artifact",
-     "input": {
-      "artifactId": "morning-brief",
-      "kind": "doc",
-      "title": "Morning brief · Tue Oct 27",
-      "content": "# Morning brief · Tue Oct 27\n\n## Needs you today\n\n1. **Dana (Acme): contract signature by Fri Nov 7.** Legal is waiting; you have a call with Dana at 14:00 today. Draft 1 asks to walk through the two open clauses on that call.\n2. **Priya (Nebius): confirm the 11:30 showcase dry run by 5 pm** and send the demo link. Draft 2 confirms and attaches the link.\n3. **Sam (DevShop): did the router fallback fix land?** One-word answer wanted before Thursday. Draft 3 says: not yet, a PR is open.\n\n## Today\n\n| time | what |\n|---|---|\n| 09:00 | Standup |\n| 11:30 | Hackathon showcase dry run (Priya) |\n| 14:00 | Contract call with Dana |\n| 16:30 | Focus: submission video |\n\n## GitHub\n\nCI failed on the demo golden router-fallback-404 (mention). A review is requested on DevShop's staging pins.\n\n## Can wait\n\nOctober invoice ($18.40, autopay), the Tools Weekly digest, Sunday lunch with Linh.\n\nNothing was sent. Three drafts are waiting for your approval."
-     }
+      "label": "Writing the brief",
+      "usage": {
+        "in": 5200,
+        "out": 760
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "write_artifact",
+          "input": {
+            "artifactId": "morning-brief",
+            "kind": "doc",
+            "title": "Morning brief · Tue Oct 27",
+            "content": "# Morning brief · Tue Oct 27\n\n## Needs you today\n\n1. **Dana (Acme): contract signature by Fri Nov 7.** Legal is waiting; you have a call with Dana at 14:00 today. Draft 1 asks to walk through the two open clauses on that call.\n2. **Priya (Nebius): confirm the 11:30 showcase dry run by 5 pm** and send the demo link. Draft 2 confirms and attaches the link.\n3. **Sam (DevShop): did the login bug fix ship?** One-word answer wanted before Thursday. Draft 3 says: not yet, the fix is in review.\n\n## Today\n\n| time | what |\n|---|---|\n| 09:00 | Standup |\n| 11:30 | Hackathon showcase dry run (Priya) |\n| 14:00 | Contract call with Dana |\n| 16:30 | Focus: submission video |\n\n## GitHub\n\nCI failed on the checkout tests (you were mentioned). A review is requested on DevShop's staging pins.\n\n## Can wait\n\nOctober invoice ($18.40, autopay), the Tools Weekly digest, Sunday lunch with Linh.\n\nNothing was sent. Three drafts are waiting for your approval."
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reporting",
+      "usage": {
+        "in": 6000,
+        "out": 90
+      },
+      "complexity": 1,
+      "text": "Brief written: 3 messages need you, 4 events today, 1 CI failure."
     }
-   ]
-  },
-  {
-   "label": "Reporting",
-   "usage": {
-    "in": 6000,
-    "out": 90
-   },
-   "complexity": 1,
-   "text": "Brief written: 3 messages need you, 4 events today, 1 CI failure."
-  }
- ]
+  ]
 }
