@@ -170,15 +170,16 @@ export function MemoryTab({ view, workstream }: { view: RunView; workstream?: Wo
             "Not rewritten yet"
           )}
         </p>
-        <button type="button" className={ghost} disabled={!skill.hasPrevious} aria-pressed={showDiff} onClick={() => setShowDiff((v) => !v)}>
+        <button type="button" data-cuelume-toggle="" className={ghost} disabled={!skill.hasPrevious} aria-pressed={showDiff} onClick={() => setShowDiff((v) => !v)}>
           {showDiff ? "Hide diff" : "Show diff"}
         </button>
-        <button type="button" className={ghost} aria-pressed={raw} onClick={() => setRaw((v) => !v)}>
+        <button type="button" data-cuelume-toggle="" className={ghost} aria-pressed={raw} onClick={() => setRaw((v) => !v)}>
           {raw ? "View cards" : "View raw"}
         </button>
         <button
           type="button"
           className={ghost}
+          data-cuelume-tap=""
           disabled={!skill.hasPrevious || reverting}
           onClick={async () => {
             setReverting(true);
@@ -248,6 +249,7 @@ function RuleCard({ rule, onRevoke }: { rule: LearnedRule; onRevoke: () => void 
       <button
         type="button"
         className={cx(ghost, sure && "bg-red-500/15 text-red-200 hover:bg-red-500/25 hover:text-red-100")}
+        {...(sure ? { "data-cuelume-close": "", "data-cuelume-emphasis": "strong" } : { "data-cuelume-tap": "", "data-cuelume-emphasis": "subtle" })}
         onClick={() => (sure ? onRevoke() : setSure(true))}
         onBlur={() => setSure(false)}
       >
@@ -361,7 +363,7 @@ function Memories({ memories, currentRunId, fresh, leaving, onForget }: { memori
                       {currentRunId && m.runId === currentRunId && <span className="rounded bg-[var(--rb-accent)]/20 px-1.5 text-[10px] font-extrabold tracking-wider text-[var(--rb-accent)]">NEW</span>}
                     </p>
                   </div>
-                  <button type="button" onClick={() => onForget(m)} className={cx(ghost, "shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100")}>
+                  <button type="button" data-cuelume-close="" data-cuelume-emphasis="strong" onClick={() => onForget(m)} className={cx(ghost, "shrink-0 opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100")}>
                     Forget
                   </button>
                 </div>

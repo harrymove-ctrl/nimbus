@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Pause, Play, Square, X } from "lucide-react";
 import { ProgressBar } from "@/components/dithercn/progress-bar";
 import type { ActiveRun } from "@/runtime/active";
+import { cue } from "./sound";
 import { cx } from "./ui";
 
 const post = (url: string, body: unknown) => fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
@@ -80,7 +81,7 @@ export function StatusPill({ runs, fetchedAt, reload, currentRunId, onOpenRun, c
     const last = finished[finished.length - 1].r;
     return (
       <div ref={box} className={cx("relative", className)}>
-        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="dialog" className="nb-pop-slow flex h-9 max-w-[min(420px,60vw)] items-center gap-2.5 rounded-full border border-white/12 bg-neutral-900 ps-2 pe-3.5 text-[13px] font-semibold text-neutral-100 transition-colors hover:bg-neutral-800">
+        <button type="button" {...{ [open ? "data-cuelume-close" : "data-cuelume-open"]: "" }} data-cuelume-emphasis="subtle" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="dialog" className="nb-pop-slow flex h-9 max-w-[min(420px,60vw)] items-center gap-2.5 rounded-full border border-white/12 bg-neutral-900 ps-2 pe-3.5 text-[13px] font-semibold text-neutral-100 transition-colors hover:bg-neutral-800">
           <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full" style={{ background: `${last.color}33`, color: last.color }}>
             <Check className="size-3.5" />
           </span>
@@ -92,7 +93,7 @@ export function StatusPill({ runs, fetchedAt, reload, currentRunId, onOpenRun, c
               <div key={r.id} className="flex items-center gap-2 rounded-lg border border-white/8 bg-white/3 p-2.5">
                 <span className="size-2 shrink-0 rounded-full" style={{ background: r.color }} />
                 <p className="min-w-0 flex-1 truncate text-[14px] font-bold">{r.title}</p>
-                <button type="button" onClick={() => (setOpen(false), setDone((d) => d.filter((x) => x.r.id !== r.id)), onOpenRun(r.workstreamId, r.id))} className="h-8 rounded-md bg-white/10 px-2.5 text-[12px] font-extrabold hover:bg-white/16">
+                <button type="button" data-cuelume-navigate="" onClick={() => (setOpen(false), setDone((d) => d.filter((x) => x.r.id !== r.id)), onOpenRun(r.workstreamId, r.id))} className="h-8 rounded-md bg-white/10 px-2.5 text-[12px] font-extrabold hover:bg-white/16">
                   Open run
                 </button>
               </div>
@@ -110,6 +111,8 @@ export function StatusPill({ runs, fetchedAt, reload, currentRunId, onOpenRun, c
     <div ref={box} className={cx("relative", className)}>
       <button
         type="button"
+        {...{ [open ? "data-cuelume-close" : "data-cuelume-open"]: "" }}
+        data-cuelume-emphasis="subtle"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="dialog"
@@ -183,10 +186,10 @@ function RunPanel({ r, elapsed, onOpenRun, reload, close }: { r: ActiveRun; elap
           <p className="text-[13px]/[18px] font-bold text-neutral-100">{r.approval.summary}</p>
           <p className="mb-2 text-[12px] text-neutral-400">{r.approval.risk} risk · waiting for you</p>
           <div className="flex gap-2">
-            <button type="button" disabled={busy} onClick={() => void act(() => post(`/api/runs/${r.id}/approvals/${r.approval!.approvalId}`, { decision: "approve" }))} className="h-8 flex-1 rounded-md bg-emerald-400 text-[13px] font-extrabold text-neutral-950 hover:bg-emerald-300 disabled:opacity-50">
+            <button type="button" disabled={busy} onClick={() => (cue("success"), void act(() => post(`/api/runs/${r.id}/approvals/${r.approval!.approvalId}`, { decision: "approve" })))} className="h-8 flex-1 rounded-md bg-emerald-400 text-[13px] font-extrabold text-neutral-950 hover:bg-emerald-300 disabled:opacity-50">
               Approve
             </button>
-            <button type="button" disabled={busy} onClick={() => void act(() => post(`/api/runs/${r.id}/approvals/${r.approval!.approvalId}`, { decision: "reject" }))} className="h-8 flex-1 rounded-md border border-white/15 text-[13px] font-extrabold text-neutral-100 hover:bg-white/8 disabled:opacity-50">
+            <button type="button" disabled={busy} onClick={() => (cue("close"), void act(() => post(`/api/runs/${r.id}/approvals/${r.approval!.approvalId}`, { decision: "reject" })))} className="h-8 flex-1 rounded-md border border-white/15 text-[13px] font-extrabold text-neutral-100 hover:bg-white/8 disabled:opacity-50">
               Deny
             </button>
           </div>
@@ -195,15 +198,15 @@ function RunPanel({ r, elapsed, onOpenRun, reload, close }: { r: ActiveRun; elap
       {r.question && <p className="rounded-lg border border-orange-400/40 bg-orange-400/8 p-2 text-[13px]/[18px] text-neutral-100">{r.question}</p>}
       {r.planAwaiting && <p className="rounded-lg border border-orange-400/40 bg-orange-400/8 p-2 text-[13px]/[18px] text-neutral-100">The plan is waiting for your approval. Open the run to edit it.</p>}
       <div className="flex gap-1.5">
-        <button type="button" disabled={busy} onClick={() => void act(() => post(`/api/runs/${r.id}/pause`, { paused: !r.paused }))} className="flex h-8 items-center gap-1.5 rounded-md border border-white/12 px-2.5 text-[12px] font-extrabold text-neutral-100 hover:bg-white/8 disabled:opacity-50">
+        <button type="button" data-cuelume-toggle="" disabled={busy} onClick={() => void act(() => post(`/api/runs/${r.id}/pause`, { paused: !r.paused }))} className="flex h-8 items-center gap-1.5 rounded-md border border-white/12 px-2.5 text-[12px] font-extrabold text-neutral-100 hover:bg-white/8 disabled:opacity-50">
           {r.paused ? <Play className="size-3.5" /> : <Pause className="size-3.5" />}
           {r.paused ? "Resume" : "Pause"}
         </button>
-        <button type="button" disabled={busy} onClick={() => void act(() => post(`/api/runs/${r.id}/stop`, { reason: "stop" }))} className="flex h-8 items-center gap-1.5 rounded-md border border-white/12 px-2.5 text-[12px] font-extrabold text-neutral-100 hover:bg-red-500/15 disabled:opacity-50">
+        <button type="button" data-cuelume-close="" data-cuelume-emphasis="strong" disabled={busy} onClick={() => void act(() => post(`/api/runs/${r.id}/stop`, { reason: "stop" }))} className="flex h-8 items-center gap-1.5 rounded-md border border-white/12 px-2.5 text-[12px] font-extrabold text-neutral-100 hover:bg-red-500/15 disabled:opacity-50">
           <Square className="size-3.5" />
           Stop
         </button>
-        <button type="button" onClick={() => (close(), onOpenRun(r.workstreamId, r.id))} className="ms-auto h-8 rounded-md bg-white/10 px-2.5 text-[12px] font-extrabold text-neutral-100 hover:bg-white/16">
+        <button type="button" data-cuelume-navigate="" onClick={() => (close(), onOpenRun(r.workstreamId, r.id))} className="ms-auto h-8 rounded-md bg-white/10 px-2.5 text-[12px] font-extrabold text-neutral-100 hover:bg-white/16">
           Open run
         </button>
       </div>

@@ -20,6 +20,7 @@ import { Inspector, type InspectorTab } from "./inspector";
 import { LEARNING_CHANGED } from "./learning";
 import { Rail } from "./rail";
 import { RunHeader } from "./run-header";
+import { cue, SoundToggle, useRunCues, useSound } from "./sound";
 import { Timeline, type SegRef } from "./timeline";
 import { Transcript } from "./transcript";
 import { cx } from "./ui";
@@ -63,6 +64,9 @@ export function AppShell() {
   const restored = useRef(false);
   const { events } = useRunEvents(runId);
   const view = useMemo(() => buildView(events), [events]);
+  const sound = useSound();
+  const freshRun = useRef<string | null>(null);
+  useRunCues(view, runId, freshRun);
   // Scrubbing a finished run (SPEC §17.5): the transcript and the Inspector show the run as it was at `scrub` ms; the
   // timeline, header and composer keep the whole run. Replay walks `scrub` forward at 0.5×, 1× or 2×.
   const [scrub, setScrub] = useState<number | null>(null);
@@ -267,6 +271,8 @@ export function AppShell() {
       if (!res.ok) return;
       setNotice(null);
       const { runId: id } = (await res.json()) as { runId: string };
+      freshRun.current = id;
+      cue("loading", { emphasis: "subtle" });
       setSelectedId(target.id);
       setRunByWs((m) => ({ ...m, [target.id]: id }));
       setSelSeg(null);
@@ -278,7 +284,12 @@ export function AppShell() {
   );
 
   const stop = (reason: "cancel" | "stop") => runId && post(`/api/runs/${runId}/stop`, { reason });
-  const decide = (a: ApprovalItem, decision: "approve" | "approve_always" | "reject", note?: string) => runId && post(`/api/runs/${runId}/approvals/${a.approvalId}`, { decision, note });
+  const decide = (a: ApprovalItem, decision: "approve" | "approve_always" | "reject", note?: string) => {
+    if (!runId) return;
+    if (decision === "reject") cue("close");
+    else cue("success", decision === "approve_always" ? { emphasis: "strong" } : undefined);
+    return post(`/api/runs/${runId}/approvals/${a.approvalId}`, { decision, note });
+  };
   const answer = (q: QuestionItem, text: string) => {
     if (!runId) return;
     void post(`/api/runs/${runId}/messages`, { text, kind: "answer", questionId: q.questionId });
@@ -305,7 +316,10 @@ export function AppShell() {
       pending={view.pendingApprovals}
       onApprove={(a) => void decide(a, "approve")}
       onReject={(a) => void decide(a, "reject")}
-      onApproveAllLow={() => view.pendingApprovals.filter((a) => a.action.risk === "low").forEach((a) => void decide(a, "approve"))}
+      onApproveAllLow={() => {
+        cue("success", { emphasis: "strong" });
+        view.pendingApprovals.filter((a) => a.action.risk === "low").forEach((a) => void post(`/api/runs/${runId}/approvals/${a.approvalId}`, { decision: "approve" }));
+      }}
     />
   );
   const waitingN = view.pendingApprovals.length + (view.planAwaiting ? 1 : 0);
@@ -316,7 +330,7 @@ export function AppShell() {
 
       {/* Top bar H0 = 48, cloud Z7 = 40: blue while idle/running, orange while an approval is pending */}
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-white/10 px-3">
-        <button type="button" aria-label="Workstreams" onClick={() => setDrawer(drawer === "rail" ? null : "rail")} className="grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden">
+        <button type="button" aria-label="Workstreams" data-cuelume-open={drawer === "rail" ? undefined : ""} data-cuelume-close={drawer === "rail" ? "" : undefined} onClick={() => setDrawer(drawer === "rail" ? null : "rail")} className="grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden">
           <PanelLeft className="size-4" />
         </button>
         <div className="size-10 shrink-0" title={needsYou ? "Needs you" : "Crew ready"}>
@@ -328,13 +342,14 @@ export function AppShell() {
         </span>
         <span className="flex-1" />
         <StatusPill runs={active.runs} fetchedAt={active.fetchedAt} reload={active.reload} currentRunId={runId} onOpenRun={(wsId, rid) => openRun(wsId, rid)} />
-        <button type="button" aria-label="Inspector" onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden", ws && isPhone ? "hidden" : "grid")}>
+        <SoundToggle enabled={sound.enabled} onToggle={sound.toggle} />
+        <button type="button" aria-label="Inspector" data-cuelume-open={drawer === "inspector" ? undefined : ""} data-cuelume-close={drawer === "inspector" ? "" : undefined} onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden", ws && isPhone ? "hidden" : "grid")}>
           <PanelRight className="size-4" />
         </button>
       </div>
 
       <div className="relative flex min-h-0 flex-1">
-        {drawer && <button aria-label="Close panel" className="fixed inset-0 z-30 bg-black/50 xl:hidden" onClick={() => setDrawer(null)} />}
+        {drawer && <button aria-label="Close panel" data-cuelume-close="" className="fixed inset-0 z-30 bg-black/50 xl:hidden" onClick={() => setDrawer(null)} />}
         <Rail
           workstreams={workstreams}
           selectedId={selectedId}
@@ -407,7 +422,7 @@ export function AppShell() {
                 {notice && (
                   <div role="alert" className="mx-auto flex w-full max-w-[720px] items-start gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-3 py-2 text-[13px]/[19px] text-orange-100">
                     <span className="flex-1">{notice}</span>
-                    <button type="button" aria-label="Dismiss" onClick={() => setNotice(null)} className="text-orange-200/80 hover:text-orange-100">
+                    <button type="button" aria-label="Dismiss" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={() => setNotice(null)} className="text-orange-200/80 hover:text-orange-100">
                       ×
                     </button>
                   </div>
@@ -467,7 +482,7 @@ export function AppShell() {
               ["memory", "MEMORY", Brain],
             ] as const
           ).map(([key, label, Icon]) => (
-            <button key={key} type="button" aria-current={phoneTab === key ? "page" : undefined} onClick={() => setPhoneTab(key)} className={cx("relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-extrabold tracking-wider", phoneTab === key ? "text-neutral-50" : "text-neutral-500")}>
+            <button key={key} type="button" data-cuelume-select="" aria-current={phoneTab === key ? "page" : undefined} onClick={() => setPhoneTab(key)} className={cx("relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-extrabold tracking-wider", phoneTab === key ? "text-neutral-50" : "text-neutral-500")}>
               <Icon className="size-5" aria-hidden="true" />
               {label}
               {key === "run" && waitingN > 0 && <span className="nb-pop-slow absolute right-[calc(50%-24px)] top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-orange-400 px-1 text-[10px] font-extrabold text-neutral-950">{waitingN}</span>}
@@ -492,7 +507,7 @@ function PickWorkstream({ workstreams, onPick }: { workstreams: Workstream[]; on
         <ul className="mt-2 flex flex-col gap-2">
           {workstreams.map((w) => (
             <li key={w.id}>
-              <button type="button" onClick={() => onPick(w.id)} className="flex w-full flex-col items-start gap-0.5 rounded-xl border border-white/10 px-4 py-3 text-left transition-colors hover:bg-white/5">
+              <button type="button" data-cuelume-navigate="" onClick={() => onPick(w.id)} className="flex w-full flex-col items-start gap-0.5 rounded-xl border border-white/10 px-4 py-3 text-left transition-colors hover:bg-white/5">
                 <span className="text-[15px] font-bold">{w.title}</span>
                 <span className="text-[13px] text-neutral-400">{w.goal}</span>
               </button>

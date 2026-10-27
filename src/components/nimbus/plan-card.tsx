@@ -9,6 +9,7 @@ import { ArrowDown, ArrowUp, Check, GripVertical, Plus, X } from "lucide-react";
 import { ProgressBar } from "@/components/dithercn/progress-bar";
 import type { PlanStep } from "@/lib/events";
 import { ROLE_LABEL, ROLE_COLOR, TIER_SHORT, fmtSecs, type PlanItem, type RunView } from "@/lib/run-view";
+import { cue } from "./sound";
 import { buttonSm, cx, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton } from "./ui";
 
 const ENDED = new Set(["done", "failed", "cancelled", "stopped"]);
@@ -49,13 +50,15 @@ function DraftPlan({ item, onPlan, onDraft }: Props) {
     onDraft?.(steps.map((s) => ({ ...s, text: s.text.trim() })));
   }, [steps, onDraft]);
 
-  const move = (from: number, to: number) =>
+  const move = (from: number, to: number) => {
+    if (from !== to && to >= 0 && to < steps.length) cue("select", { direction: to < from ? "back" : "forward" });
     setSteps((cur) => {
       if (from === to || to < 0 || to >= cur.length) return cur;
       const next = cur.slice();
       next.splice(to, 0, next.splice(from, 1)[0]);
       return next;
     });
+  };
   const send = async (action: "approve" | "revise") => {
     setBusy(action);
     await onPlan(action, steps.map((s) => ({ ...s, text: s.text.trim() })));
@@ -110,7 +113,7 @@ function DraftPlan({ item, onPlan, onDraft }: Props) {
               <button type="button" aria-label="Move step down" disabled={i === steps.length - 1} onClick={() => move(i, i + 1)} className="grid size-6 shrink-0 place-items-center rounded text-neutral-400 hover:bg-white/10 disabled:opacity-25">
                 <ArrowDown className="size-3.5" />
               </button>
-              <button type="button" aria-label="Remove step" disabled={steps.length === 1} onClick={() => setSteps((cur) => cur.filter((_, k) => k !== i))} className="grid size-6 shrink-0 place-items-center rounded text-neutral-400 hover:bg-red-500/15 hover:text-red-200 disabled:opacity-25">
+              <button type="button" aria-label="Remove step" data-cuelume-close="" data-cuelume-emphasis="subtle" disabled={steps.length === 1} onClick={() => setSteps((cur) => cur.filter((_, k) => k !== i))} className="grid size-6 shrink-0 place-items-center rounded text-neutral-400 hover:bg-red-500/15 hover:text-red-200 disabled:opacity-25">
                 <X className="size-3.5" />
               </button>
             </li>
@@ -118,6 +121,8 @@ function DraftPlan({ item, onPlan, onDraft }: Props) {
         </ol>
         <button
           type="button"
+          data-cuelume-tap=""
+          data-cuelume-emphasis="subtle"
           onClick={() => setSteps((cur) => [...cur, { id: `n${++added.current}`, text: "", role: "analyst", tier: "super" }])}
           className="mt-1 flex items-center gap-1.5 self-start rounded-md px-2 py-1 text-[13px] font-bold text-neutral-300 hover:bg-white/8"
         >
@@ -134,10 +139,10 @@ function DraftPlan({ item, onPlan, onDraft }: Props) {
       <div className={cx(panelFoot, "justify-between")}>
         <span className="text-neutral-400">{ready ? "Waiting for you" : "Every step needs some text"}</span>
         <span className="flex gap-2">
-          <button type="button" disabled={!ready || !!busy} onClick={() => void send("revise")} className={cx(secondaryButton, buttonSm)}>
+          <button type="button" data-cuelume-tap="" disabled={!ready || !!busy} onClick={() => void send("revise")} className={cx(secondaryButton, buttonSm)}>
             {busy === "revise" ? "Planning again…" : "Keep planning"}
           </button>
-          <button type="button" disabled={!ready || !!busy} onClick={() => void send("approve")} className={cx(primaryButton, buttonSm)}>
+          <button type="button" data-cuelume-tap="" disabled={!ready || !!busy} onClick={() => void send("approve")} className={cx(primaryButton, buttonSm)}>
             {busy === "approve" ? "Starting…" : "Approve plan"}
           </button>
         </span>
@@ -158,7 +163,7 @@ function LivePlan({ item, view, now, onCancel, ended }: Props & { ended: boolean
 
   if (ended && !open)
     return (
-      <button type="button" onClick={() => setOpen(true)} aria-expanded="false" className={cx(panel, "flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-white/5")}>
+      <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setOpen(true)} aria-expanded="false" className={cx(panel, "flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-white/5")}>
         <span className={cx("grid size-5 place-items-center rounded-full", failed || cancelled ? "bg-red-500/20 text-red-200" : "bg-emerald-500/20 text-emerald-200")}>{failed || cancelled ? <X className="size-3" /> : <Check className="size-3" />}</span>
         <span className="text-[14px] font-bold tabular-nums">
           {done} of {total} steps · {fmtSecs(elapsedMs)}
@@ -206,12 +211,12 @@ function LivePlan({ item, view, now, onCancel, ended }: Props & { ended: boolean
       <div className={cx(panelFoot, "justify-between")}>
         <span className="tabular-nums">{cancelled ? "Cancelled" : countdown ? `Starting in ${remaining}s unless you cancel` : ended ? `${done} of ${total} steps · ${fmtSecs(elapsedMs)}` : `${done} of ${total} steps`}</span>
         {countdown ? (
-          <button type="button" onClick={onCancel} className={cx(secondaryButton, buttonSm, "relative overflow-hidden")}>
+          <button type="button" data-cuelume-close="" onClick={onCancel} className={cx(secondaryButton, buttonSm, "relative overflow-hidden")}>
             Cancel
             <span key={item.seq} aria-hidden="true" className="nb-countdown absolute inset-x-3 bottom-0.5 h-0.5 rounded-full bg-current opacity-50" />
           </button>
         ) : ended ? (
-          <button type="button" onClick={() => setOpen(false)} className={cx(secondaryButton, buttonSm)}>
+          <button type="button" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={() => setOpen(false)} className={cx(secondaryButton, buttonSm)}>
             Collapse
           </button>
         ) : null}

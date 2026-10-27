@@ -5,6 +5,7 @@ import { ArrowUp, Gauge, Paperclip, ShieldCheck, Square, Wrench, X } from "lucid
 import { TOOL_LABELS, type Workstream } from "@/lib/workstreams";
 import type { RunView } from "@/lib/run-view";
 import { CountUp } from "./count-up";
+import { cue } from "./sound";
 import { cx, ghostButton, primaryButton, secondaryButton } from "./ui";
 
 // The composer never changes shape; only placeholder, primary button, secondary button and
@@ -184,11 +185,13 @@ export function Composer(p: ComposerProps) {
     if (state === "slash" && menu.length > 0) {
       if (e.key === "ArrowDown") return void (e.preventDefault(), setMenuIdx((i) => (i + 1) % menu.length));
       if (e.key === "ArrowUp") return void (e.preventDefault(), setMenuIdx((i) => (i - 1 + menu.length) % menu.length));
-      if (e.key === "Enter" && !e.shiftKey) return void (e.preventDefault(), pick(menu[menuIdx]));
+      if (e.key === "Enter" && !e.shiftKey) return void (e.preventDefault(), cue("select"), pick(menu[menuIdx]));
       if (e.key === "Escape") return void (e.preventDefault(), setMenuClosed(true));
     }
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
+      // the button's cue, for the same action from the keyboard
+      if (!primary.disabled) cue(state === "planning" ? "close" : "tap", { input: "keyboard" });
       if (e.metaKey || e.ctrlKey) {
         if (state === "drafting" || state === "slash") send(true);
       } else send(false);
@@ -239,6 +242,7 @@ export function Composer(p: ComposerProps) {
             <button
               key={t.label}
               type="button"
+              data-cuelume-select=""
               style={{ animationDelay: `${i * 50}ms` }}
               onClick={() => (p.setDraft(t.goal), areaRef.current?.focus())}
               className="nb-rise-fast rounded-full border border-white/12 bg-neutral-900 px-3 py-1.5 text-[13px] font-bold text-neutral-200 transition-colors hover:bg-white/10"
@@ -265,7 +269,7 @@ export function Composer(p: ComposerProps) {
           <ul role="listbox" aria-label="Commands" className="nb-scale-in absolute inset-x-0 bottom-full z-30 mb-2 overflow-hidden rounded-xl border border-white/10 bg-neutral-900 p-1 shadow-xl">
             {menu.slice(0, 6).map((m, i) => (
               <li key={m.cmd} role="option" aria-selected={i === menuIdx}>
-                <button type="button" onMouseEnter={() => setMenuIdx(i)} onClick={() => pick(m)} className={cx("flex w-full items-baseline gap-3 rounded-lg px-3 py-1.5 text-left", i === menuIdx && "bg-white/10")}>
+                <button type="button" data-cuelume-select="" onMouseEnter={() => setMenuIdx(i)} onClick={() => pick(m)} className={cx("flex w-full items-baseline gap-3 rounded-lg px-3 py-1.5 text-left", i === menuIdx && "bg-white/10")}>
                   <span className="font-mono text-[13px] font-bold text-neutral-100">{m.cmd}</span>
                   <span className="truncate text-[13px] text-neutral-400">{m.hint}</span>
                 </button>
@@ -280,7 +284,7 @@ export function Composer(p: ComposerProps) {
               <span key={f} className="inline-flex h-7 items-center gap-1.5 rounded-full bg-white/10 ps-2.5 pe-1 text-[12px] font-bold text-neutral-100">
                 <Paperclip className="size-3" aria-hidden="true" />
                 {f.split(".").pop()?.toUpperCase()} · {f}
-                <button type="button" aria-label={`Remove ${f}`} onClick={() => p.setFiles(p.files.filter((x) => x !== f))} className="grid size-5 place-items-center rounded-full hover:bg-white/15">
+                <button type="button" aria-label={`Remove ${f}`} data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={() => p.setFiles(p.files.filter((x) => x !== f))} className="grid size-5 place-items-center rounded-full hover:bg-white/15">
                   <X className="size-3" />
                 </button>
               </span>
@@ -303,10 +307,10 @@ export function Composer(p: ComposerProps) {
         {confirmStop && (
           <div className="mx-3 mb-2 flex items-center gap-2 rounded-lg bg-red-500/10 px-3 py-1.5 text-[13px] font-semibold text-red-200">
             <span className="flex-1">Stop the run? Pending approvals are rejected.</span>
-            <button type="button" onClick={() => (setConfirmStop(false), p.onStop())} className="h-7 rounded-md bg-red-500 px-3 text-[12px] font-extrabold text-white">
+            <button type="button" data-cuelume-close="" data-cuelume-emphasis="strong" onClick={() => (setConfirmStop(false), p.onStop())} className="h-7 rounded-md bg-red-500 px-3 text-[12px] font-extrabold text-white">
               Stop
             </button>
-            <button type="button" onClick={() => setConfirmStop(false)} className={cx(ghostButton, "h-7 rounded-md px-3 text-[12px] font-bold")}>
+            <button type="button" data-cuelume-tap="" data-cuelume-emphasis="subtle" onClick={() => setConfirmStop(false)} className={cx(ghostButton, "h-7 rounded-md px-3 text-[12px] font-bold")}>
               Keep going
             </button>
           </div>
@@ -334,13 +338,14 @@ export function Composer(p: ComposerProps) {
               </span>
             )}
             {live && !confirmStop && (
-              <button type="button" onClick={() => (state === "plan" ? p.onCancel() : setConfirmStop(true))} className={cx(secondaryButton, "h-9 gap-1.5 rounded-[var(--rb-r-lg)] px-3.5 text-[13px] font-extrabold")}>
+              <button type="button" {...(state === "plan" ? { "data-cuelume-close": "" } : { "data-cuelume-open": "", "data-cuelume-emphasis": "subtle" })} onClick={() => (state === "plan" ? p.onCancel() : setConfirmStop(true))} className={cx(secondaryButton, "h-9 gap-1.5 rounded-[var(--rb-r-lg)] px-3.5 text-[13px] font-extrabold")}>
                 <Square className="size-3 fill-current" aria-hidden="true" /> {state === "plan" ? "CANCEL" : "STOP"}
               </button>
             )}
             <button
               type="button"
               disabled={primary.disabled}
+              {...(state === "planning" ? { "data-cuelume-close": "" } : { "data-cuelume-tap": "" })}
               onClick={primary.onClick}
               className={cx(state === "planning" ? secondaryButton : primaryButton, "relative h-9 gap-1.5 overflow-hidden rounded-[var(--rb-r-lg)] px-4 text-[13px] font-extrabold tabular-nums")}
             >
@@ -364,7 +369,7 @@ const chipCls = "inline-flex h-8 shrink-0 items-center whitespace-nowrap gap-1.5
 
 function Chip({ label, icon, onClick, disabled }: { label: string; icon: ReactNode; onClick: () => void; disabled?: boolean }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className={chipCls}>
+    <button type="button" data-cuelume-tap="" data-cuelume-emphasis="subtle" onClick={onClick} disabled={disabled} className={chipCls}>
       {icon}
       <span className="hidden sm:inline">{label}</span>
     </button>
@@ -387,7 +392,7 @@ function ChipMenu({ label, icon, value, items, onPick, disabled, multi }: { labe
   }, [open]);
   return (
     <div ref={ref} className="relative">
-      <button type="button" disabled={disabled} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={chipCls}>
+      <button type="button" disabled={disabled} aria-haspopup="menu" aria-expanded={open} {...{ [open ? "data-cuelume-close" : "data-cuelume-open"]: "" }} data-cuelume-emphasis="subtle" onClick={() => setOpen((o) => !o)} className={chipCls}>
         {icon}
         <span className="hidden sm:inline">{label}</span>
         {value && <span className="hidden rounded bg-white/10 px-1.5 text-[11px] text-neutral-100 lg:inline">{value}</span>}
@@ -399,6 +404,7 @@ function ChipMenu({ label, icon, value, items, onPick, disabled, multi }: { labe
               <button
                 type="button"
                 role={multi ? "menuitemcheckbox" : "menuitemradio"}
+                {...{ [multi ? "data-cuelume-toggle" : "data-cuelume-select"]: "" }}
                 aria-checked={it.checked}
                 onClick={() => (onPick(it.key), !multi && setOpen(false))}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[13px] font-semibold text-neutral-100 hover:bg-white/10"

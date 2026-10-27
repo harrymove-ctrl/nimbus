@@ -39,6 +39,7 @@ export function Inspector({ view, workstream, tab, setTab, selected, focusArtifa
           <button
             key={t.key}
             role="tab"
+            data-cuelume-select=""
             aria-selected={tab === t.key}
             onClick={() => setTab(t.key)}
             className={cx("-mb-px h-9 border-b-2 px-2.5 text-[12px] font-extrabold uppercase tracking-wider transition-colors", tab === t.key ? "border-[var(--rb-accent)] text-neutral-100" : "border-transparent text-neutral-500 hover:text-neutral-300")}
@@ -106,7 +107,7 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-white/10 px-3">
         <div className="inline-flex rounded-lg bg-white/8 p-0.5" role="group" aria-label="Artifact kind">
           {(["doc", "code"] as const).map((k) => (
-            <button key={k} disabled={(k === "doc" ? docs : codes).length === 0} aria-pressed={kind === k} onClick={() => setKind(k)} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold uppercase tracking-wider disabled:opacity-30", kind === k ? "bg-neutral-100 text-neutral-900" : "text-neutral-300")}>
+            <button key={k} data-cuelume-select="" disabled={(k === "doc" ? docs : codes).length === 0} aria-pressed={kind === k} onClick={() => setKind(k)} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold uppercase tracking-wider disabled:opacity-30", kind === k ? "bg-neutral-100 text-neutral-900" : "text-neutral-300")}>
               {k}
             </button>
           ))}
@@ -115,6 +116,8 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
         <button
           type="button"
           aria-label="Copy"
+          data-cuelume-tap="success"
+          data-cuelume-emphasis="subtle"
           onClick={() => {
             void navigator.clipboard?.writeText(shown.content);
             setCopied(true);
@@ -127,11 +130,11 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
       </div>
       <div className="flex h-9 shrink-0 items-center gap-1 border-b border-white/10 px-3" role="tablist" aria-label="Versions">
         {art.versions.map((v) => (
-          <button key={v.version} role="tab" aria-selected={ver !== "latest" && shown.version === v.version} onClick={() => setVer(v.version)} className={cx("nb-pop-slow h-7 rounded-md px-2.5 text-[11px] font-extrabold", ver !== "latest" && shown.version === v.version ? "bg-white/15 text-neutral-100" : "text-neutral-400 hover:text-neutral-200")}>
+          <button key={v.version} role="tab" data-cuelume-select="" aria-selected={ver !== "latest" && shown.version === v.version} onClick={() => setVer(v.version)} className={cx("nb-pop-slow h-7 rounded-md px-2.5 text-[11px] font-extrabold", ver !== "latest" && shown.version === v.version ? "bg-white/15 text-neutral-100" : "text-neutral-400 hover:text-neutral-200")}>
             V{v.version}
           </button>
         ))}
-        <button role="tab" aria-selected={ver === "latest"} onClick={() => setVer("latest")} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold", ver === "latest" ? "bg-[var(--rb-accent)] text-[var(--rb-accent-fg)]" : "text-neutral-400 hover:text-neutral-200")}>
+        <button role="tab" data-cuelume-select="" aria-selected={ver === "latest"} onClick={() => setVer("latest")} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold", ver === "latest" ? "bg-[var(--rb-accent)] text-[var(--rb-accent-fg)]" : "text-neutral-400 hover:text-neutral-200")}>
           LATEST
         </button>
         <span className="ms-auto text-[11px] font-bold tabular-nums text-neutral-500">v{shown.version} of {latest.version}</span>
@@ -235,7 +238,7 @@ function AgentTab({ view, selected }: { view: RunView; selected: SegRef | null }
   const toggle = (
     <div role="group" aria-label="Agent I/O view" className="flex gap-1 border-b border-white/10 px-4 py-2">
       {(["calls", "loop"] as const).map((m) => (
-        <button key={m} type="button" aria-pressed={mode === m} onClick={() => setMode(m)} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold uppercase tracking-wider", mode === m ? "bg-white text-neutral-950" : "text-neutral-300 hover:bg-white/10")}>
+        <button key={m} type="button" data-cuelume-select="" aria-pressed={mode === m} onClick={() => setMode(m)} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold uppercase tracking-wider", mode === m ? "bg-white text-neutral-950" : "text-neutral-300 hover:bg-white/10")}>
           {m === "calls" ? "Calls" : "Loop"}
         </button>
       ))}

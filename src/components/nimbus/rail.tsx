@@ -45,7 +45,7 @@ export function Rail({
     <nav aria-label="Workstreams" className={cx("flex min-h-0 w-full flex-col border-r border-white/10 bg-neutral-950", className)}>
       {onOverview && (
         <div className="px-2 pt-3">
-          <button type="button" onClick={onOverview} aria-current={selectedId === null ? "page" : undefined} className={cx("flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-left text-[14px] font-semibold text-neutral-100 transition-colors", selectedId === null ? "bg-white/10" : "hover:bg-white/5")}>
+          <button type="button" data-cuelume-navigate="" onClick={onOverview} aria-current={selectedId === null ? "page" : undefined} className={cx("flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-left text-[14px] font-semibold text-neutral-100 transition-colors", selectedId === null ? "bg-white/10" : "hover:bg-white/5")}>
             <LayoutDashboard className="size-4 text-neutral-400" aria-hidden="true" />
             Overview
           </button>
@@ -60,7 +60,7 @@ export function Rail({
           const pending = pendingByWs[w.id] ?? 0;
           return (
             <li key={w.id} style={{ animationDelay: `${idx * 30}ms` }} className="nb-slide-in group relative" onContextMenu={(e) => (e.preventDefault(), setMenu({ id: w.id, x: e.clientX, y: e.clientY, editing: false }))}>
-              <button type="button" onClick={() => onSelect(w.id)} aria-current={sel ? "true" : undefined} className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-lg px-3 text-left transition-colors", sel ? "bg-white/10" : "hover:bg-white/5")}>
+              <button type="button" data-cuelume-navigate="" onClick={() => onSelect(w.id)} aria-current={sel ? "true" : undefined} className={cx("flex h-[52px] w-full items-center gap-2.5 rounded-lg px-3 text-left transition-colors", sel ? "bg-white/10" : "hover:bg-white/5")}>
                 <span className={cx("size-1.5 shrink-0 rounded-full", w.unread && !sel ? "bg-[var(--rb-accent)]" : "bg-transparent")} aria-label={w.unread && !sel ? "Unread result" : undefined} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[14px] font-semibold text-neutral-100">{w.title}</span>
@@ -80,6 +80,8 @@ export function Rail({
                 type="button"
                 aria-label={`More for ${w.title}`}
                 aria-haspopup="menu"
+                data-cuelume-open=""
+                data-cuelume-emphasis="subtle"
                 onClick={(e) => {
                   const r = e.currentTarget.getBoundingClientRect();
                   setMenu({ id: w.id, x: r.left, y: r.bottom + 4, editing: false });
@@ -93,6 +95,7 @@ export function Rail({
                 type="button"
                 aria-label={`Run ${w.title}`}
                 disabled={busyWs[w.id]}
+                data-cuelume-tap=""
                 onClick={() => onRun(w.id)}
                 className="absolute right-2 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-md bg-neutral-800 text-neutral-100 opacity-0 transition-opacity hover:bg-neutral-700 focus-visible:opacity-100 disabled:hidden group-hover:opacity-100 [@media(hover:none)]:opacity-100"
                 style={{ display: pending > 0 ? "none" : undefined }}
@@ -105,14 +108,14 @@ export function Rail({
       </ul>
       {archived.length > 0 && (
         <div className="px-2 pt-1">
-          <button type="button" onClick={() => setShowArchived((v) => !v)} aria-expanded={showArchived} className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-[12px] font-bold text-neutral-500 hover:bg-white/5 hover:text-neutral-300">
+          <button type="button" {...{ [showArchived ? "data-cuelume-close" : "data-cuelume-open"]: "" }} data-cuelume-emphasis="subtle" onClick={() => setShowArchived((v) => !v)} aria-expanded={showArchived} className="flex h-8 w-full items-center gap-2 rounded-md px-3 text-[12px] font-bold text-neutral-500 hover:bg-white/5 hover:text-neutral-300">
             <Archive className="size-3.5" aria-hidden="true" /> Archived · {archived.length}
           </button>
           {showArchived &&
             archived.map((w) => (
               <div key={w.id} className="flex items-center gap-2 px-3 py-1 text-[13px] text-neutral-400">
                 <span className="min-w-0 flex-1 truncate">{w.title}</span>
-                <button type="button" onClick={() => onArchive?.(w.id, false)} className="flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-bold text-neutral-300 hover:bg-white/10">
+                <button type="button" data-cuelume-tap="" data-cuelume-emphasis="subtle" onClick={() => onArchive?.(w.id, false)} className="flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-bold text-neutral-300 hover:bg-white/10">
                   <RotateCcw className="size-3" aria-hidden="true" /> Restore
                 </button>
               </div>
@@ -166,13 +169,13 @@ function RailMenu({ menu, ws, close, edit, onRun, onArchive, onSchedule }: { men
     <div ref={ref} role="menu" aria-label={`${ws.title} actions`} style={{ left: Math.min(menu.x, 200), top: menu.y }} className="nb-scale-in fixed z-50 w-[248px] rounded-xl border border-white/12 bg-neutral-950 p-1.5 shadow-[0_18px_48px_-12px_rgba(0,0,0,0.8)]">
       {!menu.editing ? (
         <>
-          <button role="menuitem" type="button" className={item} onClick={() => (close(), onRun(ws.id))}>
+          <button role="menuitem" type="button" data-cuelume-select="" className={item} onClick={() => (close(), onRun(ws.id))}>
             <Play className="size-3.5" aria-hidden="true" /> Run now
           </button>
-          <button role="menuitem" type="button" className={item} onClick={edit}>
+          <button role="menuitem" type="button" data-cuelume-select="" className={item} onClick={edit}>
             <Pencil className="size-3.5" aria-hidden="true" /> Edit schedule…
           </button>
-          <button role="menuitem" type="button" className={item} onClick={() => (close(), onArchive?.(ws.id, true))}>
+          <button role="menuitem" type="button" data-cuelume-select="" className={item} onClick={() => (close(), onArchive?.(ws.id, true))}>
             <Archive className="size-3.5" aria-hidden="true" /> Archive
           </button>
         </>
@@ -180,7 +183,7 @@ function RailMenu({ menu, ws, close, edit, onRun, onArchive, onSchedule }: { men
         <div className="flex flex-col gap-1 p-1">
           <p className="px-1 pb-1 text-[11px] font-extrabold uppercase tracking-wider text-neutral-400">Schedule · {ws.title}</p>
           {PRESETS.map((p) => (
-            <button key={p.label} type="button" disabled={busy} className={item} onClick={() => void save(p.cron, p.cron ? p.label : null)}>
+            <button key={p.label} type="button" disabled={busy} data-cuelume-select="" className={item} onClick={() => void save(p.cron, p.cron ? p.label : null)}>
               <Clock className="size-3.5 text-neutral-400" aria-hidden="true" /> {p.label}
             </button>
           ))}

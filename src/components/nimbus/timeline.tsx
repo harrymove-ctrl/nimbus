@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, Play, Square } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
 import { ROLE_COLOR, TIER_LABEL, TIER_SHORT, fmtCost3, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
 import { useTween } from "@/hooks/use-tween";
+import { cue } from "./sound";
 import { cx } from "./ui";
 
 // Geometry from UI-SKETCH sheet 3: legend W2 240 · lane pitch P1 66 · segment H3 26 (pill R4 13)
@@ -159,7 +160,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
             {view.lanes.length > 0 && <line x1={x(playT)} x2={x(playT)} y1={0} y2={24} stroke="white" strokeWidth={1} />}
           </svg>
         </div>
-        <button type="button" onClick={onToggle} aria-label="Expand timeline" aria-expanded={false} className="grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10">
+        <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={onToggle} aria-label="Expand timeline" aria-expanded={false} className="grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10">
           <ChevronDown className="size-4" />
         </button>
       </section>
@@ -202,31 +203,31 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
         <span className="h-0.5 w-10 rounded-full bg-white/15 transition-colors group-hover:bg-white/40 group-focus-visible:bg-[var(--rb-accent)]" />
       </div>
       )}
-      <button type="button" onClick={onToggle} aria-label="Collapse timeline" aria-expanded className={cx("absolute right-2 top-2 z-20 grid size-7 place-items-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-100", fill && "hidden")}>
+      <button type="button" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={onToggle} aria-label="Collapse timeline" aria-expanded className={cx("absolute right-2 top-2 z-20 grid size-7 place-items-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-100", fill && "hidden")}>
         <ChevronUp className="size-4" />
       </button>
       {(trace && trace.size > 1) || canScrub ? (
         <div className={cx("z-20 flex items-center gap-1.5 text-[12px] font-bold text-neutral-200", fill ? "flex-wrap justify-end border-b border-white/10 px-3 py-1.5" : "absolute right-11 top-2")}>
           {trace && trace.size > 1 && (
-            <button type="button" onClick={onClearSelection} className="rounded-full bg-white/10 px-2.5 py-1 hover:bg-white/16" title="Esc clears the trace">
+            <button type="button" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={onClearSelection} className="rounded-full bg-white/10 px-2.5 py-1 hover:bg-white/16" title="Esc clears the trace">
               Tracing {trace.size} lanes · clear
             </button>
           )}
           {canScrub && replay && (
             <>
-              <button type="button" onClick={replay.onToggle} aria-label={replay.playing ? "Stop replay" : "Replay the run"} className="flex h-7 items-center gap-1 rounded-full bg-white/10 px-2.5 hover:bg-white/16">
+              <button type="button" data-cuelume-tap="" onClick={replay.onToggle} aria-label={replay.playing ? "Stop replay" : "Replay the run"} className="flex h-7 items-center gap-1 rounded-full bg-white/10 px-2.5 hover:bg-white/16">
                 {replay.playing ? <Square className="size-3" /> : <Play className="size-3" />}
                 {replay.playing ? "Stop" : "Replay"}
               </button>
               {([0.5, 1, 2] as const).map((s) => (
-                <button key={s} type="button" aria-pressed={replay.speed === s} onClick={() => replay.onSpeed(s)} className={cx("h-7 rounded-full px-2 tabular-nums", replay.speed === s ? "bg-white text-neutral-950" : "bg-white/8 hover:bg-white/16")}>
+                <button key={s} type="button" data-cuelume-select="" aria-pressed={replay.speed === s} onClick={() => replay.onSpeed(s)} className={cx("h-7 rounded-full px-2 tabular-nums", replay.speed === s ? "bg-white text-neutral-950" : "bg-white/8 hover:bg-white/16")}>
                   {s}×
                 </button>
               ))}
             </>
           )}
           {scrubMs !== null && (
-            <button type="button" onClick={() => onScrub?.(null)} className="rounded-full bg-[var(--rb-accent)]/25 px-2.5 py-1 text-[var(--rb-accent)] tabular-nums hover:bg-[var(--rb-accent)]/35">
+            <button type="button" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={() => onScrub?.(null)} className="rounded-full bg-[var(--rb-accent)]/25 px-2.5 py-1 text-[var(--rb-accent)] tabular-nums hover:bg-[var(--rb-accent)]/35">
               {(scrubMs / 1000).toFixed(1)}s · back to the end
             </button>
           )}
@@ -323,6 +324,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
                           tabIndex={0}
                           role="button"
                           aria-label={`${laneName(l.instance, l.role)}: ${s.label}${s.failed ? " (failed)" : ""}`}
+                          data-cuelume-select=""
                           onClick={() => onSelect(s)}
                           onKeyDown={(e) => {
                             if (e.key === "Enter" || e.key === " ") return void (e.preventDefault(), onSelect(s));
@@ -417,6 +419,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
               tabIndex={canScrub ? 0 : undefined}
               onPointerDown={(e) => {
                 if (!canScrub) return;
+                cue("select", { emphasis: "subtle" }); // once when the scrub starts, not per frame of the drag
                 dragging.current = true;
                 (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
                 scrubFromPointer(e.clientX);

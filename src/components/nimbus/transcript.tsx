@@ -139,7 +139,7 @@ function Item({ item, view, now, manualMinutes, onDraft, onCancelPlan, onPlan, o
       );
     case "artifact":
       return (
-        <button type="button" onClick={() => onOpenArtifact(item.artifactId, item.version)} className="flex w-full items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-left hover:bg-white/5">
+        <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => onOpenArtifact(item.artifactId, item.version)} className="flex w-full items-center gap-2 rounded-xl border border-white/10 px-3 py-2 text-left hover:bg-white/5">
           <FileText className="size-4 shrink-0 text-teal-300" aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate text-[14px] font-bold text-neutral-100">{item.title}</span>
           <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-extrabold text-neutral-200">v{item.version}</span>
@@ -183,6 +183,7 @@ function QuestionCard({ item, onAnswer }: { item: QuestionItem; onAnswer: (q: Qu
                   key={o}
                   type="button"
                   disabled={answered}
+                  data-cuelume-select=""
                   onClick={() => onAnswer(item, o)}
                   aria-pressed={chosen}
                   className={cx(
@@ -260,7 +261,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
         <div className={cx(panelFoot, "flex-wrap justify-end gap-2")}>
           {rejecting ? (
             <>
-              <button type="button" onClick={() => setRejecting(false)} className={cx(ghostButton, buttonSm)}>
+              <button type="button" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={() => setRejecting(false)} className={cx(ghostButton, buttonSm)}>
                 Back
               </button>
               <button type="button" onClick={() => onDecide(item, "reject", note)} className={cx(secondaryButton, buttonSm)}>
@@ -269,7 +270,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
             </>
           ) : (
             <>
-              <button type="button" onClick={() => setRejecting(true)} className={cx(ghostButton, buttonSm)}>
+              <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setRejecting(true)} className={cx(ghostButton, buttonSm)}>
                 Reject with a note
               </button>
               <button type="button" onClick={() => onDecide(item, "approve_always")} className={cx(secondaryButton, buttonSm)}>
@@ -367,6 +368,7 @@ function SummaryCard({ item, view, onRevert, manualMinutes }: { item: Extract<TI
             {onRevert && (
               <button
                 type="button"
+                data-cuelume-tap=""
                 disabled={reverted === "busy" || reverted === "yes"}
                 onClick={async () => {
                   setReverted("busy");
