@@ -52,6 +52,7 @@ export function AppShell() {
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
   const active = useActiveRuns();
   const draftRef = useRef<import("@/lib/events").PlanStep[] | null>(null);
+  const restored = useRef(false);
   const { events } = useRunEvents(runId);
   const view = useMemo(() => buildView(events), [events]);
   // Scrubbing a finished run (SPEC §17.5): the transcript and the Inspector show the run as it was at `scrub` ms; the
@@ -82,6 +83,16 @@ export function AppShell() {
   const clock = view.active || view.status === "planning" || view.lanes.some((l) => l.status === "running");
   const now = useNow(clock, reduced ? 1000 : 60);
 
+  // Remember where you are for a reload (only after the saved place was restored, or boot would overwrite it)
+  useEffect(() => {
+    if (!restored.current) return;
+    try {
+      window.sessionStorage.setItem("nimbus:view", JSON.stringify({ selectedId, runByWs }));
+    } catch {
+      /* private mode: nothing to remember */
+    }
+  }, [selectedId, runByWs]);
+
   // Boot: first GET /api/workstreams resolves → cloud fades out (kept up at least 1.2 s so it reads as a preloader).
   useEffect(() => {
     let alive = true;
@@ -107,9 +118,24 @@ export function AppShell() {
       if (new URLSearchParams(window.location.search).has("loaders")) {
         await bootGone;
         await new Promise((r) => setTimeout(r, 900));
+        // once, before the first run: a later reload must not repeat the hold
+        const u = new URL(window.location.href);
+        u.searchParams.delete("loaders");
+        window.history.replaceState(null, "", u);
       }
       if (!alive) return;
       setWorkstreams(d.workstreams);
+      // a reload (a dev refresh, F5) lands back on the workstream and run you were looking at
+      try {
+        const saved = JSON.parse(window.sessionStorage.getItem("nimbus:view") ?? "null") as { selectedId: string | null; runByWs: Record<string, string> } | null;
+        if (saved && !new URLSearchParams(window.location.search).has("run")) {
+          if (saved.selectedId && d.workstreams.some((w) => w.id === saved.selectedId)) setSelectedId(saved.selectedId);
+          setRunByWs((m) => ({ ...saved.runByWs, ...m }));
+        }
+      } catch {
+        /* no storage: start on the Overview */
+      }
+      restored.current = true;
       setWsLoaded(true);
       // Deep link from a chat reply: /?run=<id> opens that run in its workstream (the approval lives here).
       const rid = new URLSearchParams(window.location.search).get("run");
