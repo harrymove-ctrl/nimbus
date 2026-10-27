@@ -226,7 +226,7 @@ export function Composer(p: ComposerProps) {
 
   return (
     <div className="mx-auto w-full max-w-[720px]">
-      {state === "idle" && !view.runId && (
+      {state === "idle" && (
         <div className="mb-2 flex flex-wrap gap-1.5" role="group" aria-label="Goal templates">
           {TEMPLATES.map((t, i) => (
             <button
