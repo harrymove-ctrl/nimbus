@@ -1,68 +1,105 @@
-status: approved · 2026-10-27 · "Approve the board, music brief and SFX sheet: build it."
-script: docs/video/script.md rev 4 (approved 2026-10-27)
-captions: none
-grid: 120 BPM · 30 fps · beat = 15 frames · bar = 60 frames · full cut 68 bars (4080 frames) + 2-bar audio tail · X clip 22 bars (1320 frames)
+status: approved · 2026-10-27 · "Approve the rev 5 board, music brief and SFX sheet: build it." · rev C
+script: docs/video/script.md rev 5 (approved 2026-10-27, "Approve script rev 5 as written.")
+captions: none, and no sentence captions (story.md rule 12); words live in callouts, the title and the end card
+grid: 120 BPM · 30 fps · beat = 15 f · bar = 60 f · full cut 87 bars (5220 f, 2:54) + 1-bar audio tail · X clip 22 bars (1320 f, 0:44)
+supersedes: the rev A and rev B scene boards (in git history). PromptRoll, CommentStorm, ColumnCut and AgentChat are not in this cut; their files stay in `video/src/scenes/`.
 
-# Look
+Note on length: the script header says "85 bars + 1-bar tail", but its scene table adds up to 87 bars = 2:54, which is the length it states. This board follows the table (87 bars, 6 s under 3:00).
 
-- **Palette:** Sorbet neutrals (neutral-50 paper, neutral-950 ink), mint accent `--rb-accent`, cloud blue `#18b2ff`, cloud orange `#fa7342`, lilac `#b8a4ff` (Prompt Roll pill only). Nothing else.
-- **Type:** Manrope. Cards: 88 px / 700, tracking −1 %; chapter number 28 px / 600 mint; footage labels 32 px / 600.
-- **Light and dark rhythm:** the hook is light (neutral-50 paper) → wash to white → the old way is dark → black → the name on black → chapter cards on neutral-950 → app footage (dark). The light opener makes frame 1 pop in a dark feed.
-- **Dither:** only inside app footage (where the app already has it) and as a 3 % `dither-glow` behind chapter cards. Scenes 1–3 have none.
-- **Rule:** nothing holds still for more than 2 s, except the end card (held on purpose, 3 bars).
+# Look (rev B, unchanged)
+
+- **Palette from the code**, every value in `video/src/theme.ts` with its source line: background `neutral-950`, cards `neutral-900`, lines white/10, text neutral-100 / neutral-400, accent `--rb-accent` mint, role colors from `src/lib/run-view.ts` `ROLE_COLOR` (checker, researcher, analyst, writer), tier colors from the Overview. Cloud blue and orange only where the cloud is drawn.
+- **Dark-first**: every scene sits on neutral-950. The title and end card carry the app's 3 % dither glow.
+- **Framing**: footage fills ≥ 85 % of the frame; push in until the UI text a callout points at is ≥ 28 px at 1080p; **lane names stay in frame** whenever the timeline is on screen (story.md rule 11); no frame more than a third empty for over 1 s (title and end card excepted).
+- **Motion**: every footage shot moves (push, pan, or a slow 6 % creep under a hold); nothing still for more than 2 s except the end card.
+
+# Components
+
+## Callout (`video/src/components/Callout.tsx`, new)
+
+Per components.md "Explainer callout":
+- **Ring** around the target: mint, 2 px, 8 px padding, radius 10; draws in over 8 f (stroke-dashoffset).
+- **Leader**: a 1.5 px line, white/40, from the ring's nearest edge to the card; draws with the ring.
+- **Card**: neutral-900, white/10 border, radius 14, padding 18 × 24, Manrope. Line 1: 600, 34 px, neutral-100, ≤ 6 words, *what it is*. Line 2: 500, 28 px, neutral-400, ≤ 9 words, *why it helps you*. A role-color dot (12 px) before line 1 when the target belongs to one agent. Card rises 12 px and fades in over 6 f, starting as the ring finishes.
+- **Dim**: the rest of the frame dims 25 % (a neutral-950 overlay at 25 % with the target's box cut out) while any callout shows; 6 f in, 6 f out.
+- **Timing**: in on a downbeat, holds ≥ 2 bars, out on beat 4 of its last bar (fade 6 f). One at a time, two at most (the second's in-point is the first's last bar).
+- **Placement**: the card goes on the emptier side of the target (left/right/above/below, chosen per callout in the scene table so it is deterministic), never over the target or its label; 48 px from the frame edge at least.
+- **Tracking**: targets come from `docs/demo/raw/beats.json` (`targets: { name: { x, y, w, h } }` in take pixels, per beat), mapped through the same camera transform as the footage, so the ring rides a push-in. A target missing from beats.json falls back to a hand box in `video/src/callouts.ts` and is listed in QA.
+- Pure function of the frame. Props: `target`, `what`, `why`, `role?`, `from`, `to`, `side`.
+- Words are the script's, verbatim; a callout written as one phrase in the script is split at a natural break ("Ranked by who waits" / "and by when").
+
+## Chapter eyebrow (`video/src/components/Eyebrow.tsx`, new)
+
+A small chip top-left (48 px in from top and left): neutral-900 at 90 %, white/10 border, radius 999, Manrope 600 28 px; the chapter number in mint, then the title in neutral-100 ("**1** · You approve the plan"). Slides in from the left over 8 f on the chapter's first downbeat; stays for the whole chapter; never cut off by a push-in (it sits above the footage, not inside it). No full-screen chapter cards.
+
+## Kept from the previous build
+
+- `Footage` (screen-recording + ring-only cursor-track, slow creep) for every app shot.
+- `Proof` (count-grid, adapted) for scene 14, re-texted per the script.
+- `wordmark-cut` + `EndCard` for scene 15.
+- **Title card** (new, small): `TitleCard.tsx` on neutral-950 + dither glow, three lines on the beat (see scene 2).
+- **Phone frame**: snapcn `phone-frame` (free) with the chat drawn inside it, replaying `docs/video/chat-transcript.json` word for word (only the typing rate is chosen; reply words stream, grey 6 f before they set). The selection from the transcript is the one already agreed: link lines dropped; "approve all" shows "Approved: …", the brief's two header lines and item 1 cut at its first sentence with " …".
 
 # Scene board (full cut)
 
-Frames are absolute in `NimbusFull`; "beat" = 15 frames.
+Frames are absolute in `NimbusFull`. "b" = bar inside the scene (b0 = its first bar). Callout times are `in → out` in scene bars (in on the downbeat, out on beat 4 of the bar before `out`). Footage beats are the keys the new take's `beats.json` will carry; names marked * are sub-beats we ask the recorder to mark (see "From the new take").
 
-| # | Frames | Component | Motion (in · hold · out) | What moves, moment by moment |
-|---|---|---|---|---|
-| 1 | 0–120 | `PromptRoll` (hand-built) | in: card pushes from 92 % to 100 % over 10 f · hold while typing · out: whip pan right 8 f to the send button, press, white wash 12 f | "Let Nimbus handle" types at 2 frames per char (f 0–34); last words become a pill (f 34–40) that rolls one option per beat (f 40, 55, 70, 85), tints mint → blue → orange → lilac with a 4 f spring; send button stroke draws in (f 92–100); pointer glides in, press with halo (f 104); arrow flies up-right (f 106–114); white wash f 108–120 |
-| 2 | 120–360 | `CommentStorm` (hand-built) | in: cut from white to near-black · hold · out: fold to center 10 f, cut to black on f 360 | f 120–150 "8:00 a.m." types into a pill; f 150–330 fourteen items land from a fixed table (pills toss in with 1.15 overshoot and ±6° tilt; cards open downward and type their line), intervals tightening from 12 f to 3 f; camera pulls back 100 % → 70 % over the whole scene; shake (±6 px, 4 Hz) from f 300; fold all items to center f 340–356; black f 356 |
-| 3 | 360–540 | snapcn `orb-swarm` | in on the downbeat at 360 · out: orbs shrink 8 f before 540 | Four beat groups: "Nimbus" (360) · "an always-on crew" (390) · "of NVIDIA Nemotron agents" (450) · "on Nebius Token Factory" (480); orbs burst → 8 → 16 → vortex → chain loops "Nebius Token Factory"; orb tint cloud blue with mint rim |
-| 4 | 540–600 | Chapter card + snapcn `text-highlight` (marker) | in: words rise 12 px, 8 f · marker sweeps "away" f 556–574 · out: cut | "1" in mint, the line in neutral-50 |
-| 5 | 600–840 | `ColumnCut` (hand-built) | cascade f 600–690 · hard cut f 690 · column f 690–840 | Four lines cascade in (one per beat), square cursor beside line 3, highlight runs across line 3 letter by letter (f 640–680) while all lines drift up 24 px; hard cut to a column of 10 app stills that jumps one per beat (beats tightening 15 → 12 → 10 f), "on a schedule" lands left (f 700), "on Nebius Serverless" lands right (f 730), whole frame pans left accelerating (f 760–840) |
-| 6 | 840–1380 | `screen-recording` of take `crew` + `cursor-track` | push in 100 → 125 % over 2 bars; pan along the lanes; snap zoom 6 f onto the ✕ at its frame; pull back for ✓ | Lanes filling with Nemotron badges; label "Nemotron 3 Ultra plans. Super and Nano do the work." enters bar 2 bottom-left (no band, a soft card over a dimmed corner, 3 s); "Something failed. It tried again." on the ✕ |
-| 7 | 1380–1440 | Chapter card + `text-highlight` (underline "your OK") | as 4 | — |
-| 8 | 1440–1680 | `screen-recording` take `plan` + `cursor-track` | push in on the Tools chip; pan down the plan list; follow the dragged step | Goal types; Tools chip opens; plan list; step dragged up; Approve plan pressed (cursor halo) |
-| 9 | 1680–2040 | `screen-recording` take `gate` | hold with motion inside (the orange cloud and the card sliding in); snap zoom on the payload; pull back on approve; then a card with `text-highlight` color sweep on "anything" (f 1950–2040) | Cloud turns orange (f 1690); card slides in; cursor to Approve & always allow (f 1890, the Drop 2 downbeat); rule line appears |
-| 10 | 2040–2220 | Card + `text-highlight` (strikethrough "their servers", marker "your database") | strike draws f 2060–2075; marker f 2090–2110 | Words on neutral-950 |
-| 11 | 2220–2280 | Chapter card + `text-highlight` (shimmer "already talk") | as 4 | — |
-| 12 | 2280–2760 | `AgentChat` (hand-built) | camera pushes in on the compose field; pulls back as replies stream | Three exchanges on one clock derived from a typing rate of 2 f per char: "what needs me?" → reply; "run morning brief" → plan line → "1 needs your OK: send 3 replies?"; "approve" → "Sent ✓". Replies stream word by word; each word grey for 6 f before it sets. Text taken verbatim from a real `/v1` transcript saved at `docs/video/chat-transcript.json` |
-| 13 | 2760–2880 | `screen-recording` take `chat-run` (or the phone take if recorded) | slide in from right 8 f; hold with motion inside | The run tagged "chat" lighting up in the timeline |
-| 14 | 2880–3000 | `terminal-simulator` (Hermes CLI) or extend 12 | types the prompt, prints the answer | Cut if Phase D not done |
-| 15 | 3000–3060 | Chapter card + `text-highlight` (color fill "every run") | as 4 | — |
-| 16 | 3060–3300 | `screen-recording` take `memory` | push in on "Next run uses 5 memories · 1 rule"; pan down the memories; hover Forget | Counts, cards, a memory row highlighting |
-| 17 | 3300–3600 | `screen-recording` take `run-two` → card with `text-highlight` marker on the new cost | follow the learned badge; card at f 3480 | Learned badge pops; no approval card; the cost line |
-| 18 | 3600–3900 | `count-grid` (adapted) | three tiles rush in one per beat; numbers count up over 1 bar each | Model ids on the tiles; "Nebius Token Factory" under them |
-| 19 | 3900–4080 | `wordmark-cut` → end card | wordmark cools and cuts closer (f 3900–3960); end card held f 3960–4080 | URL and `pnpm dev` |
+| # | Frames | Bars | Footage beat | Camera | Callouts (target · what · why · side · bars) | Sound |
+|---|---|---|---|---|---|---|
+| 1 | 0–180 | 3 | `brief1-doc` end: the finished brief in the Artifact tab, tray "3 waiting", cloud orange | Push 1.5 → 1.9 over 3 bars toward the brief, tray in frame | `brief-doc` · "Your morning, already read" · "Inbox, calendar, GitHub → one page" · right · b0 → b2. `tray` · "3 replies drafted" · "Nothing is sent without your OK" · above · b1 → b3 | cuelume attention (cloud orange) on f 8; music intro |
+| 2 | 180–300 | 2 | — (title card) | Title lines on the beat: "Nimbus" (b0 beat 1), "An AI crew that asks before it acts" (b0 beat 3), "NVIDIA Nemotron · Nebius Token Factory" (b1 beat 2); a 4 % drift | — | riser-1bar into the downbeat at 300, soft impact on 300 |
+| 3 | 300–660 | 6 | `overview` | 1.6 on the stat cards (b0), pan down to the workstream list 2.1 (b0.5–b2), spend chart 2.0 (b2–b4), router gauge 2.2 (b4–b6) | `workstreams` · "Workstreams" · "Chores that run on a schedule" · right · b0 → b2. `spend-chart` · "Every call priced" · "On Nebius Token Factory" · right · b2 → b4. `router-gauge` · "Cost router" · "Cheapest Nemotron that can do the step" · left · b4 → b6 | count (2 s) as the cards count up at 300; tap on the day click |
+| 4 | 660–1080 | 7 | `brief1-goal` → `brief1-plan-draft` | Composer at 2.2 while the goal types (b0–b2); plan card 2.2 (b2–b5); estimate chip 2.4 (b4–b6); Tools chip 2.4 (b5–b7); Approve plan ring at its click | `plan` · "The plan" · "Who does what, before anything runs" · right · b2 → b4. `estimate` · "≈ $0.03 · mock" · "You see the cost first" · below · b4 → b6. `tools` · "Allowed tools" · "It can't use anything else" · above · b5 → b7 | type (per keystroke, ≤ 1 per 3 f); tap on send; ready (subtle) as the plan arrives; select on the drag; tap + success on Approve plan |
+| 5 | 1080–1680 | 10 | `brief1-checklist` (timeline) + `brief1-agent-io`* | Lanes at 1.8 with **lane names in frame** (b0–b3); pan to the badges 2.2 (b3–b5); header cost 2.4 (b5–b7); click the Analyst segment, inspector 2.3 (b7–b10) | `lanes` · "One row per agent" · "They work at the same time" · right · b1 → b3. `model-badge` · "Model per step" · "Ultra plans, Super reads and writes" · below · b3 → b5 (role dot: analyst). `run-cost` · "Live cost" · "Stops at your budget" · below · b5 → b7. `agent-io` · "What it read" · "Every step is open to check" · left · b8 → b10 | loading (subtle) on 1080; select on the segment click; designed whoosh into 6 |
+| 6 | 1680–1980 | 5 | `brief1-doc` | The doc at 2.2, scroll "Needs you today" (b0–b2), calendar table, "Can wait" (b3–b5) | `needs-you` · "Ranked by who waits" · "And by when" · right · b0 → b2. `can-wait` · "Noise moved aside" · "No draft for it" · right · b3 → b5 | ready on 1680 (the doc opens) |
+| 7 | 1980–2520 | 9 | `brief1-approvals` + sub-beats `approve-dana`*, `approve-priya`*, `always-allow`* | Cloud + card at 1.9 (b0–b3); Approve (Dana) ring at **b3 = 2160 = 1:12**; Priya at b5; Sam's Approve & always allow at b6.5; the rule line at 2.4 (b7–b9) | `approval-card` · "Sending is an action" · "So it waits for you" · right · b0 → b3. `approve-buttons` · "Approve, reject with a note" · "Or allow from now on" · above · b3 → b6. `rule-line` · "One rule saved" · "You can revoke it anytime" · above · b7 → b9 | attention on 1980 (one per burst); **music drop 2 on 2160**; success on Dana (2160) and Priya (2280); success **strong** on always-allow (2370) |
+| 8 | 2520–2820 | 5 | `brief1-summary` | Summary tiles 2.0, push 2.3 on cost (b1–b3), baseline (b3–b5) | `summary-cost` · "The whole morning" · "$0.03 · mock" · above · b1 → b3. `vs-baseline` · "Router savings" · "Versus always using the biggest model" · above · b3 → b5 | count (700 ms) 8 f after 2520; ready 33 f after (memories saved) |
+| 9 | 2820–3240 | 7 | `memory-skill` (Morning brief) | Memory cards 2.3 (b0–b2), skill file 2.2 (b2–b5), hover Forget 2.6 (b5–b7) | `memories` · "Memories" · "What it learned from your morning" · left · b0 → b2. `skill-file` · "Its own how-to" · "Rewritten after each run" · left · b3 → b5. `forget` · "Forget or revoke" · "You stay in charge" · left · b5 → b7 | select on the tab (2820); open (subtle) on the hover; music Calm |
+| 10 | 3240–3600 | 6 | `brief2-learned` → `brief2-summary` | Plan with the learned chip 2.3 (b0–b3); header cost 2.4 (b3–b6) | `learned-chip` · "Uses what it learned" · "No repeat questions" · right · b1 → b3. `run2-cost` · "Run two: $[real] · mock" · "Cheaper and faster" · below · b4 → b6 | ready (subtle) as the plan arrives; success on run done |
+| 11 | 3600–3960 | 6 | `radar` → `status-pill` | Rail with the unread dot 2.4 (b0–b2); digest doc 2.0 (b2–b3); another workstream, the pill 2.6 (b3–b6); approve from the pill | `unread-dot` · "Ran on schedule" · "While you were away" · right · b0 → b2. `status-pill` · "Status pill" · "Answer from anywhere in the app" · below · b3 → b5 | navigate on the rail click; attention (pill); success on approve |
+| 12 | 3960–4440 | 8 | phone frame (b0–b6), then `chat-run` (b6–b8) | Phone frame tilts in (b0), holds with motion inside, push 1.0 → 1.08; hard cut to the web timeline 2.0 at b6 | `phone` · "Same crew in your chat app" · "Via OpenClaw or Hermes" · left of the phone · b1 → b3. `chat-run` · "Same run, same approvals" · "One history" · right · b6 → b8 | tap per sent message; ready (subtle) per reply; success **strong** on "approve all"'s "Approved" |
+| 13 | 4440–4740 | 5 | `watch` | The proposal table 2.2 (b0–b2); approve; router gauge 2.4 (b3–b5) | `routing-table` · "It watches its own bill" · "Proposes cheaper routing" · right · b0 → b2. `router-gauge` · "Approved" · "Saving shows up here" · left · b3 → b5 | attention on 4440; success on approve; count on the gauge; riser-2bar 4620 → 4740 (the lift) |
+| 14 | 4740–4980 | 4 | — (Proof) | Tiles rush in one per beat (4740, 4755, 4770); "Nebius Token Factory" under them at 4800; "19/19 trajectory evals pass · MIT" at 4860; 5 % push | — (the tiles are the text; "mock" tag until real) | sub-hit per tile; count on 19/19 |
+| 15 | 4980–5220 | 4 | — (wordmark → end card) | wordmark-cut b0; end card held still b1–b4 (the one allowed hold): Nimbus, github.com/harrymove-ctrl/nimbus, `pnpm dev` | — | silence 4965–4980; impact-deep 4980; the outro chord rings into the tail |
 
-# X clip board
+# X clip board (22 bars, 1320 f)
 
-Same scene components, re-timed; frames absolute in `NimbusX` (1320 frames).
-
-| # | Frames | From | Changes |
+| # | Frames | From | What changes |
 |---|---|---|---|
-| 1 | 0–120 | 1 | Two roll steps (morning brief → failing tests) |
-| 2 | 120–300 | 2 | Eight items instead of fourteen; same fold |
-| 3 | 300–420 | 3 | Two beat groups ("Nimbus" · "NVIDIA Nemotron agents") |
-| 4 | 420–660 | 9 | Starts at the orange; ends after the rule line |
-| 5 | 660–900 | 12 | Only "run morning brief" … "approve" → "Sent ✓" |
-| 6 | 900–1080 | 17 | Learned badge + the highlighted line |
-| 7 | 1080–1320 | 19 | End card held 3 bars |
+| 1 | 0–180 | 1 | Same, both callouts |
+| 2 | 180–300 | 2 | Same title |
+| 3 | 300–480 | 4 | Goal sent → plan arrives → Approve plan (b2); one callout: `estimate` b0 → b2 |
+| 4 | 480–780 | 5 + 7 | Lanes 2 bars (`lanes` callout b0 → b2); cut to the gate at 600 (orange, attention); **Approve on Dana at 690 = bar 11.5: music drop** (success); `approval-card` callout b2 → b4 |
+| 5 | 780–960 | 10 | Run two, `learned-chip` callout b0 → b2 |
+| 6 | 960–1200 | 12 | Phone: "run morning brief" → "approve all" → "Approved: …" (success strong) |
+| 7 | 1200–1320 | 15 | Silence 1185–1200, impact-deep 1200, end card held |
 
-# Footage needed (one take, recorded in a freeze)
+# From the new take (what depends on its durations)
 
-Takes `crew`, `plan`, `gate`, `chat-run`, `memory`, `run-two` = the beats of
-`pnpm demo:video` (beat keys in `docs/demo/raw/beats.json`). Re-record after
-the builder's fixture fix so no invented facts are on screen. The phone take
-(scene 13) only after CHAT-APPS Phase C.
+Board timings come from the script grid. The footage is fitted to them (speed up to 1.5×, trims inside a beat), so the take's lengths matter only here:
+1. **Sub-beats we need marked in `beats.json`** (a beat with tStart = the moment): `brief1-plan-arrives`, `brief1-approve-plan`, `brief1-agent-io`, `approve-dana`, `approve-priya`, `always-allow`, `brief2-plan-arrives`, `pill-approve`, `watch-approve`. The approve clicks are the points the cut must land on (scene 7's b3 is the music's drop 2); with marks, the shot is slid and ramped so the click falls on the frame.
+2. **Callout targets** in `beats.json` per beat, named as in the scene table (`brief-doc`, `tray`, `workstreams`, `spend-chart`, `router-gauge`, `plan`, `estimate`, `tools`, `lanes`, `model-badge`, `run-cost`, `agent-io`, `needs-you`, `can-wait`, `approval-card`, `approve-buttons`, `rule-line`, `summary-cost`, `vs-baseline`, `memories`, `skill-file`, `forget`, `learned-chip`, `run2-cost`, `unread-dot`, `status-pill`, `chat-run`, `routing-table`). Elements that scroll (the doc) need a box per beat at the moment the callout opens.
+3. **Lengths that would force a change**: if a beat is longer than its scene × 1.5 (e.g. a slow plan draft or a long approval wait), the shot starts later inside the beat; if it is shorter than its scene × 0.5, the scene gets a longer creep or borrows from the neighbour. Scene 7 (9 bars for three approvals) and scene 5 (10 bars of timeline) are the ones to watch.
+4. **Run two** needs the learned chip and the ruled reply going out with no card; **watch** needs the proposal table and its approval; **chat-run** needs a run tagged "chat" in the timeline.
 
-# Hand-built scenes: files and props
+# Fit against take 1624 (planning check, 2026-10-27)
 
-| File | Props |
-|---|---|
-| `video/src/scenes/PromptRoll.tsx` | `lead: string`, `options: {text, tint}[]`, `charFrames = 2` |
-| `video/src/scenes/CommentStorm.tsx` | `opener: string`, `items: {kind: "pill" \| "card", text, x, y, tilt, at}[]` (fixed table) |
-| `video/src/scenes/ColumnCut.tsx` | `lines: string[4]`, `highlightLine = 2`, `stills: string[]`, `left`, `right` |
-| `video/src/scenes/AgentChat.tsx` | `transcript: {role, text}[]`, `charFrames = 2`, `greyFrames = 6` |
+`docs/demo/raw/nimbus-demo-20261027-1624.webm` (198.2 s), its `beats.json` (23 beats, all 28 target names). Rate = footage seconds ÷ scene seconds; the cut plays footage at 0.5–1.5×.
+
+| # | Scene s | Footage (beats) | Footage s | Fit |
+|---|---|---|---|---|
+| 1 | 6 | `brief1-approvals` (brief + tray + orange cloud) | 5.35 | 0.89× ✓ |
+| 3 | 12 | `overview` | 6.16 | 0.51×, at the floor. Plan: `overview` for b0–b3 (1.03×, the count-up), `overview-after` for b3–b6 (1.17×, spend and gauge) |
+| 4 | 14 | `brief1-goal` + `plan-arrives` + `approve-plan` | 20.63 | 1.47× ✓ (the planning wait inside `brief1-goal` plays fast) |
+| 5 | 20 | `brief1-timeline` + `brief1-agent-io` | 20.94 | 1.05× ✓; the `agent-io` box is clipped at the frame bottom, so its ring sits on the visible part and the camera pushes up |
+| 6 | 10 | `brief1-doc` | 9.00 | 0.90× ✓ |
+| 7 | 18 | `brief1-approvals` → `always-allow` | 15.89 | 0.88× ✓; Approve (Dana) lands 6.06 s in = b3 + 2 f, inside half a beat of the drop |
+| 8 | 10 | `brief1-summary` | 5.10 | 0.51×, at the floor; the tiles count up slow, so the creep carries it |
+| 9 | 14 | `memory-skill` | 10.66 | 0.76× ✓ |
+| 10 | 12 | `brief2-plan` + `plan-arrives` + `brief2-run` | 24.93 | 2.1×, too fast. Two shots: `brief2-plan-arrives` b0–b3 (0.80×, the learned chip), the last 9 s of `brief2-run` b3–b6 (1.5×, cost and done) |
+| 11 | 12 | `radar` + `status-pill` + `pill-approve` | 43.29 | Trims: `radar` from its start, 4 s at 1.0× (b0–b2); `status-pill` 6 s at 1.5× (b2–b5); the first 3 s of `pill-approve` (the click, before the /v1 wait) at 1.5× (b5–b6) |
+| 12 | 4 (web part) | `chat-run` | 7.27 | 1.82×; play 6 s of it at 1.5× |
+| 13 | 10 | end of `watch` + `watch-approve` | 22.71 | Start 11.3 s into `watch` (the table on screen): 15 s at 1.5× |
+| X 4 | 10 | `brief1-timeline` (4 s) + `brief1-approvals` → `approve-dana` (6 s) | — | Dana lands at 0:23 if the gate part starts 3.6 s before `approve-dana` at 1.0× |
+
+A re-take with the same flow and beat lengths within about 1 s changes none of this; the sub-beat marks place the clicks exactly.

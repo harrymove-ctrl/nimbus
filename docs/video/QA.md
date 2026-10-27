@@ -1,3 +1,45 @@
+status: Gate 3 · rev 5 previews (temp music) for review · 2026-10-28
+script: rev 5 (approved) · board, music, sfx: rev C (approved) · take: docs/demo/raw/nimbus-demo-20261027-1633.webm (209.6 s) cut by its beats.json
+previews (720p, h264 crf 23, AAC 192k, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (23.4 MB, 2:54) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (5.5 MB, 0:44)
+evidence sheets: `docs/demo/preview/callouts-middle-frames.png` (each callout's middle frame) · `docs/demo/preview/compare-v3-rev4-rev5.png` (v3 · rev 4 preview · rev 5, three scenes)
+sound: Tone.js temp score (`video/sound/music-map.json` = music.md rev C) + 26 sheet sounds (14 cuelume renders, 12 Tone.js designs), mastered with `video/scripts/master.sh`
+
+# QA, rev 5 (build-qa.md)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Duration | PASS | Full 174.1 s (87 bars, 5.9 s under 3:00); X 44.1 s |
+| No frozen or black spots | PASS | `freezedetect n=0.003 d=1.5`: only the end cards (full 168.1–174, X 42.1–44), the intended hold. `blackdetect d=0.3`: none |
+| Cuts on the beat | PASS | Scenes laid out in bars by `grid.ts`; the bundle throws if one starts off a 15-frame beat. Approve (Dana) lands at frame 2160 = bar 36 exactly (the drop 2), X at 690 = bar 11.5 |
+| Frame 1 is the payoff | PASS | Frame 0: the finished brief beside the approval cards, the tray "3 waiting", the cloud orange |
+| Captions safe | N/A | No captions, no sentence captions (story.md rule 12) |
+| Phone readability | PASS | Callout line 1 is 34 px, line 2 28 px; eyebrows 28 px; phone chat 18 device px × 1.58 ≈ 28 px; footage pushed in 1.9–2.6× on the parts a callout names |
+| Loudness | PASS | After `master.sh`: full −14.1 LUFS integrated, −1.2 dBTP, LRA 7.0; X −14.2 LUFS, −1.0 dBTP (measured on the previews) |
+| Hackathon requirements | PASS | Model ids on the proof tiles, "Nebius Token Factory" under them and on the title, the spend callout and the Overview; the app works on screen throughout |
+| Honest numbers | PASS (labelled) | Every number in a callout or tile is from the mock run and says "mock": ≈ $0.03, $0.024, $0.016; the proof card carries "mock run"; 19/19 kept under that tag until RELEASE.md traces it |
+| End card | PASS | URL and `pnpm dev` held still 6 s (full) and 2 s after the wordmark (X, 4 s total card) |
+| Palette matches the app | PASS | `video/src/theme.ts` values each cite `globals.css`, `run-view.ts` ROLE_COLOR or the Overview tiers; `scripts/qa-frames.py` on 10 frames per cut: saturated hues sit on mint (165°), writer/teal and checker/analyst, no foreign bin ≥ 2 % |
+| Frame density | PASS with one exception | A frame every 2 s (87 full, 22 X): X none; full flags only 23 s, the 2 s goal close-up (the composer is at the bottom edge of the app, the page above it is empty by design). Fixed on the way: the phone now sits on the web app (lightly blurred), the plan and estimate are framed tighter |
+| No click track, no raw tones | PASS | No click track exists any more (`click-120.wav` deleted, no `ClickTrack` in the code); every SFX is a cuelume render or a Tone.js design (`scripts/make-sound.mjs`); the score is Tone.js; nothing from `anoisesrc`/`aevalsrc` |
+| Callout rings on target | PASS (3 clipped) | 30 callouts, middle frames in `callouts-middle-frames.png`: 27 rings sit on their element; `brief-doc` and `workstreams` (panels that run to the frame edge) and `model-badge` (at the very top of the app) are clipped by the frame edge |
+| Better than the last liked cut | PASS on picture; sound not auditioned | `compare-v3-rev4-rev5.png`, rows Overview/crew · approval gate · learning, columns v3 · rev 4 · rev 5: rev 5 shows readable everyday content (Dana's contract, the brief) with a callout naming each part, where v3 shows router jargon with sentence captions and rev 4 kinetic cards. I cannot listen in this environment: the temp score and the mix are checked by waveform, spectrum and loudness only |
+
+# Rev 5 build notes (deviations from board rev C, all forced by the take)
+
+- **Scene 4**: the goal is 1 bar (a push from the page to the composer while it types, 1.5×) and the plan draft 6 bars, so the plan, the estimate and the tools each hold 2 bars; the planning wait between them is cut.
+- **Scene 6**: starts 3 s into `brief1-doc`; the draft to Sam shows first and the brief opens after it.
+- **Scene 7**: the shot starts 5.24 s before `approve-dana`, so the click lands on bar 36.
+- **Scene 9**: starts 1.5 s into `memory-skill`, after the panel has loaded.
+- **Scene 12**: the phone sits on the web app (the `chat-run` beat, blurred 3 px, 50 % brightness) instead of a bare background; its callout starts a bar later, after the phone's entrance.
+- **Scene 13**: second half is `overview-after` (the router gauge is not on screen during `watch`).
+- **Approve plan** gets no click ring: its button's position is not in `beats.json`.
+
+# History
+
+(rev 4 redo) status: unlocked · 2026-10-27 · full redo per user feedback ("music quá tệ … colors not matching … sound effect not good … do it all again full")
+
+# History: the Gate 3 lock and table below are superseded by the redo
+
 status: locked · 2026-10-27 · "Both cuts are right; lock them and wait for the music and the real run."
 locked: NimbusFull 2:16 (68 bars) · NimbusX 0:44 (22 bars) · commits 04023a2, 803aa87
 remaining before the final render: (1) Suno tracks music-full.mp3 and music-x.mp3 in video/public/audio/, (2) the final-day real run replayed as footage and its numbers replacing the "mock run" cards. No other changes.

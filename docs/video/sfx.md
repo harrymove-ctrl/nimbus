@@ -1,76 +1,78 @@
-status: approved · 2026-10-27 · "Approve the board, music brief and SFX sheet: build it."
+status: approved · 2026-10-27 · "Approve the rev 5 board, music brief and SFX sheet: build it." · rev C
 frames: absolute in NimbusFull at 30 fps (X clip rows at the end)
-levels: LUFS short-term at the hit; music bed −18 under footage, −14 on cards; master −14 integrated, ≤ −1 dBTP
-sources: CC0 preferred (freesound.org CC0 filter, Pixabay sound effects, Mixkit free SFX); record source + license per file before release
+levels: LUFS short-term at the hit, after mastering; SFX sit 3–6 dB above the bed at their moment; master −14 LUFS integrated, ≤ −1 dBTP
+sources:
+- **cuelume** = the app's own UI sound (cuelume 0.2.8, MIT), theme `default`, the emphasis the app uses (builder's map, docs/SOUND.md), rendered offline to WAV by `video/scripts/make-sound.mjs` through cuelume's own renderer. What the viewer hears is what the app plays.
+- **designed** = a transition built in Tone.js (MIT) in the same headless page: layered filtered noise on a moving band-pass, reverb tail, pitch-falling sine under impacts, light saturation. Original, no license question.
+- No metronome, no raw ffmpeg tones, no stock library in this sheet.
 
-Transition rule: a whoosh starts 6–10 frames before its cut and peaks on
-the cut; no two whooshes in a row share a pitch; a riser ends exactly on a
-downbeat; one beat of silence before the name and before the end card.
+Rules: one cue per moment (a burst of three approvals gets one attention); no sound per streamed word, per tool call or on hover; a whoosh starts 6–10 f before its cut and peaks on it; a riser ends exactly on a downbeat; one beat of silence before the end card.
 
 # Full cut
 
-| # | Frame | Scene | Type | Intent | Level | File |
-|---|---|---|---|---|---|---|
-| 1 | 0–34 | 1 | Key ticks (soft, mechanical) | The prompt typing itself | −26 | `sfx/type-soft.wav` (one tick per 2 frames) |
-| 2 | 40, 55, 70, 85 | 1 | Roll tick (pitched up each step) | Each option rolling in | −24 | `sfx/roll-tick.wav` ×4, +1 semitone each |
-| 3 | 104 | 1 | UI click + soft halo | The send press | −22 | `sfx/click-press.wav` |
-| 4 | 106 | 1 | Swoosh up (airy) | The arrow flying off | −18 | `sfx/swoosh-up.wav` |
-| 5 | 112–120 | 1→2 | Reverse whoosh into a hard cut | White wash into the dark | −16 | `sfx/whoosh-rev-a.wav` |
-| 6 | 150–330 | 2 | Notification pops (5 variants), accelerating | The morning pile landing | −24 → −20 | `sfx/pop-1..5.wav`, one per item from the storm table |
-| 7 | 300–356 | 2 | Low rumble swell | The shake | −20 | `sfx/rumble.wav` |
-| 8 | 340–356 | 2 | Suck-in whoosh | The fold into the center | −16 | `sfx/whoosh-in.wav` |
-| 9 | 356–360 | 2→3 | Hard silence | Cut to black | — | — |
-| 10 | 360–520 | 3 | Glass chimes (orbs bursting/splitting) | Orbs out of the words | −24 | `sfx/glass-1..3.wav` on 360, 390, 450 |
-| 11 | 480 | 3 | Riser (1 bar) → impact | Orbs loop the last words | −16 impact | `sfx/riser-1bar.wav`, `sfx/impact-soft.wav` at 540 |
-| 12 | 532–540 | 3→4 | Whoosh (mid) | Into chapter 1 | −18 | `sfx/whoosh-b.wav` |
-| 13 | 556 | 4 | Marker squeak (light) | Marker on "away" | −26 | `sfx/marker.wav` |
-| 14 | 592–600 | 4→5 | Whoosh (low) | Into Column Cut | −18 | `sfx/whoosh-c.wav` |
-| 15 | 640–680 | 5 | Letter ticks (very soft) | Highlight running across line 3 | −30 | `sfx/tick-tiny.wav` |
-| 16 | 690 | 5 | Hard-cut thud | Cascade → column | −18 | `sfx/thud.wav` |
-| 17 | 690–840 | 5 | Shutter clicks, tightening with the jumps | Each picture jump | −24 | `sfx/shutter.wav` |
-| 18 | 832–840 | 5→6 | Whoosh (fast pan) | The pan away into the crew | −16 | `sfx/whoosh-pan.wav` |
-| 19 | at ✕ frame (≈ 1100) | 6 | Glitch (6 f) + snap zoom | The failed step | −18 | `sfx/glitch.wav` |
-| 20 | at ✓ frame (≈ 1200) | 6 | Soft chime | The retry worked | −20 | `sfx/chime-ok.wav` |
-| 21 | 1372–1380 | 6→7 | Whoosh (mid, new pitch) | Into chapter 2 | −18 | `sfx/whoosh-d.wav` |
-| 22 | 1395 | 7 | Pen stroke | Underline under "your OK" | −26 | `sfx/pen.wav` |
-| 23 | 1440–1680 | 8 | UI clicks; drag swish; plan ticks | Choosing tools, moving a step, approving the plan | −24 | `sfx/click.wav`, `sfx/drag.wav`, `sfx/tick.wav` |
-| 24 | 1690 | 9 | Low tone + soft alert | The cloud turning orange | −22 | `sfx/alert-soft.wav` |
-| 25 | 1890 | 9 | Click + sub hit (on the Drop 2 downbeat) | Approve & always allow | −16 | `sfx/click-press.wav`, `sfx/sub-hit.wav` |
-| 26 | 1950 | 9 | Shimmer | Color sweep on "anything" | −24 | `sfx/shimmer.wav` |
-| 27 | 2060 / 2090 | 10 | Strike scratch; marker | "their servers" struck, "your database" marked | −26 | `sfx/strike.wav`, `sfx/marker.wav` |
-| 28 | 2212–2220 | 10→11 | Message-pop transition (pop + short whoosh) | Into chat chapter | −18 | `sfx/pop-whoosh.wav` |
-| 29 | 2280–2760 | 12 | Key ticks, send swoosh, typing dots loop, one soft pop per streamed line, chime on "Sent ✓" | The chat | −26 / −20 | `sfx/type-soft.wav`, `sfx/send.wav`, `sfx/dots.wav`, `sfx/pop-1.wav`, `sfx/chime-ok.wav` |
-| 30 | 2752–2760 | 12→13 | Whoosh (slide right) | Into the web timeline | −18 | `sfx/whoosh-e.wav` |
-| 31 | 2880–3000 | 14 | Terminal key clicks | Hermes CLI | −26 | `sfx/keys-hard.wav` |
-| 32 | 2992–3000 | 14→15 | Whoosh (mid, new pitch) | Into chapter 4 | −18 | `sfx/whoosh-f.wav` |
-| 33 | 3020 | 15 | Fill sweep | Color fill on "every run" | −26 | `sfx/sweep.wav` |
-| 34 | 3060–3300 | 16 | Ticks on the counts; page flip | Memory tab | −24 | `sfx/tick.wav`, `sfx/page.wav` |
-| 35 | 3300 | 17 | Bright pop | Learned badge | −20 | `sfx/pop-bright.wav` |
-| 36 | 3480 | 17 | Impact (soft) | The lower cost lands | −16 | `sfx/impact-soft.wav` |
-| 37 | 3600, 3615, 3630 | 18 | Sub hit per tile | Three Nemotron tiles | −16 | `sfx/sub-hit.wav` |
-| 38 | 3840–3900 | 18 | Riser (2 bars ending on 3900) | Into the end | −18 | `sfx/riser-2bar.wav` |
-| 39 | 3885–3900 | 18→19 | Silence (one beat) | Punch before the wordmark | — | — |
-| 40 | 3900 | 19 | Impact (deep) with the wordmark cut | End | −14 | `sfx/impact-deep.wav` |
+| # | Frame | Scene | Moment | Sound | Source | Level | File |
+|---|---|---|---|---|---|---|---|
+| 1 | 8 | 1 | The cloud is orange: replies are waiting | attention, normal | cuelume | −20 | `attention.wav` |
+| 2 | 120–300 | 1→2 | Into the title: riser ending on the downbeat | riser, 1 bar | designed | −20 → −16 | `riser-1bar.wav` |
+| 3 | 300 | 2→3 | Title lands into the Overview | impact, soft | designed | −16 | `impact-soft.wav` |
+| 4 | 300 | 3 | Stat cards count up | count, 2000 ms | cuelume | −22 | `count-2s.wav` |
+| 5 | ≈ 420 | 3 | Click a day on the spend chart | tap, normal | cuelume | −24 | `tap.wav` |
+| 6 | 652 | 3→4 | Into chapter 1 | whoosh (mid) | designed | −20 | `whoosh-a.wav` |
+| 7 | 660–780 | 4 | The goal types (one per keystroke, ≤ 1 per 3 f) | type | cuelume | −28 | `type.wav` |
+| 8 | ≈ 780 | 4 | Send (composer RUN) | tap, normal | cuelume | −22 | `tap.wav` |
+| 9 | `brief1-plan-arrives` (≈ 780) | 4 | The plan draft arrives | ready, subtle | cuelume | −22 | `ready-subtle.wav` |
+| 10 | ≈ 900 | 4 | One step dragged | select, direction forward | cuelume | −24 | `select.wav` |
+| 11 | ≈ 960 | 4 | Tools chip opens / closes | open / close, subtle | cuelume | −26 | `open-subtle.wav`, `close-subtle.wav` |
+| 12 | `brief1-approve-plan` (≈ 1050) | 4 | APPROVE PLAN | tap, normal | cuelume | −22 | `tap.wav` |
+| 13 | 1080 | 5 | Run started, lanes begin | loading, subtle | cuelume | −22 | `loading-subtle.wav` |
+| 14 | `brief1-agent-io` (≈ 1560) | 5 | Click the Analyst segment, inspector tab | select | cuelume | −24 | `select.wav` |
+| 15 | 1672 | 5→6 | Into the brief | whoosh (high) | designed | −20 | `whoosh-b.wav` |
+| 16 | 1680 | 6 | The doc opens | ready, normal | cuelume | −20 | `ready.wav` |
+| 17 | 1972 | 6→7 | Into chapter 2 | whoosh (low) | designed | −20 | `whoosh-c.wav` |
+| 18 | 1980 | 7 | The cloud turns orange, the card needs you (one for the burst) | attention, normal | cuelume | −18 | `attention.wav` |
+| 19 | **2160** | 7 | Approve, Dana (music drop 2 lands here) | success, normal + sub hit | cuelume + designed | −16 / −18 | `success.wav`, `sub-hit.wav` |
+| 20 | ≈ 2280 | 7 | Approve, Priya | success, normal | cuelume | −20 | `success.wav` |
+| 21 | ≈ 2370 | 7 | Approve & always allow, Sam | success, strong | cuelume | −16 | `success-strong.wav` |
+| 22 | 2528 | 8 | Summary counts up (250 ms after it appears) | count, 700 ms | cuelume | −22 | `count-700.wav` |
+| 23 | 2553 | 8 | 5 memories saved (1.1 s after the summary) | ready, normal | cuelume | −20 | `ready.wav` |
+| 24 | 2812 | 8→9 | Into chapter 3 | whoosh (mid, new pitch) | designed | −20 | `whoosh-d.wav` |
+| 25 | 2820 | 9 | Memory & skill tab | select | cuelume | −24 | `select.wav` |
+| 26 | ≈ 3150 | 9 | Hover Forget (the menu opens) | open, subtle | cuelume | −26 | `open-subtle.wav` |
+| 27 | `brief2-plan-arrives` (≈ 3300) | 10 | The next morning's plan, learned chip | ready, subtle | cuelume | −22 | `ready-subtle.wav` |
+| 28 | ≈ 3540 | 10 | Run two done, reply sent under the rule | success, normal | cuelume | −20 | `success.wav` |
+| 29 | 3592 | 10→11 | Into chapter 4 | whoosh (high, new pitch) | designed | −20 | `whoosh-e.wav` |
+| 30 | 3600 | 11 | Rail click on Hackathon radar | navigate | cuelume | −24 | `navigate.wav` |
+| 31 | ≈ 3780 | 11 | The status pill: radar needs you | attention, normal | cuelume | −20 | `attention.wav` |
+| 32 | `pill-approve` (≈ 3900) | 11 | Approve from the pill | success, normal | cuelume | −20 | `success.wav` |
+| 33 | 3952 | 11→12 | Into the phone | whoosh (slide) | designed | −20 | `whoosh-f.wav` |
+| 34 | per message | 12 | Each message sent from the phone | tap, normal | cuelume | −24 | `tap.wav` |
+| 35 | per reply | 12 | A reply arrives (once per reply, not per word) | ready, subtle | cuelume | −24 | `ready-subtle.wav` |
+| 36 | at "Approved:" | 12 | "approve all" approved | success, strong | cuelume | −18 | `success-strong.wav` |
+| 37 | 4320 | 12 | Cut to the web timeline | whoosh (short) | designed | −22 | `whoosh-g.wav` |
+| 38 | 4440 | 13 | The crew proposes cheaper routing | attention, normal | cuelume | −20 | `attention.wav` |
+| 39 | `watch-approve` (≈ 4560) | 13 | Approve the proposal | success, normal | cuelume | −20 | `success.wav` |
+| 40 | ≈ 4620 | 13 | The router gauge moves | count, 700 ms | cuelume | −22 | `count-700.wav` |
+| 41 | 4620–4740 | 13→14 | The lift into the proof tiles: riser ending on the downbeat | riser, 2 bars | designed | −20 → −16 | `riser-2bar.wav` |
+| 42 | 4740, 4755, 4770 | 14 | A tile per beat | sub hit | designed | −16 | `sub-hit.wav` |
+| 43 | 4860 | 14 | 19/19 counts up | count, 700 ms | cuelume | −22 | `count-700.wav` |
+| 44 | 4965–4980 | 14→15 | One beat of silence | — | — | — | — |
+| 45 | 4980 | 15 | Wordmark cut, end card | impact, deep | designed | −14 | `impact-deep.wav` |
 
 # X clip (frames absolute in NimbusX)
 
-| # | Frame | Type | Level |
-|---|---|---|---|
-| 1 | 0–34, 40, 55 | Key ticks; two roll ticks | −26 / −24 |
-| 2 | 104–120 | Click, swoosh up, reverse whoosh into the cut | −22 → −16 |
-| 3 | 150–290 | Pops accelerating (8), rumble, suck-in | −24 → −16 |
-| 4 | 296–300 | Silence | — |
-| 5 | 300–420 | Glass chimes, impact at 420 | −24 / −16 |
-| 6 | 430 | Alert soft (cloud orange) | −22 |
-| 7 | 600 | Click + sub hit (the Drop downbeat) | −16 |
-| 8 | 652–660 | Pop-whoosh into the chat | −18 |
-| 9 | 660–900 | Chat sounds, chime on "Sent ✓" | −26 / −20 |
-| 10 | 892–900 | Whoosh | −18 |
-| 11 | 900 / 990 | Bright pop (badge); shimmer | −20 / −24 |
-| 12 | 1065–1080 | Silence | — |
-| 13 | 1080 | Deep impact | −14 |
+| # | Frame | Moment | Sound | Source | Level |
+|---|---|---|---|---|---|
+| 1 | 8 | Cloud orange | attention | cuelume | −20 |
+| 2 | 120–300 | Into the title | riser, 1 bar → soft impact on 300 | designed | −20 → −16 |
+| 3 | ≈ 330 / ≈ 400 / ≈ 450 | Send · plan arrives · Approve plan | tap · ready subtle · tap | cuelume | −22 |
+| 4 | 480 | Lanes start | loading, subtle | cuelume | −22 |
+| 5 | 592 / 600 | Into the gate · the card needs you | whoosh (low) · attention | designed · cuelume | −20 / −18 |
+| 6 | **690** | Approve, Dana (the drop) | success + sub hit | cuelume + designed | −16 / −18 |
+| 7 | 772 / ≈ 800 | Into run two · the learned plan | whoosh (mid) · ready subtle | designed · cuelume | −20 / −22 |
+| 8 | 952 / per message / "Approved:" | Into the phone · sends · approve all | whoosh (slide) · tap · success strong | designed · cuelume | −20 / −24 / −18 |
+| 9 | 1185–1200 | One beat of silence | — | — | — |
+| 10 | 1200 | End card | impact, deep | designed | −14 |
 
 # Files
 
-All under `video/public/audio/sfx/` with the names above. 33 distinct files;
-a full list with source and license goes in `docs/video/RELEASE.md`.
+Under `video/public/audio/sfx/`, rendered by `video/scripts/make-sound.mjs` (names above). cuelume: `attention`, `tap`, `type`, `select`, `open-subtle`, `close-subtle`, `navigate`, `loading-subtle`, `ready`, `ready-subtle`, `success`, `success-strong`, `count-2s`, `count-700`. Designed: `whoosh-a` … `whoosh-g`, `riser-1bar`, `riser-2bar`, `impact-soft`, `impact-deep`, `sub-hit`. Frames marked ≈ or with a sub-beat name are placed from the new take's `beats.json` marks.

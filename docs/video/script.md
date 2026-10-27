@@ -1,70 +1,68 @@
-status: approved · 2026-10-27 · "Approve script rev 4 as written."
-revision: rev 4 · rev 3's four chapters, now with signature motion scenes; paid snapcn scenes rebuilt by hand
+status: approved · 2026-10-27 · "Approve script rev 5 as written."
+revision: rev 5 · back to v3's real app walkthrough, per the user: "nimbus-demo-v3.mp4 is what i want but need details no text transcript and more flow useful real to submit" and "demo should show what is this and how it impacts". Supersedes rev 4 (kinetic-type scenes dropped).
 track: Personal AI
-cuts: full (2:16, 1920 × 1080) · X clip (0:44, cut from full)
+cuts: full (2:54, 1920 × 1080, 87 bars + 1-bar audio tail) · X clip (0:44, 22 bars, cut from full)
 grid: 120 BPM · 1 bar = 2.0 s = 60 frames at 30 fps
-captions / transcript: none (user, 2026-10-27, repeated in rev 4 feedback)
-on-screen words (full cut, cards only): 104 · plus the chat bubbles in scene 12
-remember this: Nimbus is an always-on AI crew you talk to from your chat app: it works while you're away, asks before it acts, and learns from every run.
+captions / transcript: none. No sentence captions at the bottom (v3 had them; the user does not want them).
+on-screen words: about 230, almost all in callouts pinned to the UI (the user asked for details; this overrides the 120-word guide)
+remember this: Nimbus is an AI crew that runs your standing chores every day, shows you what each agent does and what it costs, asks before anything leaves, and gets better every run.
 
-No voice. `[real: …]` = filled from the final-day real-model run.
+No voice. `[real: …]` = filled from the final-day real-model run; until then the number shows a small "mock" tag.
 
-## Signature scenes (how each is made)
+## What changed from v3, and why
 
-| Scene style | Made with | Used in |
-|---|---|---|
-| **Prompt Roll** — a prompt card pushes in while "Let Nimbus handle …" types; the last words wrap into a pill that rolls through jobs, each in its own tint; the camera whips to a send button that draws itself in; a pointer presses it into a halo; the arrow flies off as the frame washes white | Hand-built (`video/src/scenes/PromptRoll.tsx`), original code inspired by the description | 1 |
-| **Comment Storm** — one line types into a pill, then the morning pile lands: pills tossed in with overshoot and tilt, cards opening downward and typing their own lines, faster and faster while the camera pulls back, shakes, and folds the pile into its center → cut to black | Hand-built (`CommentStorm.tsx`) | 2 |
-| **Orb Swarm** — the sentence told one beat at a time while glass orbs burst out, split into 8 and 16, wind into a vortex, chain, and loop around the last words | snapcn `orb-swarm` (installs free), tinted cloud blue and mint | 3 |
-| **Text Highlight** — animated emphasis on one span: marker, color, underline, strikethrough, shimmer | snapcn `text-highlight` (installs free) | chapter cards 4, 7, 11, 15 and 9, 10, 17 |
-| **Column Cut** — a four-line cascade with a square cursor by line 3, a highlight running across that line letter by letter as the type drifts up; hard cut to a column of pictures jumping one per beat, beats tightening, a sentence landing either side, the frame panning away left | Hand-built (`ColumnCut.tsx`) | 5 |
-| **Agent Chat** — the prompt types into a compose field as the camera pushes in, the field scrolls under a soft left edge, the message becomes a bubble, an avatar and typing dots arrive, the reply streams a word at a time, each word grey for a moment before it sets | Hand-built (`AgentChat.tsx`); the bubbles replay real replies from Nimbus's `/v1` endpoint, word for word | 12 |
-| Footage with a camera | snapcn `screen-recording` + `cursor-track` | 6, 8, 9, 13, 16, 17 |
+| v3 problem | Rev 5 fix |
+|---|---|
+| The hero run is the crew fixing Nimbus's own router test ("404 fallback", "ceiling", "golden"). A stranger can't follow it. | The hero is **Morning brief**: inbox, calendar and GitHub become one page and three draft replies. Everyone has this chore. Ship Nimbus only appears as a name in the workstream list. |
+| Zoomed shots cut off the lane names, so the timeline is coloured blobs. | Every zoom keeps the lane names in frame, and a callout says what a row is. |
+| Bottom sentence captions read like a transcript. | Removed. Words appear only as **callouts** pinned to the thing they explain. |
+| It shows the UI but not what each part is for. | Each callout has two lines: **what it is** and **why it helps you**. |
+| Only one real flow. | Five everyday flows: plan and approve, the brief, approvals, learning, always-on (schedule, status pill, chat app, its own bill). |
 
-The four hand-built scenes are our own implementations of the behaviors
-described, written from scratch; no paid snapcn source is used.
+## The callout (the one new component)
+
+A ring around the UI element, a thin leader line, and a small card (neutral-900, white/10 border, Manrope): line 1 bold, ≤ 6 words, **what it is**; line 2 neutral-400, ≤ 9 words, **why it helps you**. The rest of the frame dims 25 %. In on a downbeat (ring draws 8 f, card rises 6 f), holds at least 2 bars, out on beat 4. One callout at a time, two at most. Element positions come from the recorder (bounding boxes per beat), so rings sit exactly on the UI.
+
+A chapter eyebrow slides in top-left at each chapter ("1 · You approve the plan") and stays small; no full-screen chapter cards.
 
 # Full cut
 
-| # | Time | Bars | Chapter | Picture | On-screen words | Sound |
+| # | Time | Bars | Chapter | Picture (real app footage unless noted) | Callouts (what it is · why it helps you) | Sound |
 |---|---|---|---|---|---|---|
-| 1 | 0:00–0:04 | 2 | Hook | **Prompt Roll.** "Let Nimbus handle" types; the pill rolls: *your morning brief* (mint) → *the hackathon radar* (blue) → *failing tests* (orange) → *your Token Factory bill* (lilac); send button draws in, pointer presses it, arrow flies, wash to white | Let Nimbus handle [your morning brief → the hackathon radar → failing tests → your Token Factory bill] | Key ticks · a soft tick per roll step · "send" swoosh into the white |
-| 2 | 0:04–0:12 | 4 | The old way | **Comment Storm.** One pill types "8:00 a.m." then the pile lands: "PR #31 failed" · "reply to Dana?" · "Devpost: 2 days left" · "Token Factory: $3.20 today" · "who else is building this?" · "standup in 5" · "check the release notes" … faster, camera pulls back, shakes, folds into the center | 8:00 a.m. (the pile is the words) | Notification pops accelerating · low rumble with the shake · hard cut to silence |
-| 3 | 0:12–0:18 | 3 | Name | **Orb Swarm.** Black → orbs burst from the words | Nimbus / an always-on crew / of NVIDIA Nemotron agents / on Nebius Token Factory | Riser under the orbs · impact as they loop the last words |
-| 4 | 0:18–0:20 | 1 | Card 1 | Text Highlight: marker sweeps "away" | 1 · It works while you're **away** | Whoosh |
-| 5 | 0:20–0:28 | 4 | 1 | **Column Cut.** Cascade: "Morning brief · 08:00 / Hackathon radar · 09:00 / Repo checks · nightly / Token Factory watch · 07:00", highlight runs across line 3; hard cut to a column of stills (Overview, timeline, doc, memory, pill…) jumping one per beat; "on a schedule" lands left, "on Nebius Serverless" lands right; pan left | On a schedule · on Nebius Serverless | Build starts · a tick per jump, tightening |
-| 6 | 0:28–0:46 | 9 | 1 | Footage: the crew's timeline fills, one row per agent with its Nemotron badge; snap zoom on a red ✕; it retries; ✓; cost ticking in cents | Nemotron 3 Ultra plans. Super and Nano do the work. / Something failed. It tried again. | Drop: full beat · glitch on ✕ · chime on ✓ |
-| 7 | 0:46–0:48 | 1 | Card 2 | Text Highlight: underline draws under "your OK" | 2 · Your tasks, your tools, **your OK** | Whoosh |
-| 8 | 0:48–0:56 | 4 | 2 | Footage: goal typed; Tools chip; the plan as a numbered list; a step moved; Approve plan | You pick its tools. It shows its plan first. | Click · swish · ticks |
-| 9 | 0:56–1:08 | 6 | 2 | Footage: cloud turns orange; the card shows exactly what will be sent; Approve & always allow; one rule line appears. Card after it, Text Highlight color sweep on "anything" | Before it sends **anything**, it asks. | Breakdown under the orange · Drop 2 on the click |
-| 10 | 1:08–1:14 | 3 | 2 | Card: Text Highlight strikethrough on "their servers", marker on "your database" | Your data: ~~their servers~~ **your database**. Your keys. Your spend cap. | Calm pad · marker squeak |
-| 11 | 1:14–1:16 | 1 | Card 3 | Text Highlight shimmer on "already talk" | 3 · Talk to it where you **already talk** | Message pop |
-| 12 | 1:16–1:32 | 8 | 3 | **Agent Chat.** Three exchanges, real `/v1` replies: "what needs me?" → the answer; "run morning brief" → plan, then "1 needs your OK: send 3 replies?"; "approve" → "Sent ✓" | (the chat is the words) | Key ticks · send swoosh · typing dots · soft pop per streamed line · chime on "Sent ✓" |
-| 13 | 1:32–1:36 | 2 | 3 | Footage: the same run in the web timeline, tagged "chat"; if Phase C is recorded, the real phone instead | Same crew. Through OpenClaw. | Whoosh |
-| 14 | 1:36–1:40 | 2 | 3 | Footage: Hermes CLI, "what needs me?" → same answer (cut if Phase D not done; scene 12 takes the bars) | Hermes works too. | Key clicks |
-| 15 | 1:40–1:42 | 1 | Card 4 | Text Highlight: color fill on "every run" | 4 · It learns from **every run** | Whoosh |
-| 16 | 1:42–1:50 | 4 | 4 | Footage: Memory tab, "Next run uses 5 memories · 1 rule"; hover Forget | It writes down what it learned. You can delete it. | Ticks · page sound |
-| 17 | 1:50–2:00 | 5 | 4 | Footage: the next day, "learned" badge, no approval; then a card with Text Highlight marker on the new number | The next day: [real: $0.08] → **[real: $0.05]** per run | Final lift · impact on the number |
-| 18 | 2:00–2:10 | 5 | Proof | Three tiles with Token Factory model ids; two numbers count up | Nemotron 3 Ultra · Super · Nano / [real: −45 %] cost vs the top model on every step / [real: 19/19] checks pass | Sub hit per tile · riser |
-| 19 | 2:10–2:16 | 3 | End | Wordmark; end card held still | github.com/harrymove-ctrl/nimbus · pnpm dev | 1 beat silence → final chord |
+| 1 | 0:00–0:06 | 3 | — | **Cold open, the payoff.** The finished morning brief open in the Artifact tab, "Needs you today" with Dana, Priya, Sam; below it the tray "3 waiting · Send reply to Dana"; the cloud orange. Slow push in. | On the brief: "Your morning, already read · inbox, calendar, GitHub → one page". On the tray: "3 replies drafted · nothing is sent without your OK" | cuelume attention on the cloud; music intro |
+| 2 | 0:06–0:10 | 2 | — | Title on neutral-950 with dither glow: **Nimbus**, then "An AI crew that asks before it acts", then "NVIDIA Nemotron · Nebius Token Factory" | (the title is the text) | riser → soft impact |
+| 3 | 0:10–0:22 | 6 | — | **Overview.** Stat cards count up, spend chart draws in, the workstream list with schedules (Morning brief 08:00 · Hackathon radar 09:00 · Token Factory watch 07:00 · Ship Nimbus). | On the list: "Workstreams · chores that run on a schedule". On spend: "Every call priced · on Nebius Token Factory". On the router gauge: "Cost router · cheapest Nemotron that can do the step" | count cue on the counters; tap on click |
+| 4 | 0:22–0:36 | 7 | 1 · You approve the plan | The goal types into the composer: "Every weekday at 8: read my inbox, calendar and GitHub. Tell me what needs me and draft the replies." Send. The plan draft arrives: Analyst reads, three Writers draft. Drag one step; Approve plan. | On the plan: "The plan · who does what, before anything runs". On the estimate: "≈ $0.03 [real] · you see the cost first". On Tools: "Allowed tools · it can't use anything else" | type, tap, ready (plan arrives), select (drag), success |
+| 5 | 0:36–0:56 | 10 | 1 | **Timeline fills** (lane names always in frame). The Analyst lane reads; three Writer lanes start at once; a model badge on each segment; the cost ticks in the header. Click the Analyst's segment → Agent I/O shows Dana's real email. | On the lanes: "One row per agent · they work at the same time". On a badge: "Model per step · Ultra plans, Super reads and writes". On the cost: "Live cost · stops at your budget". On Agent I/O: "What it read · every step is open to check" | loading on start; tap; select on the segment |
+| 6 | 0:56–1:06 | 5 | 1 | **The brief.** Scroll "Needs you today" (by deadline), the calendar table, "Can wait" (invoice, digest). | On the list: "Ranked by who waits and by when". On "Can wait": "Noise moved aside · no draft for it" | ready when the doc opens |
+| 7 | 1:06–1:24 | 9 | 2 · Nothing leaves without you | The cloud turns orange; status pill "Needs you"; the approval card shows the reply to Dana in full. Approve (Dana). Approve (Priya). On Sam's: Approve & always allow → the rule line appears. | On the card: "Sending is an action · so it waits for you". On the buttons: "Approve, reject with a note · or allow from now on". On the rule: "One rule saved · you can revoke it anytime" | attention; success ×2; success strong on the rule; music drop 2 on the first Approve |
+| 8 | 1:24–1:34 | 5 | 2 | **Run summary** counts up: cost, tokens, time, vs baseline, "5 memories saved". | On cost: "The whole morning · $0.03 [real]". On vs baseline: "Router savings · versus always using the biggest model" | count; ready |
+| 9 | 1:34–1:48 | 7 | 3 · It gets better every run | **Memory & skill tab.** Memory cards ("Replies that name a date come first"), the skill file, the rule card; hover Forget. | On memories: "Memories · what it learned from your morning". On the skill: "Its own how-to · rewritten after each run". On Forget: "Forget or revoke · you stay in charge" | select; open |
+| 10 | 1:48–2:00 | 6 | 3 | **The next morning's run.** Learned chip "✦ 5 mem · 1 rule" on the plan; replies to Sam go out under the rule with no card; header cost lower than run one. | On the chip: "Uses what it learned · no repeat questions". On the cost: "Run two: $[real] · cheaper and faster" | ready; success |
+| 11 | 2:00–2:12 | 6 | 4 · Always on | **Hackathon radar.** Rail shows an unread dot "ran 09:00"; open: the digest doc and what changed since yesterday. Switch to another workstream: the status pill shows "Radar · 1 waiting"; approve from the pill. | On the dot: "Ran on schedule · while you were away". On the pill: "Status pill · answer from anywhere in the app" | navigate; attention; success |
+| 12 | 2:12–2:28 | 8 | 4 | **In your chat app.** Phone frame with the real `/v1` exchange: "what needs me?" → reply; "run morning brief" → "Needs your OK: Send message to dana@example.com · 2 more waiting"; "approve all" → "Approved: …" and the brief. Cut to the web timeline: the same run, trigger "chat". | On the phone: "Same crew in your chat app · via OpenClaw or Hermes". On the web run: "Same run, same approvals · one history" | tap per message; success on approve all |
+| 13 | 2:28–2:38 | 5 | 4 | **Token Factory watch.** The crew's proposal: a before/after table of which Nemotron tier each role uses; approve; the router gauge moves. | On the table: "It watches its own bill · proposes cheaper routing". On the gauge: "Approved · saving shows up here" | attention; success; count |
+| 14 | 2:38–2:46 | 4 | — | Proof tiles rush in one per beat: `Nemotron-3-Ultra-550b-a55b` · `nemotron-3-super-120b-a12b` · `NVIDIA-Nemotron-3-Nano-30B-A3B`, under them "Nebius Token Factory", then "19/19 trajectory evals pass · MIT" | (the tiles are the text) | sub hit per tile |
+| 15 | 2:46–2:54 | 4 | — | End card: Nimbus, the repo URL, `pnpm dev`, held still | (the card is the text) | silence one beat, deep impact, chord rings |
 
-# X clip (from the full cut, 0:44)
+# X clip (0:44, 22 bars)
 
-| # | Time | Bars | From full # | Picture | Words | Sound |
-|---|---|---|---|---|---|---|
-| 1 | 0:00–0:04 | 2 | 1 | Prompt Roll (two roll steps) | Let Nimbus handle [your morning brief → failing tests] | Ticks · send swoosh |
-| 2 | 0:04–0:10 | 3 | 2 | Comment Storm, shorter | 8:00 a.m. | Pops → cut to silence |
-| 3 | 0:10–0:14 | 2 | 3 | Orb Swarm, two beats | Nimbus / NVIDIA Nemotron agents | Impact |
-| 4 | 0:14–0:22 | 4 | 9 | Cloud orange, approve | Before it sends **anything**, it asks. | Half-time → hit |
-| 5 | 0:22–0:30 | 4 | 12 | Agent Chat: "run morning brief" … "approve" → "Sent ✓" | (the chat) | Pops · chime |
-| 6 | 0:30–0:36 | 3 | 17 | The next day, learned badge, cheaper | It learns from **every run**. | Lift |
-| 7 | 0:36–0:44 | 4 | 19 | End card held | github.com/harrymove-ctrl/nimbus | Final chord |
+| # | Time | Bars | From | Change |
+|---|---|---|---|---|
+| 1 | 0:00–0:06 | 3 | 1 | Same cold open, both callouts |
+| 2 | 0:06–0:10 | 2 | 2 | Same title |
+| 3 | 0:10–0:16 | 3 | 4 | Goal sent → plan arrives → Approve plan; one callout (the estimate) |
+| 4 | 0:16–0:26 | 5 | 5 + 7 | Lanes fill 2 bars (lanes callout), then the gate: Approve on Dana's reply (the drop on the click) |
+| 5 | 0:26–0:32 | 3 | 10 | Run two with the learned chip; one callout |
+| 6 | 0:32–0:40 | 4 | 12 | Chat: "run morning brief" → "approve all" → approved |
+| 7 | 0:40–0:44 | 2 | 15 | End card |
 
-# Honesty notes
+# Footage needed (new take)
 
-- Comment Storm lines are a generic morning, not claims about anyone.
-- Agent Chat bubbles replay real `/v1` output. The radar's mock fixture
-  currently invents facts about real things (Devpost submission counts, a
-  named competitor); those fixtures are rewritten to neutral content before
-  any filming, and the final take uses real-model answers.
-- Not claimed: NemoClaw, OpenShell.
+The v3 take follows Ship Nimbus, so rev 5 needs a new recording, still zero
+spend (mock or replay):
+- `brief1-*` beats: goal, plan draft, timeline, Agent I/O on Dana's email, the brief doc, the three approvals with the rule, the summary.
+- `memory-skill` on the Morning brief workstream.
+- `brief2-*`: run two with the learned chip and no card for the ruled reply (needs a `ws-brief~2` fixture).
+- `radar`, `status-pill` (radar waiting while another workstream is open), `chat-run`, `watch` (Token Factory watch proposal and approval), `overview`.
+- The recorder writes each callout target's bounding box per beat into `beats.json`.
