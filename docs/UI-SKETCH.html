@@ -1,0 +1,817 @@
+<title>Nimbus UI Sketch</title>
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Arimo:wght@400;700&display=swap">
+<style>
+/* Layout: a drawing-office binder. Title block, then Pele-style flow cards on cream paper, then eight monochrome dimensional sheets. */
+:root{
+  --bg:#f3f2ee; --fg:#17171a; --fg-2:#5a5a62; --line:#b9b8b2; --sheet:#ffffff; --ink:#17171a; --ink-2:#6a6a72;
+  --hug:#e6e5df; --inset:#f1f0ea; --hatch:#8f8e88;
+  --paper:#fffcf0; --paper-ink:#100f0f; --paper-line:#d9d2bb; --paper-fill:#f3eddc;
+  --accent:#1f7a5c;
+  --font-ui:"Manrope",ui-sans-serif,system-ui,sans-serif; --font-dwg:"Arimo","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#141416; --fg:#ecebe6; --fg-2:#a3a2a8; --line:#3a3a40; --sheet:#1c1c20; --ink:#ecebe6; --ink-2:#9a99a2;
+  --hug:#2a2a30; --inset:#232328; --hatch:#7b7a84; --accent:#5fd3a6; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#141416; --fg:#ecebe6; --fg-2:#a3a2a8; --line:#3a3a40; --sheet:#1c1c20; --ink:#ecebe6; --ink-2:#9a99a2;
+  --hug:#2a2a30; --inset:#232328; --hatch:#7b7a84; --accent:#5fd3a6; color-scheme:dark }
+
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
+.wrap{max-width:1560px;margin:0 auto;display:grid;gap:32px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h2{font-size:1.25rem;font-weight:700;letter-spacing:.01em}
+h3{font-size:1rem;font-weight:600}
+p{margin:0;max-width:68ch}
+.muted{color:var(--fg-2)}
+.eyebrow{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg-2);font-weight:600}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
+
+/* Title block, drawn like the sheets */
+.tb{border:1.2px solid var(--ink);border-radius:16px;overflow:hidden;background:var(--sheet);font-family:var(--font-dwg)}
+.tb-row{display:grid;grid-template-columns:2fr repeat(6,1fr);border-bottom:.8px solid var(--ink)}
+.tb-row:last-child{border-bottom:0}
+.tb-cell{padding:10px 12px;border-right:.8px solid var(--ink);min-width:0}
+.tb-cell:last-child{border-right:0}
+.tb-cell .l{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+.tb-cell .v{font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.tb-title .v{font-size:26px;letter-spacing:.22em;font-weight:700}
+.tb-title .s{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);margin-top:4px}
+.tb-notes{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;padding:12px;font-size:11px;line-height:1.5;text-transform:uppercase;letter-spacing:.02em}
+.tb-notes .h{grid-column:1/-1;font-size:9.5px;letter-spacing:.08em;color:var(--ink-2);margin-bottom:2px}
+.tb-vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-top:.8px solid var(--ink)}
+.tb-vars div{padding:8px 12px;border-right:.8px solid var(--ink);font-size:11px}
+.tb-vars div:last-child{border-right:0}
+.tb-vars b{display:block;font-size:12px}
+@media (max-width:760px){.tb-row{grid-template-columns:1fr 1fr 1fr}.tb-title{grid-column:1/-1;border-bottom:.8px solid var(--ink)}}
+
+/* Pele-style flow cards: cream paper, one ink, deliberately the same in both themes */
+.flows{display:grid;gap:20px}
+.flow{background:var(--paper);color:var(--paper-ink);border:1px solid var(--paper-line);border-radius:12px;padding:16px 18px 10px;display:grid;gap:8px}
+.flow h3{color:var(--paper-ink);font-size:.95rem}
+.flow .k{font-size:.78rem;color:#5a5648}
+.flow .m{overflow-x:auto}
+.flow pre.mermaid{margin:0;background:transparent;font-size:13px;min-width:0}
+.flow-grid{display:grid;grid-template-columns:1fr;gap:20px}
+.flow.wide{grid-column:1/-1}
+/* Mermaid renders inside the viewer; keep the diagrams at natural size on cream paper, one ink */
+.flow .m svg{max-width:none!important;width:auto!important;height:auto;font-size:14px}
+.flow svg .node rect,.flow svg .node polygon,.flow svg .node circle,.flow svg .node path,.flow svg .cluster rect,
+.flow svg g.statediagram-state rect,.flow svg .state-group rect,.flow svg rect.basic,.flow svg .statediagram-state .label-container{fill:#f3eddc!important;stroke:#100f0f!important;stroke-width:1.2px!important}
+.flow svg .nodeLabel,.flow svg .edgeLabel,.flow svg .label,.flow svg text,.flow svg tspan,.flow svg foreignObject div,.flow svg foreignObject span,.flow svg foreignObject p,.flow svg .stateLabel{color:#100f0f!important;fill:#100f0f!important;font-family:var(--font-ui)!important;font-size:14px!important;line-height:1.3}
+.flow svg .edgePath path,.flow svg path.transition,.flow svg .flowchart-link{stroke:#100f0f!important;fill:none!important;stroke-width:1.4px!important}
+.flow svg marker path{fill:#100f0f!important;stroke:#100f0f!important}
+.flow svg .edgeLabel rect,.flow svg .labelBkg{fill:#fffcf0!important}
+.flow svg .edgeLabel,.flow svg .edgeLabel p{background:#fffcf0!important}
+.flow svg .start-state circle,.flow svg .end-state circle,.flow svg .state-start,.flow svg .state-end{fill:#100f0f!important}
+
+/* Sheets */
+/* Sheets are paper in both themes, like a drawing on a dark desk */
+.sheet{--sheet:#ffffff;--ink:#17171a;--ink-2:#6a6a72;--hug:#e6e5df;--inset:#f1f0ea;--hatch:#8f8e88;color:var(--ink);background:var(--sheet);border:1.2px solid var(--ink);border-radius:16px;overflow:hidden}
+.sheet-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 14px;border-bottom:.8px solid var(--ink);font-family:var(--font-dwg);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.sheet-head b{letter-spacing:.14em}
+.frame{overflow-x:auto}
+.frame svg{display:block;width:100%;min-width:1500px;height:auto;font-family:var(--font-dwg);color:var(--ink)}
+.frame svg text{fill:var(--ink)}
+.dim{font-size:12.5px;paint-order:stroke;stroke:var(--sheet);stroke-width:3px;stroke-linejoin:round}
+.lab{font-size:10px;letter-spacing:.1em;text-transform:uppercase;fill:var(--ink-2)}
+.vt{font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+.vs{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;fill:var(--ink-2)}
+.nt{font-size:11.5px}
+.tt{font-size:11.5px}
+.th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;fill:var(--ink-2)}
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px 14px;border-top:.8px solid var(--ink);font-family:var(--font-dwg);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+
+/* States table */
+table.states{border-collapse:collapse;width:100%;font-size:.86rem}
+table.states th,table.states td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.states th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-2)}
+.sw{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:6px;border:1px solid var(--line)}
+.tbl{overflow-x:auto}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="tb">
+  <div class="tb-row">
+    <div class="tb-cell tb-title"><div class="v">Nimbus</div><div class="s">UI reference · screens, states and flows · for the Phase 2 build</div></div>
+    <div class="tb-cell"><div class="l">DWG NO.</div><div class="v">NB-UI-001</div></div>
+    <div class="tb-cell"><div class="l">REV</div><div class="v">B · 2026-10-27</div></div>
+    <div class="tb-cell"><div class="l">Sheets</div><div class="v">8 + 10 flows</div></div>
+    <div class="tb-cell"><div class="l">Units</div><div class="v">CSS px</div></div>
+    <div class="tb-cell"><div class="l">Scale</div><div class="v">As noted</div></div>
+    <div class="tb-cell"><div class="l">Source</div><div class="v">docs/SPEC.md §6–10, §12</div></div>
+  </div>
+  <div class="tb-notes">
+    <div class="h">Notes: (unless otherwise specified)</div>
+    <div>1. Do not scale from the drawing. Use the variable tables.</div>
+    <div>5. Slots are placeholders; copy and content are omitted on purpose.</div>
+    <div>2. Every dimension is a code (S, H, W, Z, R, P, B, T). Derived values are formulas.</div>
+    <div>6. Hug = sized by content · Flex = takes remaining space · Fill = parent width.</div>
+    <div>3. Reference viewport 1440 × 900. Phone 390 × 844. Tablet stacks like phone with two columns.</div>
+    <div>7. Sheets are grayscale. Agent colors live only in the states table and the app.</div>
+    <div>4. Radii derive from the theme knob --rb-radius = 10 (Sorbet). R2 = R1 − 2, R4 pill = h ÷ 2.</div>
+    <div>8. [TBD] values are not invented; they are set at build time and this sheet is revised.</div>
+  </div>
+  <div class="tb-vars">
+    <div><b>S1 = 16</b>outer pad</div><div><b>S2 = 12</b>inner pad</div><div><b>S3 = 8</b>stack gap</div>
+    <div><b>R1 = 10</b>container radius</div><div><b>H0 = 48</b>top bar</div><div><b>W1 = 280</b>rail width</div>
+    <div><b>W3 = 420</b>artifact panel</div><div><b>P1 = 66</b>lane pitch</div><div><b>T1 = 44</b>touch min</div>
+  </div>
+</header>
+
+<section>
+  <div class="eyebrow">Rev B · What changed after the review</div>
+  <h2>The composer was a chatbot. Nimbus is an ops room.</h2>
+  <p class="muted">Rev A got the timeline and the approval card right and the composer wrong. Rev B fixes eight things; the full review is in docs/UX-REVIEW.md.</p>
+  <div class="tbl"><table class="states">
+    <thead><tr><th>Problem in rev A</th><th>Rev B</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td>Pill input that only takes prose</td><td>Composer card: textarea + toolbar with Attach, Tools, Mode, Tier, live cost estimate</td><td>Sheet 4</td></tr>
+      <tr><td>Enter meant nothing predictable while a run was live</td><td>Primary button and placeholder follow the state: RUN · STEER · REPLY, with STOP while running</td><td>F11, sheet 4</td></tr>
+      <tr><td>No way to attach the CSV the demo needs</td><td>Attach chip; files become tool inputs and show as chips in the draft</td><td>Sheet 4</td></tr>
+      <tr><td>Approvals buried in the transcript</td><td>Sticky approval tray above the composer with count and Approve all low-risk</td><td>Sheets 1, 4</td></tr>
+      <tr><td>Cost shown only after the run</td><td>Estimate while drafting; plan card with agents, tiers, tools and cost, 3 s Cancel</td><td>Sheet 4, F11</td></tr>
+      <tr><td>Timeline was a dock with no click target</td><td>Timeline strip at the top of the run view; a segment selects into the Inspector</td><td>Sheets 1, 5</td></tr>
+      <tr><td>"Edit" the action payload</td><td>Approve · Approve &amp; always allow (writes a SKILL.md policy line) · Reject with a note</td><td>Sheet 4</td></tr>
+      <tr><td>Workstream creation was a form</td><td>First run from the composer; the plan card's "Save as workstream" creates it</td><td>F1, sheet 4</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <div class="eyebrow">Part 1 · Flows</div>
+  <h2>What the person does, what the cloud does</h2>
+  <p class="muted">Ten flows cover the whole product. Rounded nodes are things the person sees; rectangles are things the system does; diamonds are decisions. Each flow names the agents and the model tier that runs them.</p>
+</section>
+
+<div class="flow-grid">
+
+<div class="flow wide">
+  <h3>F1 · Boot and first run</h3>
+  <div class="k">Preloader → workstream list → first workstream. The cloud is blue the whole way.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","secondaryColor":"#fffcf0","tertiaryColor":"#fffcf0","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart LR
+  A([Open app]) --> B[Boot screen: Glow Cloud, blue, 320px]
+  B --> C[GET /api/workstreams]
+  C --> D{Any workstreams?}
+  D -- no --> E([Empty state: 3 seeded templates + New workstream])
+  D -- yes --> F([Shell: rail · composer · timeline dock])
+  E --> G[Create workstream: title, goal, tools, schedule]
+  G --> F
+  F --> H([Select a workstream → last run shown, or Run button])
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F2 · Start a run</h3>
+  <div class="k">Ultra plans once, Super/Nano do the work concurrently.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart TD
+  A([Press Run, or send a message in the composer]) --> B[POST /api/runs → run.start]
+  B --> C[Cloud 160px in timeline header until first agent.start]
+  B --> D[Orchestrator · Ultra: plan, spawn_agents]
+  D --> E[agent.spawn ×N → connectors drawn]
+  E --> F[Researcher · Super]
+  E --> G[Analyst · Super]
+  E --> H[Checker · Nano]
+  F & G & H --> I[Reports back → orchestrator segment.wait ends]
+  I --> J{Handoff needed?}
+  J -- yes --> K[Writer · Super → artifact v1] --> L
+  J -- no --> L([Run summary, cost line, skill diff])
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F3 · Approval gate</h3>
+  <div class="k">The only time the cloud turns orange on purpose.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart TD
+  A[Agent calls request_approval action] --> B[approval.request event · run.status = waiting_approval]
+  B --> C([Cloud → orange · rail badge · approval card in composer])
+  C --> D{Person decides}
+  D -- Approve --> E[approval.resolve approved]
+  D -- Reject --> F[approval.resolve rejected → orchestrator told, picks alternative or finishes]
+  D -- Edit then approve --> G[Edited action payload → approved]
+  E & G --> H[Action runs inside the tool · segment.tool]
+  H --> I([Card shows resolved state · cloud → blue])
+  F --> I
+  C -. from chat apps .-> J([Text line with link to the web composer])
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F4 · Artifact versions</h3>
+  <div class="k">Writer output lands in the side panel; edits bump the version.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart LR
+  A[Writer · Super calls write_artifact] --> B[artifact.version v1]
+  B --> C([Panel opens on v1 · doc or code tab])
+  C --> D([Person asks for a change in the composer])
+  D --> E[Orchestrator → handoff to Writer with the request]
+  E --> F[artifact.version v2]
+  F --> G([Version tabs v1 · v2 · latest selected])
+  G --> H([Copy · Download later · Open in run summary])
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F5 · Learning loop</h3>
+  <div class="k">Run two knows what run one learned. Nano does all of it.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart TD
+  A[run.end] --> B[Learner · Nano reads transcript summary]
+  B --> C[Extract ≤ 8 memories → embed → memories table]
+  B --> D[Rewrite SKILL.md: what worked, sources, pitfalls]
+  C & D --> E([Run summary: memories list + skill diff])
+  E --> F([Next run of the same workstream])
+  F --> G[Orchestrator prompt = role prefix + SKILL.md + top-k memories + goal]
+  G --> H([Timeline shows a 'learned' chip on the orchestrator lane])
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F6 · Inside chat apps via OpenClaw</h3>
+  <div class="k">Nimbus is the model; OpenClaw is the messenger.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart LR
+  A([Telegram / WhatsApp message]) --> B[OpenClaw gateway · provider = nimbus]
+  B --> C[POST /v1/chat/completions · model = nimbus/inbox-triage]
+  C --> D[Run with trigger = chat]
+  D --> E{Approval needed?}
+  E -- no --> F[Writer text streamed as SSE chunks] --> G([Reply in the chat app])
+  E -- yes --> H[Line: ⚠ Needs your approval → web composer link] --> G
+  G -.-> I([Same run visible in the web timeline])
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F7 · Always on</h3>
+  <div class="k">Two schedulers, one run table.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart LR
+  A[node-cron in the app] -- trigger = cron --> C[New run]
+  B[Nebius Serverless Job · pnpm run:job] -- trigger = job --> C
+  C --> D{Low-risk only?}
+  D -- yes --> E[Auto-approved, completes headless]
+  D -- no --> F[Left waiting_approval]
+  E & F --> G([Rail: unread dot on the workstream · count badge on the cloud])
+  G --> H([Person opens it later: timeline rebuilt from stored events])
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F8 · Router and fallback</h3>
+  <div class="k">Per hop. Role tier is the ceiling; never falls up.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart TD
+  A[Hop: role, brief, tools, risk] --> B{Deterministic rule hits?}
+  B -- yes --> D[Tier chosen]
+  B -- no --> C[Nano classifier 0–2, cached] --> D
+  D --> E{Cache hit?}
+  E -- yes --> F[Reuse response · usage.cached = true]
+  E -- no --> G[Call Token Factory]
+  G --> H{429 / 5xx / timeout?}
+  H -- no --> I[route event · badge if chosen ≠ ceiling]
+  H -- yes --> J[Retry once] --> K{Still failing?}
+  K -- yes --> L[Fall one tier down · route.fallback = true] --> G
+  K -- no --> I
+  F --> I
+  </pre></div>
+</div>
+
+<div class="flow">
+  <h3>F9 · Eval gate</h3>
+  <div class="k">Grades every hop; blocks the PR.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+flowchart LR
+  A([Pull request]) --> B[GitHub Actions: pnpm eval --cheap]
+  B --> C[Replay goldens with mocked tools]
+  C --> D[Deterministic asserts per hop]
+  C --> E[Nano judge 0–2 per hop]
+  D & E --> F{Pass rate ≥ 90% and all finals pass?}
+  F -- yes --> G([Check green · merge])
+  F -- no --> H([Check red · table in the job log])
+  </pre></div>
+</div>
+
+<div class="flow wide">
+  <h3>F10 · Run status</h3>
+  <div class="k">What the header pill, the cloud and the rail show at each state.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+stateDiagram-v2
+  direction LR
+  [*] --> queued: POST /api/runs
+  queued --> running: run.start · cloud blue, header 'Running'
+  running --> waiting_approval: approval.request · cloud orange, pill 'Needs you'
+  waiting_approval --> running: approval.resolve
+  running --> done: run.end · pill 'Done · cost · −X% vs baseline'
+  running --> failed: run.error · cloud orange, lane outlined, ✕
+  waiting_approval --> failed: timeout 24h
+  done --> [*]
+  failed --> [*]
+  </pre></div>
+</div>
+
+<div class="flow wide">
+  <h3>F11 · Composer states</h3>
+  <div class="k">One box in every state. Only the placeholder, the primary button and what Enter does change, so Enter is always predictable.</div>
+  <div class="m"><pre class="mermaid">
+%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
+stateDiagram-v2
+  direction LR
+  [*] --> idle: 'Give the crew a goal…' · RUN
+  idle --> drafting: typing or attaching a file
+  drafting --> drafting: Nano estimate 400 ms after typing stops · cost pill
+  drafting --> slash: text starts with / or @ · menu above the box
+  slash --> drafting: pick an item or Esc
+  drafting --> planning: Enter or RUN · plan card in the transcript
+  planning --> idle: Cancel within 3 s
+  planning --> running: 'Steer the crew…' · STEER + STOP
+  running --> running: Enter queues a steering note for the orchestrator's next turn
+  running --> asked: crew asks a question · 'Answer the crew…' · REPLY
+  asked --> running: Enter sends the answer
+  running --> waiting: approval.request · tray above the composer, cloud orange
+  waiting --> running: Approve · Approve and always allow · Reject with a note
+  running --> idle: run.end or STOP · run summary in the transcript
+  </pre></div>
+</div>
+
+</div>
+
+<section>
+  <div class="eyebrow">Part 2 · Dimensional sheets</div>
+  <h2>How each surface is built</h2>
+  <p class="muted">Eight sheets in the dimensional-drawing style: grays only, variables instead of numbers, slots instead of copy. Each sheet has notes, a plan view, details and a variable table. Scroll sideways on a phone.</p>
+</section>
+
+<div id="sheets" style="display:grid;gap:28px"></div>
+
+<section>
+  <div class="eyebrow">Part 3 · States and color</div>
+  <h2>The only places color carries meaning</h2>
+  <p class="muted">The sheets are monochrome on purpose. In the app, color is reserved for agent identity, the cloud's mood, and the route badge. Everything else uses the Sorbet neutrals and the mint accent.</p>
+</section>
+
+<div class="tbl"><table class="states">
+  <thead><tr><th>Surface</th><th>State</th><th>Form</th><th>Color</th></tr></thead>
+  <tbody>
+    <tr><td>Glow Cloud</td><td>Boot, idle, running</td><td>Z1 = 320 on boot, Z6 = 160 in the timeline header, Z7 = 40 in the rail</td><td><span class="sw" style="background:#18b2ff"></span>blue</td></tr>
+    <tr><td>Glow Cloud</td><td>Waiting for approval, failed</td><td>Same size; a count badge at the top right when more than one run waits</td><td><span class="sw" style="background:#fa7342"></span>orange</td></tr>
+    <tr><td>Lane and legend dot</td><td>Orchestrator</td><td>Solid bar; hatched while waiting on children</td><td><span class="sw" style="background:#d4d4d8"></span>neutral-300</td></tr>
+    <tr><td>Lane and legend dot</td><td>Checker · Nano</td><td>Short solid bars</td><td><span class="sw" style="background:#60a5fa"></span>blue</td></tr>
+    <tr><td>Lane and legend dot</td><td>Researcher · Super</td><td>Bars with tool ticks</td><td><span class="sw" style="background:#c026d3"></span>purple</td></tr>
+    <tr><td>Lane and legend dot</td><td>Analyst · Super</td><td>Bars; failed = outlined with ✕</td><td><span class="sw" style="background:#f59e0b"></span>orange</td></tr>
+    <tr><td>Lane and legend dot</td><td>Writer · Super</td><td>Bar ends at artifact.version</td><td><span class="sw" style="background:#14b8a6"></span>teal</td></tr>
+    <tr><td>Lane and legend dot</td><td>Learner · Nano</td><td>Appears after run.end</td><td><span class="sw" style="background:#5fd3a6"></span>mint (--rb-accent)</td></tr>
+    <tr><td>Segment badge</td><td>Routed below ceiling · fallback</td><td>Z8 = 14 circle at the segment's start; ↓ for downgrade, ↻ for fallback</td><td>ink on neutral-100</td></tr>
+    <tr><td>Header pill</td><td>Running · Needs you · Done · Failed</td><td>H = 24, R4 = 12, tabular numerals for time, tokens, cost</td><td>neutral; 'Needs you' uses orange text</td></tr>
+    <tr><td>Approval card</td><td>Pending · Approved · Rejected</td><td>B2 = 3 risk stripe on the left: low mint, medium orange, high red. Resolved cards lose the buttons and gain a stamp row</td><td>semantic only</td></tr>
+    <tr><td>Rail item</td><td>Unread result · Scheduled</td><td>Z9 = 6 dot before the title; clock glyph after it</td><td>mint dot</td></tr>
+  </tbody>
+</table></div>
+
+<section>
+  <div class="eyebrow">Master variables</div>
+  <div class="tbl"><table class="states">
+    <thead><tr><th>Code</th><th>Variable</th><th>Value</th><th>Code</th><th>Variable</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>S1</td><td>outer pad</td><td>16</td><td>H0</td><td>top bar</td><td>48</td></tr>
+      <tr><td>S2</td><td>inner pad</td><td>12</td><td>H1</td><td>timeline header</td><td>56</td></tr>
+      <tr><td>S3</td><td>stack gap</td><td>8</td><td>H3</td><td>segment height</td><td>26</td></tr>
+      <tr><td>S4</td><td>section gap</td><td>24</td><td>H4</td><td>button</td><td>36</td></tr>
+      <tr><td>S5</td><td>lead gap (chip → text)</td><td>10</td><td>H5</td><td>composer input</td><td>52</td></tr>
+      <tr><td>S6</td><td>inner inset</td><td>2</td><td>H6</td><td>timeline strip (default · collapsed)</td><td>240 · 56</td></tr>
+      <tr><td>W1</td><td>rail</td><td>280</td><td>H7</td><td>axis row</td><td>32</td></tr>
+      <tr><td>W2</td><td>legend column</td><td>240</td><td>H8</td><td>panel tab row</td><td>40</td></tr>
+      <tr><td>W3</td><td>artifact panel</td><td>420</td><td>H9</td><td>version tab</td><td>28</td></tr>
+      <tr><td>MW</td><td>message max width</td><td>720</td><td>H10</td><td>phone tab bar</td><td>56 + safe area</td></tr>
+      <tr><td>HC</td><td>composer card (1 line → 6 lines)</td><td>100 → 220</td><td>H11 · H12</td><td>composer toolbar · approval tray</td><td>40 · 44</td></tr>
+      <tr><td>P1</td><td>lane pitch</td><td>66</td><td>R1</td><td>container radius (--rb-radius)</td><td>10</td></tr>
+      <tr><td>Z1 · Z6 · Z7</td><td>cloud boot · header · rail</td><td>320 · 160 · 40</td><td>R2</td><td>inner radius = R1 − 2</td><td>8</td></tr>
+      <tr><td>Z2</td><td>agent chip</td><td>28</td><td>R3</td><td>control radius</td><td>6</td></tr>
+      <tr><td>Z4 · Z5</td><td>playhead dot · spawn dot</td><td>10 · 8</td><td>R4</td><td>pill = h ÷ 2</td><td>—</td></tr>
+      <tr><td>Z8 · Z9</td><td>route badge · unread dot</td><td>14 · 6</td><td>B · B2</td><td>border · risk stripe</td><td>1 · 3</td></tr>
+      <tr><td>T1</td><td>touch minimum</td><td>44</td><td>V1</td><td>phone viewport margin</td><td>16</td></tr>
+      <tr><td>BP1 · BP2</td><td>breakpoints: phone · tablet</td><td>&lt; 768 · &lt; 1280</td><td>AX</td><td>axis tick every</td><td>5 s (grows in 5 s steps)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+function el(t,a,p){const e=document.createElementNS(NS,t);for(const k in a){if(a[k]!==undefined)e.setAttribute(k,a[k]);}if(p)p.appendChild(e);return e;}
+function txt(p,x,y,s,cls,anchor,extra){const t=el("text",Object.assign({x,y,class:cls||"dim","text-anchor":anchor||"middle"},extra||{}),p);t.textContent=s;return t;}
+
+class Sheet{
+  constructor(no,name,arch,w,h){
+    this.no=no;this.w=w||1700;this.h=h||1060;
+    const wrap=document.createElement("div");wrap.className="sheet";
+    wrap.innerHTML=`<div class="sheet-head"><span><b>SHEET ${no}</b> · ${name}</span><span>${arch}</span></div><div class="frame"></div><div class="foot"><span>2026-10-27 · UI component reference · Nimbus</span><span>${name} · ${arch} · sheet ${no} of 8</span></div>`;
+    document.getElementById("sheets").appendChild(wrap);
+    const svg=el("svg",{viewBox:`0 0 ${this.w} ${this.h}`,role:"img","aria-label":`Dimensional drawing sheet ${no}: ${name}`},wrap.querySelector(".frame"));
+    this.svg=svg;
+    const d=el("defs",{},svg);
+    const m=el("marker",{id:`ar${no}`,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"7",markerHeight:"7",orient:"auto-start-reverse"},d);
+    el("path",{d:"M0 0L10 5L0 10z",fill:"currentColor"},m);
+    const pat=el("pattern",{id:`ht${no}`,width:"6",height:"6",patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"},d);
+    el("line",{x1:0,y1:0,x2:0,y2:6,stroke:"var(--hatch)","stroke-width":"1"},pat);
+    this.ar=`url(#ar${no})`;this.ht=`url(#ht${no})`;
+    el("rect",{x:6,y:6,width:this.w-12,height:this.h-12,rx:12,fill:"none",stroke:"currentColor","stroke-width":"1.2"},svg);
+  }
+  g(attrs){return el("g",Object.assign({stroke:"currentColor",fill:"none"},attrs||{}),this.svg);}
+  rect(x,y,w,h,o){o=o||{};return el("rect",{x,y,width:w,height:h,rx:o.r||0,fill:o.fill||"none",stroke:o.stroke===null?"none":"currentColor","stroke-width":o.sw||1.6,"stroke-dasharray":o.dash},this.svg);}
+  hug(x,y,w,h,r){return this.rect(x,y,w,h,{r,fill:"var(--hug)",sw:1});}
+  inset(x,y,w,h,r){return this.rect(x,y,w,h,{r,fill:"var(--inset)",sw:.8});}
+  hatch(x,y,w,h,r){return el("rect",{x,y,width:w,height:h,rx:r||0,fill:this.ht,stroke:"currentColor","stroke-width":".8"},this.svg);}
+  slot(x,y,w,h,label,o){o=o||{};this.rect(x,y,w,h,{r:o.r||0,dash:"4 3",sw:.9});if(label)txt(this.svg,x+w/2,y+h/2+3,label,"lab");}
+  line(x1,y1,x2,y2,o){o=o||{};return el("line",{x1,y1,x2,y2,stroke:"currentColor","stroke-width":o.sw||.7,"stroke-dasharray":o.dash,"marker-start":o.ms,"marker-end":o.me},this.svg);}
+  ext(x1,y1,x2,y2){return this.line(x1,y1,x2,y2,{sw:.55});}
+  dimH(x1,x2,y,label,o){o=o||{};const ya=o.from!==undefined?o.from:y;const off=ya<y?3:-3,ov=ya<y?5:-5;
+    this.ext(x1,ya+off,x1,y+ov);this.ext(x2,ya+off,x2,y+ov);
+    const inside=(x2-x1)>=28;
+    if(inside)this.line(x1,y,x2,y,{ms:this.ar,me:this.ar});else{this.line(x1-18,y,x1,y,{me:this.ar});this.line(x2,y,x2+18,y,{ms:this.ar});}
+    txt(this.svg,(x1+x2)/2+(o.dx||0),y-4+(o.dy||0),label,"dim");}
+  dimV(x,y1,y2,label,o){o=o||{};const xa=o.from!==undefined?o.from:x;const off=xa<x?3:-3,ov=xa<x?5:-5;
+    this.ext(xa+off,y1,x+ov,y1);this.ext(xa+off,y2,x+ov,y2);
+    const inside=(y2-y1)>=28;
+    if(inside)this.line(x,y1,x,y2,{ms:this.ar,me:this.ar});else{this.line(x,y1-18,x,y1,{me:this.ar});this.line(x,y2,x,y2+18,{ms:this.ar});}
+    const side=o.side||"right";
+    if(side==="rot"){txt(this.svg,x-4,(y1+y2)/2,label,"dim","middle",{transform:`rotate(-90 ${x-4} ${(y1+y2)/2})`});}
+    else txt(this.svg,x+(side==="right"?6:-6)+(o.dx||0),(y1+y2)/2+4+(o.dy||0),label,"dim",side==="right"?"start":"end");}
+  callout(x,y,tx,ty,label){el("circle",{cx:x,cy:y,r:2.2,fill:"currentColor"},this.svg);const sx=tx+(tx>x?-10:10);this.line(x,y,sx,ty,{sw:.7});this.line(sx,ty,tx,ty,{sw:.7});txt(this.svg,tx+(tx>x?3:-3),ty+3.5,label,"dim",tx>x?"start":"end");}
+  nb(x,y,n){this.rect(x-7,y-7,14,14,{sw:.8});txt(this.svg,x,y+3.5,String(n),"dim");}
+  rad(x,y,r,q,label){ // quarter arc at a corner; q: tl,tr,bl,br
+    const sx=q[1]==="l"?x+r:x-r, sy=q[0]==="t"?y+r:y-r;
+    const d=q==="tl"?`M${x} ${y+r}A${r} ${r} 0 0 1 ${x+r} ${y}`:q==="tr"?`M${x-r} ${y}A${r} ${r} 0 0 1 ${x} ${y+r}`:q==="bl"?`M${x+r} ${y}A${r} ${r} 0 0 1 ${x} ${y-r}`:`M${x} ${y-r}A${r} ${r} 0 0 1 ${x-r} ${y}`;
+    el("path",{d,fill:"none",stroke:"currentColor","stroke-width":1.2},this.svg);
+    const lx=q[1]==="l"?x-26:x+26, ly=q[0]==="t"?y-14:y+14;
+    this.line(sx,sy,lx,ly,{sw:.7});txt(this.svg,lx+(q[1]==="l"?-3:3),ly+3.5,label,"dim",q[1]==="l"?"end":"start");}
+  detailRef(x,y,r,tx,ty,label){el("circle",{cx:x,cy:y,r,fill:"none",stroke:"currentColor","stroke-width":.8,"stroke-dasharray":"4 3"},this.svg);this.line(x+r*.7,y+r*.7,tx,ty,{sw:.7});txt(this.svg,tx+3,ty+3.5,label,"dim","start");}
+  title(x,y,t,sub){txt(this.svg,x,y,t,"vt","start");if(sub)txt(this.svg,x,y+14,sub,"vs","start");}
+  notes(x,y,rows){this.title(x,y,"NOTES");let yy=y+22;
+    const wrap=(t,n)=>{const o=[];let c="";t.split(" ").forEach(w=>{if((c+" "+w).trim().length>n){o.push(c.trim());c=w;}else c=c+" "+w;});if(c.trim())o.push(c.trim());return o;};
+    rows.forEach(([n,t])=>{wrap(t,40).forEach((l,i)=>{if(i===0&&n)this.nb(x+7,yy-4,n);txt(this.svg,x+(n?20:0),yy,l,"nt","start");yy+=15;});yy+=4;});return yy;}
+  table(x,y,title,rows){this.title(x,y,title);let yy=y+14;const cw=[40,110,100];
+    this.line(x,yy,x+cw[0]+cw[1]+cw[2],yy,{sw:.8});
+    rows.forEach(r=>{yy+=15;txt(this.svg,x+2,yy,r[0],"tt","start");txt(this.svg,x+cw[0]+2,yy,r[1],"tt","start");txt(this.svg,x+cw[0]+cw[1]+2,yy,r[2],"tt","start");});
+    this.line(x,yy+5,x+cw[0]+cw[1]+cw[2],yy+5,{sw:.8});return yy+26;}
+  center(x1,y1,x2,y2){this.line(x1,y1,x2,y2,{sw:.6,dash:"10 3 2 3"});}
+}
+
+/* ---------- SHEET 1: APP SHELL ---------- */
+(function(){
+const s=new Sheet(1,"APP SHELL · RUN VIEW","NAV · 3-COLUMN · 1440 × 900 · REV B");
+const notes=s.notes(40,52,[[1,"Rail W1 is fixed; collapses to icons (Z7) under BP2."],[2,"Run view, top to bottom: run header H1, timeline strip H6 = 240 (collapses to 56), transcript FLEX, approval tray (only while pending), composer card."],[3,"Timeline strip: click a segment to select it in the Inspector and scroll the transcript."],[4,"Inspector W3 has three tabs: Artifact · Agent I/O · Memory & skill. Opens with the first run; Agent I/O follows the selected segment."],[5,"Top bar H0 carries the workstream title, the cloud Z7 and global search. Run status and cost live in the run header."],[0,"Scroll regions: rail, transcript, inspector body. The strip scrolls horizontally only."]]);
+// plan view at 0.52:1
+const k=.52, ox=330, oy=100, W=1440*k, H=900*k;
+s.title(ox,44,"PLAN VIEW · DESKTOP","SCALE 0.52:1 · VIEWPORT 1440 × 900");
+s.rect(ox,oy,W,H,{sw:1.6});
+const H0=48*k,W1=280*k,W3=420*k,H6=320*k,S1=16*k;
+s.inset(ox,oy,W,H0);s.slot(ox+S1,oy+6,180*k,H0-12,"TITLE · HUG");s.slot(ox+W-S1-300*k,oy+8,160*k,H0-16,"STATUS PILL · HUG");s.slot(ox+W-S1-Z(40),oy+4,Z(40),Z(40),"Z7");
+function Z(v){return v*k}
+s.hug(ox,oy+H0,W1,H-H0);s.slot(ox+S1,oy+H0+S1,W1-2*S1,Z(44),"NEW WORKSTREAM · FILL");
+for(let i=0;i<5;i++)s.slot(ox+S1,oy+H0+S1+Z(56)+i*Z(60),W1-2*S1,Z(52),i===0?"ITEM · SELECTED":"ITEM");
+const cx=ox+W1, cw=W-W1-W3, H1=56*k, H6b=240*k, HC=100*k, HT=44*k;
+s.inset(cx,oy+H0,cw,H1);s.slot(cx+S1,oy+H0+6,cw-2*S1,H1-12,"RUN HEADER · TITLE · STATUS · TIME · TOKENS · COST · −X %");
+s.inset(cx,oy+H0+H1,cw,H6b);s.slot(cx+S1,oy+H0+H1+S1,cw-2*S1,H6b-2*S1,"TIMELINE STRIP · SEE SHEET 3 · COLLAPSES TO 56");
+const ty0=oy+H0+H1+H6b;
+s.rect(cx,ty0,cw,H-H0-H1-H6b,{sw:.8});
+const mx=cx+(cw-720*k)/2;
+s.center(mx+360*k,ty0+10,mx+360*k,oy+H-10);
+s.slot(mx,ty0+S1,720*k,Z(90),"PLAN CARD · SEE SHEET 4");s.slot(mx,ty0+S1+Z(100),720*k,Z(50),"MESSAGE ROW");
+s.slot(mx,oy+H-S1-HC-Z(8)-HT,720*k,HT,"APPROVAL TRAY · ONLY WHILE PENDING");
+s.slot(mx,oy+H-S1-HC,720*k,HC,"COMPOSER CARD · HUG · SEE SHEET 4",{r:Z(10)});
+s.hug(cx+cw,oy+H0,W3,H-H0);s.slot(cx+cw+S1,oy+H0+S1,W3-2*S1,Z(40),"ARTIFACT · AGENT I/O · MEMORY");s.slot(cx+cw+S1,oy+H0+S1+Z(48),W3-2*S1,H-H0-2*S1-Z(48),"INSPECTOR BODY · SEE SHEET 5");
+// dims
+s.dimH(ox,ox+W1,oy-18,"W1 = 280",{from:oy});s.dimH(ox+W1,cx+cw,oy-18,"FLEX",{from:oy});s.dimH(cx+cw,ox+W,oy-18,"W3 = 420",{from:oy});
+s.dimH(ox,ox+W,oy-40,"1440",{from:oy});
+s.dimV(ox+W+20,oy,oy+H0,"H0 = 48",{from:ox+W});s.dimV(ox+W+20,oy+H0,oy+H0+H1,"H1 = 56",{from:ox+W,dy:10});s.dimV(ox+W+20,oy+H0+H1,oy+H0+H1+H6b,"H6 = 240",{from:ox+W});s.dimV(ox+W+20,oy+H-S1-HC,oy+H-S1,"HC · HUG",{from:ox+W});s.dimV(ox+W+48,oy,oy+H,"900",{from:ox+W});
+s.dimV(ox-20,oy+H0,oy+H0+S1,"S1",{from:ox,side:"left"});s.dimH(mx,mx+720*k,oy+H-S1-HC-Z(8)-HT-12,"MW = 720",{from:oy+H-S1-HC-Z(8)-HT});
+s.nb(ox+W1/2,oy+H-30,1);s.nb(cx+cw/2,oy+H0+H1+H6b/2,3);s.nb(cx+cw/2,ty0+S1+Z(170),2);s.nb(cx+cw+W3/2,oy+H-60,4);s.nb(ox+W/2,oy+H0/2,5);
+// breakpoints row
+s.title(330,660,"PLAN VIEW · BREAKPOINTS","SCALE 0.22:1 · BP1 < 768 · BP2 < 1280");
+const b=.22;
+// tablet
+let tx=330,ty=690;s.rect(tx,ty,1024*b,768*b,{sw:1.2});s.inset(tx,ty,1024*b,48*b);s.hug(tx,ty+48*b,64*b,768*b-48*b);s.slot(tx+64*b+6,ty+48*b+6,1024*b-64*b-12,300*b,"COMPOSER");s.slot(tx+64*b+6,ty+360*b,1024*b-64*b-12,220*b,"TIMELINE");s.slot(tx+64*b+6,ty+590*b,1024*b-64*b-12,160*b,"PANEL · SHEET");
+txt(s.svg,tx,ty-6,"TABLET 1024 × 768 · RAIL → ICONS Z7 · PANEL → BOTTOM SHEET","lab","start");
+// phone
+tx=700;s.rect(tx,ty,390*b,844*b,{sw:1.2});s.inset(tx,ty,390*b,48*b);s.slot(tx+4,ty+48*b+4,390*b-8,540*b,"ONE VIEW AT A TIME");s.inset(tx,ty+844*b-56*b,390*b,56*b);
+for(let i=0;i<4;i++)s.slot(tx+4+i*(390*b/4),ty+844*b-56*b+4,390*b/4-8,56*b-8,["WORK","CHAT","RUN","DOC"][i]);
+txt(s.svg,tx,ty-6,"PHONE 390 × 844 · SEE SHEET 8","lab","start");
+s.dimV(tx+390*b+16,ty+844*b-56*b,ty+844*b,"H10 = 56",{from:tx+390*b});
+// tables
+let y=s.table(1360,80,"SPACING",[["S1","outer pad","16"],["S2","inner pad","12"],["S3","stack gap","8"],["S4","section gap","24"]]);
+y=s.table(1360,y+10,"SIZE",[["H0","top bar","48"],["H1","run header","56"],["W1","rail","280"],["W3","inspector","420"],["H6","timeline strip","240 · min 56"],["HC","composer card","100 → 220"],["MW","message col","720"],["Z7","cloud in bar","40"]]);
+y=s.table(1360,y+10,"RADIUS",[["R1","container","10"],["R2","inner = R1−2","8"],["R4","input pill","H5 ÷ 2 = 26"]]);
+y=s.table(1360,y+10,"VIEWPORT",[["V0","reference","1440 × 900"],["BP1","phone","< 768"],["BP2","tablet","< 1280"],["T1","touch min","44"]]);
+})();
+
+/* ---------- SHEET 2: BOOT PRELOADER ---------- */
+(function(){
+const s=new Sheet(2,"BOOT PRELOADER","GLOW CLOUD · FULL-BLEED SKY");
+s.notes(40,52,[[1,"Cloud Z1 = 320 centered on the vertical axis, raised by S4 above center."],[2,"Title and subtitle are HUG; stack gap S3; width ≤ MW."],[3,"Sky gradient fills the viewport (background = true). Fades out over 400 ms after /api/workstreams resolves."],[4,"Reduced motion: cloud stays still; fade becomes a cut."],[5,"Pointer over the cloud: eyes follow. Click: squish + wink. No other controls on this screen."]]);
+const k=.5,ox=330,oy=100,W=1440*k,H=900*k;
+s.title(ox,80,"PLAN VIEW","SCALE 0.5:1");
+s.rect(ox,oy,W,H,{sw:1.6});
+s.hatch(ox,oy,W,H);
+const cxm=ox+W/2, Z1=320*k, cy=oy+H/2-24*k;
+el("rect",{x:cxm-Z1/2,y:cy-Z1/2-60*k,width:Z1,height:Z1,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1.6,"stroke-dasharray":"4 3"},s.svg);
+txt(s.svg,cxm,cy-60*k+4,"GLOW CLOUD · Z1","lab");
+s.center(cxm,oy+10,cxm,oy+H-10);
+s.slot(cxm-120*k,cy+Z1/2-60*k+16*k,240*k,36*k,"TITLE · HUG");
+s.slot(cxm-160*k,cy+Z1/2-60*k+16*k+36*k+8*k,320*k,20*k,"SUBTITLE · HUG");
+s.dimH(cxm-Z1/2,cxm+Z1/2,oy-18,"Z1 = 320",{from:cy-Z1/2-60*k});
+s.dimV(ox+W+20,cy-Z1/2-60*k,cy+Z1/2-60*k,"Z1 = 320",{from:cxm+Z1/2});
+s.dimV(ox+W+20,cy+Z1/2-60*k,cy+Z1/2-60*k+16*k,"S1",{from:cxm+Z1/2});
+s.dimV(ox+W+20,cy+Z1/2-60*k+16*k+36*k,cy+Z1/2-60*k+16*k+36*k+8*k,"S3",{from:cxm+Z1/2});
+s.dimV(ox-20,oy,cy-Z1/2-60*k,"(H − Z1) ÷ 2 − S4",{from:ox,side:"rot"});
+s.nb(cxm+Z1/2+30,cy-100,1);s.nb(cxm+200,cy+Z1/2-60*k+30*k,2);s.nb(ox+40,oy+H-30,3);
+// exploded layers of the cloud
+s.title(330,600,"EXPLODED VIEW · CLOUD LAYERS","BOTTOM → TOP · FROM glow-cloud.tsx");
+const layers=["SKY (background gradient)","SHADOW (ellipse, blur 5)","HALO (shape, blur 9)","EDGE (shape, blur 1.6)","RIM GRADIENT (masked)","BODY (radial, scale .9 × .87, blur 7)","SHINE (ellipse, .32)","EYES ×2 (pills, blink, wink)"];
+const g=el("g",{transform:"translate(400 920) matrix(.94 .17 -.34 .47 0 0)"},s.svg);
+layers.forEach((l,i)=>{const z=i*38;const r=el("rect",{x:0,y:-z*2.1,width:300,height:200,rx:16,fill:i===0?"var(--inset)":i===5?"var(--hug)":"var(--sheet)",stroke:"currentColor","stroke-width":i===7?1.6:1,"stroke-dasharray":i===2||i===3?"4 3":undefined,style:"vector-effect:non-scaling-stroke"},g);});
+layers.forEach((l,i)=>{txt(s.svg,780,640+i*22,`${i+1}  ${l}`,"nt","start");s.nb(768,636+i*22,i+1);});
+let y=s.table(1360,80,"SIZE",[["Z1","cloud, boot","320"],["Z6","cloud, run header","160"],["Z7","cloud, top bar","40"],["H","title line","36"],["H","subtitle line","20"]]);
+y=s.table(1360,y+10,"MOTION",[["F","float amplitude","5 · 1.1 rad/s"],["B","breathe","±1.2 %"],["BL","blink","160 ms, 25 % double"],["WK","wink on click","340 ms"],["SQ","squish","0.9 → spring 220/9"],["FD","fade out","400 ms ease-out"]]);
+y=s.table(1360,y+10,"STATE",[["C1","color, idle","blue"],["C2","color, needs you","orange"],["RM","reduced motion","still + 1.2 s on click"]]);
+})();
+
+/* ---------- SHEET 3: TIMELINE ---------- */
+(function(){
+const s=new Sheet(3,"RUN TIMELINE","LANES · CONNECTORS · PLAYHEAD");
+s.notes(40,52,[[1,"Header H1: title (HUG), status pill, time · tokens · cost (tabular), route delta."],[2,"Legend column W2: dot Z5, agent name, model badge with provider glyph."],[3,"Lane pitch P1 = 66; segment height H3 = 26; pill radius R4 = 13."],[4,"Hatched segment = orchestrator waiting on children (segment.wait)."],[5,"Failed = outlined segment with ✕ glyph centered; lane keeps its color."],[6,"Spawn: dot Z5 on the parent lane at t, dashed drop 2 2 to the child's first segment."],[7,"Playhead: 1 px line full lane height; dot Z4 on the axis row; moves while running."],[8,"Axis: tick every AX = 5 s; scale grows in 5 s steps so the playhead sits at ≈ 80 % width."],[0,"Hover: tooltip label + duration. Click: scroll composer to the event."]]);
+const ox=330,oy=130,W=980,H1=56,W2=240,P1=66,H3=26,H7=32,lanes=5;
+s.title(ox,78,"PLAN VIEW · STRIP AT H6 = 240 (SHOWN EXPANDED)","SCALE 1:1 · 5 LANES SHOWN · LEGEND ADDS TOKENS · COST PER LANE");
+const H=H1+lanes*P1+H7;
+s.rect(ox,oy,W,H,{sw:1.6,r:10});
+s.inset(ox,oy,W,H1,10);
+s.slot(ox+16,oy+10,260,20,"RUN TITLE · HUG");s.slot(ox+16,oy+32,80,16,"STATUS");s.slot(ox+104,oy+32,160,16,"TIME · TOKENS · COST");s.slot(ox+272,oy+32,96,16,"−X % VS BASELINE");
+s.slot(ox+W-16-64,oy+8,64,40,"Z6 → HIDES");
+// legend + lanes
+const lx=ox, gx=ox+W2, gw=W-W2;
+const names=["ORCHESTRATOR","CHECKER","RESEARCHER","ANALYST","WRITER"];
+for(let i=0;i<lanes;i++){const y=oy+H1+i*P1;
+  if(i%2===1)s.inset(gx,y,gw,P1);
+  el("circle",{cx:lx+20,cy:y+24,r:4,fill:"currentColor"},s.svg);
+  s.slot(lx+32,y+14,120,18,names[i]);s.slot(lx+32,y+36,150,14,"MODEL BADGE · NEMOTRON");
+}
+// grid ticks
+const t0=gx+16, px=(gw-32)/25;
+for(let t=0;t<=25;t+=5){const x=t0+t*px;s.line(x,oy+H1,x,oy+H-H7,{sw:.5,dash:"2 3"});txt(s.svg,x,oy+H-8,`${t}S`,"lab");}
+// orchestrator segments: solid then hatched
+const y0=oy+H1+(P1-H3)/2;
+s.hug(t0+0*px,y0,2.2*px,H3,13);
+s.hatch(t0+2.2*px,y0,3.6*px,H3,13);
+// spawn dots + connectors
+[[2.3,1],[2.9,2],[3.4,3]].forEach(([t,lane])=>{const x=t0+t*px;el("circle",{cx:x,cy:y0+H3+6,r:4,fill:"currentColor"},s.svg);s.line(x,y0+H3+10,x,oy+H1+lane*P1+(P1-H3)/2,{sw:.9,dash:"2 2"});});
+// child segments
+s.hug(t0+2.3*px,oy+H1+1*P1+(P1-H3)/2,.6*px,H3,13);s.hug(t0+3.1*px,oy+H1+1*P1+(P1-H3)/2,1.9*px,H3,13);
+s.hug(t0+2.9*px,oy+H1+2*P1+(P1-H3)/2,2.4*px,H3,13);
+// analyst failed
+const fy=oy+H1+3*P1+(P1-H3)/2;s.hug(t0+3.4*px,fy,.5*px,H3,13);s.rect(t0+4.0*px,fy,1.4*px,H3,{r:13,sw:1.2});txt(s.svg,t0+4.7*px,fy+H3/2+4,"✕","dim");
+// writer short
+s.hug(t0+5.2*px,oy+H1+4*P1+(P1-H3)/2,.6*px,H3,13);
+// route badge on researcher segment start
+el("circle",{cx:t0+2.9*px,cy:oy+H1+2*P1+(P1-H3)/2,r:7,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1},s.svg);txt(s.svg,t0+2.9*px,oy+H1+2*P1+(P1-H3)/2+3.5,"↓","dim");
+// playhead
+const phx=t0+5.8*px;s.line(phx,oy+H1,phx,oy+H-H7+8,{sw:1});el("circle",{cx:phx,cy:oy+H-H7+10,r:5,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1.2},s.svg);
+// dims
+s.dimH(ox,gx,oy-18,"W2 = 240",{from:oy});s.dimH(gx,ox+W,oy-18,"FLEX · SCROLL-X",{from:oy});
+s.dimV(ox+W+22,oy,oy+H1,"H1 = 56",{from:ox+W});s.dimV(ox+W+64,oy+H1,oy+H1+P1,"P1 = 66",{from:ox+W});s.dimV(ox+W+22,y0,y0+H3,"H3 = 26",{from:ox+W});s.dimV(ox+W+22,oy+H-H7,oy+H,"H7 = 32",{from:ox+W});
+s.dimH(t0,t0+5*px,oy+H+22,"AX = 5 S",{from:oy+H});s.dimH(gx,t0,oy+H+22,"S1",{from:oy+H});
+s.nb(ox+W/2,oy+H1/2+2,1);s.nb(lx+200,oy+H1+10,2);s.nb(gx+60,y0-12,3);s.nb(t0+4*px,y0+H3/2+1,4);s.nb(t0+4.7*px,fy-12,5);s.nb(t0+1.2*px,y0+H3+22,6);s.nb(phx+14,oy+H-H7-12,7);s.nb(t0+12.5*px,oy+H-8-14,8);
+// details row
+s.title(330,600,"DETAIL A · SEGMENT + ROUTE BADGE","SCALE 2.4:1");
+let dx=330,dy=630;s.hug(dx,dy,260,62,31);el("circle",{cx:dx,cy:dy,r:17,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1.2},s.svg);txt(s.svg,dx,dy+6,"↓","dim");
+s.rad(dx,dy,31,"tl","R4 = H3 ÷ 2 = 13");s.dimV(dx+290,dy,dy+62,"H3 = 26",{from:dx+260});s.dimH(dx-17,dx+17,dy-44,"Z8 = 14",{from:dy-17});
+txt(s.svg,dx+130,dy+40,"↓ ROUTED BELOW CEILING · ↻ FALLBACK","lab");
+s.title(700,600,"DETAIL B · SPAWN CONNECTOR","SCALE 2.4:1");
+dx=700;dy=630;s.hug(dx,dy,200,62,31);el("circle",{cx:dx+120,cy:dy+62+14,r:10,fill:"currentColor"},s.svg);s.line(dx+120,dy+62+24,dx+120,dy+62+120,{sw:2,dash:"5 5"});s.hug(dx+120,dy+62+120,160,62,31);
+s.dimH(dx+110,dx+130,dy+62+40,"Z5 = 8",{from:dy+62+24});s.dimV(dx+300,dy+62,dy+62+120,"TO CHILD'S FIRST SEGMENT",{from:dx+200,side:"rot"});
+s.title(1060,600,"DETAIL C · PLAYHEAD ON AXIS","SCALE 2.4:1");
+dx=1060;dy=630;s.line(dx+60,dy,dx+60,dy+100,{sw:2.4});el("circle",{cx:dx+60,cy:dy+112,r:12,fill:"var(--sheet)",stroke:"currentColor","stroke-width":2.4},s.svg);s.line(dx,dy+112,dx+180,dy+112,{sw:.8});
+s.dimH(dx+48,dx+72,dy+140,"Z4 = 10",{from:dy+124});s.dimH(dx+60,dx+180,dy+165,"≈ 20 % HEADROOM",{from:dy+124});
+// hatch legend
+s.title(330,810,"LINE KEY");
+s.hug(330,830,60,20,10);txt(s.svg,400,844,"ACTIVE · segment.think / segment.tool","nt","start");
+s.hatch(330,860,60,20,10);txt(s.svg,400,874,"WAITING · segment.wait (parent on children)","nt","start");
+s.rect(330,890,60,20,{r:10,sw:1.2});txt(s.svg,360,904,"✕","dim");txt(s.svg,400,904,"FAILED · agent.error","nt","start");
+s.line(330,930,390,930,{sw:.9,dash:"2 2"});txt(s.svg,400,934,"SPAWN · agent.spawn connector","nt","start");
+let y=s.table(1436,80,"SIZE",[["H1","header","56"],["W2","legend","240"],["P1","lane pitch","66"],["H3","segment","26"],["H7","axis row","32"],["Z4","playhead dot","10"],["Z5","spawn dot","8"],["Z8","route badge","14"]]);
+y=s.table(1436,y+10,"RADIUS",[["R1","dock","10"],["R4","segment pill","H3 ÷ 2 = 13"]]);
+y=s.table(1436,y+10,"TIME",[["AX","tick","5 s"],["SC","scale step","+5 s when playhead > 80 %"],["RF","redraw","requestAnimationFrame"],["RM","reduced motion","no playhead animation"]]);
+y=s.table(1436,y+10,"ORDER",[["L0","orchestrator","always first"],["Ln","children","by first agent.spawn"],["L+","learner","appended after run.end"]]);
+})();
+
+/* ---------- SHEET 4: COMPOSER v2 ---------- */
+(function(){
+const s=new Sheet(4,"COMPOSER v2","CARD · TOOLBAR · TRAY · PLAN CARD · REV B");
+s.notes(40,52,[[1,"Composer is a card, not a pill: textarea row TA (1 → 6 lines, 44 → 164) over a toolbar row H11 = 40."],[2,"Toolbar left: ATTACH, TOOLS, MODE (Ask each action · Auto low-risk · Dry run), TIER (Auto router · Cheap · Max). Chips 28 high, pill."],[3,"Toolbar right: live cost estimate pill from Nano, 400 ms after typing stops, then the primary button H4 = 36."],[4,"Primary button by state: RUN idle · STEER running (STOP beside it) · REPLY when the crew asked. Placeholder changes with it."],[5,"Approval tray above the composer, sticky, only while pending: count, first summary, APPROVE · REJECT · APPROVE ALL LOW-RISK. Expands to the list."],[6,"Plan card is the first transcript message of a run: agents + tiers, tools allowed, estimated cost, CANCEL for 3 s, SAVE AS WORKSTREAM on a first run."],[7,"Slash menu above the textarea when the text starts with /: run, schedule, stop, approve, skill, memory. @ lists the lanes."],[8,"Attached files and @mentions render as chips inside the textarea row; chips count toward the row height."],[0,"Enter sends · Shift+Enter newline · ⌘Enter run on Max · Esc clears the draft or closes the menu."]]);
+const ox=360,oy=70,MW=720;
+s.title(ox,56,"PLAN VIEW · BOTTOM OF THE RUN VIEW","SCALE 1:1 · WIDTH MW = 720 · TRANSCRIPT ABOVE");
+// plan card
+let y=oy+16;
+s.rect(ox+38,y,MW-38,156,{r:10,sw:1.6});
+s.slot(ox+50,y+12,190,16,"PLAN · ORCHESTRATOR · ULTRA");s.slot(ox+MW-12-96,y+12,96,16,"CANCEL · 3 S");
+[["RESEARCHER · SUPER",150],["ANALYST · SUPER",130],["CHECKER · NANO",120],["WRITER · SUPER",120]].reduce((x,[l,w])=>{s.rect(x,y+40,w,28,{r:14,sw:.9});txt(s.svg,x+w/2,y+58,l,"lab");return x+w+8;},ox+50);
+[["WEB",56],["CODE",60],["SEND · ASKS",96]].reduce((x,[l,w])=>{s.hug(x,y+80,w,24,12);txt(s.svg,x+w/2,y+96,l,"lab");return x+w+8;},ox+50);
+s.slot(ox+50,y+118,320,22,"≈ $0.06 · ULTRA ×1 · SUPER ×3 · NANO ×4");s.slot(ox+MW-12-150,y+118,150,22,"SAVE AS WORKSTREAM");
+s.nb(ox+MW-40,y+80,6);s.dimV(ox+MW+22,y,y+156,"HUG",{from:ox+MW});
+// approval tray
+y=oy+200;
+s.inset(ox,y,MW,44,10);el("rect",{x:ox,y:y,width:3,height:44,fill:"currentColor"},s.svg);
+s.slot(ox+16,y+14,76,16,"2 WAITING");s.slot(ox+102,y+14,240,16,"FIRST SUMMARY · TRUNCATE");
+[["APPROVE ALL LOW-RISK",150],["REJECT",80],["APPROVE",96]].reduce((x,[l,w])=>{const bx=x-w;s.rect(bx,y+8,w,28,{r:6,sw:l==="APPROVE"?1.6:.9,fill:l==="APPROVE"?"var(--hug)":"none"});txt(s.svg,bx+w/2,y+26,l,"lab");return bx-8;},ox+MW-12);
+s.dimV(ox+MW+22,y,y+44,"H12 = 44",{from:ox+MW});s.nb(ox+MW/2-30,y+22,5);
+// composer card
+y=oy+262;const TA=44,TB=40,CH=8+TA+8+TB+8;
+s.rect(ox,y,MW,CH,{r:10,sw:1.6});
+s.hug(ox+16,y+16,118,28,14);txt(s.svg,ox+75,y+34,"CSV · DATA.CSV ✕","lab");s.hug(ox+142,y+16,96,28,14);txt(s.svg,ox+190,y+34,"@RESEARCHER","lab");
+s.slot(ox+246,y+12,MW-262,TA-4,"TEXTAREA · PLACEHOLDER BY STATE");
+s.line(ox+12,y+8+TA+8,ox+MW-12,y+8+TA+8,{sw:.6,dash:"2 3"});
+const ty=y+8+TA+8+6;
+[["+ ATTACH",84],["TOOLS ▾",78],["MODE ▾ ASK EACH",130],["TIER ▾ AUTO",104]].reduce((x,[l,w])=>{s.rect(x,ty,w,28,{r:14,sw:.9});txt(s.svg,x+w/2,ty+18,l,"lab");return x+w+8;},ox+16);
+s.hug(ox+MW-16-96-8-80,ty,80,28,14);txt(s.svg,ox+MW-16-96-8-40,ty+18,"≈ $0.06","lab");
+s.rect(ox+MW-16-96,ty-4,96,36,{r:6,sw:1.6,fill:"var(--hug)"});txt(s.svg,ox+MW-16-48,ty+18,"RUN ⏎","lab");
+s.dimV(ox+MW+22,y,y+CH,"HC = 100 (1 LINE)",{from:ox+MW});s.dimV(ox+MW+64,y+8,y+8+TA,"TA ≥ 44",{from:ox+MW});s.dimV(ox+MW+64,ty-6,ty+34,"H11 = 40",{from:ox+MW});
+s.dimH(ox,ox+16,y+CH+16,"S1",{from:y+CH});s.dimH(ox+MW-16-96,ox+MW-16,y+CH+16,"≥ 96",{from:y+CH});s.dimH(ox+16,ox+134,y-12,"CHIP · HUG · 28",{from:y+16});
+s.rad(ox,y,10,"tl","R1 = 10");
+s.nb(ox+MW/2+60,y+30,1);s.nb(ox+16+84+8+78+8+130+8+104+26,ty+14,2);s.nb(ox+MW-16-96-8-80-26,ty+14,3);s.nb(ox+MW-16-48,ty+46,4);s.nb(ox+190,y-10,8);
+// details row 1: states
+s.title(360,460,"DETAIL A · COMPOSER STATES","SCALE 0.6:1 · SAME BOX, DIFFERENT PLACEHOLDER AND BUTTON");
+const k=.6,sw=720*k,sh=100*k;
+[["IDLE","GIVE THE CREW A GOAL…","RUN",null],["DRAFTING","WHY DID CHECKOUT CONVERSION DROP ON OCT 14?","RUN","≈ $0.06"],["RUNNING","STEER THE CREW…","STEER","STOP"],["ASKED","ANSWER THE CREW…","REPLY",null]].forEach(([st,ph,btn,extra],i)=>{
+  const x=360+(i%2)*(sw+40), yy=490+Math.floor(i/2)*(sh+44);
+  s.rect(x,yy,sw,sh,{r:6,sw:1.2});s.slot(x+10,yy+8,sw-20,26,ph);s.line(x+8,yy+40,x+sw-8,yy+40,{sw:.5,dash:"2 3"});
+  s.rect(x+10,yy+46,50,16,{r:8,sw:.7});s.rect(x+66,yy+46,46,16,{r:8,sw:.7});s.rect(x+118,yy+46,70,16,{r:8,sw:.7});s.rect(x+194,yy+46,60,16,{r:8,sw:.7});
+  let bx=x+sw-10-58;s.rect(bx,yy+44,58,22,{r:4,sw:1.2,fill:"var(--hug)"});txt(s.svg,bx+29,yy+58,btn,"lab");
+  if(extra){bx-=8+50;s.rect(bx,yy+44,50,22,{r:4,sw:extra==="STOP"?1.2:.7});txt(s.svg,bx+25,yy+58,extra,"lab");}
+  txt(s.svg,x,yy-6,st,"lab","start");
+});
+// details row 2: slash menu + approval card actions
+s.title(360,800,"DETAIL B · SLASH MENU","SCALE 1:1 · OPENS ABOVE THE TEXTAREA");
+let px0=360,py0=826,pw=300;
+["/RUN  START A RUN NOW","/SCHEDULE  DAILY 09:00","/STOP  STOP THE CURRENT RUN","/APPROVE  ALL LOW-RISK","/SKILL  OPEN SKILL.MD","/MEMORY  WHAT IT REMEMBERS"].forEach((l,i)=>{if(i===0)s.inset(px0+4,py0+4+i*32,pw-8,32,6);txt(s.svg,px0+14,py0+4+i*32+20,l,"lab","start");});
+s.rect(px0,py0,pw,6*32+8,{r:8,sw:1.2});s.dimV(px0-20,py0,py0+6*32+8,"6 × 32",{from:px0,side:"rot"});s.nb(px0+pw+16,py0+100,7);
+s.title(720,800,"DETAIL C · APPROVAL CARD ACTIONS","SCALE 1:1 · REPLACES EDIT");
+let cx0=720,cy0=826;s.rect(cx0,cy0,560,120,{r:10,sw:1.6});el("rect",{x:cx0,y:cy0,width:3,height:120,fill:"currentColor"},s.svg);
+s.slot(cx0+14,cy0+12,200,16,"NEEDS APPROVAL · SEND_MESSAGE");s.slot(cx0+560-14-70,cy0+12,70,16,"RISK · MED");
+s.inset(cx0+14,cy0+36,532,36,6);txt(s.svg,cx0+280,cy0+58,"EXACT PAYLOAD PREVIEW · TO · SUBJECT · BODY (3 LINES, EXPAND)","lab");
+[["REJECT WITH A NOTE",150],["APPROVE & ALWAYS ALLOW",180],["APPROVE",96]].reduce((x,[l,w])=>{const bx=x-w;s.rect(bx,cy0+120-12-28,w,28,{r:6,sw:l==="APPROVE"?1.6:.9,fill:l==="APPROVE"?"var(--hug)":"none"});txt(s.svg,bx+w/2,cy0+120-12-10,l,"lab");return bx-8;},cx0+560-14);
+txt(s.svg,cx0,cy0+140,"ALWAYS ALLOW → WRITES A POLICY LINE INTO THE WORKSTREAM'S SKILL.MD · VISIBLE IN THE RUN SUMMARY DIFF","lab","start");
+// tables
+let tyy=s.table(1360,80,"SIZE",[["MW","column","720"],["HC","card, 1 → 6 lines","100 → 220"],["TA","textarea row","≥ 44"],["H11","toolbar row","40"],["H12","approval tray","44"],["H4","primary button","36"],["CP","chip","28 · pill"],["PC","plan card","HUG ≈ 156"]]);
+tyy=s.table(1360,tyy+10,"RADIUS",[["R1","card, plan card","10"],["R2","payload well","8"],["R3","button","6"],["R4","chip pill","14"]]);
+tyy=s.table(1360,tyy+10,"MOTION",[["ES","cost estimate","400 ms debounce"],["PL","plan cancel window","3 s"],["TR","tray slide in","160 ms"],["GR","textarea grow","per line, no anim"],["RM","reduced motion","cut"]]);
+tyy=s.table(1360,tyy+10,"KEYS",[["⏎","send / run / steer / reply","by state"],["⇧⏎","newline","—"],["⌘⏎","run on Max tier","idle only"],["ESC","clear draft · close menu","—"],["/ @","slash menu · mentions","at text start"]]);
+tyy=s.table(1360,tyy+10,"MODES",[["M1","Ask each action","default"],["M2","Auto low-risk","risk = low auto"],["M3","Dry run","no side effects"],["T1","Tier auto","router"],["T2","Cheap","Nano everywhere"],["T3","Max","ceilings"]]);
+})();
+
+/* ---------- SHEET 5: ARTIFACT PANEL ---------- */
+(function(){
+const s=new Sheet(5,"INSPECTOR · ARTIFACT TAB","SIDE PANEL · TABS · VERSIONS · DOC/CODE");
+s.notes(40,52,[[1,"Inspector W3 = 420, full height under the top bar; slides in 240 ms when a run starts. Tabs: ARTIFACT · AGENT I/O · MEMORY."],[2,"Tab row H8 = 40: the three inspector tabs; close glyph right. DOC · CODE is a toggle on the version strip."],[3,"Version strip: tabs H9 = 28, pill R4; latest is selected on arrival; max 6 visible then scroll."],[4,"Body: doc renders markdown at 15/1.6 inside S1; code renders mono 13/1.5 with line numbers gutter G1 = 40."],[5,"Toolbar at the bottom: copy, open in run summary; HUG; end-aligned."],[0,"Tablet: becomes a bottom sheet at 60 % height. Phone: the DOC tab (sheet 8)."]]);
+const ox=360,oy=90,W=420,H=680,H8=40,H9=28;
+s.title(ox,78,"PLAN VIEW","SCALE 1:1 · HEIGHT 900 − H0 CROPPED");
+s.rect(ox,oy,W,H,{sw:1.6});
+s.inset(ox,oy,W,H8);s.slot(ox+12,oy+10,80,20,"ARTIFACT");s.slot(ox+100,oy+10,90,20,"AGENT I/O");s.slot(ox+198,oy+10,80,20,"MEMORY");s.slot(ox+W-12-24,oy+8,24,24,"✕");
+const vy=oy+H8+8;[["V1",48],["V2",48],["LATEST",72]].reduce((x,[l,w])=>{s.rect(x,vy,w,H9,{r:14,sw:l==="LATEST"?1.6:.8,fill:l==="LATEST"?"var(--hug)":"none"});txt(s.svg,x+w/2,vy+18,l,"lab");return x+w+8;},ox+12);
+s.slot(ox+W-12-96,vy,96,H9,"DOC · CODE");
+s.slot(ox+12,vy+H9+12,W-24,H-H8-H9-20-12-56,"BODY · DOC OR CODE · SCROLL-Y");
+s.line(ox+12+40,vy+H9+12,ox+12+40,oy+H-68,{sw:.6,dash:"2 3"});txt(s.svg,ox+32,vy+H9+30,"G1","lab");
+s.inset(ox,oy+H-48,W,48);s.slot(ox+W-12-96,oy+H-38,96,28,"COPY · OPEN");
+s.dimH(ox,ox+W,oy-18,"W3 = 420",{from:oy});s.dimV(ox+W+22,oy,oy+H8,"H8 = 40",{from:ox+W});s.dimV(ox+W+22,vy,vy+H9,"H9 = 28",{from:ox+W});s.dimV(ox+W+22,oy+H-48,oy+H,"48",{from:ox+W});
+s.dimH(ox,ox+12,oy+H+16,"S2",{from:oy+H});s.dimH(ox+12,ox+52,oy+H+16,"G1 = 40",{from:oy+H});
+s.nb(ox+W/2,oy+H8/2+2,2);s.nb(ox+230,vy+14,3);s.nb(ox+W/2,oy+H/2,4);s.nb(ox+60,oy+H-24,5);
+s.title(860,78,"DETAIL A · VERSION TAB","SCALE 2.4:1");
+let dx=860,dy=110;s.hug(dx,dy,172,67,33);txt(s.svg,dx+86,dy+40,"LATEST","lab");s.rad(dx,dy,33,"tl","R4 = H9 ÷ 2 = 14");s.dimV(dx+200,dy,dy+67,"H9 = 28",{from:dx+172});s.dimH(dx,dx+172,dy+90,"HUG · PAD S2",{from:dy+67});
+s.title(860,240,"DETAIL B · SLIDE-IN","SCALE 0.3:1");
+dx=860;dy=270;s.rect(dx,dy,1440*.3,900*.3,{sw:1});s.rect(dx+1440*.3-420*.3,dy+48*.3,420*.3,900*.3-48*.3,{dash:"4 3",sw:.9});s.line(dx+1440*.3+10,dy+120,dx+1440*.3-420*.3+10,dy+120,{me:s.ar,sw:1});txt(s.svg,dx+1440*.3-60,dy+112,"240 MS · EASE-OUT · TRANSLATE-X W3 → 0","lab","end");
+s.title(860,580,"DETAIL C · TABLET BOTTOM SHEET","SCALE 0.3:1");
+dx=860;dy=610;s.rect(dx,dy,1024*.3,768*.3,{sw:1});s.rect(dx,dy+768*.3*.4,1024*.3,768*.3*.6,{dash:"4 3",sw:.9});s.dimV(dx+1024*.3+16,dy+768*.3*.4,dy+768*.3,"60 % H",{from:dx+1024*.3});s.rect(dx+1024*.3/2-24,dy+768*.3*.4+6,48,4,{r:2,sw:.8,fill:"var(--hug)"});
+let ty=s.table(1360,80,"SIZE",[["W3","panel","420"],["H8","tab row","40"],["H9","version tab","28"],["G1","line-no gutter","40"],["HT","toolbar","48"]]);
+ty=s.table(1360,ty+10,"TYPE",[["TD","doc body","15 / 1.6"],["TC","code body","13 / 1.5 mono"],["TL","tab label","12 caps"]]);
+ty=s.table(1360,ty+10,"MOTION",[["IN","slide in","240 ms"],["SW","version switch","120 ms fade"],["RM","reduced motion","cut"]]);
+})();
+
+/* ---------- SHEET 6: RAIL ITEM + RUN SUMMARY ---------- */
+(function(){
+const s=new Sheet(6,"RAIL ITEM · RUN SUMMARY","LIST ROW · MEMORIES · SKILL DIFF");
+s.notes(40,52,[[1,"Rail item: height 52, pad S2, title FLEX, schedule glyph HUG, unread dot Z9 = 6 before the title."],[2,"Selected item: inset fill, R2; hover: hug fill."],[3,"Run summary card appears in the composer after run.end: header, three stats, two columns."],[4,"Memories column: list rows 32 high with a dot and one line each (≤ 8)."],[5,"Skill diff column: unified diff, mono 12/1.5, added lines on inset, removed lines struck."],[6,"Cost line: cost · tokens · time · −X % vs baseline · route count. Tabular numerals."],[0,"Both columns stack under BP1."]]);
+const ox=360,oy=90;
+s.title(ox,44,"PLAN VIEW · RAIL ITEM","SCALE 1:1 · W1 − 2·S1 = 248");
+[["ITEM · DEFAULT",false],["ITEM · SELECTED",true],["ITEM · UNREAD + SCHEDULED",false]].forEach(([l,sel],i)=>{const y=oy+i*62;if(sel)s.inset(ox,y,248,52,8);else s.rect(ox,y,248,52,{r:8,sw:.8});
+  if(i===2)el("circle",{cx:ox+16,cy:y+26,r:3,fill:"currentColor"},s.svg);
+  s.slot(ox+(i===2?26:12),y+10,140,14,"TITLE · FLEX");s.slot(ox+12,y+30,160,12,"LAST RUN · STATUS");if(i===2)s.slot(ox+248-12-20,y+16,20,20,"◷");txt(s.svg,ox+260,y+30,l,"lab","start");});
+s.dimH(ox,ox+248,oy-16,"248",{from:oy});s.dimV(ox-20,oy,oy+52,"52",{from:ox,side:"left"});s.dimH(ox,ox+12,oy+62*3,"S2",{from:oy+62*2+52});s.dimH(ox+13,ox+19,oy+62*3+22,"Z9",{from:oy+62*2+52});
+s.nb(ox+120,oy+62*2+26,1);s.nb(ox+200,oy+62+26,2);
+// run summary
+s.title(ox,320,"PLAN VIEW · RUN SUMMARY CARD","SCALE 0.8:1 · WIDTH MW");
+const k=.8,W=720*k,y0=350,H=400*k;s.rect(ox,y0,W,H,{r:10*k,sw:1.6});
+s.slot(ox+12,y0+12,200,16,"RUN DONE · TITLE");s.slot(ox+W-12-220,y0+12,220,16,"COST · TOKENS · TIME · −X %");
+for(let i=0;i<3;i++)s.inset(ox+12+i*((W-24-16)/3+8),y0+40,(W-24-16)/3,56,8);
+txt(s.svg,ox+W/2,y0+72,"STAT TILES · AGENTS · APPROVALS · ROUTED HOPS","lab");
+const cy=y0+112,ch=H-112-12,cw=(W-24-16)/2;
+s.rect(ox+12,cy,cw,ch,{r:8,sw:.8});s.slot(ox+20,cy+8,120,14,"MEMORIES · N");for(let i=0;i<5;i++){el("circle",{cx:ox+26,cy:cy+36+i*26,r:2.5,fill:"currentColor"},s.svg);s.slot(ox+36,cy+28+i*26,cw-44,16,"");}
+s.rect(ox+12+cw+16,cy,cw,ch,{r:8,sw:.8});s.slot(ox+20+cw+16,cy+8,120,14,"SKILL.MD · DIFF");
+for(let i=0;i<6;i++){const ly=cy+28+i*22;if(i===1||i===3)s.inset(ox+20+cw+16,ly,cw-16,18);s.slot(ox+20+cw+16,ly,cw-16,18,i===4?"− REMOVED LINE":i===1||i===3?"+ ADDED LINE":"");if(i===4)s.line(ox+28+cw+16,ly+9,ox+cw+cw-20,ly+9,{sw:1});}
+s.dimH(ox+12,ox+12+cw,y0+H+16,"(MW − 2·S2 − S1) ÷ 2",{from:y0+H});s.dimV(ox+W+22,cy+28,cy+28+22,"22 · DIFF ROW",{from:ox+W});s.dimV(ox+W+64,cy+28,cy+54,"26 · MEMORY ROW",{from:ox+W});
+s.nb(ox+W/2,y0+20,3);s.nb(ox+12+cw/2,cy+ch-14,4);s.nb(ox+12+cw+16+cw/2,cy+ch-14,5);s.nb(ox+W-12-110,y0+32,6);
+s.title(1000,320,"DETAIL A · LIST ROW SELECTED","SCALE 2:1");
+let dx=1000,dy=350;s.inset(dx,dy,300,104,16);s.rad(dx,dy,16,"tl","R2 = 8");s.dimV(dx+320,dy,dy+104,"52",{from:dx+300});s.dimH(dx,dx+24,dy+120,"S2 = 12",{from:dy+104});s.slot(dx+24,dy+20,160,28,"TITLE");s.slot(dx+24,dy+60,200,24,"META");
+s.rect(dx,dy-6,300,116,{dash:"4 3",sw:.8});s.dimV(dx-20,dy-6,dy+110,"T1 ≥ 44 ✓",{from:dx,side:"rot"});
+let ty=s.table(1360,80,"SIZE",[["HR","rail row","52"],["Z9","unread dot","6"],["HS","stat tile","56"],["HM","memory row","26"],["HD","diff row","22"]]);
+ty=s.table(1360,ty+10,"TYPE",[["TT","row title","14 / 600"],["TM","row meta","12 · fg-2"],["TD","diff","12 / 1.5 mono"],["TN","numbers","tabular-nums"]]);
+ty=s.table(1360,ty+10,"RADIUS",[["R1","summary card","10"],["R2","row, columns","8"]]);
+})();
+
+/* ---------- SHEET 7: CLOUD STATES ---------- */
+(function(){
+const s=new Sheet(7,"GLOW CLOUD · STATES","MASCOT · SIZES · PLACEMENTS");
+s.notes(40,52,[[1,"Three sizes only: Z1 boot 320, Z6 run header 160, Z7 top bar 40. Always square (aspect-ratio 1)."],[2,"background = true only on the boot screen. Elsewhere the sky is off and the halo is white at .35."],[3,"Z7 in the top bar is the global mood: orange while any run waits for approval or failed; count badge when > 1."],[4,"Z6 sits in the timeline header from run.start until the first agent.start, then collapses (160 → 0 over 200 ms)."],[5,"The cloud is a pointer target: role=img, aria-label; click = wink only, never an action."],[0,"Color never changes mid-animation; swap happens on the next frame after the status change."]]);
+const ox=360,oy=100;
+s.title(ox,80,"PLAN VIEW · SIZES","SCALE 1:1");
+[["Z1 = 320 · BOOT",320],["Z6 = 160 · RUN HEADER",160],["Z7 = 40 · TOP BAR",40]].reduce((x,[l,z])=>{s.rect(x,oy+320-z,z,z,{dash:"4 3",sw:1});
+  // simple cloud silhouette: circles
+  const c=x+z/2,cy=oy+320-z/2,r=z/2;[[0,-.2,.36],[.2,-.05,.33],[.15,.3,.26],[-.1,.3,.3],[-.4,.05,.28]].forEach(([dx,dy,rr])=>el("circle",{cx:c+dx*r,cy:cy+dy*r,r:rr*r,fill:"var(--hug)",stroke:"currentColor","stroke-width":1},s.svg));
+  el("rect",{x:c-.35*r,y:cy-.15*r,width:.7*r,height:.5*r,fill:"var(--hug)"},s.svg);
+  if(z>=160){[-.2,.06].forEach(e=>el("rect",{x:c+e*r,y:cy-.1*r,width:.15*r,height:.26*r,rx:.075*r,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1},s.svg));}
+  s.dimH(x,x+z,oy+340,l,{from:oy+320});return x+z+60;},ox);
+s.center(ox-10,oy+320,ox+700,oy+320);
+s.nb(ox+320+30+80,oy+120,1);
+// placements
+s.title(ox,420,"PLAN VIEW · PLACEMENTS","SCALE 0.4:1");
+const k=.4,W=1440*k,H=900*k,py=450;s.rect(ox,py,W,H,{sw:1.2});s.inset(ox,py,W,48*k);s.rect(ox+W-16*k-40*k,py+4*k,40*k,40*k,{dash:"4 3",sw:.9});txt(s.svg,ox+W-16*k-20*k,py+30*k,"Z7","lab");
+s.hug(ox,py+48*k,280*k,H-48*k);s.inset(ox+280*k,py+H-320*k,W-280*k-420*k,320*k);s.rect(ox+280*k+16*k,py+H-320*k+8*k,160*k,160*k,{dash:"4 3",sw:.9});txt(s.svg,ox+280*k+16*k+80*k,py+H-320*k+88*k,"Z6","lab");
+s.hug(ox+W-420*k,py+48*k,420*k,H-48*k);
+el("circle",{cx:ox+W-16*k-4*k,cy:py+6*k,r:5,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1},s.svg);txt(s.svg,ox+W-16*k-4*k,py+6*k+3,"2","dim");
+s.callout(ox+W-16*k-4*k,py+6*k-5,ox+W+40,py-10,"COUNT BADGE · 16 · WHEN > 1 WAITING");
+s.nb(ox+W-16*k-20*k-30,py+30*k,3);s.nb(ox+280*k+16*k+80*k+100,py+H-320*k+88*k,4);
+// state matrix
+s.title(1000,480,"STATE MATRIX");
+const rows=[["RUN STATUS","Z1","Z6","Z7"],["boot","blue · sky","—","—"],["idle","—","—","blue"],["running","—","blue until agent.start","blue"],["waiting_approval","—","—","orange + badge"],["done","—","—","blue"],["failed","—","—","orange"]];
+let ry=510;rows.forEach((r,i)=>{r.forEach((c,j)=>txt(s.svg,1000+[0,120,180,320][j],ry,c,i===0?"th":"tt","start"));if(i===0)s.line(1000,ry+5,1420,ry+5,{sw:.8});ry+=18;});
+s.title(1000,680,"DETAIL A · EYES","SCALE 1:1 OF THE 240 VIEWBOX");
+let dx=1000,dy=710;[96.5,127.5].forEach(x=>s.rect(dx+x,dy+106,18,31,{r:9,sw:1.2}));s.dimH(dx+96.5,dx+114.5,dy+100,"18",{from:dy+106});s.dimH(dx+114.5,dx+127.5,dy+100,"13",{from:dy+106,dy:-12});s.dimV(dx+150,dy+106,dy+137,"31",{from:dx+145.5});s.rad(dx+96.5,dy+106,9,"tl","R = 9");
+txt(s.svg,dx+120,dy+160,"BLINK: scaleY 1 → .1 → 1 · 160 MS · WINK: RIGHT EYE 340 MS","lab");
+let ty=s.table(1360,80,"SIZE",[["Z1","boot","320"],["Z6","run header","160"],["Z7","top bar","40"],["ZB","count badge","16"]]);
+ty=s.table(1360,ty+10,"COLOR",[["C1","blue","idle · running · done"],["C2","orange","waiting · failed"]]);
+ty=s.table(1360,ty+10,"MOTION",[["CL","collapse Z6","200 ms"],["SW","color swap","next frame"],["RM","reduced motion","still"]]);
+})();
+
+/* ---------- SHEET 8: PHONE ---------- */
+(function(){
+const s=new Sheet(8,"PHONE LAYOUT","390 × 844 · TABS · SAFE AREAS");
+s.notes(40,52,[[1,"Four tabs: WORK (rail list), CHAT (composer), RUN (timeline), DOC (artifact). Tab bar H10 = 56 + safe-area-inset-bottom."],[2,"Top bar H0 = 48 + safe-area-inset-top; title truncates; Z7 cloud right."],[3,"RUN tab: legend collapses to dots Z5 in a 32 gutter; lanes scroll horizontally; header stacks to two lines."],[4,"Approval card fills the width minus 2·V1; buttons wrap to two rows under 360."],[5,"Input bar sits above the tab bar; grows to 3 lines."],[0,"Side gutter V1 = 16 or the safe-area inset, whichever is larger. No horizontal page scroll."]]);
+const k=1,ox=360,oy=90,W=390,H=844;
+s.title(ox,78,"PLAN VIEW · RUN TAB","SCALE 1:1");
+s.rect(ox,oy,W,H,{sw:1.6,r:24});s.inset(ox,oy,W,48+34);s.slot(ox+16,oy+34+14,220,20,"RUN TITLE · TRUNCATE");s.rect(ox+W-16-40,oy+34+4,40,40,{dash:"4 3",sw:.9});
+s.slot(ox+16,oy+90,W-32,36,"STATUS · TIME · TOKENS · COST · 2 LINES");
+const ty0=oy+140;s.rect(ox+16,ty0,W-32,66*5+32,{r:10,sw:1});
+for(let i=0;i<5;i++){const y=ty0+i*66;el("circle",{cx:ox+16+16,cy:y+33,r:4,fill:"currentColor"},s.svg);if(i%2===1)s.inset(ox+16+32,y,W-32-32,66);}
+s.slot(ox+16+32,ty0,W-32-32,66*5,"LANES · SCROLL-X");
+s.dimH(ox+16,ox+16+32,ty0-10,"32",{from:ty0});
+s.inset(ox,oy+H-56-34,W,56+34,24);for(let i=0;i<4;i++)s.slot(ox+8+i*((W-16)/4),oy+H-56-34+8,(W-16)/4-8,48,["WORK","CHAT","RUN","DOC"][i]);
+s.hatch(ox,oy,W,34);s.hatch(ox,oy+H-34,W,34);
+s.dimV(ox+W+22,oy,oy+34,"SAFE TOP",{from:ox+W});s.dimV(ox+W+22,oy+34,oy+82,"H0 = 48",{from:ox+W});s.dimV(ox+W+22,oy+H-90,oy+H-34,"H10 = 56",{from:ox+W});s.dimV(ox+W+22,oy+H-34,oy+H,"SAFE BOTTOM",{from:ox+W});
+s.dimH(ox,ox+16,oy+H+18,"V1 = 16",{from:oy+H});s.dimH(ox,ox+W,oy-18,"390",{from:oy});
+s.nb(ox+W/2,oy+H-62,1);s.nb(ox+W-70,oy+34+24,2);s.nb(ox+W/2+40,ty0+66*2+33,3);
+// chat tab
+s.title(820,78,"PLAN VIEW · CHAT TAB","SCALE 0.8:1");
+const bx=820,by=110,bk=.8;s.rect(bx,by,W*bk,H*bk,{sw:1.2,r:20});s.inset(bx,by,W*bk,82*bk);
+s.slot(bx+16*bk,by+100*bk,W*bk-32*bk,60*bk,"MESSAGE ROW");s.rect(bx+16*bk,by+180*bk,W*bk-32*bk,230*bk,{r:10*bk,sw:1.2});el("rect",{x:bx+16*bk,y:by+180*bk,width:3,height:230*bk,fill:"currentColor"},s.svg);
+s.slot(bx+28*bk,by+192*bk,200*bk,16*bk,"NEEDS APPROVAL");s.slot(bx+28*bk,by+216*bk,W*bk-56*bk,40*bk,"SUMMARY");s.inset(bx+28*bk,by+264*bk,W*bk-56*bk,60*bk,8);
+const byy=by+180*bk+230*bk-12*bk-36*bk;s.rect(bx+28*bk,byy-44*bk,W*bk-56*bk,36*bk,{r:6,sw:.9});txt(s.svg,bx+W*bk/2,byy-22*bk,"REJECT · EDIT","lab");s.hug(bx+28*bk,byy,W*bk-56*bk,36*bk,6);txt(s.svg,bx+W*bk/2,byy+22*bk,"APPROVE · FILL",   "lab");
+s.rect(bx+16*bk,by+H*bk-90*bk-52*bk-8*bk,W*bk-32*bk,52*bk,{r:26*bk,sw:1.2});s.inset(bx,by+H*bk-90*bk,W*bk,90*bk,20);
+s.dimH(bx+16*bk,bx+W*bk-16*bk,by+180*bk+230*bk+18,"FILL − 2·V1",{from:by+180*bk+230*bk});s.nb(bx+W*bk/2+60,by+300*bk,4);s.nb(bx+W*bk/2+80,by+H*bk-90*bk-34*bk,5);
+s.title(820,800,"DETAIL A · TAB ITEM","SCALE 2:1");
+let dx=820,dy=830;s.rect(dx,dy,180,96,{r:12,sw:.9});el("circle",{cx:dx+90,cy:dy+34,r:14,fill:"none",stroke:"currentColor","stroke-width":1.2},s.svg);s.slot(dx+50,dy+62,80,18,"LABEL · 11");s.dimV(dx+200,dy,dy+96,"48",{from:dx+180});s.dimH(dx,dx+180,dy+112,"(W − 16) ÷ 4",{from:dy+96});
+let ty=s.table(1360,80,"VIEWPORT",[["V1","side gutter","max(16, inset)"],["ST","safe top","env()"],["SB","safe bottom","env()"],["H10","tab bar","56 + SB"]]);
+ty=s.table(1360,ty+10,"SIZE",[["H0","top bar","48 + ST"],["GL","lane gutter","32"],["H5","input","52"],["T1","touch min","44"]]);
+ty=s.table(1360,ty+10,"RULES",[["NX","page scroll-x","never"],["SX","lanes scroll-x","own container"],["WR","buttons wrap","< 360"],["TR","title","truncate 1 line"]]);
+})();
+})();
+</script>
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
+  await mermaid.run({ querySelector: "pre.mermaid" });
+</script>

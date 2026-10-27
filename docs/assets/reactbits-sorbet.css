@@ -1,0 +1,50 @@
+/* React Bits Pro: App UI theme.
+   Style: Sorbet. Install blocks as @reactbits-pro/<block>-sorbet.
+   Paste into your global stylesheet, after the Tailwind import.
+
+   Load Manrope however you prefer, then apply the family:
+   body { font-family: var(--rb-font-sans); }
+   Scope it to part of an app by swapping `:root` for any selector.
+*/
+:root {
+  /* Corner rounding. One knob; every rung derives from it. */
+  --rb-radius: 10px;
+  --rb-r-xs: max(0px, calc(var(--rb-radius) - 6px));
+  --rb-r-sm: max(0px, calc(var(--rb-radius) - 4px));
+  --rb-r-md: max(0px, calc(var(--rb-radius) - 2px));
+  --rb-r-lg: var(--rb-radius);
+  --rb-r-xl: calc(var(--rb-radius) + min(2px, var(--rb-radius)));
+  --rb-r-2xl: calc(var(--rb-radius) + min(4px, var(--rb-radius)));
+  --rb-r-3xl: calc(var(--rb-radius) + min(6px, var(--rb-radius)));
+  --rb-r-4xl: calc(var(--rb-radius) + min(8px, var(--rb-radius)));
+  --rb-r-5xl: calc(var(--rb-radius) + min(12px, var(--rb-radius) * 2));
+  --rb-r-6xl: calc(var(--rb-radius) + min(16px, var(--rb-radius) * 3));
+  --rb-r-full: max(var(--rb-radius) * 1.5, (var(--rb-radius) - 8px) * 999);
+
+  /* Base ramp: Zinc. */
+  --color-neutral-50: oklch(98.5% 0 0);
+  --color-neutral-100: oklch(96.7% 0.001 286.375);
+  --color-neutral-200: oklch(92% 0.004 286.32);
+  --color-neutral-300: oklch(87.1% 0.006 286.286);
+  --color-neutral-400: oklch(70.5% 0.015 286.067);
+  --color-neutral-500: oklch(55.2% 0.016 285.938);
+  --color-neutral-600: oklch(44.2% 0.017 285.786);
+  --color-neutral-700: oklch(37% 0.013 285.805);
+  --color-neutral-800: oklch(27.4% 0.006 286.033);
+  --color-neutral-900: oklch(21% 0.006 285.885);
+  --color-neutral-950: oklch(14.1% 0.005 285.823);
+  --rb-n-100: oklch(96.7% 0.001 286.375);
+  --rb-n-200: oklch(92% 0.004 286.32);
+
+  /* Accent: Mint. */
+  --rb-accent: oklch(84% 0.15 165);
+  --rb-accent-fg: oklch(26% 0.06 168);
+
+  /* Typeface. */
+  --rb-font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  --rb-accent: oklch(81% 0.16 163);
+  --rb-accent-fg: oklch(26% 0.06 168);
+}

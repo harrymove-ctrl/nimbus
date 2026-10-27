@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "interface-bts": {
+      "source": "nomanjack/interface-bts",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "900665b9938762a452282a497156da741cdd04d41087a694f59d2e0430cbd89f"
+    }
+  }
+}
