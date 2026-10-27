@@ -1,0 +1,66 @@
+{
+ "role": "researcher",
+ "turns": [
+  {
+   "label": "Reading the brief",
+   "usage": {
+    "in": 2100,
+    "out": 300
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "web_search",
+     "input": {
+      "query": "checkout payment wallet release 2026-10-14 incident Safari"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Summarising sources",
+   "usage": {
+    "in": 3100,
+    "out": 440
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "ask_user",
+     "input": {
+      "text": "Compare against Oct 7 or the 30-day average?",
+      "options": [
+       "Oct 7",
+       "30-day average"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Comparing against the baseline",
+   "usage": {
+    "in": 2900,
+    "out": 520
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://status.example.com/incidents/884"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Writing findings",
+   "usage": {
+    "in": 4200,
+    "out": 980
+   },
+   "complexity": 1,
+   "text": "Two causes line up: release 2026.10.14 (wallet button moved above the card form) and INC-884, where the wallet sheet would not open on iOS Safari 17 from 14:10 to 19:40 UTC. Sources: status.example.com/releases/2026-10-14 and /incidents/884."
+  }
+ ]
+}

@@ -1,0 +1,23 @@
+{
+ "match": [
+  "checkout",
+  "14"
+ ],
+ "results": [
+  {
+   "title": "Release 2026.10.14 — new wallet button",
+   "url": "https://status.example.com/releases/2026-10-14",
+   "snippet": "Wallet button moved above the card form on mobile."
+  },
+  {
+   "title": "Incident INC-884: Safari wallet sheet not opening",
+   "url": "https://status.example.com/incidents/884",
+   "snippet": "Affected iOS Safari 17.x, 14:10–19:40 UTC."
+  },
+  {
+   "title": "Oct 14 push campaign: 20% off",
+   "url": "https://blog.example.com/oct-14-sale",
+   "snippet": "Sent 13:00 UTC to 410k users."
+  }
+ ]
+}

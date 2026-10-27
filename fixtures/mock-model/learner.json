@@ -1,0 +1,28 @@
+{
+ "role": "learner",
+ "turns": [
+  {
+   "label": "Extracting memories, rewriting SKILL.md",
+   "usage": {
+    "in": 6900,
+    "out": 1100
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "save_learning",
+     "input": {
+      "memories": [
+       "iOS Safari completion is the first segment to check when conversion drops on a single day.",
+       "The status page lists incidents with UTC windows; compare them with the drop start time.",
+       "data.csv uses `platform`, not `device`.",
+       "The 13:00 UTC push campaign raises traffic but is not a cause of lower completion.",
+       "Lead the doc with the number; #growth reads the first two lines."
+      ],
+      "skill": "## Checkout conversion workstream\n1. Segment the funnel by platform and browser first.\n2. Check the status page for incidents inside the drop window (UTC).\n3. Column names: `platform`, `browser`, `step` (not `device`).\n\n## Policy\n(none yet)"
+     }
+    }
+   ]
+  }
+ ]
+}

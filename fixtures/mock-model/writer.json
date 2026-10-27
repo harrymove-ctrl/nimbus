@@ -1,0 +1,52 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Drafting the doc",
+   "usage": {
+    "in": 6200,
+    "out": 1500
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "art-doc",
+      "kind": "doc",
+      "title": "Checkout conversion drop — Oct 14",
+      "content": "# Checkout conversion drop — Oct 14\n\n## Summary\nCheckout conversion fell from **62.8% to 58.3%** on Oct 14 (−4.5 points). The drop is iOS Safari, where completion fell from 62.0% to 41.5%.\n\n## Cause\nRelease 2026.10.14 moved the wallet button above the card form on mobile. On iOS Safari 17 the wallet sheet then failed to open (INC-884, 14:10–19:40 UTC). Android, desktop and iOS Chrome moved less than one point.\n\n## Evidence\n- Funnel by platform and browser from data.csv (funnel.py).\n- Release notes and incident INC-884 on the status page.\n- The Checker confirmed 3 of 3 claims; the drop starts at 14:10 UTC.\n\n## What we do not know\nWhether the 20% off campaign sent at 13:00 UTC changed who reached checkout. It raised traffic; it did not lower completion.\n\n## Next step\nKeep the wallet button rollback in place, add a Safari wallet check to the release smoke test, and re-run this workstream tomorrow to confirm recovery.\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Tightening: lead with the number",
+   "usage": {
+    "in": 2600,
+    "out": 640
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "art-doc",
+      "kind": "doc",
+      "title": "Checkout conversion fell 4.5 pts on Oct 14 — it was iOS Safari",
+      "content": "# Checkout conversion fell 4.5 pts on Oct 14 — it was iOS Safari\n\n**62.8% → 58.3%.** iOS Safari fell 20.5 points (62.0% → 41.5%); every other platform moved less than 1.\n\n## Why\nRelease 2026.10.14 moved the wallet button above the card form. On iOS Safari 17 the wallet sheet would not open (INC-884, 14:10–19:40 UTC).\n\n## Proof\nFunnel by platform from data.csv; release notes; incident page. Three of three claims checked.\n\n## Open question\nDid the 13:00 UTC campaign change who reached checkout? Traffic rose; completion did not fall because of it.\n\n## Next\nKeep the rollback, add a Safari wallet check to the release smoke test, re-run tomorrow.\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Wrapping up",
+   "usage": {
+    "in": 1200,
+    "out": 150
+   },
+   "complexity": 0,
+   "text": "Done: v2 is in the Artifact tab and leads with the number."
+  }
+ ]
+}

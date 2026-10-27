@@ -3,10 +3,14 @@
 import { generateText, isStepCount, tool } from "ai";
 import { z } from "zod";
 import { TIERS, costUsd, type Tier } from "../src/lib/models";
-import { stripThink, tierModel } from "../src/lib/tokenfactory";
+import { getModel, stripThink } from "../src/lib/tokenfactory";
 
+const tierModel = (tier: Tier) => getModel({ tier, role: "smoke", turn: 1 });
+
+// The smoke test is the one thing that needs a real key and spends tokens (zero-spend rule): force real mode.
+process.env.NIMBUS_MODEL = "nebius";
 if (!process.env.NEBIUS_API_KEY) {
-  console.error("NEBIUS_API_KEY is empty. Fill it in .env.local (https://tokenfactory.nebius.com) and rerun.");
+  console.error("NEBIUS_API_KEY is empty. Fill it in .env.local (https://tokenfactory.nebius.com) and rerun. Deferred to the final day.");
   process.exit(2);
 }
 

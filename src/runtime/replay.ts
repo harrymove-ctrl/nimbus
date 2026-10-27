@@ -2,12 +2,14 @@
 // replay pauses at `gate` events until a person answers or approves, exactly like
 // the live orchestrator will. Everything after a gate is shifted by how long the
 // person took, so lane segments and the playhead stay truthful.
-import fixtureJson from "../../fixtures/demo-run.events.json";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { AnyRunEvent, FixtureEvent, RunEventType, PayloadMap } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
 import type { ApprovalDecision, RunHandle, StartRunInput } from "./source";
 
-const FIXTURE = fixtureJson as unknown as FixtureEvent[];
+let FIXTURE_CACHE: FixtureEvent[] | undefined;
+const fixture = () => (FIXTURE_CACHE ??= JSON.parse(readFileSync(path.join(process.cwd(), "fixtures", "demo-run.events.json"), "utf8")) as FixtureEvent[]);
 
 type Gate = { kind: "question" | "approval"; id: string; wallAt: number };
 
@@ -24,6 +26,8 @@ export function createReplayRun(input: StartRunInput): RunHandle {
   let timer: ReturnType<typeof setTimeout> | undefined;
   let pendingAction: PayloadMap["approval.request"]["action"] | undefined;
   let counter = 0;
+  let settle!: () => void;
+  const settled = new Promise<void>((r) => (settle = r));
 
   function emit<T extends RunEventType>(
     type: T,
@@ -42,6 +46,7 @@ export function createReplayRun(input: StartRunInput): RunHandle {
     finished = true;
     clearTimeout(timer);
     for (const fn of doneFns) fn();
+    settle();
   }
 
   function emitFixture(fx: FixtureEvent) {
@@ -62,8 +67,8 @@ export function createReplayRun(input: StartRunInput): RunHandle {
   function tick() {
     clearTimeout(timer);
     if (finished || gate) return;
-    while (idx < FIXTURE.length) {
-      const fx = FIXTURE[idx];
+    while (idx < fixture().length) {
+      const fx = fixture()[idx];
       const delay = startedAt + fx.tMs + shift - Date.now();
       if (delay > 0) {
         timer = setTimeout(tick, delay);
@@ -98,6 +103,7 @@ export function createReplayRun(input: StartRunInput): RunHandle {
     get finished() {
       return finished;
     },
+    settled,
     onEvent(fn) {
       eventFns.add(fn);
       return () => eventFns.delete(fn);

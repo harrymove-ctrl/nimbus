@@ -281,12 +281,13 @@ export function buildView(events: AnyRunEvent[]): RunView {
       case "usage": {
         const p = e.payload;
         const l = lane(e.agentInstance, e.agent);
-        const c = costUsd(p.tier, p.in, p.out);
+        // A cache hit skipped the call: tokens are shown, nothing is billed (cost and baseline both 0).
+        const c = p.cached ? 0 : costUsd(p.tier, p.in, p.out);
         l.tokens += p.in + p.out;
         l.costUsd += c;
         v.tokens += p.in + p.out;
         v.costUsd += c;
-        v.baselineUsd += costUsd(ROLE_TIER[e.agent], p.in, p.out);
+        v.baselineUsd += p.cached ? 0 : costUsd(ROLE_TIER[e.agent], p.in, p.out);
         v.usage.push({ instance: e.agentInstance, tMs: e.tMs, tier: p.tier, in: p.in, out: p.out });
         break;
       }

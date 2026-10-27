@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // native modules and the AI SDK test mocks run on the server only
+  serverExternalPackages: ["@libsql/client", "libsql"],
 };
 
 export default nextConfig;

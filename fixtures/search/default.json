@@ -1,0 +1,10 @@
+{
+ "match": [],
+ "results": [
+  {
+   "title": "Nimbus demo result",
+   "url": "https://example.com/demo",
+   "snippet": "No fixture matched this query; returning the default result."
+  }
+ ]
+}

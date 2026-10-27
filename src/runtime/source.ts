@@ -2,6 +2,7 @@
 // fixture replay (src/runtime/replay.ts); Phase 1 adds the live orchestrator behind
 // the same RunHandle and flips NIMBUS_RUN_SOURCE=live. No UI change is needed.
 import type { AnyRunEvent } from "@/lib/events";
+import { createLiveRun } from "./live";
 import { createReplayRun } from "./replay";
 
 export type StartRunInput = {
@@ -10,6 +11,9 @@ export type StartRunInput = {
   goal: string;
   mode?: "ask" | "auto-low" | "dry";
   tier?: "auto" | "cheap" | "max";
+  tools?: string[];
+  files?: string[];
+  trigger?: "manual" | "cron" | "chat" | "job";
 };
 
 export type ApprovalDecision = { decision: "approved" | "rejected"; always?: boolean; note?: string };
@@ -20,6 +24,8 @@ export interface RunHandle {
   startedAt: number;
   readonly events: AnyRunEvent[];
   readonly finished: boolean;
+  /** resolves when the run, including the learner, has fully ended and been persisted */
+  readonly settled: Promise<void>;
   onEvent(fn: (e: AnyRunEvent) => void): () => void;
   onDone(fn: () => void): () => void;
   resolveApproval(approvalId: string, d: ApprovalDecision): boolean;
@@ -35,7 +41,8 @@ declare global {
 const runs = (globalThis.__nimbusRuns ??= new Map<string, RunHandle>());
 
 export function startRun(input: StartRunInput): RunHandle {
-  const run = createReplayRun(input);
+  // Live runtime by default (mock model needs no keys); NIMBUS_RUN_SOURCE=replay plays the recorded fixture.
+  const run = process.env.NIMBUS_RUN_SOURCE === "replay" ? createReplayRun(input) : createLiveRun(input);
   runs.set(run.id, run);
   if (runs.size > 25) runs.delete(runs.keys().next().value as string);
   return run;

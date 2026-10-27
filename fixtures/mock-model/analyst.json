@@ -1,0 +1,70 @@
+{
+ "role": "analyst",
+ "turns": [
+  {
+   "label": "Reading data.csv schema",
+   "usage": {
+    "in": 1800,
+    "out": 220
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "python",
+      "filename": "funnel.py",
+      "code": "import csv, collections\nrows = list(csv.DictReader(open('data.csv')))\ncart = collections.Counter(); paid = collections.Counter()\nfor r in rows:\n    key = (r['ts'][:10], r['device'], r['browser'])\n    (cart if r['step'] == 'cart' else paid)[key] += 1\ncohorts = sorted({(p, b) for (_, p, b) in cart})\nprint('platform  browser  oct13   oct14   delta')\ntot = {'2026-10-13': [0, 0], '2026-10-14': [0, 0]}\nfor p, b in cohorts:\n    a = paid[('2026-10-13', p, b)] / cart[('2026-10-13', p, b)] * 100\n    c = paid[('2026-10-14', p, b)] / cart[('2026-10-14', p, b)] * 100\n    print(f'{p:<9} {b:<8} {a:5.1f}%  {c:5.1f}%  {c-a:+.1f} pts')\nfor d in tot:\n    tot[d][0] = sum(v for k, v in cart.items() if k[0] == d); tot[d][1] = sum(v for k, v in paid.items() if k[0] == d)\na = tot['2026-10-13'][1] / tot['2026-10-13'][0] * 100; c = tot['2026-10-14'][1] / tot['2026-10-14'][0] * 100\nprint(f'overall              {a:5.1f}%  {c:5.1f}%  {c-a:+.1f} pts')\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Fixing the script",
+   "usage": {
+    "in": 2200,
+    "out": 420
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "python",
+      "filename": "funnel.py",
+      "code": "import csv, collections\nrows = list(csv.DictReader(open('data.csv')))\ncart = collections.Counter(); paid = collections.Counter()\nfor r in rows:\n    key = (r['ts'][:10], r['platform'], r['browser'])\n    (cart if r['step'] == 'cart' else paid)[key] += 1\ncohorts = sorted({(p, b) for (_, p, b) in cart})\nprint('platform  browser  oct13   oct14   delta')\ntot = {'2026-10-13': [0, 0], '2026-10-14': [0, 0]}\nfor p, b in cohorts:\n    a = paid[('2026-10-13', p, b)] / cart[('2026-10-13', p, b)] * 100\n    c = paid[('2026-10-14', p, b)] / cart[('2026-10-14', p, b)] * 100\n    print(f'{p:<9} {b:<8} {a:5.1f}%  {c:5.1f}%  {c-a:+.1f} pts')\nfor d in tot:\n    tot[d][0] = sum(v for k, v in cart.items() if k[0] == d); tot[d][1] = sum(v for k, v in paid.items() if k[0] == d)\na = tot['2026-10-13'][1] / tot['2026-10-13'][0] * 100; c = tot['2026-10-14'][1] / tot['2026-10-14'][0] * 100\nprint(f'overall              {a:5.1f}%  {c:5.1f}%  {c-a:+.1f} pts')\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Saving the script",
+   "usage": {
+    "in": 1900,
+    "out": 300
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "art-code",
+      "kind": "code",
+      "title": "funnel.py",
+      "language": "python",
+      "content": "import csv, collections\nrows = list(csv.DictReader(open('data.csv')))\ncart = collections.Counter(); paid = collections.Counter()\nfor r in rows:\n    key = (r['ts'][:10], r['platform'], r['browser'])\n    (cart if r['step'] == 'cart' else paid)[key] += 1\ncohorts = sorted({(p, b) for (_, p, b) in cart})\nprint('platform  browser  oct13   oct14   delta')\ntot = {'2026-10-13': [0, 0], '2026-10-14': [0, 0]}\nfor p, b in cohorts:\n    a = paid[('2026-10-13', p, b)] / cart[('2026-10-13', p, b)] * 100\n    c = paid[('2026-10-14', p, b)] / cart[('2026-10-14', p, b)] * 100\n    print(f'{p:<9} {b:<8} {a:5.1f}%  {c:5.1f}%  {c-a:+.1f} pts')\nfor d in tot:\n    tot[d][0] = sum(v for k, v in cart.items() if k[0] == d); tot[d][1] = sum(v for k, v in paid.items() if k[0] == d)\na = tot['2026-10-13'][1] / tot['2026-10-13'][0] * 100; c = tot['2026-10-14'][1] / tot['2026-10-14'][0] * 100\nprint(f'overall              {a:5.1f}%  {c:5.1f}%  {c-a:+.1f} pts')\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Interpreting results",
+   "usage": {
+    "in": 4800,
+    "out": 1200
+   },
+   "complexity": 2,
+   "text": "iOS Safari completion fell from 62.0% to 41.5% (−20.5 pts). Every other platform moved less than 1 point. Overall: 62.8% → 58.3%."
+  }
+ ]
+}
