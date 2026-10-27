@@ -63,7 +63,9 @@ async function runOnce(page: Page, goal: string, opts: { first: boolean }) {
   await page.keyboard.type(goal, { delay: 32 });
   await page.getByText(/≈ \$/).first().waitFor({ timeout: 10_000 }).catch(() => {}); // the cost pill
   await pause(900);
-  await click(page, page.getByRole("button", { name: /^RUN$/ }));
+  // Enter runs (the spec's keyboard rule) and avoids the Inspector's fade overlay, which can sit over the RUN button.
+  await page.locator("textarea").focus();
+  await page.keyboard.press("Enter");
 
   // plan card and the 3 s cancel countdown
   await page.getByText(/Starting in|Started/).first().waitFor({ timeout: 20_000 }); // plan card footer

@@ -42,7 +42,8 @@ const runs = (globalThis.__nimbusRuns ??= new Map<string, RunHandle>());
 
 export function startRun(input: StartRunInput): RunHandle {
   // Live runtime by default (mock model needs no keys); NIMBUS_RUN_SOURCE=replay plays the recorded fixture.
-  const run = process.env.NIMBUS_RUN_SOURCE === "replay" ? createReplayRun(input) : createLiveRun(input);
+  // NIMBUS_REPLAY=<path> replays a recorded run (docs/BUDGET.md: the video is recorded from a real run at zero cost).
+  const run = process.env.NIMBUS_REPLAY || process.env.NIMBUS_RUN_SOURCE === "replay" ? createReplayRun(input) : createLiveRun(input);
   runs.set(run.id, run);
   if (runs.size > 25) runs.delete(runs.keys().next().value as string);
   return run;

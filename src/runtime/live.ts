@@ -9,6 +9,7 @@ import { modelMode } from "@/lib/tokenfactory";
 import { SpendCapError, inflight } from "./budget";
 import { RunAborted, deferred, untilAborted, type ApprovalResult, type RunCtx } from "./context";
 import { runLearner } from "./learner";
+import { writeRecording } from "./recorder";
 import { topMemories } from "./memory";
 import { runOrchestrator } from "./orchestrator";
 import { appendPolicy, loadSkill, policyAllows, policySection } from "./skills";
@@ -142,6 +143,13 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     await persistChain;
     await retryBusy(() => db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd }).where(eq(schema.runs.id, id)));
     inflight.delete(id);
+    if (process.env.NIMBUS_RECORD_REAL === "1") {
+      try {
+        console.log(`[nimbus] recorded ${id} → ${writeRecording(events, input.workstreamId)}`);
+      } catch (e) {
+        console.error("[nimbus] recording failed:", e instanceof Error ? e.message : e);
+      }
+    }
     finish();
   })().catch((e) => {
     console.error("[nimbus] run crashed:", e);

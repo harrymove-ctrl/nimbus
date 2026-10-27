@@ -8,12 +8,18 @@ import type { AnyRunEvent, FixtureEvent, RunEventType, PayloadMap } from "@/lib/
 import type { AgentRole } from "@/lib/models";
 import type { ApprovalDecision, RunHandle, StartRunInput } from "./source";
 
-let FIXTURE_CACHE: FixtureEvent[] | undefined;
-const fixture = () => (FIXTURE_CACHE ??= JSON.parse(readFileSync(path.join(process.cwd(), "fixtures", "demo-run.events.json"), "utf8")) as FixtureEvent[]);
+const FIXTURES = new Map<string, FixtureEvent[]>();
+function loadFixture(file: string): FixtureEvent[] {
+  let f = FIXTURES.get(file);
+  if (!f) FIXTURES.set(file, (f = JSON.parse(readFileSync(file, "utf8")) as FixtureEvent[]));
+  return f;
+}
 
 type Gate = { kind: "question" | "approval"; id: string; wallAt: number };
 
-export function createReplayRun(input: StartRunInput): RunHandle {
+/** Replays a fixture (default: the Phase 2a demo run; NIMBUS_REPLAY=<path> or `file` picks a recorded run). */
+export function createReplayRun(input: StartRunInput, file?: string): RunHandle {
+  const fixture = () => loadFixture(path.resolve(file ?? process.env.NIMBUS_REPLAY ?? path.join(process.cwd(), "fixtures", "demo-run.events.json")));
   const id = `run_${crypto.randomUUID().slice(0, 8)}`;
   const startedAt = Date.now();
   const events: AnyRunEvent[] = [];
@@ -75,12 +81,13 @@ export function createReplayRun(input: StartRunInput): RunHandle {
         return;
       }
       idx++;
-      emitFixture(fx);
+      // Open the gate before emitting: a listener that answers synchronously (a script, a test) must find it.
       if (fx.gate) {
         const p = fx.payload as { questionId?: string; approvalId?: string };
         gate = { kind: fx.gate, id: (fx.gate === "question" ? p.questionId : p.approvalId) ?? "", wallAt: Date.now() };
-        return;
       }
+      emitFixture(fx);
+      if (fx.gate) return;
     }
     finish();
   }

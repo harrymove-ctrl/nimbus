@@ -37,9 +37,10 @@ console.log(`  cost at stop $${capped.view.costUsd.toFixed(4)} · ${capped.ev.le
 check('the run stops with run.error "spend cap"', !!err && err.type === "run.error" && err.payload.message === "spend cap" && err.payload.kind === "spend_cap");
 check('run.end is "failed" and the header would show the "Cap hit" pill (view.capHit)', !!end && end.type === "run.end" && end.payload.status === "failed" && capped.view.capHit);
 check("it stopped early: no learner, no message sent, spend within one hop of the cap", !capped.view.lanes.some((l) => l.role === "learner") && !capped.ev.some((e) => e.type === "tool.result" && e.payload.tool === "request_approval" && (e.payload.output as { logged?: boolean })?.logged) && capped.view.costUsd < 0.03);
-const lastT = Math.max(...capped.ev.map((e) => e.tMs));
 await new Promise((r) => setTimeout(r, 1200));
-check("concurrent agents stopped too (no new events after the stop)", Math.max(...capped.ev.map((e) => e.tMs)) === lastT);
+const endSeq = capped.ev.findIndex((e) => e.type === "run.end");
+const afterStop = capped.ev.slice(endSeq + 1).filter((e) => e.type === "route" || e.type === "tool.call" || e.type === "artifact.version" || e.type === "approval.request");
+check("concurrent agents stopped too: no new hop, tool call, artifact or approval starts after the stop", endSeq > 0 && afterStop.length === 0, `${capped.ev.length - endSeq - 1} closing events after run.end, none of them new work`);
 
 console.log("\nDefault cap lets the normal demo finish, and max_tokens is passed per tier:");
 process.env.NIMBUS_MOCK_LOG = "1";
@@ -62,6 +63,37 @@ const refused = await checkDayBudget();
 check("past the day cap, new runs are refused with a clear message", !refused.ok && /Daily spend cap reached/.test(refused.message ?? ""), refused.message ?? "");
 delete process.env.NIMBUS_DAY_CAP_USD;
 delete process.env.NIMBUS_COUNT_MOCK;
+
+console.log("\nRecord a run, replay it, compare:");
+const { mkdtempSync, readdirSync, readFileSync } = await import("node:fs");
+const os = await import("node:os");
+const path = await import("node:path");
+const dir = mkdtempSync(path.join(os.tmpdir(), "nimbus-rec-"));
+const live = await demo({ NIMBUS_RECORD_REAL: "1", NIMBUS_RECORD_DIR: dir });
+await new Promise((r) => setTimeout(r, 300));
+const files = readdirSync(dir).filter((f) => f.endsWith(".events.json"));
+check("NIMBUS_RECORD_REAL=1 wrote one fixtures-format file for the run", files.length === 1, files[0] ?? "none");
+const recorded = JSON.parse(readFileSync(path.join(dir, files[0]), "utf8")) as { type: string; gate?: string; tMs: number }[];
+check("the recording marks the question and the approval as gates and drops the person's own events", recorded.filter((e) => e.gate).length === 2 && !recorded.some((e) => e.type === "policy") && !recorded.some((e) => e.type === "approval.resolve"), `${recorded.length} events, gates: ${recorded.filter((e) => e.gate).map((e) => e.gate).join("+")}`);
+check("its times are monotonic", recorded.every((e, i) => i === 0 || e.tMs >= recorded[i - 1].tMs));
+
+const replayed = await demo({ NIMBUS_REPLAY: path.join(dir, files[0]) });
+const norm = (v: ReturnType<typeof buildView>) => ({
+  status: v.status,
+  lanes: v.lanes.map((l) => `${l.instance}:${l.role}`).join(","),
+  transcript: v.transcript.map((t) => (t.t === "agent" ? `agent:${t.instance}:${t.text}` : t.t === "user" ? `user:${t.text}` : t.t === "artifact" ? `artifact:${t.title}:v${t.version}` : t.t === "approval" ? `approval:${t.action.summary}:${t.status}` : t.t === "question" ? `question:${t.text}:${t.answer}` : t.t === "summary" ? `summary:${t.summary.memories.join("|")}` : t.t === "plan" ? `plan:${t.agents.map((a) => a.role).join(",")}` : t.t === "handoff" ? `handoff:${t.from}>${t.to}` : t.t)),
+  artifacts: v.artifacts.map((a) => `${a.id}:${a.versions.map((x) => x.content.length).join(",")}`).join(";"),
+  tokens: v.tokens,
+  cost: v.costUsd.toFixed(6),
+  baseline: v.baselineUsd.toFixed(6),
+  routedHops: v.routedHops,
+  segments: v.lanes.map((l) => l.segments.length).join(","),
+  toolCalls: v.toolCalls.length,
+});
+const a = norm(live.view), b = norm(replayed.view);
+const diffs = (Object.keys(a) as (keyof typeof a)[]).filter((k) => JSON.stringify(a[k]) !== JSON.stringify(b[k]));
+check("the replayed run is identical to the recorded one (status, lanes, transcript, artifacts, tokens, cost, routing, segments, tool calls)", diffs.length === 0, diffs.length ? `differs: ${diffs.join(", ")}` : `${a.tokens} tokens · $${a.cost} · ${a.transcript.length} transcript items`);
+if (diffs.length) for (const k of diffs) console.log(`    ${k}:\n      live    ${JSON.stringify(a[k]).slice(0, 220)}\n      replay  ${JSON.stringify(b[k]).slice(0, 220)}`);
 
 const pass = checks.every(([, o]) => o);
 console.log(`\nBUDGET GUARDS: ${pass ? "PASS" : "FAIL"}`);

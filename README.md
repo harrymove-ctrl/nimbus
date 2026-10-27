@@ -29,6 +29,7 @@ that goes v1 → v2. Afterwards the Learner writes memories and rewrites the wor
 | `pnpm demo:router` | Router: cost with it off vs on, forced 429 and bad model id fall one tier down, response cache |
 | `pnpm eval [--cheap] [--router on\|off] [--only a,b] [--ab]` | 15 trajectory goldens, per-hop assertions, `evals/report.json`; exit 1 under 90 % or any failed final |
 | `pnpm check:loop` | Run 2's prompt contains run 1's memories and SKILL.md; policy honored; revert works |
+| `pnpm check:budget` | Spend guards (run cap, day cap, max tokens per tier) and record → replay identity, all at $0 |
 | `pnpm check:cron` | A cron-triggered run appears without a click and sets the unread dot |
 | `pnpm run:job --workstream ws-mezo --yes` | Headless entrypoint for a Nebius Serverless Job |
 | `pnpm demo --record <name>` | Drafts a golden from a run (empty `expect` arrays to fill in) |
@@ -45,6 +46,10 @@ that goes v1 → v2. Afterwards the Learner writes memories and rewrites the wor
 | `NIMBUS_API_TOKEN` | Bearer for `/v1/chat/completions`; empty = open in dev, closed in production |
 | `NIMBUS_DATA_DIR` | SQLite file and run workspaces (default `./data`) |
 | `NIMBUS_ROUTER` | `on` (default) or `off` (pin every hop to its role's ceiling tier) |
+| `NIMBUS_RUN_CAP_USD` | A run stops with `run.error` "spend cap" (header pill "Cap hit") past this cost. Default 0.25 |
+| `NIMBUS_DAY_CAP_USD` | New runs are refused past this real-model spend per day. Default 5. Mock runs do not count |
+| `NIMBUS_RECORD_REAL` | `1` writes every event of a run to `fixtures/real-runs/<ws>-<ts>.events.json` |
+| `NIMBUS_REPLAY` | Path of a recorded run to replay through the same API at zero cost (how the final video is recorded) |
 | `NIMBUS_DEV_CHEAP` | `1` forces every role to Nano while developing against real models |
 
 ## How it works
