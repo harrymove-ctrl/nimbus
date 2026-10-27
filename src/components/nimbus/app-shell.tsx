@@ -49,9 +49,18 @@ export function AppShell() {
   useEffect(() => {
     let alive = true;
     const minWait = new Promise((r) => setTimeout(r, 900));
-    Promise.all([fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>), minWait]).then(([d]) => {
+    Promise.all([fetch("/api/workstreams").then((r) => r.json() as Promise<{ workstreams: Workstream[] }>), minWait]).then(async ([d]) => {
       if (!alive) return;
       setWorkstreams(d.workstreams);
+      // Deep link from a chat reply: /?run=<id> opens that run in its workstream (the approval lives here).
+      const rid = new URLSearchParams(window.location.search).get("run");
+      if (rid) {
+        const r = await fetch(`/api/runs/${rid}`).then((x) => (x.ok ? (x.json() as Promise<{ workstreamId: string }>) : null)).catch(() => null);
+        if (r && alive) {
+          setSelectedId(r.workstreamId);
+          setRunByWs((m) => ({ ...m, [r.workstreamId]: rid }));
+        }
+      }
       setBoot("fading");
       setTimeout(() => alive && setBoot("gone"), 420);
     });
@@ -63,6 +72,34 @@ export function AppShell() {
   useEffect(() => {
     if (ws) setTools(ws.tools);
   }, [ws]);
+
+  // Scheduled runs finish while you are away: refresh the rail's unread dots.
+  useEffect(() => {
+    if (boot !== "gone") return;
+    const t = setInterval(() => {
+      fetch("/api/workstreams")
+        .then((r) => r.json() as Promise<{ workstreams: Workstream[] }>)
+        .then((d) => setWorkstreams(d.workstreams.map((w) => (w.id === selectedId ? { ...w, unread: false } : w))))
+        .catch(() => {});
+    }, 10_000);
+    return () => clearInterval(t);
+  }, [boot, selectedId]);
+
+  // Picking a workstream shows its latest run (frozen, or live if it is still going) and clears its unread dot.
+  const openWorkstream = useCallback(
+    async (id: string) => {
+      setSelectedId(id);
+      setDrawer(null);
+      setSelSeg(null);
+      setWorkstreams((w) => w.map((x) => (x.id === id ? { ...x, unread: false } : x)));
+      void fetch(`/api/workstreams/${id}/read`, { method: "POST" });
+      if (runByWs[id]) return;
+      const d = await fetch(`/api/runs?workstreamId=${id}`).then((r) => r.json() as Promise<{ runs: { id: string }[] }>).catch(() => null);
+      const latest = d?.runs[0];
+      if (latest) setRunByWs((m) => (m[id] ? m : { ...m, [id]: latest.id }));
+    },
+    [runByWs],
+  );
 
   // New doc version arrives → show it in the Artifact tab, LATEST selected.
   const docVersions = view.artifacts.filter((a) => a.kind === "doc").reduce((n, a) => n + a.versions.length, 0);
@@ -151,14 +188,14 @@ export function AppShell() {
           selectedId={selectedId}
           pendingByWs={pendingByWs}
           busyWs={busyWs}
-          onSelect={(id) => (setSelectedId(id), setDrawer(null), setSelSeg(null), setWorkstreams((w) => w.map((x) => (x.id === id ? { ...x, unread: false } : x))))}
+          onSelect={(id) => void openWorkstream(id)}
           onRun={(id) => void startRun({ saved: true }, id)}
           className={cx("z-40 xl:static xl:flex xl:w-[280px] xl:shrink-0", drawer === "rail" ? "nb-drawer-left fixed inset-y-12 left-0 flex w-[280px]" : "hidden")}
         />
 
         <main className="flex min-w-0 flex-1 flex-col">
           {!ws ? (
-            <PickWorkstream workstreams={workstreams} onPick={setSelectedId} />
+            <PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />
           ) : (
             <>
               <RunHeader view={view} now={now} fallbackTitle={ws.title} />

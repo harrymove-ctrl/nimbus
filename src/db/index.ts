@@ -36,6 +36,8 @@ function open(): Holder {
   const db = drizzle(client, { schema });
   const ready = (async () => {
     for (const sql of DDL) await client.execute(sql);
+    // Runs are in-memory; a run still marked running belonged to a process that is gone.
+    await client.execute("UPDATE runs SET status = 'interrupted' WHERE status = 'running'");
     await seedWorkstreams(db);
   })();
   return { client, db, ready };

@@ -12,7 +12,10 @@
     "seed": "node --env-file=.env.local --import tsx scripts/seed.mts",
     "demo": "node --env-file=.env.local --import tsx scripts/run.mts --yes",
     "demo:fast": "NIMBUS_MOCK_FAST=1 node --env-file=.env.local --import tsx scripts/run.mts --yes",
-    "demo:router": "node --env-file=.env.local --import tsx scripts/router-ab.mts"
+    "demo:router": "node --env-file=.env.local --import tsx scripts/router-ab.mts",
+    "run:job": "node --env-file=.env.local --import tsx scripts/job.mts",
+    "check:loop": "NIMBUS_MOCK_FAST=1 NIMBUS_DEBUG_PROMPTS=1 node --env-file=.env.local --import tsx scripts/loop-check.mts",
+    "check:cron": "node --env-file=.env.local --import tsx scripts/cron-check.mts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.79",

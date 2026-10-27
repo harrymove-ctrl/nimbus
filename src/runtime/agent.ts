@@ -1,6 +1,9 @@
 // One agent = a loop of hops. Each hop: route → model call (cached, retried, falls one tier down) → run the
 // tool calls it asked for, emitting segment/usage/route events the whole way (SPEC §4).
+import { appendFileSync, mkdirSync } from "node:fs";
+import path from "node:path";
 import type { JSONValue, ModelMessage } from "ai";
+import { dataDir } from "@/db";
 import type { AgentRole } from "@/lib/models";
 import { ROLE_TIER, costUsd } from "@/lib/models";
 import { hopLabel, stripThink } from "@/lib/tokenfactory";
@@ -44,6 +47,10 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
   let finished = false;
 
   ctx.emit("agent.start", role, instance, {});
+  if (process.env.NIMBUS_DEBUG_PROMPTS === "1") {
+    mkdirSync(path.join(dataDir(), "prompts"), { recursive: true });
+    appendFileSync(path.join(dataDir(), "prompts", `${ctx.runId}.jsonl`), JSON.stringify({ instance, role, system: ROLE_PROMPT[role], user: messages[0].content }) + "\n");
+  }
   for (let turn = 1; turn <= maxTurns && !finished; turn++) {
     if (ctx.signal.aborted) throw ctx.signal.reason instanceof RunAborted ? ctx.signal.reason : new RunAborted("stop");
     if (role === "orchestrator") {

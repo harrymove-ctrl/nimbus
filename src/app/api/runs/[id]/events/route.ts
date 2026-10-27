@@ -1,3 +1,5 @@
+import { asc, eq } from "drizzle-orm";
+import { getDb, schema } from "@/db";
 import { getRun } from "@/runtime/source";
 import type { AnyRunEvent } from "@/lib/events";
 
@@ -9,12 +11,18 @@ export const dynamic = "force-dynamic";
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const run = getRun(id);
-  if (!run) return new Response("run not found", { status: 404 });
-
   const url = new URL(req.url);
   const lastId = req.headers.get("last-event-id");
   const since = Math.max(0, Number(url.searchParams.get("since") ?? (lastId !== null ? Number(lastId) + 1 : 0)) || 0);
   const enc = new TextEncoder();
+
+  if (!run) {
+    // Not in memory (server restarted, or a finished run from an earlier session): rebuild from the stored events.
+    const rows = await (await getDb()).select().from(schema.runEvents).where(eq(schema.runEvents.runId, id)).orderBy(asc(schema.runEvents.seq));
+    if (!rows.length) return new Response("run not found", { status: 404 });
+    const body = rows.filter((r) => r.seq >= since).map((r) => `id: ${r.seq}\ndata: ${JSON.stringify({ id: r.id, runId: r.runId, seq: r.seq, tMs: r.tMs, agent: r.agent, agentInstance: r.agentInstance, type: r.type, payload: r.payload })}\n\n`).join("") + "event: done\ndata: {}\n\n";
+    return new Response(body, { headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform" } });
+  }
 
   let cleanup = () => {};
   const stream = new ReadableStream<Uint8Array>({
