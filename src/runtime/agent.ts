@@ -54,6 +54,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
   }
   for (let turn = 1; turn <= maxTurns && !finished; turn++) {
     if (ctx.signal.aborted) throw ctx.signal.reason instanceof RunAborted ? ctx.signal.reason : new RunAborted("stop");
+    await ctx.untilResumed(); // paused by the person: no new hop starts until they resume
     if (role === "orchestrator") {
       for (const n of ctx.drainSteering()) {
         messages.push({ role: "user", content: `Steering note from the person (apply it from now on): ${n.text}` });

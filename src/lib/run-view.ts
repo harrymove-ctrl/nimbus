@@ -89,6 +89,8 @@ export type RunView = {
   stepState: Record<string, { state: "pending" | "running" | "done" | "failed"; startMs?: number; endMs?: number }>;
   /** the run is waiting for the person to approve the draft plan */
   planAwaiting: boolean;
+  /** the person paused the crew */
+  paused: boolean;
   artifacts: Artifact[];
   policies: string[];
   summary?: RunSummary;
@@ -151,6 +153,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
     pendingApprovals: [],
     stepState: {},
     planAwaiting: false,
+    paused: false,
     artifacts: [],
     policies: [],
     toolCalls: [],
@@ -341,6 +344,9 @@ export function buildView(events: AnyRunEvent[]): RunView {
         break;
       }
       case "plan.revise":
+        break;
+      case "run.pause":
+        v.paused = e.payload.paused;
         break;
       case "step": {
         const s = (v.stepState[e.payload.stepId] ??= { state: "pending" });

@@ -10,6 +10,7 @@ import { ApprovalTray } from "./approval-tray";
 import { Boot } from "./boot";
 import { EmptyState } from "@/components/dithercn/empty-state";
 import { Overview } from "./overview";
+import { StatusPill, useActiveRuns } from "./status-pill";
 import { AmbientGlow } from "./loading";
 import { Composer, type Mode, type TierChoice } from "./composer";
 import { Inspector, type InspectorTab } from "./inspector";
@@ -47,6 +48,7 @@ export function AppShell() {
 
   const ws = workstreams.find((w) => w.id === selectedId);
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
+  const active = useActiveRuns();
   const { events } = useRunEvents(runId);
   const view = useMemo(() => buildView(events), [events]);
   const clock = view.active || view.status === "planning" || view.lanes.some((l) => l.status === "running");
@@ -222,7 +224,7 @@ export function AppShell() {
 
   const pendingByWs = selectedId && view.pendingApprovals.length ? { [selectedId]: view.pendingApprovals.length } : {};
   const busyWs = selectedId && runBusy ? { [selectedId]: true } : {};
-  const needsYou = view.pendingApprovals.length > 0 || view.status === "failed";
+  const needsYou = view.pendingApprovals.length > 0 || view.planAwaiting || view.status === "failed";
 
   return (
     <div className="flex h-dvh flex-col bg-neutral-950 text-neutral-100">
@@ -240,7 +242,9 @@ export function AppShell() {
         <span className="ms-2 hidden text-[13px] font-semibold text-neutral-500 sm:inline" aria-live="polite">
           {needsYou ? <span className="text-orange-300">{view.pendingApprovals.length} waiting for you</span> : view.status === "asked" ? <span className="text-orange-300">the crew asked you a question</span> : view.status === "running" || view.status === "planning" ? "crew at work" : "crew idle"}
         </span>
-        <button type="button" aria-label="Inspector" onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className="ms-auto grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden">
+        <span className="flex-1" />
+        <StatusPill runs={active.runs} fetchedAt={active.fetchedAt} reload={active.reload} currentRunId={runId} onOpenRun={(wsId, rid) => openRun(wsId, rid)} />
+        <button type="button" aria-label="Inspector" onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className="grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden">
           <PanelRight className="size-4" />
         </button>
       </div>

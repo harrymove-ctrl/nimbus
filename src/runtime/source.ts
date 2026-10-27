@@ -31,6 +31,7 @@ export interface RunHandle {
   onEvent(fn: (e: AnyRunEvent) => void): () => void;
   onDone(fn: () => void): () => void;
   resolveApproval(approvalId: string, d: ApprovalDecision): boolean;
+  setPaused(paused: boolean): boolean;
   planAction(a: { action: "approve" | "revise"; steps: PlanStep[] }): boolean;
   postMessage(m: { text: string; kind: "steer" | "answer"; questionId?: string }): boolean;
   stop(reason: "stop" | "cancel"): void;
@@ -53,3 +54,5 @@ export function startRun(input: StartRunInput): RunHandle {
 }
 
 export const getRun = (id: string) => runs.get(id);
+/** runs still going in this server process (the status pill and its panel read these) */
+export const liveRuns = () => [...runs.values()].filter((r) => !r.finished);

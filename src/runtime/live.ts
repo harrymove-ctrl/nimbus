@@ -42,6 +42,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
   const pendingApprovals = new Map<string, { d: ReturnType<typeof deferred<ApprovalResult>>; action: ProposedAction; who: { role: AgentRole; instance: string } }>();
   const pendingQuestions = new Map<string, { d: ReturnType<typeof deferred<string>>; role: AgentRole; instance: string }>();
   const steering: { id: string; text: string }[] = [];
+  let pauseGate: ReturnType<typeof deferred<void>> | null = null;
   let planGate: ReturnType<typeof deferred<{ action: "approve" | "revise"; steps: PlanStep[] }>> | null = null;
 
   const ctx: RunCtx = {
@@ -53,6 +54,9 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     tierChoice: input.tier ?? "auto",
     startedAt,
     review: !!input.review,
+    untilResumed() {
+      return pauseGate ? untilAborted(pauseGate.promise, signal) : Promise.resolve();
+    },
     awaitPlan() {
       planGate = deferred();
       return untilAborted(planGate.promise, signal);
@@ -208,6 +212,19 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       }
       if (d.decision === "rejected" && d.note) emit("message", "orchestrator", "user", { id: `note-${++n}`, role: "user", text: d.note });
       p.d.resolve({ decision: d.decision, always: d.always, note: d.note, by: "you" });
+      return true;
+    },
+    setPaused(paused) {
+      if (finished) return false;
+      if (paused && !pauseGate) {
+        pauseGate = deferred();
+        emit("run.pause", "orchestrator", "orchestrator", { paused: true });
+      } else if (!paused && pauseGate) {
+        const g = pauseGate;
+        pauseGate = null;
+        emit("run.pause", "orchestrator", "orchestrator", { paused: false });
+        g.resolve();
+      }
       return true;
     },
     planAction(a) {

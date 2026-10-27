@@ -22,6 +22,8 @@ export type RunCtx = {
   /** resolves when the person approves or sends back the draft plan */
   awaitPlan(): Promise<{ action: "approve" | "revise"; steps: PlanStep[] }>;
   workspace: string;
+  /** resolves at once unless the person paused the run (agents call it before every hop) */
+  untilResumed(): Promise<void>;
   signal: AbortSignal;
   emit: Emit;
   /** the workstream's SKILL.md and the top-k memories, loaded at run start (placed after the stable role prefix) */

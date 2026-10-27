@@ -66,6 +66,8 @@ export interface PayloadMap {
   "plan.revise": { steps: PlanStep[] };
   /** a plan step started, finished or failed */
   step: { stepId: string; state: "running" | "done" | "failed" };
+  /** the person paused or resumed the crew: running hops finish, no new hop starts while paused */
+  "run.pause": { paused: boolean };
   question: { questionId: string; text: string; options?: string[] };
   policy: { rule: string };
 }

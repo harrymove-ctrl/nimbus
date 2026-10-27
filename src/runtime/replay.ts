@@ -140,6 +140,9 @@ export function createReplayRun(input: StartRunInput, file?: string): RunHandle 
       release();
       return true;
     },
+    setPaused() {
+      return false;
+    },
     planAction() {
       return false; // a recorded run has no draft plan to edit
     },

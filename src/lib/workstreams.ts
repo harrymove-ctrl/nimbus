@@ -12,6 +12,8 @@ export type Workstream = {
   /** current SKILL.md content, shown in the Inspector's Memory tab */
   skill: string;
   unread?: boolean;
+  /** the colour of this workstream's ring in the status pill */
+  color: string;
   /** what the same work costs a person by hand, in minutes: an estimate, shown labelled as one (impact line, Overview) */
   estimatedManualMinutes: number;
 };
@@ -29,6 +31,7 @@ export const TOOL_LABELS: Record<string, string> = {
 export const WORKSTREAMS: Workstream[] = [
   {
     id: "ws-ship-nimbus",
+    color: "#4aa8ff",
     estimatedManualMinutes: 45,
     slug: "ship-nimbus",
     title: "Ship Nimbus",
@@ -43,6 +46,7 @@ export const WORKSTREAMS: Workstream[] = [
   },
   {
     id: "ws-radar",
+    color: "#4ade80",
     estimatedManualMinutes: 25,
     slug: "hackathon-radar",
     title: "Hackathon radar",
@@ -60,6 +64,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-brief",
+    color: "#fbbf24",
     estimatedManualMinutes: 20,
     slug: "morning-brief",
     title: "Morning brief",
@@ -76,6 +81,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-audit",
+    color: "#c084fc",
     estimatedManualMinutes: 60,
     slug: "cost-audit",
     title: "Token Factory cost audit",
@@ -92,6 +98,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-release",
+    color: "#f472b6",
     estimatedManualMinutes: 30,
     slug: "release-watch",
     title: "Release watch",
@@ -106,6 +113,7 @@ allow: send_message to #team for this workstream`,
   },
   {
     id: "ws-checkout",
+    color: "#2dd4bf",
     estimatedManualMinutes: 40,
     slug: "checkout-drop",
     title: "Checkout conversion drop on Oct 14",
