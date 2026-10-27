@@ -71,6 +71,8 @@ export type RunView = {
   title: string;
   goal: string;
   startedAt: number;
+  /** what started the run: a person, the scheduler, a chat app, a job */
+  trigger?: "manual" | "cron" | "chat" | "job";
   status: ViewStatus;
   /** true until run.end (the learner may still run after it) */
   active: boolean;
@@ -197,6 +199,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
         v.title = p.title;
         v.goal = p.goal;
         v.startedAt = p.startedAt;
+        v.trigger = p.trigger;
         v.learned = p.learned;
         v.active = true;
         lane("orchestrator", "orchestrator");

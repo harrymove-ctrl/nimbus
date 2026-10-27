@@ -1,0 +1,48 @@
+{
+ "name": "ship-nimbus-learned",
+ "workstream": "ws-ship-nimbus",
+ "description": "Run two of the hero: no question, the PR goes through under the rule, a different golden is fixed.",
+ "input": {
+  "answers": [
+   "Router"
+  ],
+  "approvals": [
+   "approve_always"
+  ],
+  "then": {
+   "answers": [
+    "Router"
+   ]
+  }
+ },
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "approval_resolved_by": "policy"
+  },
+  {
+   "artifact_contains": "after one retry"
+  },
+  {
+   "max_cost_usd": 0.15
+  },
+  {
+   "max_seconds": 300
+  }
+ ]
+}

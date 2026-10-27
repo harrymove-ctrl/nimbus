@@ -1,0 +1,7 @@
+--- a/package.json
++++ b/package.json
+@@ -32,3 +32,3 @@
+     "@tavily/core": "^0.7.14",
+-    "ai": "^7.0.154",
++    "ai": "^7.0.161",
+     "class-variance-authority": "^0.7.1",

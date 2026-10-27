@@ -1,0 +1,45 @@
+{
+ "name": "brief-happy",
+ "workstream": "ws-brief",
+ "description": "Morning brief: read the real inbox files, write one page, draft three replies, three approvals wait at once.",
+ "cheap": true,
+ "input": {},
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "read_repo"
+    },
+    {
+     "judge": "the brief lists the three people who are waiting"
+    }
+   ]
+  },
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "Dana"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_before": "send_message"
+  },
+  {
+   "approval_count": 3
+  },
+  {
+   "artifact_contains": "Priya"
+  },
+  {
+   "max_cost_usd": 0.05
+  }
+ ]
+}

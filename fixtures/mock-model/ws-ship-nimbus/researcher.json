@@ -1,0 +1,47 @@
+{
+ "role": "researcher",
+ "turns": [
+  {
+   "label": "Checking the last CI run",
+   "usage": {
+    "in": 3060,
+    "out": 255
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://github.com/harrymove-ctrl/nimbus/actions/runs/latest"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading the failing golden",
+   "usage": {
+    "in": 5780,
+    "out": 442
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "read_repo",
+     "input": {
+      "action": "read",
+      "path": "evals/demo/router-fallback-404.json"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 6970,
+    "out": 646
+   },
+   "complexity": 1,
+   "text": "CI run \"eval\" failed on golden router-fallback-404: assertion route_reason_contains \"ceiling\" does not hold (the fallback reason is \"super model id not found (404) → fell back to nano\"). The golden is evals/demo/router-fallback-404.json; the reason text is built in src/runtime/router.ts, in the onFallback call."
+  }
+ ]
+}

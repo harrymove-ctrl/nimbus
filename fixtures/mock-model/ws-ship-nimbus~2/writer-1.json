@@ -1,0 +1,53 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Writing the patch",
+   "usage": {
+    "in": 4600,
+    "out": 600
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "fix-router-fallback.patch",
+      "kind": "code",
+      "title": "fix-router-fallback.patch",
+      "language": "diff",
+      "content": "--- a/src/runtime/router.ts\n+++ b/src/runtime/router.ts\n@@ -128,7 +128,7 @@\n       lower,\n       lastStatus === 404\n         ? `${tier} model id not found (404) → fell back to ${lower}`\n-        : `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`,\n+        : `${tier} failed after one retry (429/5xx/timeout) → fell back to ${lower}`,\n     );\n     tier = lower;\n     fellBack = true;\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Drafting the PR text",
+   "usage": {
+    "in": 5200,
+    "out": 420
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "pr-body",
+      "kind": "doc",
+      "title": "PR: say \"after one retry\" in the 429 fallback reason",
+      "content": "## Say \"after one retry\" in the 429 fallback reason\n\n**Problem.** The 429/5xx fallback reason says \"failed twice\", which reads as two different attempts. It is one call and one retry.\n\n**Change.** The reason now says \"failed after one retry\". One line in `src/runtime/router.ts`; behaviour is unchanged.\n\n**Check.** `pnpm eval --only router-fallback-429` failed before (`route_reason_contains \"after one retry\"`) and passes with this patch."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 5500,
+    "out": 80
+   },
+   "complexity": 1,
+   "text": "Patch and PR body are written."
+  }
+ ]
+}

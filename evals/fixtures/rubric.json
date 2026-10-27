@@ -1,11 +1,84 @@
 {
   "note": "Mock Nano judge: a claim scores 2 when every `requires` string is in the evidence, 1 when any `partial` string is, else 0. Real mode asks Nano with the claim and the evidence.",
   "entries": [
-    { "claim": "the analyst's numbers match the CSV", "requires": ["62.0%", "41.5%"], "partial": ["41.5%"] },
-    { "claim": "the researcher cites a status-page source", "requires": ["status.example.com"], "partial": ["example.com"] },
-    { "claim": "the writer's document leads with the number", "requires": ["62.8%", "58.3%"], "partial": ["%"] },
-    { "claim": "new submissions are listed with their tracks", "requires": ["Satoshi Pay", "payments"], "partial": ["Satoshi Pay"] },
-    { "claim": "the analyst found the 4 urgent emails", "requires": ["4 urgent"], "partial": ["urgent"] },
-    { "claim": "the drafts name the people who are waiting", "requires": ["Dana", "Kim"], "partial": ["Dana"] }
+    {
+      "claim": "the analyst's numbers match the CSV",
+      "requires": [
+        "62.0%",
+        "41.5%"
+      ],
+      "partial": [
+        "41.5%"
+      ]
+    },
+    {
+      "claim": "the researcher cites a status-page source",
+      "requires": [
+        "status.example.com"
+      ],
+      "partial": [
+        "example.com"
+      ]
+    },
+    {
+      "claim": "the writer's document leads with the number",
+      "requires": [
+        "62.8%",
+        "58.3%"
+      ],
+      "partial": [
+        "%"
+      ]
+    },
+    {
+      "claim": "new submissions are listed with their tracks",
+      "requires": [
+        "Satoshi Pay",
+        "payments"
+      ],
+      "partial": [
+        "Satoshi Pay"
+      ]
+    },
+    {
+      "claim": "the analyst found the 4 urgent emails",
+      "requires": [
+        "4 urgent"
+      ],
+      "partial": [
+        "urgent"
+      ]
+    },
+    {
+      "claim": "the drafts name the people who are waiting",
+      "requires": [
+        "Dana",
+        "Kim"
+      ],
+      "partial": [
+        "Dana"
+      ]
+    },
+    {
+      "claim": "the digest names the competitor and the deadline",
+      "requires": [
+        "Bridge Bot",
+        "Oct 30"
+      ],
+      "partial": [
+        "Bridge Bot"
+      ]
+    },
+    {
+      "claim": "the brief lists the three people who are waiting",
+      "requires": [
+        "Dana",
+        "Priya",
+        "Sam"
+      ],
+      "partial": [
+        "Dana"
+      ]
+    }
   ]
 }

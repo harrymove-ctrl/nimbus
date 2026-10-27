@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Writing the digest",
+   "usage": {
+    "in": 4200,
+    "out": 780
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "radar-digest",
+      "kind": "doc",
+      "title": "Hackathon radar · Tue Oct 27",
+      "content": "# Hackathon radar · Tue Oct 27\n\n**Three things changed since yesterday.**\n\n- **Rules:** the Devpost FAQ now requires a public GitHub repository with a visible MIT licence. Ours is MIT; the licence file must stay at the repo root.\n- **Pace:** 41 of 312 started projects are submitted; the deadline is Oct 30, 10:00 PDT.\n- **Competitor:** Bridge Bot (Mezo buildathon, Personal AI track) is a Telegram agent that drafts wallet transfers for approval: the same approval idea, one chat app, no crew, no learning.\n\n## Who else is building a personal agent\n\n| project | track | what it does | overlap with Nimbus |\n|---|---|---|---|\n| Bridge Bot | Personal AI | Telegram agent for Mezo wallets, approval before each transfer | approvals only |\n| Satoshi Pay | payments | pay links | none |\n| Vault Kit | savings | recurring saves | none |\n\n## Say differently\n\nLead with the crew and the learning loop, not \"an agent with approvals\": approvals are table stakes now.\n\n*Source news: Token Factory bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M tokens; our role prompts are a stable prefix for exactly this.*"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 5000,
+    "out": 70
+   },
+   "complexity": 1,
+   "text": "Digest written."
+  }
+ ]
+}

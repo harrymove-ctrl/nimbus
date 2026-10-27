@@ -65,6 +65,8 @@ async function resetWorkstream(id: string) {
   const db = await getDb();
   const w = WORKSTREAMS.find((x) => x.id === id)!;
   await db.delete(schema.memories).where(eq(schema.memories.workstreamId, id));
+  await db.delete(schema.policies).where(eq(schema.policies.workstreamId, id));
+  for (const line of w.skill.split("## Policy")[1]?.split("\n").map((l) => l.trim()).filter((l) => l.startsWith("allow:")) ?? []) await db.insert(schema.policies).values({ workstreamId: id, rule: line, sourceRunId: null, createdAt: Date.now() }).onConflictDoNothing();
   await db.update(schema.skills).set({ content: w.skill, previous: null }).where(eq(schema.skills.workstreamId, id));
 }
 
@@ -157,7 +159,7 @@ if (runs.off && runs.on) {
 
 const main = runs[routers[routers.length - 1]];
 // a partial run (--only) must not overwrite the full-suite report
-if (!only) writeFileSync(path.join(process.cwd(), "evals", "report.json"), JSON.stringify({ model: modelMode(), cheap, routers, delta, runs, ...main.totals }, null, 2));
+if (!only && !process.env.NIMBUS_EVAL_NO_REPORT) writeFileSync(path.join(process.cwd(), "evals", "report.json"), JSON.stringify({ model: modelMode(), cheap, routers, delta, runs, ...main.totals }, null, 2));
 if (verbose && !only) console.log("wrote evals/report.json");
 const fail = main.totals.passRate < 0.9 || main.totals.finalFailures > 0;
 console.log(`\nEVAL: ${fail ? "FAIL" : "PASS"} (pass rate ${(main.totals.passRate * 100).toFixed(1)}%, final failures ${main.totals.finalFailures}; gate: ≥ 90% and no failed final)`);

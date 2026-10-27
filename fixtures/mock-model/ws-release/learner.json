@@ -1,0 +1,27 @@
+{
+ "role": "learner",
+ "turns": [
+  {
+   "label": "Extracting memories, rewriting SKILL.md",
+   "usage": {
+    "in": 6200,
+    "out": 900
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "save_learning",
+     "input": {
+      "memories": [
+       "Patch releases of the AI SDK that touch streaming are worth a PR.",
+       "A bump PR needs `git apply --check` and `pnpm typecheck` first.",
+       "Branches for dependency bumps are chore/<topic>; they are not covered by the fix/* rule.",
+       "Next.js image optimizer fixes do not affect us."
+      ],
+      "skill": "## Release watch\n1. Read the release notes for Next.js, the AI SDK and libsql against our versions.\n2. Open a PR only after `git apply --check` and `pnpm typecheck`.\n3. Dependency branches are `chore/<topic>`.\n\n## Policy\n(none yet)"
+     }
+    }
+   ]
+  }
+ ]
+}

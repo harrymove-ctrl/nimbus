@@ -1,0 +1,1639 @@
+{
+ "workstreamId": "ws-radar",
+ "run": {
+  "id": "run_seed_radar",
+  "title": "Hackathon radar",
+  "goal": "Every morning: what changed on the Nebius × NVIDIA hackathon and the Mezo buildathon pages, who else is building a personal agent, and what we should say differently.",
+  "status": "done",
+  "trigger": "cron",
+  "endMs": 11530,
+  "tokensIn": 50200,
+  "tokensOut": 4480,
+  "costUsd": 0.023340200000000002,
+  "baselineUsd": 0.03292,
+  "model": "mock"
+ },
+ "events": [
+  {
+   "tMs": 39,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "run.start",
+   "payload": {
+    "title": "Hackathon radar",
+    "workstreamId": "ws-radar",
+    "goal": "Every morning: what changed on the Nebius × NVIDIA hackathon and the Mezo buildathon pages, who else is building a personal agent, and what we should say differently.",
+    "startedAt": 1793094434611,
+    "trigger": "cron",
+    "learned": {
+     "memories": 0,
+     "policies": 1
+    }
+   }
+  },
+  {
+   "tMs": 40,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "agent.start",
+   "payload": {}
+  },
+  {
+   "tMs": 40,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "route",
+   "payload": {
+    "hop": 1,
+    "role": "orchestrator",
+    "chosen": "ultra",
+    "ceiling": "ultra",
+    "reason": "first orchestrator turn → ceiling"
+   }
+  },
+  {
+   "tMs": 41,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h1",
+    "label": "Planning the watch",
+    "startMs": 41
+   }
+  },
+  {
+   "tMs": 594,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h1",
+    "label": "Planning the watch",
+    "endMs": 594
+   }
+  },
+  {
+   "tMs": 594,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "usage",
+   "payload": {
+    "tier": "ultra",
+    "in": 4800,
+    "out": 520
+   }
+  },
+  {
+   "tMs": 595,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-orchestrator-1-0",
+    "tool": "plan",
+    "input": {
+     "agents": [
+      {
+       "role": "researcher",
+       "brief": "Read the hackathon and buildathon pages and find other personal agents."
+      },
+      {
+       "role": "checker",
+       "brief": "Verify the deadline and the rules change."
+      },
+      {
+       "role": "writer",
+       "brief": "Write the digest and what to say differently."
+      }
+     ],
+     "tools": [
+      "web_search",
+      "fetch_url",
+      "write_artifact",
+      "send_message"
+     ],
+     "estimate": {
+      "costUsd": 0.04,
+      "tokens": 31000,
+      "label": "≈ $0.04 · Ultra ×2 · Super ×4 · Nano ×2"
+     }
+    }
+   }
+  },
+  {
+   "tMs": 595,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "plan",
+   "payload": {
+    "agents": [
+     {
+      "role": "researcher",
+      "instance": "researcher-1",
+      "tier": "super",
+      "brief": "Read the hackathon and buildathon pages and find other personal agents."
+     },
+     {
+      "role": "checker",
+      "instance": "checker-1",
+      "tier": "nano",
+      "brief": "Verify the deadline and the rules change."
+     },
+     {
+      "role": "writer",
+      "instance": "writer-1",
+      "tier": "super",
+      "brief": "Write the digest and what to say differently."
+     }
+    ],
+    "tools": [
+     "web_search",
+     "fetch_url",
+     "write_artifact",
+     "send_message"
+    ],
+    "estimate": {
+     "costUsd": 0.04,
+     "tokens": 31000,
+     "label": "≈ $0.04 · Ultra ×2 · Super ×4 · Nano ×2"
+    }
+   }
+  },
+  {
+   "tMs": 3596,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-orchestrator-1-0",
+    "tool": "plan",
+    "ok": true,
+    "output": {
+     "ok": true,
+     "started": true
+    }
+   }
+  },
+  {
+   "tMs": 3596,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "route",
+   "payload": {
+    "hop": 2,
+    "role": "orchestrator",
+    "chosen": "nano",
+    "ceiling": "ultra",
+    "reason": "classifier: complexity 0 → nano"
+   }
+  },
+  {
+   "tMs": 3596,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h2",
+    "label": "Starting the watch",
+    "startMs": 3596
+   }
+  },
+  {
+   "tMs": 4135,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h2",
+    "label": "Starting the watch",
+    "endMs": 4135
+   }
+  },
+  {
+   "tMs": 4135,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "usage",
+   "payload": {
+    "tier": "nano",
+    "in": 1800,
+    "out": 150
+   }
+  },
+  {
+   "tMs": 4135,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-orchestrator-2-0",
+    "tool": "spawn_agents",
+    "input": {
+     "agents": [
+      {
+       "role": "researcher",
+       "brief": "Search the Nebius × NVIDIA hackathon and the Mezo buildathon; fetch the Devpost pages and the closest competitor project."
+      },
+      {
+       "role": "checker",
+       "brief": "Fetch the hackathon page and confirm the deadline and any rules change."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tMs": 4135,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.wait",
+   "payload": {
+    "segId": "orchestrator-w1",
+    "label": "Waiting on Researcher, Checker",
+    "startMs": 4135
+   }
+  },
+  {
+   "tMs": 4135,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "agent.spawn",
+   "payload": {
+    "by": "orchestrator",
+    "role": "researcher",
+    "instance": "researcher-1",
+    "brief": "Search the Nebius × NVIDIA hackathon and the Mezo buildathon; fetch the Devpost pages and the closest competitor project."
+   }
+  },
+  {
+   "tMs": 4135,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "agent.spawn",
+   "payload": {
+    "by": "orchestrator",
+    "role": "checker",
+    "instance": "checker-1",
+    "brief": "Fetch the hackathon page and confirm the deadline and any rules change."
+   }
+  },
+  {
+   "tMs": 4135,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "agent.start",
+   "payload": {}
+  },
+  {
+   "tMs": 4136,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "agent.start",
+   "payload": {}
+  },
+  {
+   "tMs": 4136,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "route",
+   "payload": {
+    "hop": 4,
+    "role": "checker",
+    "chosen": "nano",
+    "ceiling": "nano",
+    "reason": "checker → nano always"
+   }
+  },
+  {
+   "tMs": 4137,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "checker-1-h1",
+    "label": "Verifying the deadline",
+    "startMs": 4137
+   }
+  },
+  {
+   "tMs": 4137,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "route",
+   "payload": {
+    "hop": 3,
+    "role": "researcher",
+    "chosen": "nano",
+    "ceiling": "super",
+    "reason": "classifier: complexity 0 → nano"
+   }
+  },
+  {
+   "tMs": 4137,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h1",
+    "label": "Searching the hackathon pages",
+    "startMs": 4137
+   }
+  },
+  {
+   "tMs": 4509,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "checker-1-h1",
+    "label": "Verifying the deadline",
+    "endMs": 4509
+   }
+  },
+  {
+   "tMs": 4509,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "usage",
+   "payload": {
+    "tier": "nano",
+    "in": 900,
+    "out": 90
+   }
+  },
+  {
+   "tMs": 4510,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "checker-1-c-mock-checker-1-0",
+    "label": "fetch_url · nebiusglobalaihackathon.devpost.example.",
+    "startMs": 4510
+   }
+  },
+  {
+   "tMs": 4510,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-checker-1-0",
+    "tool": "fetch_url",
+    "input": {
+     "url": "https://nebiusglobalaihackathon.devpost.example.com/"
+    }
+   }
+  },
+  {
+   "tMs": 4511,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-checker-1-0",
+    "tool": "fetch_url",
+    "ok": true,
+    "output": {
+     "url": "https://nebiusglobalaihackathon.devpost.example.com/",
+     "text": "Nebius × NVIDIA Global AI Hackathon. Submissions close Oct 30, 10:00 PDT. Tracks: Personal AI; Best Apps & Agents; Coding & Agentic Engineering. 312 projects started, 41 submitted. New since yesterday: the rules FAQ now says a public GitHub repository with a visible MIT licence is required."
+    }
+   }
+  },
+  {
+   "tMs": 4511,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "checker-1-c-mock-checker-1-0",
+    "label": "fetch_url · nebiusglobalaihackathon.devpost.example.",
+    "endMs": 4511
+   }
+  },
+  {
+   "tMs": 4513,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "route",
+   "payload": {
+    "hop": 5,
+    "role": "checker",
+    "chosen": "nano",
+    "ceiling": "nano",
+    "reason": "checker → nano always"
+   }
+  },
+  {
+   "tMs": 4513,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "checker-1-h2",
+    "label": "Reporting",
+    "startMs": 4513
+   }
+  },
+  {
+   "tMs": 4881,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h1",
+    "label": "Searching the hackathon pages",
+    "endMs": 4881
+   }
+  },
+  {
+   "tMs": 4881,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "usage",
+   "payload": {
+    "tier": "nano",
+    "in": 1500,
+    "out": 130
+   }
+  },
+  {
+   "tMs": 4881,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "researcher-1-c-mock-researcher-1-0",
+    "label": "web_search · Nebius NVIDIA hackathon personal agent D",
+    "startMs": 4881
+   }
+  },
+  {
+   "tMs": 4881,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-researcher-1-0",
+    "tool": "web_search",
+    "input": {
+     "query": "Nebius NVIDIA hackathon personal agent Devpost"
+    }
+   }
+  },
+  {
+   "tMs": 4885,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-researcher-1-0",
+    "tool": "web_search",
+    "ok": true,
+    "output": {
+     "source": "fixture",
+     "results": [
+      {
+       "title": "Nebius × NVIDIA Global AI Hackathon — Devpost",
+       "url": "https://nebiusglobalaihackathon.devpost.example.com/",
+       "snippet": "Submissions close Oct 30, 10:00 PDT. 312 started, 41 submitted."
+      },
+      {
+       "title": "Bridge Bot — a personal agent for Mezo wallets",
+       "url": "https://devpost.example.com/software/bridge-bot",
+       "snippet": "Telegram agent on Nemotron 3 Super; drafts transfers for approval. Personal AI track."
+      },
+      {
+       "title": "Mezo Buildathon — Submissions",
+       "url": "https://devpost.example.com/mezo-buildathon/submissions",
+       "snippet": "Satoshi Pay, Vault Kit and Bridge Bot submitted this week."
+      },
+      {
+       "title": "Token Factory adds cached-input pricing for Nemotron 3",
+       "url": "https://nebius.example.com/blog/token-factory-nemotron-3",
+       "snippet": "Cached input $0.12 (Ultra) and $0.06 (Super) per 1M tokens."
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tMs": 4885,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "researcher-1-c-mock-researcher-1-0",
+    "label": "web_search · Nebius NVIDIA hackathon personal agent D",
+    "endMs": 4885
+   }
+  },
+  {
+   "tMs": 4887,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "route",
+   "payload": {
+    "hop": 6,
+    "role": "researcher",
+    "chosen": "super",
+    "ceiling": "super",
+    "reason": "classifier: complexity 1 → super"
+   }
+  },
+  {
+   "tMs": 4887,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h2",
+    "label": "Reading the Devpost page",
+    "startMs": 4887
+   }
+  },
+  {
+   "tMs": 4902,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "checker-1-h2",
+    "label": "Reporting",
+    "endMs": 4902
+   }
+  },
+  {
+   "tMs": 4902,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "usage",
+   "payload": {
+    "tier": "nano",
+    "in": 1700,
+    "out": 120
+   }
+  },
+  {
+   "tMs": 4902,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "message",
+   "payload": {
+    "id": "msg-checker-1-2",
+    "role": "agent",
+    "text": "Confirmed: deadline Oct 30, 10:00 PDT; the licence requirement is in the rules FAQ."
+   }
+  },
+  {
+   "tMs": 4902,
+   "agent": "checker",
+   "agentInstance": "checker-1",
+   "type": "agent.end",
+   "payload": {
+    "summary": "Confirmed: deadline Oct 30, 10:00 PDT; the licence requirement is in the rules FAQ."
+   }
+  },
+  {
+   "tMs": 5631,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h2",
+    "label": "Reading the Devpost page",
+    "endMs": 5631
+   }
+  },
+  {
+   "tMs": 5632,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "usage",
+   "payload": {
+    "tier": "super",
+    "in": 2600,
+    "out": 200
+   }
+  },
+  {
+   "tMs": 5632,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "researcher-1-c-mock-researcher-2-0",
+    "label": "fetch_url · nebiusglobalaihackathon.devpost.example.",
+    "startMs": 5632
+   }
+  },
+  {
+   "tMs": 5632,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-researcher-2-0",
+    "tool": "fetch_url",
+    "input": {
+     "url": "https://nebiusglobalaihackathon.devpost.example.com/"
+    }
+   }
+  },
+  {
+   "tMs": 5635,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-researcher-2-0",
+    "tool": "fetch_url",
+    "ok": true,
+    "output": {
+     "url": "https://nebiusglobalaihackathon.devpost.example.com/",
+     "text": "Nebius × NVIDIA Global AI Hackathon. Submissions close Oct 30, 10:00 PDT. Tracks: Personal AI; Best Apps & Agents; Coding & Agentic Engineering. 312 projects started, 41 submitted. New since yesterday: the rules FAQ now says a public GitHub repository with a visible MIT licence is required."
+    }
+   }
+  },
+  {
+   "tMs": 5635,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "researcher-1-c-mock-researcher-2-0",
+    "label": "fetch_url · nebiusglobalaihackathon.devpost.example.",
+    "endMs": 5635
+   }
+  },
+  {
+   "tMs": 5639,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "route",
+   "payload": {
+    "hop": 7,
+    "role": "researcher",
+    "chosen": "super",
+    "ceiling": "super",
+    "reason": "classifier: complexity 1 → super"
+   }
+  },
+  {
+   "tMs": 5640,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h3",
+    "label": "Reading the closest competitor",
+    "startMs": 5640
+   }
+  },
+  {
+   "tMs": 6447,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h3",
+    "label": "Reading the closest competitor",
+    "endMs": 6447
+   }
+  },
+  {
+   "tMs": 6447,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "usage",
+   "payload": {
+    "tier": "super",
+    "in": 3400,
+    "out": 220
+   }
+  },
+  {
+   "tMs": 6447,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "researcher-1-c-mock-researcher-3-0",
+    "label": "fetch_url · devpost.example.com/software/bridge-bot",
+    "startMs": 6447
+   }
+  },
+  {
+   "tMs": 6447,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-researcher-3-0",
+    "tool": "fetch_url",
+    "input": {
+     "url": "https://devpost.example.com/software/bridge-bot"
+    }
+   }
+  },
+  {
+   "tMs": 6447,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-researcher-3-0",
+    "tool": "fetch_url",
+    "ok": true,
+    "output": {
+     "url": "https://devpost.example.com/software/bridge-bot",
+     "text": "Bridge Bot: a Telegram agent that watches Mezo wallets and drafts transfers for approval. Built on Nemotron 3 Super. Personal AI track. Demo video 2:10."
+    }
+   }
+  },
+  {
+   "tMs": 6447,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "researcher-1-c-mock-researcher-3-0",
+    "label": "fetch_url · devpost.example.com/software/bridge-bot",
+    "endMs": 6447
+   }
+  },
+  {
+   "tMs": 6450,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "route",
+   "payload": {
+    "hop": 8,
+    "role": "researcher",
+    "chosen": "super",
+    "ceiling": "super",
+    "reason": "classifier: complexity 1 → super"
+   }
+  },
+  {
+   "tMs": 6450,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h4",
+    "label": "Reporting",
+    "startMs": 6450
+   }
+  },
+  {
+   "tMs": 7191,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "researcher-1-h4",
+    "label": "Reporting",
+    "endMs": 7191
+   }
+  },
+  {
+   "tMs": 7191,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "usage",
+   "payload": {
+    "tier": "super",
+    "in": 4300,
+    "out": 420
+   }
+  },
+  {
+   "tMs": 7191,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "message",
+   "payload": {
+    "id": "msg-researcher-1-4",
+    "role": "agent",
+    "text": "Hackathon: submissions close Oct 30, 10:00 PDT; 41 of 312 started projects are submitted; the FAQ now requires a public GitHub repo with a visible MIT licence. Competitor: Bridge Bot (Mezo buildathon, Personal AI) is a Telegram agent on Nemotron 3 Super that drafts wallet transfers for approval. Satoshi Pay and Vault Kit do not overlap. News: Token Factory now bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M."
+   }
+  },
+  {
+   "tMs": 7191,
+   "agent": "researcher",
+   "agentInstance": "researcher-1",
+   "type": "agent.end",
+   "payload": {
+    "summary": "Hackathon: submissions close Oct 30, 10:00 PDT; 41 of 312 started projects are submitted; the FAQ now requires a public GitHub repo with a visible MIT licence. "
+   }
+  },
+  {
+   "tMs": 7192,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.wait",
+   "payload": {
+    "segId": "orchestrator-w1",
+    "label": "Waiting on Researcher, Checker",
+    "endMs": 7192
+   }
+  },
+  {
+   "tMs": 7193,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-orchestrator-2-0",
+    "tool": "spawn_agents",
+    "ok": true,
+    "output": {
+     "reports": {
+      "researcher-1": "Hackathon: submissions close Oct 30, 10:00 PDT; 41 of 312 started projects are submitted; the FAQ now requires a public GitHub repo with a visible MIT licence. Competitor: Bridge Bot (Mezo buildathon, Personal AI) is a Telegram agent on Nemotron 3 Super that drafts wallet transfers for approval. Satoshi Pay and Vault Kit do not overlap. News: Token Factory now bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M.",
+      "checker-1": "Confirmed: deadline Oct 30, 10:00 PDT; the licence requirement is in the rules FAQ."
+     }
+    }
+   }
+  },
+  {
+   "tMs": 7193,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "route",
+   "payload": {
+    "hop": 9,
+    "role": "orchestrator",
+    "chosen": "super",
+    "ceiling": "ultra",
+    "reason": "classifier: complexity 1 → super"
+   }
+  },
+  {
+   "tMs": 7193,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h3",
+    "label": "Handing off to the Writer",
+    "startMs": 7193
+   }
+  },
+  {
+   "tMs": 7730,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h3",
+    "label": "Handing off to the Writer",
+    "endMs": 7730
+   }
+  },
+  {
+   "tMs": 7730,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "usage",
+   "payload": {
+    "tier": "super",
+    "in": 3600,
+    "out": 260
+   }
+  },
+  {
+   "tMs": 7730,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-orchestrator-3-0",
+    "tool": "handoff",
+    "input": {
+     "to": "writer",
+     "context": "Three changes: licence rule, 41 of 312 submitted, Bridge Bot overlap. Write the digest with a competitor table and what to say differently."
+    }
+   }
+  },
+  {
+   "tMs": 7730,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "handoff",
+   "payload": {
+    "from": "orchestrator",
+    "to": "writer-1",
+    "context": "Three changes: licence rule, 41 of 312 submitted, Bridge Bot overlap. Write the digest with a competitor table and what to say differently."
+   }
+  },
+  {
+   "tMs": 7730,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "agent.spawn",
+   "payload": {
+    "by": "orchestrator",
+    "role": "writer",
+    "instance": "writer-1",
+    "brief": "Three changes: licence rule, 41 of 312 submitted, Bridge Bot overlap. Write the digest with a competitor table and what to say differently."
+   }
+  },
+  {
+   "tMs": 7730,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.wait",
+   "payload": {
+    "segId": "orchestrator-w2",
+    "label": "Waiting on Writer",
+    "startMs": 7730
+   }
+  },
+  {
+   "tMs": 7731,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "agent.start",
+   "payload": {}
+  },
+  {
+   "tMs": 7732,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "route",
+   "payload": {
+    "hop": 10,
+    "role": "writer",
+    "chosen": "super",
+    "ceiling": "super",
+    "reason": "classifier: complexity 1 → super"
+   }
+  },
+  {
+   "tMs": 7732,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "writer-1-h1",
+    "label": "Writing the digest",
+    "startMs": 7732
+   }
+  },
+  {
+   "tMs": 8208,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "writer-1-h1",
+    "label": "Writing the digest",
+    "endMs": 8208
+   }
+  },
+  {
+   "tMs": 8208,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "usage",
+   "payload": {
+    "tier": "super",
+    "in": 4200,
+    "out": 780
+   }
+  },
+  {
+   "tMs": 8208,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "writer-1-c-mock-writer-1-0",
+    "label": "write_artifact · Hackathon radar · Tue Oct 27",
+    "startMs": 8208
+   }
+  },
+  {
+   "tMs": 8208,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-writer-1-0",
+    "tool": "write_artifact",
+    "input": {
+     "artifactId": "radar-digest",
+     "kind": "doc",
+     "title": "Hackathon radar · Tue Oct 27",
+     "content": "# Hackathon radar · Tue Oct 27\n\n**Three things changed since yesterday.**\n\n- **Rules:** the Devpost FAQ now requires a public GitHub repository with a visible MIT licence. Ours is MIT; the licence file must stay at the repo root.\n- **Pace:** 41 of 312 started projects are submitted; the deadline is Oct 30, 10:00 PDT.\n- **Competitor:** Bridge Bot (Mezo buildathon, Personal AI track) is a Telegram agent that drafts wallet transfers for approval: the same approval idea, one chat app, no crew, no learning.\n\n## Who else is building a personal agent\n\n| project | track | what it does | overlap with Nimbus |\n|---|---|---|---|\n| Bridge Bot | Personal AI | Telegram agent for Mezo wallets, approval before each transfer | approvals only |\n| Satoshi Pay | payments | pay links | none |\n| Vault Kit | savings | recurring saves | none |\n\n## Say differently\n\nLead with the crew and the learning loop, not \"an agent with approvals\": approvals are table stakes now.\n\n*Source news: Token Factory bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M tokens; our role prompts are a stable prefix for exactly this.*"
+    }
+   }
+  },
+  {
+   "tMs": 8209,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "artifact.version",
+   "payload": {
+    "artifactId": "radar-digest",
+    "kind": "doc",
+    "title": "Hackathon radar · Tue Oct 27",
+    "version": 1,
+    "content": "# Hackathon radar · Tue Oct 27\n\n**Three things changed since yesterday.**\n\n- **Rules:** the Devpost FAQ now requires a public GitHub repository with a visible MIT licence. Ours is MIT; the licence file must stay at the repo root.\n- **Pace:** 41 of 312 started projects are submitted; the deadline is Oct 30, 10:00 PDT.\n- **Competitor:** Bridge Bot (Mezo buildathon, Personal AI track) is a Telegram agent that drafts wallet transfers for approval: the same approval idea, one chat app, no crew, no learning.\n\n## Who else is building a personal agent\n\n| project | track | what it does | overlap with Nimbus |\n|---|---|---|---|\n| Bridge Bot | Personal AI | Telegram agent for Mezo wallets, approval before each transfer | approvals only |\n| Satoshi Pay | payments | pay links | none |\n| Vault Kit | savings | recurring saves | none |\n\n## Say differently\n\nLead with the crew and the learning loop, not \"an agent with approvals\": approvals are table stakes now.\n\n*Source news: Token Factory bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M tokens; our role prompts are a stable prefix for exactly this.*"
+   }
+  },
+  {
+   "tMs": 8209,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-writer-1-0",
+    "tool": "write_artifact",
+    "ok": true,
+    "output": {
+     "artifactId": "radar-digest",
+     "version": 1
+    }
+   }
+  },
+  {
+   "tMs": 8209,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "writer-1-c-mock-writer-1-0",
+    "label": "write_artifact · Hackathon radar · Tue Oct 27",
+    "endMs": 8209
+   }
+  },
+  {
+   "tMs": 8211,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "route",
+   "payload": {
+    "hop": 11,
+    "role": "writer",
+    "chosen": "super",
+    "ceiling": "super",
+    "reason": "classifier: complexity 1 → super"
+   }
+  },
+  {
+   "tMs": 8211,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "writer-1-h2",
+    "label": "Reporting",
+    "startMs": 8211
+   }
+  },
+  {
+   "tMs": 8688,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "writer-1-h2",
+    "label": "Reporting",
+    "endMs": 8688
+   }
+  },
+  {
+   "tMs": 8688,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "usage",
+   "payload": {
+    "tier": "super",
+    "in": 5000,
+    "out": 70
+   }
+  },
+  {
+   "tMs": 8688,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "message",
+   "payload": {
+    "id": "msg-writer-1-2",
+    "role": "agent",
+    "text": "Digest written."
+   }
+  },
+  {
+   "tMs": 8688,
+   "agent": "writer",
+   "agentInstance": "writer-1",
+   "type": "agent.end",
+   "payload": {
+    "summary": "Digest written."
+   }
+  },
+  {
+   "tMs": 8688,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.wait",
+   "payload": {
+    "segId": "orchestrator-w2",
+    "label": "Waiting on Writer",
+    "endMs": 8688
+   }
+  },
+  {
+   "tMs": 8690,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-orchestrator-3-0",
+    "tool": "handoff",
+    "ok": true,
+    "output": {
+     "report": "Digest written."
+    }
+   }
+  },
+  {
+   "tMs": 8690,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "route",
+   "payload": {
+    "hop": 12,
+    "role": "orchestrator",
+    "chosen": "ultra",
+    "ceiling": "ultra",
+    "reason": "classifier: complexity 2 → ultra"
+   }
+  },
+  {
+   "tMs": 8690,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h4",
+    "label": "Asking to send the digest",
+    "startMs": 8690
+   }
+  },
+  {
+   "tMs": 9227,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h4",
+    "label": "Asking to send the digest",
+    "endMs": 9227
+   }
+  },
+  {
+   "tMs": 9227,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "usage",
+   "payload": {
+    "tier": "ultra",
+    "in": 4400,
+    "out": 360
+   }
+  },
+  {
+   "tMs": 9227,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-orchestrator-4-0",
+    "tool": "request_approval",
+    "input": {
+     "action": {
+      "kind": "send_message",
+      "summary": "Send the radar digest to #team",
+      "risk": "medium",
+      "details": {
+       "channel": "#team",
+       "text": "Hackathon radar, Oct 27:\n• Rules: public GitHub repo with a visible MIT licence is now required (ours is).\n• 41 of 312 projects submitted; deadline Oct 30, 10:00 PDT.\n• Bridge Bot (Mezo, Personal AI) does approvals for wallet transfers; no crew, no learning. Lead with the crew."
+      }
+     }
+    }
+   }
+  },
+  {
+   "tMs": 9227,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "approval.request",
+   "payload": {
+    "approvalId": "ap-1",
+    "action": {
+     "kind": "send_message",
+     "summary": "Send the radar digest to #team",
+     "risk": "medium",
+     "details": {
+      "channel": "#team",
+      "text": "Hackathon radar, Oct 27:\n• Rules: public GitHub repo with a visible MIT licence is now required (ours is).\n• 41 of 312 projects submitted; deadline Oct 30, 10:00 PDT.\n• Bridge Bot (Mezo, Personal AI) does approvals for wallet transfers; no crew, no learning. Lead with the crew."
+     }
+    }
+   }
+  },
+  {
+   "tMs": 9227,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "approval.resolve",
+   "payload": {
+    "approvalId": "ap-1",
+    "decision": "approved",
+    "by": "policy"
+   }
+  },
+  {
+   "tMs": 9228,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-orchestrator-4-0",
+    "tool": "request_approval",
+    "ok": true,
+    "output": {
+     "decision": "approved",
+     "sent": false,
+     "logged": true,
+     "note": "demo mode: logged to data/outbox.log instead of sending"
+    }
+   }
+  },
+  {
+   "tMs": 9229,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "route",
+   "payload": {
+    "hop": 13,
+    "role": "orchestrator",
+    "chosen": "super",
+    "ceiling": "ultra",
+    "reason": "classifier: complexity 1 → super"
+   }
+  },
+  {
+   "tMs": 9229,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h5",
+    "label": "Final judgment",
+    "startMs": 9229
+   }
+  },
+  {
+   "tMs": 9763,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "segment.think",
+   "payload": {
+    "segId": "orchestrator-h5",
+    "label": "Final judgment",
+    "endMs": 9763
+   }
+  },
+  {
+   "tMs": 9763,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "usage",
+   "payload": {
+    "tier": "super",
+    "in": 5000,
+    "out": 220
+   }
+  },
+  {
+   "tMs": 9763,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "message",
+   "payload": {
+    "id": "msg-orchestrator-5",
+    "role": "agent",
+    "text": "Done. Three changes since yesterday; the digest is in the Artifact tab and went to #team after your approval."
+   }
+  },
+  {
+   "tMs": 9763,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-orchestrator-5-0",
+    "tool": "finish",
+    "input": {
+     "summary": "Digest written and sent: 3 changes, 1 competitor overlap."
+    }
+   }
+  },
+  {
+   "tMs": 9763,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-orchestrator-5-0",
+    "tool": "finish",
+    "ok": true,
+    "output": {
+     "ok": true,
+     "summary": "Digest written and sent: 3 changes, 1 competitor overlap."
+    }
+   }
+  },
+  {
+   "tMs": 9763,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "agent.end",
+   "payload": {
+    "summary": "Done. Three changes since yesterday; the digest is in the Artifact tab and went to #team after your approval."
+   }
+  },
+  {
+   "tMs": 9764,
+   "agent": "orchestrator",
+   "agentInstance": "orchestrator",
+   "type": "run.end",
+   "payload": {
+    "status": "done"
+   }
+  },
+  {
+   "tMs": 9764,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "agent.spawn",
+   "payload": {
+    "by": "orchestrator",
+    "role": "learner",
+    "instance": "learner-1",
+    "brief": "Extract memories and rewrite this workstream's SKILL.md."
+   }
+  },
+  {
+   "tMs": 9764,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "agent.start",
+   "payload": {}
+  },
+  {
+   "tMs": 9766,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "route",
+   "payload": {
+    "hop": 14,
+    "role": "learner",
+    "chosen": "nano",
+    "ceiling": "nano",
+    "reason": "learner → nano always"
+   }
+  },
+  {
+   "tMs": 9767,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "learner-1-h1",
+    "label": "Extracting memories, rewriting SKILL.md",
+    "startMs": 9767
+   }
+  },
+  {
+   "tMs": 10440,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "learner-1-h1",
+    "label": "Extracting memories, rewriting SKILL.md",
+    "endMs": 10440
+   }
+  },
+  {
+   "tMs": 10440,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "usage",
+   "payload": {
+    "tier": "nano",
+    "in": 6200,
+    "out": 900
+   }
+  },
+  {
+   "tMs": 10440,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "learner-1-c-mock-learner-1-0",
+    "label": "save_learning · SKILL.md",
+    "startMs": 10440
+   }
+  },
+  {
+   "tMs": 10440,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "tool.call",
+   "payload": {
+    "callId": "mock-learner-1-0",
+    "tool": "save_learning",
+    "input": {
+     "memories": [
+      "Devpost lists submissions by track; read the track page, not the front page.",
+      "The FAQ is where rule changes appear first; fetch it every morning.",
+      "Lead the digest with what changed, then the competitor table.",
+      "The deadline is Oct 30, 10:00 PDT; say hours left in the digest once under 48.",
+      "Send the three-bullet digest to #team only after approval."
+     ],
+     "skill": "## Hackathon radar\n1. Fetch the hackathon FAQ first: rule changes show up there before anything else.\n2. Read the Personal AI and Best Apps & Agents track pages for new competitors.\n3. Write what changed first, then a competitor table, then what to say differently.\n4. Send the three-bullet digest to #team after approval.\n\n## Policy\n(none yet)"
+    }
+   }
+  },
+  {
+   "tMs": 10455,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "message",
+   "payload": {
+    "id": "m-summary",
+    "role": "agent",
+    "text": "Run summary",
+    "card": "summary",
+    "summary": {
+     "memories": [
+      "Devpost lists submissions by track; read the track page, not the front page.",
+      "The FAQ is where rule changes appear first; fetch it every morning.",
+      "Lead the digest with what changed, then the competitor table.",
+      "The deadline is Oct 30, 10:00 PDT; say hours left in the digest once under 48.",
+      "Send the three-bullet digest to #team only after approval."
+     ],
+     "skillDiff": [
+      {
+       "op": " ",
+       "text": "## Hackathon radar"
+      },
+      {
+       "op": "-",
+       "text": "1. Search the hackathon and buildathon pages for what changed."
+      },
+      {
+       "op": "-",
+       "text": "2. Write a short digest and send it to #team."
+      },
+      {
+       "op": "+",
+       "text": "1. Fetch the hackathon FAQ first: rule changes show up there before anything else."
+      },
+      {
+       "op": "+",
+       "text": "2. Read the Personal AI and Best Apps & Agents track pages for new competitors."
+      },
+      {
+       "op": "+",
+       "text": "3. Write what changed first, then a competitor table, then what to say differently."
+      },
+      {
+       "op": "+",
+       "text": "4. Send the three-bullet digest to #team after approval."
+      },
+      {
+       "op": " ",
+       "text": "## Policy"
+      },
+      {
+       "op": " ",
+       "text": "allow: send_message to #team for this workstream"
+      }
+     ],
+     "routedHops": 4
+    }
+   }
+  },
+  {
+   "tMs": 10455,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "tool.result",
+   "payload": {
+    "callId": "mock-learner-1-0",
+    "tool": "save_learning",
+    "ok": true,
+    "output": {
+     "ok": true,
+     "memories": 5
+    }
+   }
+  },
+  {
+   "tMs": 10455,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "segment.tool",
+   "payload": {
+    "segId": "learner-1-c-mock-learner-1-0",
+    "label": "save_learning · SKILL.md",
+    "endMs": 10455
+   }
+  },
+  {
+   "tMs": 10455,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "route",
+   "payload": {
+    "hop": 15,
+    "role": "learner",
+    "chosen": "nano",
+    "ceiling": "nano",
+    "reason": "learner → nano always"
+   }
+  },
+  {
+   "tMs": 10455,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "learner-1-h2",
+    "label": "Thinking",
+    "startMs": 10455
+   }
+  },
+  {
+   "tMs": 11130,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "segment.think",
+   "payload": {
+    "segId": "learner-1-h2",
+    "label": "Thinking",
+    "endMs": 11130
+   }
+  },
+  {
+   "tMs": 11130,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "usage",
+   "payload": {
+    "tier": "nano",
+    "in": 800,
+    "out": 40
+   }
+  },
+  {
+   "tMs": 11130,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "message",
+   "payload": {
+    "id": "msg-learner-1-2",
+    "role": "agent",
+    "text": "Done."
+   }
+  },
+  {
+   "tMs": 11130,
+   "agent": "learner",
+   "agentInstance": "learner-1",
+   "type": "agent.end",
+   "payload": {
+    "summary": "Done."
+   }
+  }
+ ],
+ "artifacts": [
+  {
+   "artifactId": "radar-digest",
+   "kind": "doc",
+   "title": "Hackathon radar · Tue Oct 27",
+   "version": 1,
+   "content": "# Hackathon radar · Tue Oct 27\n\n**Three things changed since yesterday.**\n\n- **Rules:** the Devpost FAQ now requires a public GitHub repository with a visible MIT licence. Ours is MIT; the licence file must stay at the repo root.\n- **Pace:** 41 of 312 started projects are submitted; the deadline is Oct 30, 10:00 PDT.\n- **Competitor:** Bridge Bot (Mezo buildathon, Personal AI track) is a Telegram agent that drafts wallet transfers for approval: the same approval idea, one chat app, no crew, no learning.\n\n## Who else is building a personal agent\n\n| project | track | what it does | overlap with Nimbus |\n|---|---|---|---|\n| Bridge Bot | Personal AI | Telegram agent for Mezo wallets, approval before each transfer | approvals only |\n| Satoshi Pay | payments | pay links | none |\n| Vault Kit | savings | recurring saves | none |\n\n## Say differently\n\nLead with the crew and the learning loop, not \"an agent with approvals\": approvals are table stakes now.\n\n*Source news: Token Factory bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M tokens; our role prompts are a stable prefix for exactly this.*",
+   "language": null
+  }
+ ]
+}

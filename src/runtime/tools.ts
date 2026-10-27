@@ -59,7 +59,7 @@ export const ROLE_TOOLS: Record<AgentRole, ToolName[]> = {
   researcher: ["web_search", "fetch_url", "read_repo", "ask_user"],
   analyst: ["run_code", "read_repo", "write_artifact", "ask_user"],
   checker: ["run_code", "fetch_url", "read_repo"],
-  writer: ["write_artifact", "read_repo", "open_pr"],
+  writer: ["write_artifact", "read_repo", "send_message", "open_pr"],
   learner: ["save_learning"],
 };
 
@@ -178,14 +178,14 @@ function runShell(ctx: RunCtx, command: string): Promise<{ ok: boolean; exitCode
   // an argument that names a file in the run workspace (an artifact) is passed as its absolute path
   const argv = args.map((a) => (existsSync(path.join(ctx.workspace, a)) && statSync(path.join(ctx.workspace, a)).isFile() ? path.join(ctx.workspace, a) : a));
   // stripped environment: no API keys, always the mock model, its own database so a nested run never locks the app's
-  const env: Record<string, string> = { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? ctx.workspace, LANG: "en_US.UTF-8", NIMBUS_MODEL: "mock", NIMBUS_MOCK_FAST: "1", NIMBUS_SCHEDULER: "off", NIMBUS_DATA_DIR: path.join(ctx.workspace, ".data"), CI: "1" };
+  const env: Record<string, string> = { PATH: process.env.PATH ?? "", HOME: process.env.HOME ?? ctx.workspace, LANG: "en_US.UTF-8", NIMBUS_MODEL: "mock", NIMBUS_MOCK_FAST: "1", NIMBUS_SCHEDULER: "off", NIMBUS_EVAL_NO_REPORT: "1", NIMBUS_DATA_DIR: path.join(ctx.workspace, ".data"), CI: "1" };
   for (const [k, v] of Object.entries(process.env)) if (v && (k.startsWith("npm_config_") || k.startsWith("PNPM_") || k === "TMPDIR")) env[k] = v;
   return new Promise((resolve) => {
     execFile(bin, [sub, ...argv], { cwd: process.cwd(), env: env as unknown as NodeJS.ProcessEnv, timeout: 180_000, maxBuffer: 4_000_000 }, (err, stdout, stderr) => {
       const code = err ? ((err as { code?: number | string }).code ?? 1) : 0;
       const tail = (t: string) => (t.length > 6000 ? `…${t.slice(-6000)}` : t);
       // `pnpm eval` exits 1 when a golden fails: the tool worked and reported it; exit 2 (usage) or a crash is a failed call
-      const evalFailed = bin === "pnpm" && sub.startsWith("eval") && code === 1;
+      const evalFailed = bin === "pnpm" && sub.startsWith("eval") && code === 1 && /EVAL: (PASS|FAIL)/.test(stdout);
       resolve({ ok: !err || evalFailed, exitCode: typeof code === "number" ? code : 1, stdout: tail(stdout.trim()), stderr: tail(stderr.trim()), workspace: ctx.workspace });
     });
   });

@@ -1,0 +1,30 @@
+{
+ "role": "checker",
+ "turns": [
+  {
+   "label": "Verifying the deadline",
+   "usage": {
+    "in": 900,
+    "out": 90
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://nebiusglobalaihackathon.devpost.example.com/"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 1700,
+    "out": 120
+   },
+   "complexity": 0,
+   "text": "Confirmed: deadline Oct 30, 10:00 PDT; the licence requirement is in the rules FAQ."
+  }
+ ]
+}

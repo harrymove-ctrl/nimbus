@@ -1,0 +1,63 @@
+{
+ "role": "researcher",
+ "turns": [
+  {
+   "label": "Reading the AI SDK release",
+   "usage": {
+    "in": 1400,
+    "out": 120
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://releases.example.com/ai-sdk"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading Next.js and libsql",
+   "usage": {
+    "in": 2300,
+    "out": 150
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://releases.example.com/nextjs"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading our versions",
+   "usage": {
+    "in": 2900,
+    "out": 110
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "read_repo",
+     "input": {
+      "action": "read",
+      "path": "package.json"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 4600,
+    "out": 360
+   },
+   "complexity": 1,
+   "text": "ai 7.0.161 fixes tool-call delta order for parallel tools: relevant to us, no API change. next 15.5.29 is a patch release (image optimizer cache keys); we do not use the optimizer. libsql 0.18.1 fixes a busy-timeout regression on WAL files: relevant, no API change. None of them breaks us."
+  }
+ ]
+}

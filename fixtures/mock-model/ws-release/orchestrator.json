@@ -1,0 +1,140 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the watch",
+   "usage": {
+    "in": 4000,
+    "out": 420
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "researcher",
+        "brief": "Read the release notes for Next.js, the AI SDK and libsql and our versions."
+       },
+       {
+        "role": "analyst",
+        "brief": "Check a trial bump against the tree."
+       },
+       {
+        "role": "writer",
+        "brief": "Write the upgrade patch and PR text."
+       }
+      ],
+      "tools": [
+       "fetch_url",
+       "read_repo",
+       "run_code",
+       "write_artifact",
+       "open_pr"
+      ],
+      "estimate": {
+       "costUsd": 0.04,
+       "tokens": 28000,
+       "label": "≈ $0.04 · Ultra ×1 · Super ×4"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading the releases",
+   "usage": {
+    "in": 1600,
+    "out": 150
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "researcher",
+      "context": "Fetch the three release notes, read package.json, and say which release could break or help us."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Checking the bump",
+   "usage": {
+    "in": 3000,
+    "out": 190
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "analyst",
+      "context": "Write chore-bump.patch for the AI SDK, check that it applies and that the tree typechecks."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing to the Writer",
+   "usage": {
+    "in": 4100,
+    "out": 220
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "Write the PR body for the AI SDK bump."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Asking to open the PR",
+   "usage": {
+    "in": 4900,
+    "out": 420
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "request_approval",
+     "input": {
+      "action": {
+       "kind": "open_pr",
+       "summary": "Open PR chore/bump-ai-sdk → main",
+       "risk": "medium",
+       "details": {
+        "branch": "chore/bump-ai-sdk",
+        "title": "Bump the AI SDK to 7.0.161",
+        "body": "## Bump the AI SDK to 7.0.161\n\n**Why.** The 7.0.161 release fixes tool-call delta order when two tools stream in parallel, which Nimbus does when the Orchestrator spawns agents. No API changes.\n\n**Change.** `ai` ^7.0.154 → ^7.0.161 in package.json.\n\n**Check.** `git apply --check` passes and the tree typechecks.",
+        "patchArtifactId": "chore-bump.patch"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Final judgment",
+   "usage": {
+    "in": 5400,
+    "out": 180
+   },
+   "complexity": 1,
+   "text": "Done. The AI SDK patch release is safe for us; Next.js and libsql have nothing that breaks us. The PR is open.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "AI SDK 7.0.161 is safe; PR opened."
+     }
+    }
+   ]
+  }
+ ]
+}

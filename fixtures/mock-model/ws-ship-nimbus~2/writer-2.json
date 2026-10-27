@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Adding the eval table",
+   "usage": {
+    "in": 6000,
+    "out": 480
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "pr-body",
+      "kind": "doc",
+      "title": "PR: say \"after one retry\" in the 429 fallback reason",
+      "content": "## Say \"after one retry\" in the 429 fallback reason\n\n**Problem.** The 429/5xx fallback reason says \"failed twice\", which reads as two different attempts. It is one call and one retry.\n\n**Change.** The reason now says \"failed after one retry\". One line in `src/runtime/router.ts`; behaviour is unchanged.\n\n**Check.** `pnpm eval --only router-fallback-429` failed before (`route_reason_contains \"after one retry\"`) and passes with this patch.\n\n## Evals\n\n| check | before | with the patch |\n|---|---|---|\n| `pnpm eval --only router-fallback-429` | ✗ route_reason_contains \"after one retry\" | ✓ 3 of 3 |\n| `git apply --check` | n/a | ✓ applies cleanly |\n| `pnpm typecheck` | ✓ | ✓ |\n\nPR: https://github.com/harrymove-ctrl/nimbus/pull/343"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 6600,
+    "out": 60
+   },
+   "complexity": 1,
+   "text": "The PR body now has the eval table and the link."
+  }
+ ]
+}

@@ -1,0 +1,132 @@
+{
+ "week": "2026-10-19/2026-10-25",
+ "note": "hops exported from llm usage; usd = in/out tokens × the tier's price per 1M",
+ "hops": [
+  {
+   "n": 1,
+   "workstream": "ws-ship-nimbus",
+   "role": "orchestrator",
+   "tier": "ultra",
+   "in": 6200,
+   "out": 620,
+   "usd": 0.00806
+  },
+  {
+   "n": 2,
+   "workstream": "ws-ship-nimbus",
+   "role": "orchestrator",
+   "tier": "ultra",
+   "in": 7400,
+   "out": 520,
+   "usd": 0.00896
+  },
+  {
+   "n": 3,
+   "workstream": "ws-ship-nimbus",
+   "role": "orchestrator",
+   "tier": "ultra",
+   "in": 8900,
+   "out": 300,
+   "usd": 0.0098
+  },
+  {
+   "n": 4,
+   "workstream": "ws-ship-nimbus",
+   "role": "analyst",
+   "tier": "super",
+   "in": 10400,
+   "out": 520,
+   "usd": 0.00359
+  },
+  {
+   "n": 5,
+   "workstream": "ws-ship-nimbus",
+   "role": "analyst",
+   "tier": "super",
+   "in": 9800,
+   "out": 340,
+   "usd": 0.00325
+  },
+  {
+   "n": 6,
+   "workstream": "ws-ship-nimbus",
+   "role": "writer",
+   "tier": "super",
+   "in": 5900,
+   "out": 480,
+   "usd": 0.0022
+  },
+  {
+   "n": 7,
+   "workstream": "ws-ship-nimbus",
+   "role": "researcher",
+   "tier": "super",
+   "in": 4100,
+   "out": 380,
+   "usd": 0.00157
+  },
+  {
+   "n": 8,
+   "workstream": "ws-radar",
+   "role": "orchestrator",
+   "tier": "ultra",
+   "in": 5400,
+   "out": 480,
+   "usd": 0.00684
+  },
+  {
+   "n": 9,
+   "workstream": "ws-radar",
+   "role": "writer",
+   "tier": "super",
+   "in": 6100,
+   "out": 720,
+   "usd": 0.00248
+  },
+  {
+   "n": 10,
+   "workstream": "ws-radar",
+   "role": "researcher",
+   "tier": "super",
+   "in": 5200,
+   "out": 300,
+   "usd": 0.00183
+  },
+  {
+   "n": 11,
+   "workstream": "ws-brief",
+   "role": "writer",
+   "tier": "super",
+   "in": 4400,
+   "out": 380,
+   "usd": 0.00166
+  },
+  {
+   "n": 12,
+   "workstream": "ws-brief",
+   "role": "analyst",
+   "tier": "super",
+   "in": 6600,
+   "out": 520,
+   "usd": 0.00245
+  },
+  {
+   "n": 13,
+   "workstream": "ws-checkout",
+   "role": "orchestrator",
+   "tier": "ultra",
+   "in": 6900,
+   "out": 560,
+   "usd": 0.00858
+  },
+  {
+   "n": 14,
+   "workstream": "ws-checkout",
+   "role": "learner",
+   "tier": "nano",
+   "in": 6900,
+   "out": 1100,
+   "usd": 0.00068
+  }
+ ]
+}

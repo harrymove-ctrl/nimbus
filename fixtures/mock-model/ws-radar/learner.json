@@ -1,0 +1,28 @@
+{
+ "role": "learner",
+ "turns": [
+  {
+   "label": "Extracting memories, rewriting SKILL.md",
+   "usage": {
+    "in": 6200,
+    "out": 900
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "save_learning",
+     "input": {
+      "memories": [
+       "Devpost lists submissions by track; read the track page, not the front page.",
+       "The FAQ is where rule changes appear first; fetch it every morning.",
+       "Lead the digest with what changed, then the competitor table.",
+       "The deadline is Oct 30, 10:00 PDT; say hours left in the digest once under 48.",
+       "Send the three-bullet digest to #team only after approval."
+      ],
+      "skill": "## Hackathon radar\n1. Fetch the hackathon FAQ first: rule changes show up there before anything else.\n2. Read the Personal AI and Best Apps & Agents track pages for new competitors.\n3. Write what changed first, then a competitor table, then what to say differently.\n4. Send the three-bullet digest to #team after approval.\n\n## Policy\n(none yet)"
+     }
+    }
+   ]
+  }
+ ]
+}

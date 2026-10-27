@@ -1,0 +1,73 @@
+{
+ "name": "ship-nimbus-happy",
+ "workstream": "ws-ship-nimbus",
+ "description": "The hero: reproduce the demo golden with a real pnpm eval, ask where to fix, write the patch, verify it for real, ask before the PR (always allow).",
+ "input": {
+  "answers": [
+   "Router"
+  ],
+  "approvals": [
+   "approve_always"
+  ]
+ },
+ "hops": [
+  {
+   "agent": "researcher",
+   "expect": [
+    {
+     "tool_called": "read_repo"
+    }
+   ]
+  },
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    },
+    {
+     "tool_called": "read_repo"
+    }
+   ]
+  },
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "ceiling"
+    }
+   ]
+  },
+  {
+   "agent": "checker",
+   "expect": [
+    {
+     "tool_called": "run_code"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "policy_emitted": true
+  },
+  {
+   "artifact_versions_at_least": 2
+  },
+  {
+   "artifact_contains": "Evals"
+  },
+  {
+   "max_cost_usd": 0.15
+  },
+  {
+   "max_seconds": 300
+  }
+ ]
+}

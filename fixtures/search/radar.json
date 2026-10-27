@@ -1,0 +1,27 @@
+{
+ "match": [
+  "hackathon"
+ ],
+ "results": [
+  {
+   "title": "Nebius × NVIDIA Global AI Hackathon — Devpost",
+   "url": "https://nebiusglobalaihackathon.devpost.example.com/",
+   "snippet": "Submissions close Oct 30, 10:00 PDT. 312 started, 41 submitted."
+  },
+  {
+   "title": "Bridge Bot — a personal agent for Mezo wallets",
+   "url": "https://devpost.example.com/software/bridge-bot",
+   "snippet": "Telegram agent on Nemotron 3 Super; drafts transfers for approval. Personal AI track."
+  },
+  {
+   "title": "Mezo Buildathon — Submissions",
+   "url": "https://devpost.example.com/mezo-buildathon/submissions",
+   "snippet": "Satoshi Pay, Vault Kit and Bridge Bot submitted this week."
+  },
+  {
+   "title": "Token Factory adds cached-input pricing for Nemotron 3",
+   "url": "https://nebius.example.com/blog/token-factory-nemotron-3",
+   "snippet": "Cached input $0.12 (Ultra) and $0.06 (Super) per 1M tokens."
+  }
+ ]
+}

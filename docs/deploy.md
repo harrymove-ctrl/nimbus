@@ -52,7 +52,7 @@ nebius ai job create \
   --name nimbus-nightly \
   --image <registry>/nimbus:<tag> \
   --container-command pnpm \
-  --args run:job --args --workstream --args ws-mezo --args --yes \
+  --args run:job --args --workstream --args ws-radar --args --yes \
   --env NIMBUS_MODEL=nebius --env NEBIUS_API_KEY=... --env TAVILY_API_KEY=... \
   --timeout 1h
 ```

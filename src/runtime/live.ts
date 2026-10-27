@@ -48,7 +48,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     workstreamId: input.workstreamId,
     goal: input.goal,
     mode: input.mode ?? "ask",
-    allowedTools: input.tools ?? ["web_search", "fetch_url", "run_code", "write_artifact", "send_message"],
+    allowedTools: input.tools ?? ["web_search", "fetch_url", "run_code", "write_artifact", "send_message", "read_repo", "open_pr"],
     tierChoice: input.tier ?? "auto",
     startedAt,
     workspace: path.join(dataDir(), "workspaces", id),

@@ -1,0 +1,115 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the audit",
+   "usage": {
+    "in": 4200,
+    "out": 460
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "analyst",
+        "brief": "Find the five most expensive hops and check how the router does on the cheap goldens."
+       },
+       {
+        "role": "writer",
+        "brief": "Write the router rule proposal."
+       }
+      ],
+      "tools": [
+       "read_repo",
+       "run_code",
+       "write_artifact"
+      ],
+      "estimate": {
+       "costUsd": 0.05,
+       "tokens": 33000,
+       "label": "≈ $0.05 · Ultra ×1 · Super ×4"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing to the Analyst",
+   "usage": {
+    "in": 1700,
+    "out": 160
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "analyst",
+      "context": "Read fixtures/usage-export.json, rank the hops by cost, and run pnpm eval:ab --cheap."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing to the Writer",
+   "usage": {
+    "in": 3300,
+    "out": 220
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "Write the router rule proposal from the Analyst's table."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Asking to write the rules",
+   "usage": {
+    "in": 4200,
+    "out": 380
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "request_approval",
+     "input": {
+      "action": {
+       "kind": "write_file",
+       "summary": "Write src/runtime/router-rules.json",
+       "risk": "medium",
+       "details": {
+        "path": "src/runtime/router-rules.json",
+        "content": "{\n  \"rules\": [\n    {\n      \"role\": \"orchestrator\",\n      \"turnLabel\": \"Final judgment\",\n      \"maxTier\": \"super\"\n    },\n    {\n      \"role\": \"researcher\",\n      \"noToolCall\": true,\n      \"maxTier\": \"nano\"\n    }\n  ]\n}"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Final judgment",
+   "usage": {
+    "in": 4800,
+    "out": 200
+   },
+   "complexity": 1,
+   "text": "Done. The top five hops are 71 % of the week's spend; the proposal is in the Artifact tab.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "Proposal written; rules file approved."
+     }
+    }
+   ]
+  }
+ ]
+}

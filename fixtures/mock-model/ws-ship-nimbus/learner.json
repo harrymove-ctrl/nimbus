@@ -1,0 +1,28 @@
+{
+ "role": "learner",
+ "turns": [
+  {
+   "label": "Extracting memories, rewriting SKILL.md",
+   "usage": {
+    "in": 19040,
+    "out": 2040
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "save_learning",
+     "input": {
+      "memories": [
+       "The fallback path needs the same ceiling check as routing: every fallback reason must say the ceiling.",
+       "Run `pnpm eval --only <golden>` first; the full suite takes about 40 s.",
+       "Fixture goldens live in evals/demo and never join the suite.",
+       "Fix a failing golden in the router, not in the golden, unless the person says otherwise.",
+       "PR branches are named fix/<topic>; verify with `git apply --check` and `--patch` before asking to open one."
+      ],
+      "skill": "## Ship Nimbus\n1. Run `pnpm eval --only <golden>` first; the full suite takes about 40 s.\n2. Fix in the router, not in the golden, unless the person says otherwise.\n3. Verify with `git apply --check` and `pnpm eval --only <golden> --patch <file>` before asking to open a PR.\n4. Branches are `fix/<topic>`; the PR body has the cause, the change and the eval table.\n\n## Policy\n(none yet)"
+     }
+    }
+   ]
+  }
+ ]
+}

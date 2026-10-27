@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Adding the eval table",
+   "usage": {
+    "in": 10880,
+    "out": 884
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "pr-body",
+      "kind": "doc",
+      "title": "PR: name the ceiling in fallback reasons",
+      "content": "## Name the ceiling in router fallback reasons\n\n**Problem.** When the router falls back after a 404, the route event's reason does not say which ceiling applies, so neither the log nor an eval can show that a fallback stays at or below the role's ceiling.\n\n**Change.** The 404 fallback reason now ends with `(ceiling stays <tier>)`. One line in `src/runtime/router.ts`; behaviour is unchanged.\n\n**Check.** `pnpm eval --only router-fallback-404` failed before (`route_reason_contains \"ceiling\"`) and passes with this patch.\n\n## Evals\n\n| check | before | with the patch |\n|---|---|---|\n| `pnpm eval --only router-fallback-404` | ✗ route_reason_contains \"ceiling\" | ✓ 3 of 3 |\n| `git apply --check` | n/a | ✓ applies cleanly |\n| `pnpm typecheck` | ✓ | ✓ |\n\nPR: https://github.com/harrymove-ctrl/nimbus/pull/952"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 11900,
+    "out": 102
+   },
+   "complexity": 1,
+   "text": "The PR body now has the eval table and the link."
+  }
+ ]
+}

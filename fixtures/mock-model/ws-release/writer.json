@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Writing the PR text",
+   "usage": {
+    "in": 3900,
+    "out": 420
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "pr-body",
+      "kind": "doc",
+      "title": "PR: bump the AI SDK",
+      "content": "## Bump the AI SDK to 7.0.161\n\n**Why.** The 7.0.161 release fixes tool-call delta order when two tools stream in parallel, which Nimbus does when the Orchestrator spawns agents. No API changes.\n\n**Change.** `ai` ^7.0.154 → ^7.0.161 in package.json.\n\n**Check.** `git apply --check` passes and the tree typechecks."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 4300,
+    "out": 50
+   },
+   "complexity": 1,
+   "text": "PR body written."
+  }
+ ]
+}

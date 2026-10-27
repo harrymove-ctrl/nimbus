@@ -1,0 +1,30 @@
+{
+ "role": "checker",
+ "turns": [
+  {
+   "label": "Recording the baseline",
+   "usage": {
+    "in": 1530,
+    "out": 136
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "read_repo",
+     "input": {
+      "action": "changed"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 2550,
+    "out": 204
+   },
+   "complexity": 0,
+   "text": "Baseline recorded: the working tree already has uncommitted changes that are not ours; the patch will be checked in a scratch copy, so none of them is touched."
+  }
+ ]
+}

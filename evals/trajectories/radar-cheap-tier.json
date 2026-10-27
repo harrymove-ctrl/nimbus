@@ -1,0 +1,30 @@
+{
+ "name": "radar-cheap-tier",
+ "workstream": "ws-radar",
+ "description": "The same watch on Tier = Cheap.",
+ "requires_router": true,
+ "input": {
+  "tier": "cheap"
+ },
+ "hops": [
+  {
+   "agent": "researcher",
+   "expect": [
+    {
+     "tool_called": "web_search"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "route_all": "nano"
+  },
+  {
+   "max_cost_usd": 0.01
+  }
+ ]
+}

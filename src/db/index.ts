@@ -1,10 +1,10 @@
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import { eq } from "drizzle-orm";
 import * as schema from "./schema";
-import { WORKSTREAMS } from "@/lib/workstreams";
+import { LEGACY_WORKSTREAM_IDS, WORKSTREAMS } from "@/lib/workstreams";
 
 export { schema };
 
@@ -74,11 +74,18 @@ export async function getDb(): Promise<Db> {
   return h.db;
 }
 
-/** Seeds the three workstreams and their SKILL.md once (fixtures/seed.ts calls this too). */
+/**
+ * Seeds the workstreams (docs/CASES.md) and their SKILL.md. Existing rows keep their unread flag and learned SKILL.md
+ * but follow this file for title, goal, schedule and tools; ids from before the cases are removed.
+ */
 export async function seedWorkstreams(db: Db) {
+  for (const id of LEGACY_WORKSTREAM_IDS) await db.delete(schema.workstreams).where(eq(schema.workstreams.id, id));
   for (const w of WORKSTREAMS) {
     const exists = await db.select({ id: schema.workstreams.id }).from(schema.workstreams).where(eq(schema.workstreams.id, w.id));
-    if (exists.length) continue;
+    if (exists.length) {
+      await db.update(schema.workstreams).set({ title: w.title, goal: w.goal, scheduleCron: w.scheduleCron ?? null, scheduleLabel: w.scheduleLabel ?? null, tools: w.tools }).where(eq(schema.workstreams.id, w.id));
+      continue;
+    }
     await db.insert(schema.workstreams).values({
       id: w.id,
       title: w.title,
@@ -90,5 +97,39 @@ export async function seedWorkstreams(db: Db) {
       createdAt: Date.now(),
     });
     await db.insert(schema.skills).values({ workstreamId: w.id, content: w.skill, version: 1, updatedAt: Date.now() });
+    // a standing rule in the seed text is a rule with a source: show it in the Memory & skill tab
+    for (const line of seedPolicyLines(w.skill)) await db.insert(schema.policies).values({ workstreamId: w.id, rule: line, sourceRunId: null, createdAt: Date.now() - 6 * 86400_000, usedCount: 1 }).onConflictDoNothing();
+  }
+  await seedRecordedRuns(db);
+}
+
+/** the lines under "## Policy" (runtime/skills.ts has the same parser; importing it here would be a cycle) */
+const seedPolicyLines = (skill: string) => (skill.split("## Policy")[1] ?? "").split("\n").map((l) => l.trim()).filter((l) => l && l !== "(none yet)");
+
+type SeedRun = {
+  workstreamId: string;
+  run: { id: string; title: string; goal: string; status: string; trigger: string; endMs: number; tokensIn: number; tokensOut: number; costUsd: number; baselineUsd: number; model: string };
+  events: { tMs: number; agent: string; agentInstance: string; type: string; payload: unknown }[];
+  artifacts: { artifactId: string; kind: string; title: string; version: number; content: string; language: string | null }[];
+};
+
+/**
+ * fixtures/seed-runs/*.json: runs recorded once (scripts/seed-run.mts) and inserted when their workstream has none,
+ * stamped for today at 09:00 (yesterday if that is still ahead), so the app opens with a finished cron run and an unread dot.
+ */
+async function seedRecordedRuns(db: Db) {
+  const dir = path.join(process.cwd(), "fixtures", "seed-runs");
+  if (!existsSync(dir)) return;
+  for (const f of readdirSync(dir).filter((n) => n.endsWith(".json"))) {
+    const s = JSON.parse(readFileSync(path.join(dir, f), "utf8")) as SeedRun;
+    if ((await db.select({ id: schema.runs.id }).from(schema.runs).where(eq(schema.runs.workstreamId, s.workstreamId)).limit(1)).length) continue;
+    const at = new Date();
+    at.setHours(9, 0, 0, 0);
+    if (at.getTime() > Date.now()) at.setDate(at.getDate() - 1);
+    const startedAt = at.getTime();
+    await db.insert(schema.runs).values({ id: s.run.id, workstreamId: s.workstreamId, title: s.run.title, goal: s.run.goal, status: s.run.status, trigger: s.run.trigger, startedAt, endedAt: startedAt + s.run.endMs, tokensIn: s.run.tokensIn, tokensOut: s.run.tokensOut, costUsd: s.run.costUsd, baselineUsd: s.run.baselineUsd, model: s.run.model });
+    for (let i = 0; i < s.events.length; i += 50)
+      await db.insert(schema.runEvents).values(s.events.slice(i, i + 50).map((e, n) => ({ id: `${s.run.id}-${i + n}`, runId: s.run.id, seq: i + n, tMs: e.tMs, agent: e.agent, agentInstance: e.agentInstance, type: e.type, payload: e.payload as never })));
+    for (const a of s.artifacts) await db.insert(schema.artifacts).values({ id: `${s.run.id}:${a.artifactId}:v${a.version}`, runId: s.run.id, artifactId: a.artifactId, kind: a.kind, title: a.title, version: a.version, content: a.content, language: a.language, createdAt: startedAt + s.run.endMs });
   }
 }

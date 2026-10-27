@@ -1,0 +1,53 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Writing the patch",
+   "usage": {
+    "in": 8840,
+    "out": 1088
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "fix-router-fallback.patch",
+      "kind": "code",
+      "title": "fix-router-fallback.patch",
+      "language": "diff",
+      "content": "--- a/src/runtime/router.ts\n+++ b/src/runtime/router.ts\n@@ -127,7 +127,7 @@\n     o.onFallback(\n       lower,\n       lastStatus === 404\n-        ? `${tier} model id not found (404) → fell back to ${lower}`\n+        ? `${tier} model id not found (404) → fell back to ${lower} (ceiling stays ${o.ceiling})`\n         : `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`,\n     );\n     tier = lower;\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Drafting the PR text",
+   "usage": {
+    "in": 10030,
+    "out": 816
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "pr-body",
+      "kind": "doc",
+      "title": "PR: name the ceiling in fallback reasons",
+      "content": "## Name the ceiling in router fallback reasons\n\n**Problem.** When the router falls back after a 404, the route event's reason does not say which ceiling applies, so neither the log nor an eval can show that a fallback stays at or below the role's ceiling.\n\n**Change.** The 404 fallback reason now ends with `(ceiling stays <tier>)`. One line in `src/runtime/router.ts`; behaviour is unchanged.\n\n**Check.** `pnpm eval --only router-fallback-404` failed before (`route_reason_contains \"ceiling\"`) and passes with this patch."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 10540,
+    "out": 153
+   },
+   "complexity": 1,
+   "text": "Patch fix-router-fallback.patch and the PR body are written."
+  }
+ ]
+}

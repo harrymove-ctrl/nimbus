@@ -1,0 +1,29 @@
+{
+ "name": "brief-dry-run",
+ "workstream": "ws-brief",
+ "description": "Dry run: three approvals requested, nothing sent.",
+ "input": {
+  "mode": "dry"
+ },
+ "hops": [
+  {
+   "agent": "analyst",
+   "expect": [
+    {
+     "tool_called": "read_repo"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 3
+  },
+  {
+   "no_side_effect": "send_message"
+  }
+ ]
+}

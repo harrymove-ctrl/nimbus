@@ -1,0 +1,55 @@
+{
+ "name": "radar-happy",
+ "workstream": "ws-radar",
+ "description": "Daily competitive watch: search, fetch, verify, write the digest; the seeded rule lets the digest go to #team without asking.",
+ "cheap": true,
+ "input": {},
+ "hops": [
+  {
+   "agent": "researcher",
+   "expect": [
+    {
+     "tool_called": "web_search"
+    },
+    {
+     "sources_at_least": 2
+    },
+    {
+     "judge": "the digest names the competitor and the deadline"
+    }
+   ]
+  },
+  {
+   "agent": "checker",
+   "expect": []
+  },
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "Bridge Bot"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "approval_count": 1
+  },
+  {
+   "approval_resolved_by": "policy"
+  },
+  {
+   "spawned_at_least": 3
+  },
+  {
+   "artifact_contains": "Oct 30"
+  },
+  {
+   "max_cost_usd": 0.06
+  }
+ ]
+}

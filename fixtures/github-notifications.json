@@ -1,0 +1,30 @@
+[
+ {
+  "id": "1",
+  "reason": "review_requested",
+  "repo": "devshop/staging-pins",
+  "title": "Pin harrymove-ctrl/nimbus build before Thursday",
+  "unread": true
+ },
+ {
+  "id": "2",
+  "reason": "mention",
+  "repo": "harrymove-ctrl/nimbus",
+  "title": "CI: eval failed on the demo golden router-fallback-404",
+  "unread": true
+ },
+ {
+  "id": "3",
+  "reason": "subscribed",
+  "repo": "harrymove-ctrl/nimbus",
+  "title": "Dependabot: bump ai from 7.0.154 to 7.0.161",
+  "unread": false
+ },
+ {
+  "id": "4",
+  "reason": "subscribed",
+  "repo": "harrymove-ctrl/nimbus",
+  "title": "Docs: README typo",
+  "unread": false
+ }
+]

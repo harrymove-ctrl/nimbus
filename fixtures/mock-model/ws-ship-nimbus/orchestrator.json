@@ -1,0 +1,185 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the repair",
+   "usage": {
+    "in": 10540,
+    "out": 1054
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "researcher",
+        "brief": "Find which golden fails: read the last CI result and the demo goldens."
+       },
+       {
+        "role": "analyst",
+        "brief": "Reproduce router-fallback-404 with pnpm eval --only and find the cause in the code."
+       },
+       {
+        "role": "writer",
+        "brief": "Write the patch artifact and the PR text."
+       },
+       {
+        "role": "checker",
+        "brief": "Verify the patch applies, the golden passes with it and the tree typechecks."
+       }
+      ],
+      "tools": [
+       "read_repo",
+       "run_code",
+       "write_artifact",
+       "open_pr"
+      ],
+      "estimate": {
+       "costUsd": 0.09,
+       "tokens": 52000,
+       "label": "≈ $0.09 · Ultra ×1 · Super ×3 · Nano ×4"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Finding what fails",
+   "usage": {
+    "in": 3570,
+    "out": 272
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "spawn_agents",
+     "input": {
+      "agents": [
+       {
+        "role": "researcher",
+        "brief": "Read the latest CI run and the demo goldens; name the failing golden and the assertion."
+       },
+       {
+        "role": "checker",
+        "brief": "Baseline: list what is already changed in the working tree before we start."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing the failure to the Analyst",
+   "usage": {
+    "in": 7310,
+    "out": 510
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "analyst",
+      "context": "Golden router-fallback-404 fails: the fallback route reason must name the ceiling. Reproduce it, find the line, and ask the person where to fix it."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing off to the Writer",
+   "usage": {
+    "in": 9520,
+    "out": 578
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "Fix in the router: add the ceiling to the 404 fallback reason in src/runtime/router.ts. Write fix-router-fallback.patch, then the PR body."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Verifying the patch",
+   "usage": {
+    "in": 10370,
+    "out": 306
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "checker",
+      "context": "Check fix-router-fallback.patch: git apply --check, pnpm eval --only router-fallback-404 --patch, pnpm typecheck."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Asking to open the PR",
+   "usage": {
+    "in": 12580,
+    "out": 884
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "request_approval",
+     "input": {
+      "action": {
+       "kind": "open_pr",
+       "summary": "Open PR fix/router-fallback-ceiling → main",
+       "risk": "medium",
+       "details": {
+        "branch": "fix/router-fallback-ceiling",
+        "title": "Router: name the ceiling in fallback reasons",
+        "body": "## Name the ceiling in router fallback reasons\n\n**Problem.** When the router falls back after a 404, the route event's reason does not say which ceiling applies, so neither the log nor an eval can show that a fallback stays at or below the role's ceiling.\n\n**Change.** The 404 fallback reason now ends with `(ceiling stays <tier>)`. One line in `src/runtime/router.ts`; behaviour is unchanged.\n\n**Check.** `pnpm eval --only router-fallback-404` failed before (`route_reason_contains \"ceiling\"`) and passes with this patch.",
+        "patchArtifactId": "fix-router-fallback.patch"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Adding the eval table",
+   "usage": {
+    "in": 13940,
+    "out": 442
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "The PR is open. Add the eval table and the PR link to the PR body."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Final judgment",
+   "usage": {
+    "in": 15130,
+    "out": 510
+   },
+   "complexity": 1,
+   "text": "Done. fix/router-fallback-ceiling is open against main: Router: name the ceiling in fallback reasons. router-fallback-404 passes with the patch and the tree typechecks.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "Opened fix/router-fallback-ceiling: Router: name the ceiling in fallback reasons. router-fallback-404 passes with the patch."
+     }
+    }
+   ]
+  }
+ ]
+}

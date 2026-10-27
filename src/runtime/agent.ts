@@ -41,7 +41,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
   const names = ROLE_TOOLS[role];
   const tools = toolSet(names, ctx.allowedTools);
   const ceiling = ROLE_TIER[role];
-  const maxTurns = role === "orchestrator" ? 6 : 8;
+  const maxTurns = role === "orchestrator" ? 10 : 8;
   const messages: ModelMessage[] = [{ role: "user", content: firstPrompt(ctx, brief) }];
   const now = () => Date.now() - ctx.startedAt;
   let report = "";

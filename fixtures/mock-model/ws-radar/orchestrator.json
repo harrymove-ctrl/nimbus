@@ -1,0 +1,128 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the watch",
+   "usage": {
+    "in": 4800,
+    "out": 520
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "researcher",
+        "brief": "Read the hackathon and buildathon pages and find other personal agents."
+       },
+       {
+        "role": "checker",
+        "brief": "Verify the deadline and the rules change."
+       },
+       {
+        "role": "writer",
+        "brief": "Write the digest and what to say differently."
+       }
+      ],
+      "tools": [
+       "web_search",
+       "fetch_url",
+       "write_artifact",
+       "send_message"
+      ],
+      "estimate": {
+       "costUsd": 0.04,
+       "tokens": 31000,
+       "label": "≈ $0.04 · Ultra ×2 · Super ×4 · Nano ×2"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Starting the watch",
+   "usage": {
+    "in": 1800,
+    "out": 150
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "spawn_agents",
+     "input": {
+      "agents": [
+       {
+        "role": "researcher",
+        "brief": "Search the Nebius × NVIDIA hackathon and the Mezo buildathon; fetch the Devpost pages and the closest competitor project."
+       },
+       {
+        "role": "checker",
+        "brief": "Fetch the hackathon page and confirm the deadline and any rules change."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing off to the Writer",
+   "usage": {
+    "in": 3600,
+    "out": 260
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "Three changes: licence rule, 41 of 312 submitted, Bridge Bot overlap. Write the digest with a competitor table and what to say differently."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Asking to send the digest",
+   "usage": {
+    "in": 4400,
+    "out": 360
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "request_approval",
+     "input": {
+      "action": {
+       "kind": "send_message",
+       "summary": "Send the radar digest to #team",
+       "risk": "medium",
+       "details": {
+        "channel": "#team",
+        "text": "Hackathon radar, Oct 27:\n• Rules: public GitHub repo with a visible MIT licence is now required (ours is).\n• 41 of 312 projects submitted; deadline Oct 30, 10:00 PDT.\n• Bridge Bot (Mezo, Personal AI) does approvals for wallet transfers; no crew, no learning. Lead with the crew."
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Final judgment",
+   "usage": {
+    "in": 5000,
+    "out": 220
+   },
+   "complexity": 1,
+   "text": "Done. Three changes since yesterday; the digest is in the Artifact tab and went to #team after your approval.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "Digest written and sent: 3 changes, 1 competitor overlap."
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Writing the proposal",
+   "usage": {
+    "in": 4300,
+    "out": 700
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "router-rule-proposal",
+      "kind": "doc",
+      "title": "Router rule proposal · week of Oct 19",
+      "content": "# Router rule proposal · week of Oct 19\n\nThe five most expensive hops are all Ultra or long Super hops; four of them are the orchestrator's late turns (approval and final judgment).\n\n## Proposed rules (src/runtime/router-rules.json)\n\n| rule | why | expected effect |\n|---|---|---|\n| orchestrator \"final judgment\" turns: ceiling Super | a one-paragraph summary does not need Ultra | about 9 % of weekly spend |\n| researcher \"reporting\" turns with no tool call: Nano | a short sourced summary | about 3 % |\n\n## Proof\n\n`pnpm eval:ab --cheap` ran on the six cheap goldens: see the Analyst's output in the Agent I/O tab. The router already saves spend on those; the two proposed rules are not in it yet, so the saving above is an estimate."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 5000,
+    "out": 60
+   },
+   "complexity": 1,
+   "text": "Proposal written."
+  }
+ ]
+}

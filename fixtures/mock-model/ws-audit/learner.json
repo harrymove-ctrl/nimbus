@@ -1,0 +1,27 @@
+{
+ "role": "learner",
+ "turns": [
+  {
+   "label": "Extracting memories, rewriting SKILL.md",
+   "usage": {
+    "in": 6200,
+    "out": 900
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "save_learning",
+     "input": {
+      "memories": [
+       "Hops from the orchestrator's late turns dominate weekly spend.",
+       "Run `pnpm eval:ab --cheap` to prove a rule change; the full suite takes minutes.",
+       "Rule changes go to src/runtime/router-rules.json and always need approval.",
+       "State plainly when a saving is an estimate and not yet measured."
+      ],
+      "skill": "## Token Factory cost audit\n1. Rank the week's hops by cost from the usage export.\n2. Prove any router change with `pnpm eval:ab --cheap` before proposing it.\n3. Writing router-rules.json always needs approval.\n\n## Policy\n(none yet)"
+     }
+    }
+   ]
+  }
+ ]
+}

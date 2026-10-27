@@ -1,0 +1,65 @@
+{
+ "role": "checker",
+ "turns": [
+  {
+   "label": "Does the patch apply?",
+   "usage": {
+    "in": 1400,
+    "out": 90
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "git apply --check fix-router-fallback.patch"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Running the golden with the patch",
+   "usage": {
+    "in": 3000,
+    "out": 140
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "pnpm eval --only router-fallback-429 --patch fix-router-fallback.patch"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Typechecking the tree",
+   "usage": {
+    "in": 3700,
+    "out": 100
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "pnpm typecheck"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 4200,
+    "out": 150
+   },
+   "complexity": 0,
+   "text": "Verified: the patch applies, router-fallback-429 passes with it, and the tree typechecks."
+  }
+ ]
+}

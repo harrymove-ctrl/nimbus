@@ -1,0 +1,65 @@
+{
+ "role": "checker",
+ "turns": [
+  {
+   "label": "Does the patch apply?",
+   "usage": {
+    "in": 2380,
+    "out": 153
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "git apply --check fix-router-fallback.patch"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Running the golden with the patch",
+   "usage": {
+    "in": 5270,
+    "out": 238
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "pnpm eval --only router-fallback-404 --patch fix-router-fallback.patch"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Typechecking the tree",
+   "usage": {
+    "in": 6460,
+    "out": 170
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "pnpm typecheck"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 7310,
+    "out": 272
+   },
+   "complexity": 0,
+   "text": "Verified: the patch applies, router-fallback-404 passes with it in a scratch copy, and the tree typechecks."
+  }
+ ]
+}

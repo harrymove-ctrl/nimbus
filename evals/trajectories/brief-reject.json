@@ -1,0 +1,38 @@
+{
+ "name": "brief-reject",
+ "workstream": "ws-brief",
+ "description": "Reject all three sends: the drafts exist, nothing is sent.",
+ "cheap": true,
+ "input": {
+  "approvals": [
+   "reject",
+   "reject",
+   "reject"
+  ],
+  "note": "Keep these as drafts."
+ },
+ "hops": [
+  {
+   "agent": "writer",
+   "expect": [
+    {
+     "artifact_contains": "Sam"
+    }
+   ]
+  }
+ ],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "no_side_effect": "send_message"
+  },
+  {
+   "approval_resolved_by": "you"
+  },
+  {
+   "artifact_contains": "Dana"
+  }
+ ]
+}

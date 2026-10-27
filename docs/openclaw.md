@@ -7,7 +7,7 @@ There is no bridge code: the gateway sends chat completions, Nimbus runs a crew 
 |---|---|
 | Endpoint | `POST /v1/chat/completions` (streaming and non-streaming), `GET /v1/models` |
 | Auth | `Authorization: Bearer $NIMBUS_API_TOKEN`. If the variable is empty the endpoint is open in dev and closed in production. |
-| Model | `nimbus/<workstream>`: `nimbus/checkout-drop`, `nimbus/mezo-watch`, `nimbus/inbox-triage` (default when unknown) |
+| Model | `nimbus/<workstream>`: `nimbus/ship-nimbus`, `nimbus/hackathon-radar`, `nimbus/morning-brief`, `nimbus/cost-audit`, `nimbus/release-watch`, `nimbus/checkout-drop` (default when unknown: ship-nimbus) |
 | Message | The last user message becomes the run's goal. |
 | Reply | A plan line, then the Writer's final document. If the crew needs an approval or asks a question, the reply ends with `⚠ Needs your approval: <summary> → <web composer URL>` and the run waits there. Approvals never happen in chat. |
 
@@ -27,7 +27,7 @@ Nimbus as the provider:
   "api": "openai-completions",
   "models": [
     { "id": "nimbus/checkout-drop", "name": "Nimbus · Checkout drop", "input": ["text"], "contextWindow": 256000, "maxTokens": 8192 },
-    { "id": "nimbus/inbox-triage",  "name": "Nimbus · Inbox triage",  "input": ["text"], "contextWindow": 256000, "maxTokens": 8192 }
+    { "id": "nimbus/morning-brief",  "name": "Nimbus · Morning brief",  "input": ["text"], "contextWindow": 256000, "maxTokens": 8192 }
   ] } } } }
 ```
 

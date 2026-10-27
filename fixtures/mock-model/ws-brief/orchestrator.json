@@ -1,0 +1,108 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the brief",
+   "usage": {
+    "in": 4400,
+    "out": 480
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "analyst",
+        "brief": "Read the inbox export, today's calendar and the GitHub notifications; write the one-page brief."
+       },
+       {
+        "role": "writer",
+        "brief": "Draft the three replies that matter; each needs your approval."
+       }
+      ],
+      "tools": [
+       "read_repo",
+       "fetch_url",
+       "write_artifact",
+       "send_message"
+      ],
+      "estimate": {
+       "costUsd": 0.03,
+       "tokens": 24000,
+       "label": "≈ $0.03 · Ultra ×1 · Super ×4"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading the morning",
+   "usage": {
+    "in": 1500,
+    "out": 140
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "spawn_agents",
+     "input": {
+      "agents": [
+       {
+        "role": "analyst",
+        "brief": "Read fixtures/inbox/*.eml, fixtures/calendar.ics and the GitHub notifications; write the morning brief."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Drafting three replies",
+   "usage": {
+    "in": 3300,
+    "out": 260
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "spawn_agents",
+     "input": {
+      "agents": [
+       {
+        "role": "writer",
+        "brief": "Reply to Dana: sign this week, walk through two clauses on the 14:00 call."
+       },
+       {
+        "role": "writer",
+        "brief": "Reply to Priya: confirm the 11:30 dry run and send the demo link."
+       },
+       {
+        "role": "writer",
+        "brief": "Reply to Sam: the fix has not landed, a PR is open."
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "label": "Final judgment",
+   "usage": {
+    "in": 4300,
+    "out": 200
+   },
+   "complexity": 1,
+   "text": "Done. The brief is in the Artifact tab; each reply went out only after your approval.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "Brief written; 3 replies handled."
+     }
+    }
+   ]
+  }
+ ]
+}

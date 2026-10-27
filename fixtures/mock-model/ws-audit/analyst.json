@@ -1,0 +1,66 @@
+{
+ "role": "analyst",
+ "turns": [
+  {
+   "label": "Reading the usage export",
+   "usage": {
+    "in": 1500,
+    "out": 110
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "read_repo",
+     "input": {
+      "action": "read",
+      "path": "fixtures/usage-export.json"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Ranking the hops",
+   "usage": {
+    "in": 3200,
+    "out": 480
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "python",
+      "filename": "top_hops.py",
+      "code": "rows = [\n    (1, \"ws-ship-nimbus\", \"orchestrator\", \"ultra\", 0.00806),\n    (2, \"ws-ship-nimbus\", \"orchestrator\", \"ultra\", 0.00896),\n    (3, \"ws-ship-nimbus\", \"orchestrator\", \"ultra\", 0.0098),\n    (4, \"ws-ship-nimbus\", \"analyst\", \"super\", 0.00359),\n    (5, \"ws-ship-nimbus\", \"analyst\", \"super\", 0.00325),\n    (6, \"ws-ship-nimbus\", \"writer\", \"super\", 0.0022),\n    (7, \"ws-ship-nimbus\", \"researcher\", \"super\", 0.00157),\n    (8, \"ws-radar\", \"orchestrator\", \"ultra\", 0.00684),\n    (9, \"ws-radar\", \"writer\", \"super\", 0.00248),\n    (10, \"ws-radar\", \"researcher\", \"super\", 0.00183),\n    (11, \"ws-brief\", \"writer\", \"super\", 0.00166),\n    (12, \"ws-brief\", \"analyst\", \"super\", 0.00245),\n    (13, \"ws-checkout\", \"orchestrator\", \"ultra\", 0.00858),\n    (14, \"ws-checkout\", \"learner\", \"nano\", 0.00068),\n]\ntotal = sum(r[4] for r in rows)\nprint('top five hops by cost')\nfor n, ws, role, tier, usd in sorted(rows, key=lambda r: -r[4])[:5]:\n    print(f'#{n:<3} {ws:<16} {role:<12} {tier:<6} $' + format(usd, '.5f') + f'  {usd/total*100:4.1f}%')\ntop = sum(sorted((r[4] for r in rows), reverse=True)[:5])\nprint(f'top five = {top/total*100:.1f}% of $' + format(total, '.4f'))\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Checking the router on the cheap goldens",
+   "usage": {
+    "in": 4300,
+    "out": 150
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "shell",
+      "code": "pnpm eval:ab --cheap"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 6100,
+    "out": 340
+   },
+   "complexity": 1,
+   "text": "The five most expensive hops make up most of the week's cost; the orchestrator's late turns lead. The router already saves spend on the cheap goldens (see the eval:ab output). Proposed: cap the orchestrator's final judgment at Super; send researcher reporting turns to Nano."
+  }
+ ]
+}

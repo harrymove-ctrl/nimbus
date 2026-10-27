@@ -1,0 +1,62 @@
+{
+ "role": "researcher",
+ "turns": [
+  {
+   "label": "Searching the hackathon pages",
+   "usage": {
+    "in": 1500,
+    "out": 130
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "web_search",
+     "input": {
+      "query": "Nebius NVIDIA hackathon personal agent Devpost"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading the Devpost page",
+   "usage": {
+    "in": 2600,
+    "out": 200
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://nebiusglobalaihackathon.devpost.example.com/"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reading the closest competitor",
+   "usage": {
+    "in": 3400,
+    "out": 220
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "fetch_url",
+     "input": {
+      "url": "https://devpost.example.com/software/bridge-bot"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 4300,
+    "out": 420
+   },
+   "complexity": 1,
+   "text": "Hackathon: submissions close Oct 30, 10:00 PDT; 41 of 312 started projects are submitted; the FAQ now requires a public GitHub repo with a visible MIT licence. Competitor: Bridge Bot (Mezo buildathon, Personal AI) is a Telegram agent on Nemotron 3 Super that drafts wallet transfers for approval. Satoshi Pay and Vault Kit do not overlap. News: Token Factory now bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M."
+  }
+ ]
+}

@@ -10,7 +10,7 @@ import { startRun, type RunHandle } from "@/runtime/source";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const DEFAULT_SLUG = "inbox-triage";
+const DEFAULT_SLUG = "ship-nimbus";
 
 function authorized(req: Request): boolean {
   const token = process.env.NIMBUS_API_TOKEN;
