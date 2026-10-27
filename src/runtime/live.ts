@@ -12,7 +12,7 @@ import { runLearner } from "./learner";
 import { writeRecording } from "./recorder";
 import { topMemories } from "./memory";
 import { runOrchestrator } from "./orchestrator";
-import { appendPolicy, countPolicyUse, loadSkill, policyAllows, policySection } from "./skills";
+import { appendPolicy, countPolicyUse, loadSkill, policyAllows, policySection, ruleFor } from "./skills";
 import type { ApprovalDecision, RunHandle, StartRunInput } from "./source";
 
 export function createLiveRun(input: StartRunInput): RunHandle {
@@ -54,12 +54,14 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     workspace: path.join(dataDir(), "workspaces", id),
     signal,
     emit,
+    script: input.workstreamId,
     skill: "",
     memories: [],
     hop: 0,
     routedHops: 0,
     usage: { in: 0, out: 0, costUsd: 0, baselineUsd: 0 },
     artifactVersions: new Map(),
+    artifactContent: new Map(),
     instances: new Set(["orchestrator"]),
     async askUser(instance, role, text, options) {
       const questionId = `q-${++n}`;
@@ -111,6 +113,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     const freeze = process.env.NIMBUS_FREEZE_CONTEXT === "1";
     ctx.skill = freeze ? "" : await loadSkill(input.workstreamId);
     ctx.memories = freeze ? [] : await topMemories(input.workstreamId, input.goal);
+    if (ctx.memories.length) ctx.script = `${input.workstreamId}~2`; // mock mode: run two plays its "~2" scripts where they exist
     await retryBusy(() => db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt, model: modelMode() }));
     emit("run.start", "orchestrator", "orchestrator", { title: input.title, workstreamId: input.workstreamId, goal: input.goal, startedAt, trigger: input.trigger ?? "manual", learned: { memories: ctx.memories.length, policies: policySection(ctx.skill).length } });
 
@@ -182,8 +185,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       emit("approval.resolve", p.who.role, p.who.instance, { approvalId, decision: d.decision, by: "you", always: d.always, note: d.note });
       persist((db) => db.update(schema.approvals).set({ status: d.decision, always: d.always ? 1 : 0, note: d.note ?? null, decidedAt: Date.now() }).where(eq(schema.approvals.id, `${id}:${approvalId}`)));
       if (d.always && d.decision === "approved") {
-        const scope = (p.action.details as { channel?: string } | undefined)?.channel;
-        const rule = `allow: ${p.action.kind}${scope ? ` to ${scope}` : ""} for this workstream`;
+        const rule = ruleFor(p.action);
         emit("policy", p.who.role, p.who.instance, { rule });
         persist(async () => {
           await appendPolicy(input.workstreamId, rule, id);

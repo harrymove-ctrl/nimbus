@@ -18,6 +18,8 @@ export type Assertion =
   | { max_seconds: number }
   | { status: "done" | "cancelled" | "stopped" | "failed" }
   | { route_fallback: true }
+  /** every fallback route event's reason contains this text */
+  | { route_reason_contains: string }
   | { route_all: "nano" | "super" | "ultra" }
   | { policy_emitted: true }
   /** LLM-judged (Nano, 0–2 rubric; 2 = pass). Mock mode scores from evals/fixtures/rubric.json. */
@@ -44,7 +46,7 @@ export type Scenario = {
 
 export type Golden = {
   name: string;
-  workstream: "ws-checkout" | "ws-mezo" | "ws-inbox";
+  workstream: "ws-ship-nimbus" | "ws-radar" | "ws-brief" | "ws-audit" | "ws-release" | "ws-checkout";
   description?: string;
   /** tests a router feature (Tier = Cheap): skipped when the router is off, since off pins every hop to its ceiling */
   requires_router?: boolean;

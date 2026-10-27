@@ -19,7 +19,7 @@ export const routerOn = () => process.env.NIMBUS_ROUTER !== "off";
 const cacheOn = () => (process.env.NIMBUS_CACHE ? process.env.NIMBUS_CACHE === "on" : modelMode() === "nebius");
 const TTL_MS = 24 * 3600 * 1000;
 
-export type Hop = { role: AgentRole; turn: number; brief: string; hasTools: boolean; risk?: "low" | "medium" | "high"; ws?: string };
+export type Hop = { role: AgentRole; turn: number; brief: string; hasTools: boolean; risk?: "low" | "medium" | "high"; ws?: string; instance?: string };
 
 export async function pickTier(ctx: RunCtx, hop: Hop, ceiling: Tier): Promise<{ tier: Tier; reason: string }> {
   if (!routerOn()) return { tier: ceiling, reason: "router off → ceiling" };
@@ -39,7 +39,7 @@ export async function pickTier(ctx: RunCtx, hop: Hop, ceiling: Tier): Promise<{ 
 
 /** Nano classifier scoring 0–2. In mock mode the score comes from the script; real mode asks Nano (cached). */
 async function classify(hop: Hop): Promise<0 | 1 | 2> {
-  if (modelMode() === "mock") return mockTurn(hop.role, hop.turn, hop.ws)?.complexity ?? 1;
+  if (modelMode() === "mock") return mockTurn(hop.role, hop.turn, hop.ws, hop.instance)?.complexity ?? 1;
   const prompt = `Rate how hard this agent step is: 0 = routine, 1 = moderate, 2 = hard reasoning or high stakes. Reply with one digit.\nRole: ${hop.role}\nStep: ${hop.brief.slice(0, 600)}`;
   const key = sha(`classify|${prompt}`);
   const hit = await cacheGet(key);
@@ -85,7 +85,7 @@ export async function callHop(
   let fellBack = false;
   let lastStatus: number | undefined;
   for (;;) {
-    const key = sha([TIERS[tier], o.system, JSON.stringify(o.messages), Object.keys(o.tools).join(","), modelMode() === "mock" ? `${o.role}:${o.turn}` : ""].join("|"));
+    const key = sha([TIERS[tier], o.system, JSON.stringify(o.messages), Object.keys(o.tools).join(","), modelMode() === "mock" ? `${ctx.script}:${o.instance}:${o.turn}` : ""].join("|"));
     const hit = await cacheGet(key);
     if (hit) {
       const r = hit.response as { text: string; toolCalls: ModelCall["toolCalls"] };
@@ -95,7 +95,7 @@ export async function callHop(
       if (ctx.signal.aborted) throw ctx.signal.reason instanceof RunAborted ? ctx.signal.reason : new RunAborted("stop");
       try {
         const res = await generateText({
-          model: getModel({ tier, role: o.role, turn: o.turn, runKey: ctx.runId, script: ctx.workstreamId }),
+          model: getModel({ tier, role: o.role, turn: o.turn, runKey: ctx.runId, script: ctx.script, instance: o.instance }),
           system: o.system,
           messages: o.messages,
           tools: o.tools,
@@ -124,7 +124,12 @@ export async function callHop(
     }
     const lower = lowerTier(tier);
     if (!lower) throw new Error(`${TIERS[tier]} kept failing and there is no lower tier`);
-    o.onFallback(lower, lastStatus === 404 ? `${tier} model id not found (404) → fell back to ${lower}` : `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`);
+    o.onFallback(
+      lower,
+      lastStatus === 404
+        ? `${tier} model id not found (404) → fell back to ${lower}`
+        : `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`,
+    );
     tier = lower;
     fellBack = true;
   }

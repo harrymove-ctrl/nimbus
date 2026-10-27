@@ -64,25 +64,47 @@ export async function revokePolicy(workstreamId: string, index: number): Promise
   return rule;
 }
 
+/**
+ * Policy lines (written by Approve & always allow, one per kind of action):
+ *   `allow: send_message to #growth for this workstream`   (scope = the channel)
+ *   `allow: open_pr for branches fix/*`                     (scope = a branch glob)
+ */
+export type ParsedRule = { kind: string; scope?: string; branches?: string };
+export function parseRule(line: string): ParsedRule | null {
+  const b = line.match(/^allow:\s*(\w+)\s+for branches\s+(\S+)$/);
+  if (b) return { kind: b[1], branches: b[2] };
+  const m = line.match(/^allow:\s*(\w+)(?:\s+to\s+(\S+))?\s+for this workstream$/);
+  return m ? { kind: m[1], scope: m[2] } : null;
+}
+
+/** The line "Approve & always allow" writes for this action. */
+export function ruleFor(action: ProposedAction): string {
+  const d = action.details as { channel?: string; branch?: string } | undefined;
+  if (action.kind === "open_pr" && d?.branch) return `allow: open_pr for branches ${d.branch.split("/")[0]}/*`;
+  return `allow: ${action.kind}${d?.channel ? ` to ${d.channel}` : ""} for this workstream`;
+}
+
+const globMatch = (glob: string, s: string) => new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`).test(s);
+
+/** The policy line that lets this action through without asking, if any. */
+export function matchingRule(skill: string, action: ProposedAction): string | undefined {
+  const d = action.details as { channel?: string; branch?: string } | undefined;
+  return policySection(skill).find((l) => {
+    const r = parseRule(l);
+    if (!r || r.kind !== action.kind) return false;
+    if (r.branches) return !!d?.branch && globMatch(r.branches, d.branch);
+    return !r.scope || r.scope === d?.channel;
+  });
+}
+
+export const policyAllows = (skill: string, action: ProposedAction): boolean => matchingRule(skill, action) !== undefined;
+
 /** A policy line let an action through without asking. */
 export async function countPolicyUse(workstreamId: string, skill: string, action: ProposedAction) {
-  const scope = (action.details as { channel?: string } | undefined)?.channel;
-  const rule = policySection(skill).find((l) => {
-    const m = l.match(/^allow:\s*(\w+)(?:\s+to\s+(\S+))?\s+for this workstream$/);
-    return !!m && m[1] === action.kind && (!m[2] || m[2] === scope);
-  });
+  const rule = matchingRule(skill, action);
   if (!rule) return;
   const db = await getDb();
   await db.update(schema.policies).set({ usedCount: sql`${schema.policies.usedCount} + 1` }).where(and(eq(schema.policies.workstreamId, workstreamId), eq(schema.policies.rule, rule)));
-}
-
-/** `allow: send_message to #growth for this workstream` allows a send_message to #growth without asking. */
-export function policyAllows(skill: string, action: ProposedAction): boolean {
-  const scope = (action.details as { channel?: string } | undefined)?.channel;
-  return policySection(skill).some((l) => {
-    const m = l.match(/^allow:\s*(\w+)(?:\s+to\s+(\S+))?\s+for this workstream$/);
-    return !!m && m[1] === action.kind && (!m[2] || m[2] === scope);
-  });
 }
 
 /** Line diff (LCS) for the run summary: " " context, "+" added, "-" removed. */

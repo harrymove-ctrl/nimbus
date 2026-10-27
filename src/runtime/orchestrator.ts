@@ -5,7 +5,7 @@ import { ROLE_TIER, type AgentRole } from "@/lib/models";
 import { RunAborted, sleep, type RunCtx } from "./context";
 import { runAgent, type AgentRef, type Exec } from "./agent";
 import { SpendCapError } from "./budget";
-import { SCHEMAS, sendMessage } from "./tools";
+import { SCHEMAS, openPr, sendMessage } from "./tools";
 
 const ORCH: AgentRef = { role: "orchestrator", instance: "orchestrator" };
 const planWindowMs = () => (process.env.NIMBUS_PLAN_WINDOW_MS ? Number(process.env.NIMBUS_PLAN_WINDOW_MS) : process.env.NIMBUS_MOCK_FAST === "1" ? 0 : 3000);
@@ -83,6 +83,7 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
       const a = await ctx.requestApproval(action, ORCH);
       if (a.decision !== "approved") return { decision: "rejected", note: a.note ?? null, sent: false };
       if (action.kind === "send_message") return { decision: "approved", ...sendMessage(ctx, action.details as { channel: string; text: string }) };
+      if (action.kind === "open_pr") return { decision: "approved", ...(await openPr(ctx, action.details as { branch: string; title: string; body: string; patchArtifactId: string })) };
       return { decision: "approved" };
     },
     ask_user: async (input: z.infer<typeof SCHEMAS.ask_user>) => ({ answer: await ctx.askUser(ORCH.instance, "orchestrator", input.text, input.options) }),

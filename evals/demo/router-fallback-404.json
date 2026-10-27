@@ -1,0 +1,22 @@
+{
+ "name": "router-fallback-404",
+ "workstream": "ws-checkout",
+ "description": "DEMO golden, not part of the suite: the 404 fallback's route reason must state the ceiling. Fails on purpose until the router patch lands (Ship Nimbus fixes it).",
+ "input": {
+  "env": {
+   "NIMBUS_BAD_MODEL": "super"
+  }
+ },
+ "hops": [],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "route_fallback": true
+  },
+  {
+   "route_reason_contains": "ceiling"
+  }
+ ]
+}

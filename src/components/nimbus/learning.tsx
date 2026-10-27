@@ -212,11 +212,16 @@ function RuleCard({ rule, onRevoke }: { rule: LearnedRule; onRevoke: () => void 
     return () => clearTimeout(t);
   }, [sure]);
   const m = rule.rule.match(/^allow:\s*(\w+)(?:\s+to\s+(\S+))?\s+for this workstream$/);
+  const b = rule.rule.match(/^allow:\s*(\w+)\s+for branches\s+(\S+)$/);
   return (
     <div className={cx(card, "flex items-center gap-2 px-3 py-2.5")}>
       <div className="min-w-0 flex-1">
         <p className="text-[14px]/[21px] text-neutral-100">
-          {m ? (
+          {b ? (
+            <>
+              Allow <Code>{b[1]}</Code> for branches <Code>{b[2]}</Code>
+            </>
+          ) : m ? (
             <>
               Allow <Code>{m[1]}</Code>
               {m[2] && (

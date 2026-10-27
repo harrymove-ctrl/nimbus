@@ -40,19 +40,27 @@ export type MockTurn = {
 type Script = { role: string; turns: MockTurn[] };
 
 const scripts = new Map<string, Script>();
-/** fixtures/mock-model/<workstream>/<role>.json when it exists, else fixtures/mock-model/<role>.json (the Checkout crew). */
-export function mockScript(role: string, ws?: string): Script {
-  const key = `${ws ?? ""}/${role}`;
+/**
+ * Which script plays this agent. `ws` is the workstream id, plus "~2" once the run starts with memories (the second
+ * run of a workstream behaves differently: it skips what it already learned). Lookup, first hit wins:
+ *   fixtures/mock-model/<ws>/<instance>.json  (writer-2: the second Writer of a run)
+ *   fixtures/mock-model/<ws>/<role>.json
+ *   the same two without the "~2" suffix, then fixtures/mock-model/<role>.json (the Checkout crew).
+ */
+export function mockScript(role: string, ws?: string, instance?: string): Script {
+  const key = `${ws ?? ""}/${instance ?? role}`;
   let s = scripts.get(key);
   if (!s) {
-    const specific = ws ? path.join(process.cwd(), "fixtures", "mock-model", ws, `${role}.json`) : "";
-    const file = specific && existsSync(specific) ? specific : path.join(process.cwd(), "fixtures", "mock-model", `${role}.json`);
-    s = JSON.parse(readFileSync(file, "utf8")) as Script;
+    const root = path.join(process.cwd(), "fixtures", "mock-model");
+    const dirs = ws ? [ws, ws.replace(/~\d+$/, "")].filter((d, i, a) => a.indexOf(d) === i) : [];
+    const names = [...(instance ? [instance] : []), role];
+    const hit = dirs.flatMap((d) => names.map((n) => path.join(root, d, `${n}.json`))).find((f) => existsSync(f)) ?? path.join(root, `${role}.json`);
+    s = JSON.parse(readFileSync(hit, "utf8")) as Script;
     scripts.set(key, s);
   }
   return s;
 }
-export const mockTurn = (role: string, turn: number, ws?: string): MockTurn | undefined => mockScript(role, ws).turns[turn - 1];
+export const mockTurn = (role: string, turn: number, ws?: string, instance?: string): MockTurn | undefined => mockScript(role, ws, instance).turns[turn - 1];
 
 const fast = () => process.env.NIMBUS_MOCK_FAST === "1";
 /** Deterministic 300–900 ms so the timeline animates the same way every time. */
@@ -79,7 +87,7 @@ export class MockHttpError extends Error {
 /** Tests only: what the router asked each mock call for (max tokens per tier). */
 export const mockCallLog: { role: string; tier: Tier; maxOutputTokens?: number }[] = [];
 
-function mockModel(tier: Tier, role: string, turn: number, runKey: string, ws?: string): LanguageModel {
+function mockModel(tier: Tier, role: string, turn: number, runKey: string, ws?: string, instance?: string): LanguageModel {
   return new MockLanguageModelV4({
     provider: "mock",
     modelId: TIERS[tier],
@@ -87,7 +95,7 @@ function mockModel(tier: Tier, role: string, turn: number, runKey: string, ws?: 
       if (process.env.NIMBUS_MOCK_LOG === "1") mockCallLog.push({ role, tier, maxOutputTokens: options.maxOutputTokens });
       // NIMBUS_BAD_MODEL=super: that tier's model id is invalid (404 model not found), like a typo'd id on the real API.
       if (process.env.NIMBUS_BAD_MODEL === tier) throw new MockHttpError(404, `404 model not found: ${TIERS[tier]} (mock)`);
-      const t = mockTurn(role, turn, ws) ?? { text: "Done.", usage: { in: 800, out: 40 } };
+      const t = mockTurn(role, turn, ws, instance) ?? { text: "Done.", usage: { in: 800, out: 40 } };
       const failKey = `${runKey}:${role}:${turn}`;
       if (process.env.NIMBUS_MOCK_FAIL === `${role}:${turn}` && (failCounts.get(failKey) ?? 0) < 2) {
         failCounts.set(failKey, (failCounts.get(failKey) ?? 0) + 1);
@@ -110,13 +118,13 @@ function mockModel(tier: Tier, role: string, turn: number, runKey: string, ws?: 
   });
 }
 
-export function hopLabel(role: string, turn: number, ws?: string): string {
-  return modelMode() === "mock" ? (mockTurn(role, turn, ws)?.label ?? "Thinking") : "Thinking";
+export function hopLabel(role: string, turn: number, ws?: string, instance?: string): string {
+  return modelMode() === "mock" ? (mockTurn(role, turn, ws, instance)?.label ?? "Thinking") : "Thinking";
 }
 
 /** The one place a LanguageModel is made. `turn`/`role` only matter to the mock; `runKey` scopes forced failures. */
-export function getModel(opts: { tier: Tier; role: string; turn: number; runKey?: string; script?: string }): LanguageModel {
-  if (modelMode() === "mock") return mockModel(opts.tier, opts.role, opts.turn, opts.runKey ?? "", opts.script);
+export function getModel(opts: { tier: Tier; role: string; turn: number; runKey?: string; script?: string; instance?: string }): LanguageModel {
+  if (modelMode() === "mock") return mockModel(opts.tier, opts.role, opts.turn, opts.runKey ?? "", opts.script, opts.instance);
   return tokenFactory(process.env.NIMBUS_BAD_MODEL === opts.tier ? "nvidia/does-not-exist" : TIERS[opts.tier]);
 }
 

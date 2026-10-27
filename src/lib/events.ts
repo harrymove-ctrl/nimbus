@@ -6,7 +6,7 @@ import type { AgentRole, Tier } from "./models";
 export type Risk = "low" | "medium" | "high";
 
 export type ProposedAction = {
-  kind: "send_message" | "write_file" | "http_request" | "run_code";
+  kind: "send_message" | "write_file" | "http_request" | "run_code" | "open_pr";
   summary: string;
   details: unknown;
   risk: Risk;

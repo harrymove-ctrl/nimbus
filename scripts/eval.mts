@@ -1,9 +1,13 @@
 // Trajectory evals (SPEC §13): replay goldens against the runtime, grade every hop, print golden × hop, write evals/report.json.
-//   pnpm eval [--cheap] [--router on|off] [--only a,b] [--ab] [--verbose]
+//   pnpm eval [--cheap] [--router on|off] [--only a,b] [--ab] [--verbose] [--patch file.patch]
+//   --only also finds the demo goldens in evals/demo (deliberately failing; never part of the suite).
+//   --patch applies a unified diff to a scratch copy of the repo first, then runs there (how the crew's Checker verifies a fix).
 // Mock model by default (no keys). Exit 1 if the pass rate is under 90 % or any `final` assertion fails.
 process.env.NIMBUS_MOCK_FAST = "1";
 process.env.NIMBUS_CACHE = "off";
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "../src/db";
@@ -18,13 +22,39 @@ import type { Golden, Scenario } from "../evals/types";
 const argv = process.argv.slice(2);
 const flag = (n: string) => argv.includes(`--${n}`);
 const opt = (n: string) => (argv.includes(`--${n}`) ? argv[argv.indexOf(`--${n}`) + 1] : undefined);
+const KNOWN = ["cheap", "router", "only", "ab", "verbose", "patch"];
+const unknown = argv.filter((a) => a.startsWith("--") && !KNOWN.includes(a.slice(2)));
+if (unknown.length) {
+  const ALIAS: Record<string, string> = { golden: "only", goldens: "only", test: "only", name: "only", filter: "only", single: "only", diff: "patch", file: "patch", fast: "cheap" };
+  const near = (a: string) => ALIAS[a.slice(2)] ?? KNOWN.find((k) => k.startsWith(a.slice(2, 5)) || a.slice(2).startsWith(k));
+  console.error(`unknown flag ${unknown[0]}${near(unknown[0]) ? `; did you mean --${near(unknown[0])}?` : ""}\nusage: pnpm eval [--cheap] [--router on|off] [--only a,b] [--ab] [--verbose] [--patch file.patch]`);
+  process.exit(2);
+}
+
+// --patch: run the same command inside a scratch copy of the repo with the diff applied (nothing in the real tree changes).
+const patchFile = opt("patch");
+if (patchFile && !process.env.NIMBUS_EVAL_OVERLAY) {
+  if (!existsSync(patchFile)) (console.error(`patch file not found: ${patchFile}`), process.exit(2));
+  const overlay = mkdtempSync(path.join(os.tmpdir(), "nimbus-overlay-"));
+  for (const d of ["src", "evals", "fixtures", "scripts"]) cpSync(path.join(process.cwd(), d), path.join(overlay, d), { recursive: true, filter: (f) => !f.includes(`${path.sep}real-runs`) });
+  for (const f of ["package.json", "tsconfig.json"]) cpSync(path.join(process.cwd(), f), path.join(overlay, f));
+  symlinkSync(path.join(process.cwd(), "node_modules"), path.join(overlay, "node_modules"));
+  const ap = spawnSync("git", ["apply", "--whitespace=nowarn", path.resolve(patchFile)], { cwd: overlay, encoding: "utf8" });
+  if (ap.status !== 0) (console.error(`patch does not apply:\n${ap.stderr}`), process.exit(1));
+  console.log(`patch ${path.basename(patchFile)} applied cleanly to a scratch copy`);
+  const rest = argv.filter((a, i) => a !== "--patch" && argv[i - 1] !== "--patch");
+  const r = spawnSync(process.execPath, ["--import", "tsx", "scripts/eval.mts", ...rest], { cwd: overlay, stdio: "inherit", env: { ...process.env, NIMBUS_EVAL_OVERLAY: "1" } });
+  process.exit(r.status ?? 1);
+}
+
 const cheap = flag("cheap");
 const only = opt("only")?.split(",");
 const verbose = flag("verbose");
 
 const dir = path.join(process.cwd(), "evals", "trajectories");
-let goldens = readdirSync(dir).filter((f) => f.endsWith(".json")).sort().map((f) => JSON.parse(readFileSync(path.join(dir, f), "utf8")) as Golden);
-if (only) goldens = goldens.filter((g) => only.includes(g.name));
+const load = (d: string) => (existsSync(d) ? readdirSync(d).filter((f) => f.endsWith(".json")).sort().map((f) => JSON.parse(readFileSync(path.join(d, f), "utf8")) as Golden) : []);
+let goldens = load(dir);
+if (only) goldens = [...goldens, ...load(path.join(process.cwd(), "evals", "demo"))].filter((g) => only.includes(g.name));
 if (cheap) goldens = goldens.filter((g) => g.cheap); // the CI set: a few goldens, Nano judge
 if (!goldens.length) {
   console.error("no goldens matched");
@@ -126,8 +156,9 @@ if (runs.off && runs.on) {
 }
 
 const main = runs[routers[routers.length - 1]];
-writeFileSync(path.join(process.cwd(), "evals", "report.json"), JSON.stringify({ model: modelMode(), cheap, routers, delta, runs, ...main.totals }, null, 2));
-if (verbose) console.log("wrote evals/report.json");
+// a partial run (--only) must not overwrite the full-suite report
+if (!only) writeFileSync(path.join(process.cwd(), "evals", "report.json"), JSON.stringify({ model: modelMode(), cheap, routers, delta, runs, ...main.totals }, null, 2));
+if (verbose && !only) console.log("wrote evals/report.json");
 const fail = main.totals.passRate < 0.9 || main.totals.finalFailures > 0;
 console.log(`\nEVAL: ${fail ? "FAIL" : "PASS"} (pass rate ${(main.totals.passRate * 100).toFixed(1)}%, final failures ${main.totals.finalFailures}; gate: ≥ 90% and no failed final)`);
 process.exit(fail ? 1 : 0);

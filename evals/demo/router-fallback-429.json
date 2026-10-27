@@ -1,0 +1,22 @@
+{
+ "name": "router-fallback-429",
+ "workstream": "ws-checkout",
+ "description": "DEMO golden, not part of the suite: the 429 fallback's route reason must say it happened after a retry. Fails on purpose until the router patch lands (Ship Nimbus run two fixes it).",
+ "input": {
+  "env": {
+   "NIMBUS_MOCK_FAIL": "researcher:3"
+  }
+ },
+ "hops": [],
+ "final": [
+  {
+   "status": "done"
+  },
+  {
+   "route_fallback": true
+  },
+  {
+   "route_reason_contains": "after one retry"
+  }
+ ]
+}

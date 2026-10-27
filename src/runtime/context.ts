@@ -9,6 +9,8 @@ export type ApprovalResult = { decision: "approved" | "rejected"; always?: boole
 export type RunCtx = {
   runId: string;
   workstreamId: string;
+  /** mock-model script directory: the workstream id, plus "~2" when the run started with memories (see mockScript) */
+  script: string;
   goal: string;
   mode: "ask" | "auto-low" | "dry";
   /** tools the person allowed for this run (composer Tools chip); control tools are always available */
@@ -26,6 +28,8 @@ export type RunCtx = {
   routedHops: number;
   usage: { in: number; out: number; costUsd: number; baselineUsd: number };
   artifactVersions: Map<string, number>;
+  /** latest content per artifact id (open_pr reads its patch from here) */
+  artifactContent: Map<string, string>;
   instances: Set<string>;
   askUser(instance: string, role: AgentRole, text: string, options?: string[]): Promise<string>;
   requestApproval(action: ProposedAction, who: { role: AgentRole; instance: string }): Promise<ApprovalResult>;

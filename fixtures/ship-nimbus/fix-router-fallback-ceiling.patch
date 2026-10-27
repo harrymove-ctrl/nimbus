@@ -1,0 +1,11 @@
+--- a/src/runtime/router.ts
++++ b/src/runtime/router.ts
+@@ -127,7 +127,7 @@
+     o.onFallback(
+       lower,
+       lastStatus === 404
+-        ? `${tier} model id not found (404) → fell back to ${lower}`
++        ? `${tier} model id not found (404) → fell back to ${lower} (ceiling stays ${o.ceiling})`
+         : `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`,
+     );
+     tier = lower;

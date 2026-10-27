@@ -50,6 +50,7 @@ export async function check(a: Assertion, all: AnyRunEvent[], role?: AgentRole):
   if ("max_cost_usd" in a) return done(view.costUsd <= a.max_cost_usd, `$${view.costUsd.toFixed(4)}`);
   if ("max_seconds" in a) { const s = Math.max(...all.map((e) => e.tMs)) / 1000; return done(s <= a.max_seconds, `${s.toFixed(1)}s`); }
   if ("status" in a) { const r = all.find((e) => e.type === "run.end"); return done(!!r && r.type === "run.end" && r.payload.status === a.status, r && r.type === "run.end" ? r.payload.status : "no run.end"); }
+  if ("route_reason_contains" in a) { const rs = all.filter((e) => e.type === "route" && e.payload.fallback).map((e) => (e.type === "route" ? e.payload.reason : "")); return done(rs.length > 0 && rs.every((r) => r.includes(a.route_reason_contains)), rs.length ? `fallback reason: "${rs[0]}"` : "no fallback route event"); }
   if ("route_fallback" in a) return done(all.some((e) => e.type === "route" && e.payload.fallback), "fallback route event");
   if ("route_all" in a) { const routes = all.filter((e) => e.type === "route"); return done(routes.length > 0 && routes.every((e) => e.type === "route" && e.payload.chosen === a.route_all), `${routes.length} hops`); }
   if ("policy_emitted" in a) return done(all.some((e) => e.type === "policy"), "policy event");

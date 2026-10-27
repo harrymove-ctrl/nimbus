@@ -1,0 +1,11 @@
+--- a/src/runtime/router.ts
++++ b/src/runtime/router.ts
+@@ -128,7 +128,7 @@
+       lower,
+       lastStatus === 404
+         ? `${tier} model id not found (404) → fell back to ${lower}`
+-        : `${tier} failed twice (429/5xx/timeout) → fell back to ${lower}`,
++        : `${tier} failed after one retry (429/5xx/timeout) → fell back to ${lower}`,
+     );
+     tier = lower;
+     fellBack = true;

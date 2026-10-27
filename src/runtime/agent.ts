@@ -10,7 +10,7 @@ import { hopLabel, stripThink } from "@/lib/tokenfactory";
 import { RunAborted, type RunCtx } from "./context";
 import { SpendCapError, inflight, runCapUsd } from "./budget";
 import { callHop, pickTier } from "./router";
-import { CONTROL_TOOLS, ROLE_TOOLS, fetchUrl, runCode, sendMessage, toolLabel, toolSet, webSearch, writeArtifact, type ToolName } from "./tools";
+import { CONTROL_TOOLS, ROLE_TOOLS, fetchUrl, openPr, readRepo, runCode, sendMessage, toolLabel, toolSet, webSearch, writeArtifact, type ToolName } from "./tools";
 
 export type AgentRef = { role: AgentRole; instance: string };
 export type Exec = Partial<Record<ToolName, (input: never) => Promise<unknown>>>;
@@ -61,12 +61,12 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
       }
     }
     const hopNo = ++ctx.hop;
-    const { tier, reason } = await pickTier(ctx, { role, turn, brief: messages.map((m) => (typeof m.content === "string" ? m.content : "")).join("\n").slice(-1200), hasTools: Object.keys(tools).length > 0, ws: ctx.workstreamId }, ceiling);
+    const { tier, reason } = await pickTier(ctx, { role, turn, brief: messages.map((m) => (typeof m.content === "string" ? m.content : "")).join("\n").slice(-1200), hasTools: Object.keys(tools).length > 0, ws: ctx.script, instance }, ceiling);
     ctx.emit("route", role, instance, { hop: hopNo, role, chosen: tier, ceiling, reason });
     if (tier !== ceiling) ctx.routedHops++;
 
     const segId = `${instance}-h${turn}`;
-    const label = hopLabel(role, turn, ctx.workstreamId);
+    const label = hopLabel(role, turn, ctx.script, instance);
     ctx.emit(`segment.think`, role, instance, { segId, label, startMs: now() });
     let call;
     try {
@@ -156,6 +156,13 @@ async function builtin(ctx: RunCtx, ref: AgentRef, name: ToolName, input: Record
       const i = input as { channel: string; text: string };
       const a = await ctx.requestApproval({ kind: "send_message", summary: `Send message to ${i.channel}`, risk: "medium", details: i }, ref);
       return a.decision === "approved" ? sendMessage(ctx, i) : { sent: false, note: a.note ?? "rejected" };
+    }
+    case "read_repo":
+      return readRepo(input as never);
+    case "open_pr": {
+      const i = input as { branch: string; title: string; body: string; patchArtifactId: string };
+      const a = await ctx.requestApproval({ kind: "open_pr", summary: `Open PR ${i.branch} → main`, risk: "medium", details: i }, ref);
+      return a.decision === "approved" ? openPr(ctx, i) : { opened: false, note: a.note ?? "rejected" };
     }
     case "ask_user":
       return { answer: await ctx.askUser(ref.instance, ref.role, String(input.text), input.options as string[] | undefined) };

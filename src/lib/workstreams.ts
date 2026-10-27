@@ -20,6 +20,8 @@ export const TOOL_LABELS: Record<string, string> = {
   run_code: "Run code",
   write_artifact: "Write doc/code",
   send_message: "Send message",
+  read_repo: "Read repo",
+  open_pr: "Open PR",
 };
 
 export const WORKSTREAMS: Workstream[] = [
