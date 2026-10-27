@@ -96,6 +96,7 @@ function Item({ item, view, now, manualMinutes, onDraft, onCancelPlan, onPlan, o
       return (
         <div className="flex flex-col items-end gap-1">
           <p className={userBubble}>{item.text}</p>
+          {item.via && <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-bold text-neutral-300">{item.via === "chat" ? "via chat" : "no reply in time · picked automatically"}</span>}
           {item.queued && <span className="rounded-full bg-white/10 px-2 py-0.5 text-[11px] font-bold text-neutral-300">queued · delivered at the next turn</span>}
         </div>
       );
@@ -284,7 +285,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
         <div className={cx(panelFoot, "nb-fade gap-2")}>
           {item.status === "approved" ? <Check className="size-4 text-emerald-400" aria-hidden="true" /> : <X className="size-4 text-red-400" aria-hidden="true" />}
           <span>
-            {item.status === "approved" ? "Approved" : "Rejected"} by {item.by ?? "you"}
+            {item.status === "approved" ? "Approved" : "Rejected"} {item.by === "chat" ? "via chat" : `by ${item.by ?? "you"}`}
             {item.resolvedMs !== undefined && ` · ${fmtSecs(item.resolvedMs - item.tMs)} after the request`}
             {item.always && " · always allow saved"}
             {item.note && ` · “${item.note}”`}

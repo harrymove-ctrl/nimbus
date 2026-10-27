@@ -21,6 +21,7 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS memories (id TEXT PRIMARY KEY, workstream_id TEXT NOT NULL, text TEXT NOT NULL, embedding TEXT NOT NULL, source_run_id TEXT NOT NULL, created_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS skills (workstream_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, previous TEXT, updated_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS policies (workstream_id TEXT NOT NULL, rule TEXT NOT NULL, source_run_id TEXT, created_at INTEGER NOT NULL, used_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (workstream_id, rule))`,
+  `CREATE TABLE IF NOT EXISTS chat_threads (key TEXT PRIMARY KEY, last_run_id TEXT, pending_approval_id TEXT, pending_question_id TEXT, updated_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS llm_cache (key TEXT PRIMARY KEY, model TEXT NOT NULL, response TEXT NOT NULL, usage TEXT NOT NULL, created_at INTEGER NOT NULL)`,
 ];
 

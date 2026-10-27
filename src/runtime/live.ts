@@ -9,6 +9,7 @@ import { modelMode } from "@/lib/tokenfactory";
 import { SpendCapError, inflight } from "./budget";
 import { RunAborted, deferred, untilAborted, type ApprovalResult, type RunCtx } from "./context";
 import { runLearner } from "./learner";
+import { notifyEvent } from "./notify";
 import { writeRecording } from "./recorder";
 import { topMemories } from "./memory";
 import { runOrchestrator } from "./orchestrator";
@@ -35,6 +36,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     const e = { id: `${id}-${events.length}`, runId: id, seq: events.length, tMs: Date.now() - startedAt, agent, agentInstance, type, payload } as AnyRunEvent;
     events.push(e);
     for (const fn of eventFns) fn(e);
+    notifyEvent({ runId: id, title: input.title, trigger: input.trigger ?? "manual", watching: eventFns.size > 0, events }, e);
     persist((db) => db.insert(schema.runEvents).values({ id: e.id, runId: id, seq: e.seq, tMs: e.tMs, agent, agentInstance, type, payload: payload as never }));
   }
 
@@ -203,7 +205,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       const p = pendingApprovals.get(approvalId);
       if (!p || finished) return false;
       pendingApprovals.delete(approvalId);
-      emit("approval.resolve", p.who.role, p.who.instance, { approvalId, decision: d.decision, by: "you", always: d.always, note: d.note });
+      emit("approval.resolve", p.who.role, p.who.instance, { approvalId, decision: d.decision, by: d.by ?? "you", always: d.always, note: d.note });
       persist((db) => db.update(schema.approvals).set({ status: d.decision, always: d.always ? 1 : 0, note: d.note ?? null, decidedAt: Date.now() }).where(eq(schema.approvals.id, `${id}:${approvalId}`)));
       if (d.always && d.decision === "approved") {
         const rule = ruleFor(p.action);
@@ -214,7 +216,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
         });
       }
       if (d.decision === "rejected" && d.note) emit("message", "orchestrator", "user", { id: `note-${++n}`, role: "user", text: d.note });
-      p.d.resolve({ decision: d.decision, always: d.always, note: d.note, by: "you" });
+      p.d.resolve({ decision: d.decision, always: d.always, note: d.note, by: d.by ?? "you" });
       return true;
     },
     setPaused(paused) {
@@ -237,14 +239,14 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       g.resolve(a);
       return true;
     },
-    postMessage({ text, kind, questionId }) {
+    postMessage({ text, kind, questionId, via }) {
       if (finished) return false;
       if (kind === "answer") {
         const qid = questionId ?? [...pendingQuestions.keys()][0];
         const q = qid ? pendingQuestions.get(qid) : undefined;
         if (!q) return false;
         pendingQuestions.delete(qid);
-        emit("message", q.role, "user", { id: `ans-${++n}`, role: "user", text, answerTo: qid });
+        emit("message", q.role, "user", { id: `ans-${++n}`, role: "user", text, answerTo: qid, ...(via ? { via } : {}) });
         q.d.resolve(text);
         return true;
       }

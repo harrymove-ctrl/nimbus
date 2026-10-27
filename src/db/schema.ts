@@ -117,3 +117,15 @@ export const llmCache = sqliteTable("llm_cache", {
   usage: text("usage", { mode: "json" }).notNull(),
   createdAt: integer("created_at").notNull(),
 });
+
+/**
+ * One row per chat conversation (OpenClaw / Hermes / Telegram). `pending_*` hold the announced approval or question as
+ * `<run id>:<approval or question id>`, so a later "approve" or "2" in the same conversation resolves it (docs/CHAT-APPS.md A4).
+ */
+export const chatThreads = sqliteTable("chat_threads", {
+  key: text("key").primaryKey(),
+  lastRunId: text("last_run_id"),
+  pendingApprovalId: text("pending_approval_id"),
+  pendingQuestionId: text("pending_question_id"),
+  updatedAt: integer("updated_at").notNull(),
+});

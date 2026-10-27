@@ -48,7 +48,7 @@ export type Artifact = {
 };
 
 export type TItem =
-  | { t: "user"; seq: number; tMs: number; id: string; text: string; queued: boolean }
+  | { t: "user"; seq: number; tMs: number; id: string; text: string; queued: boolean; via?: "chat" | "auto" }
   | { t: "agent"; seq: number; tMs: number; instance: string; role: AgentRole; text: string }
   | { t: "plan"; seq: number; tMs: number; agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string }; steps: PlanStep[]; /** a person is reviewing this draft */ awaiting: boolean; approved: boolean; edited: boolean; revision: number }
   | { t: "handoff"; seq: number; tMs: number; from: string; to: string; context: string }
@@ -411,7 +411,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
           v.summary = p.summary;
           v.transcript.push({ t: "summary", seq: e.seq, tMs: e.tMs, summary: p.summary });
         } else if (p.role === "user") {
-          const m = { t: "user" as const, seq: e.seq, tMs: e.tMs, id: p.id, text: p.text, queued: !!p.queued };
+          const m = { t: "user" as const, seq: e.seq, tMs: e.tMs, id: p.id, text: p.text, queued: !!p.queued, ...(p.via ? { via: p.via } : {}) };
           userMsgs.set(p.id, m);
           v.transcript.push(m);
           if (p.answerTo) {

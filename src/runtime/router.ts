@@ -61,16 +61,16 @@ async function classify(hop: Hop): Promise<0 | 1 | 2> {
 
 /* ---------------- llm_cache ---------------- */
 
-const sha = (s: string) => createHash("sha256").update(s).digest("hex");
+export const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 
-async function cacheGet(key: string) {
+export async function cacheGet(key: string) {
   if (!cacheOn()) return null;
   const db = await getDb();
   const [row] = await db.select().from(schema.llmCache).where(eq(schema.llmCache.key, key));
   if (!row || Date.now() - row.createdAt > TTL_MS) return null;
   return { response: row.response as Record<string, unknown>, usage: row.usage as { in: number; out: number } };
 }
-async function cachePut(key: string, model: string, response: unknown, usage: { in: number; out: number }) {
+export async function cachePut(key: string, model: string, response: unknown, usage: { in: number; out: number }) {
   if (!cacheOn()) return;
   const db = await getDb();
   await db.insert(schema.llmCache).values({ key, model, response, usage, createdAt: Date.now() }).onConflictDoUpdate({ target: schema.llmCache.key, set: { response, usage, createdAt: Date.now() } });

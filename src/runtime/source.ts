@@ -18,7 +18,7 @@ export type StartRunInput = {
   review?: boolean;
 };
 
-export type ApprovalDecision = { decision: "approved" | "rejected"; always?: boolean; note?: string };
+export type ApprovalDecision = { decision: "approved" | "rejected"; always?: boolean; note?: string; /** where the decision came from; "you" (the web app) when absent */ by?: "you" | "chat" };
 
 export interface RunHandle {
   id: string;
@@ -33,7 +33,7 @@ export interface RunHandle {
   resolveApproval(approvalId: string, d: ApprovalDecision): boolean;
   setPaused(paused: boolean): boolean;
   planAction(a: { action: "approve" | "revise"; steps: PlanStep[] }): boolean;
-  postMessage(m: { text: string; kind: "steer" | "answer"; questionId?: string }): boolean;
+  postMessage(m: { text: string; kind: "steer" | "answer"; questionId?: string; via?: "chat" | "auto" }): boolean;
   stop(reason: "stop" | "cancel"): void;
 }
 

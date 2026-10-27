@@ -54,6 +54,8 @@ export interface PayloadMap {
     ackOf?: string;
     /** this message answers the question with this id */
     answerTo?: string;
+    /** where the person said it: "chat" (a chat app) or "auto" (nobody answered in time and the crew picked an option) */
+    via?: "chat" | "auto";
     card?: "summary";
     summary?: RunSummary;
   };
