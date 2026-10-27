@@ -283,7 +283,7 @@ export function Composer(p: ComposerProps) {
           </div>
         )}
 
-        <div className="flex h-11 shrink-0 items-center gap-1 px-2 pb-1">
+        <div className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-1 gap-y-1 px-2 pb-1">
           <input ref={fileRef} type="file" multiple accept=".csv,.pdf,.png,.jpg,.jpeg,.txt,.md,.json" className="hidden" onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
           <Chip label="Attach" icon={<Paperclip className="size-3.5" />} disabled={live || state === "planning"} onClick={() => fileRef.current?.click()} />
           <ChipMenu
@@ -298,7 +298,7 @@ export function Composer(p: ComposerProps) {
           <ChipMenu label="Mode" icon={<ShieldCheck className="size-3.5" />} value={MODES.find((m) => m.key === p.mode)?.label} disabled={live || state === "planning"} items={MODES.map((m) => ({ key: m.key, label: m.label, checked: m.key === p.mode }))} onPick={(k) => p.setMode(k as Mode)} />
           <ChipMenu label="Tier" icon={<Gauge className="size-3.5" />} value={TIERS.find((t) => t.key === p.tier)?.label.split(" ")[0]} disabled={live || state === "planning"} items={TIERS.map((t) => ({ key: t.key, label: t.label, checked: t.key === p.tier }))} onPick={(k) => p.setTier(k as TierChoice)} />
 
-          <div className="ms-auto flex items-center gap-2">
+          <div className="ms-auto flex flex-wrap items-center justify-end gap-2">
             {estimate && (state === "drafting" || state === "slash") && (
               <span className="hidden max-w-[260px] truncate rounded-full bg-white/8 px-2.5 py-1 text-[12px] font-bold tabular-nums text-neutral-300 sm:block" title="Estimated by Nano; cached per draft">
                 <CountUp value={estimate.cost} format={(n) => `≈ $${n.toFixed(2)}`} ms={300} /> · {estimate.rest}

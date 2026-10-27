@@ -137,7 +137,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
             className="relative min-h-0 flex-1 overflow-y-auto"
           >
             {planning && (
-              <div className="absolute inset-0 z-10 grid place-items-center bg-neutral-950/80 backdrop-blur-[2px]">
+              <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-neutral-950/80 backdrop-blur-[2px]">
                 <div className="flex flex-col items-center gap-1">
                   {/* Z6: 160 px cloud in the timeline header until the crew is spawned */}
                   <div className="nb-pop-slow size-40">
