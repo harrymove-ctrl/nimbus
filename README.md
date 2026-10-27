@@ -83,6 +83,9 @@ model; the real-model day swaps the model, not the workstreams.
 | `NEBIUS_API_KEY`, `NEBIUS_BASE_URL` | Nebius Token Factory (OpenAI-compatible) |
 | `TAVILY_API_KEY` | Researcher search; without it (or in mock mode) `fixtures/search/*.json` answers |
 | `NIMBUS_API_TOKEN` | Bearer for `/v1/chat/completions`; empty = open in dev, closed in production |
+| `NIMBUS_PUBLIC_URL` | Base for run links in chat replies and Telegram messages; empty = the request's origin |
+| `NIMBUS_V1_LOG` | `1` writes each `/v1` request body to `data/v1-log/` (authorization removed) |
+| `NIMBUS_TELEGRAM_BOT_TOKEN`, `NIMBUS_TELEGRAM_CHAT_ID` | Nimbus messages you first about approvals, questions and finished unattended runs (send only); empty = off |
 | `NIMBUS_DATA_DIR` | SQLite file and run workspaces (default `./data`) |
 | `NIMBUS_ROUTER` | `on` (default) or `off` (pin every hop to its role's ceiling tier) |
 | `NIMBUS_RULES` | `off` ignores `data/router-rules.json`, the rules an approved proposal writes (default: applied) |
@@ -121,7 +124,7 @@ classifier) and falls one tier down on 429, 5xx, timeout or a bad model id. It n
 rewrites `SKILL.md`. The diff is in the run summary, with a **Revert skill change** button.
 
 **Always on.** `node-cron` inside the app starts scheduled workstreams; `pnpm run:job` is the headless entrypoint for
-Serverless Jobs. **In chat apps:** `POST /v1/chat/completions` ([docs/openclaw.md](docs/openclaw.md)).
+Serverless Jobs. **In chat apps:** model `nimbus` on `POST /v1/chat/completions` understands approve, deny, answer, status, ask and run, and can message you first on Telegram ([docs/openclaw.md](docs/openclaw.md); mock-tested with `pnpm check:chat`, not yet run against a real OpenClaw or Hermes).
 
 ## How we use NVIDIA Nemotron and Nebius
 

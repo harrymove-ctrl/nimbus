@@ -112,3 +112,10 @@ the build session runs continuously and stretch items stay out.
 - Nebius Serverless Endpoint needs a container registry and ~5 min create time; Vercel is the fallback demo URL.
 - Devpost page returned 403 to automated fetch; the deadline is from search snippets. Confirm it on the page.
 - All phases are being built in mock mode; the first real-model run happens on the final day. Keep 4 hours for surprises.
+
+## Chat apps (Phase A and B built, mock mode)
+
+- Built and checked by `pnpm check:chat` (62 checks, no server, local Telegram stub): request log, compatibility, the `nimbus` model with the intent router, `chat_threads`, phone-length replies, crew questions in chat with the 10 min fallback, and the Telegram send-only notifier (`src/runtime/notify.ts`).
+- Not verified: OpenClaw and Hermes against `/v1` (Phase C and D are the user's steps), a real Telegram bot, the real Nano classifier and the real-mode `ask` path (mock mode uses fixed fallbacks: classifier → ask, extractive answers).
+- Known limits: with no `user` field and a client that sends only the latest message, each message is a new thread; "approve" then falls back to the latest item announced to any chat, which is right for one person and one bot and wrong for several. Read `data/v1-log/` from the first real request before relying on it.
+- A pushed approval or question is found by any conversation (single-user assumption). A question asked by a cron run has no 10 min fallback (only chat-started runs do).
