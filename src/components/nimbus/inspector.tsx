@@ -75,28 +75,34 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
   const [kind, setKind] = useState<"doc" | "code">("doc");
   const [ver, setVer] = useState<number | "latest">("latest");
   const [copied, setCopied] = useState(false);
+  // the artifact a transcript chip opened: it stays on screen while other artifacts get new versions
+  const [pinned, setPinned] = useState<string | null>(null);
+  useEffect(() => setPinned(null), [view.runId]);
 
   const total = view.artifacts.reduce((n, a) => n + a.versions.length, 0);
-  // A new version lands: show it (LATEST selected on arrival).
+  // A new version lands: show it (LATEST selected on arrival), unless it belongs to another artifact than the pinned one.
   useEffect(() => {
+    const newest = [...view.transcript].reverse().find((i) => i.t === "artifact");
+    if (pinned && newest?.t === "artifact" && newest.artifactId !== pinned) return;
     setVer("latest");
     // The newest version decides the view: a doc always takes focus; code only if there is no doc yet.
-    const newest = [...view.transcript].reverse().find((i) => i.t === "artifact");
-    if (newest?.t === "artifact") setKind(newest.kind === "doc" ? "doc" : docs.length ? "doc" : "code");
+    if (!pinned && newest?.t === "artifact") setKind(newest.kind === "doc" ? "doc" : docs.length ? "doc" : "code");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total]);
   useEffect(() => {
     if (!focus) return;
     const a = view.artifacts.find((x) => x.id === focus.id);
-    if (a) {
-      setKind(a.kind);
-      setVer(focus.version === a.versions[a.versions.length - 1].version ? "latest" : focus.version);
-    }
+    if (!a) return;
+    const last = a.versions[a.versions.length - 1].version;
+    if (a.id === pinned && (ver === "latest" ? last : ver) === focus.version) return; // already showing it
+    setPinned(a.id);
+    setKind(a.kind);
+    setVer(focus.version === last ? "latest" : focus.version);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focus?.n]);
 
   const list = kind === "doc" ? docs : codes;
-  const art: Artifact | undefined = list[list.length - 1] ?? (docs.length ? docs[docs.length - 1] : codes[codes.length - 1]);
+  const art: Artifact | undefined = (pinned ? list.find((a) => a.id === pinned) : undefined) ?? list[list.length - 1] ?? (docs.length ? docs[docs.length - 1] : codes[codes.length - 1]);
 
   if (!art) return <Empty>Documents and code the crew writes appear here, with versions.</Empty>;
   const latest = art.versions[art.versions.length - 1];
@@ -107,7 +113,7 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
       <div className="flex h-12 shrink-0 items-center gap-2 border-b border-white/10 px-3">
         <div className="inline-flex rounded-lg bg-white/8 p-0.5" role="group" aria-label="Artifact kind">
           {(["doc", "code"] as const).map((k) => (
-            <button key={k} data-cuelume-select="" disabled={(k === "doc" ? docs : codes).length === 0} aria-pressed={kind === k} onClick={() => setKind(k)} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold uppercase tracking-wider disabled:opacity-30", kind === k ? "bg-neutral-100 text-neutral-900" : "text-neutral-300")}>
+            <button key={k} data-cuelume-select="" disabled={(k === "doc" ? docs : codes).length === 0} aria-pressed={kind === k} onClick={() => (setKind(k), setPinned(null))} className={cx("h-7 rounded-md px-2.5 text-[11px] font-extrabold uppercase tracking-wider disabled:opacity-30", kind === k ? "bg-neutral-100 text-neutral-900" : "text-neutral-300")}>
               {k}
             </button>
           ))}
