@@ -5,20 +5,13 @@
 import { WORKSTREAMS } from "@/lib/workstreams";
 import type { AnyRunEvent } from "@/lib/events";
 import { checkDayBudget } from "@/runtime/budget";
+import { apiError, authorized, collect, jsonCompletion, lastUserText, logRequest, sseResponse, type ChatBody, type Reply } from "@/runtime/chat-api";
 import { startRun, type RunHandle } from "@/runtime/source";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const DEFAULT_SLUG = "ship-nimbus";
-
-function authorized(req: Request): boolean {
-  const token = process.env.NIMBUS_API_TOKEN;
-  if (!token) return process.env.NODE_ENV !== "production"; // no token set: open in dev, closed in production
-  return req.headers.get("authorization") === `Bearer ${token}`;
-}
-
-const textOf = (c: unknown): string => (typeof c === "string" ? c : Array.isArray(c) ? c.map((p) => (typeof p === "object" && p && "text" in p ? String((p as { text: unknown }).text) : "")).join("") : "");
 
 /** Turns a run into text pieces: a short progress line, then either an approval/question notice or the final answer. */
 async function* pieces(run: RunHandle, origin: string): AsyncGenerator<string> {
@@ -62,44 +55,30 @@ async function* pieces(run: RunHandle, origin: string): AsyncGenerator<string> {
   }
 }
 
+const usageOf = (run: RunHandle) => {
+  const u = run.events.reduce((a, e) => (e.type === "usage" ? { i: a.i + e.payload.in, o: a.o + e.payload.out } : a), { i: 0, o: 0 });
+  return { prompt_tokens: u.i, completion_tokens: u.o, total_tokens: u.i + u.o };
+};
+
 export async function POST(req: Request) {
-  if (!authorized(req)) return Response.json({ error: { message: "Invalid or missing bearer token", type: "invalid_request_error" } }, { status: 401 });
-  const body = (await req.json().catch(() => null)) as { model?: string; messages?: { role: string; content: unknown }[]; stream?: boolean } | null;
-  const goal = [...(body?.messages ?? [])].reverse().find((m) => m.role === "user");
-  if (!body || !goal) return Response.json({ error: { message: "messages must include a user message", type: "invalid_request_error" } }, { status: 400 });
+  if (!authorized(req)) return apiError(401, "Invalid or missing bearer token");
+  const body = (await req.json().catch(() => null)) as ChatBody | null;
+  await logRequest(req, body);
+  const goal = body ? lastUserText(body) : null;
+  if (!body || goal === null) return apiError(400, "messages must include a user message");
 
   const budget = await checkDayBudget();
-  if (!budget.ok) return Response.json({ error: { message: budget.message, type: "insufficient_quota", code: "day_cap" } }, { status: 429 });
+  if (!budget.ok) return apiError(429, budget.message ?? "Daily spend cap reached", "insufficient_quota", "day_cap");
   const slug = (body.model ?? "").split("/").pop();
   const ws = WORKSTREAMS.find((w) => w.slug === slug) ?? WORKSTREAMS.find((w) => w.slug === DEFAULT_SLUG)!;
-  const run = startRun({ workstreamId: ws.id, title: ws.title, goal: textOf(goal.content) || ws.goal, trigger: "chat", mode: "ask", tools: ws.tools });
+  const run = startRun({ workstreamId: ws.id, title: ws.title, goal: goal || ws.goal, trigger: "chat", mode: "ask", tools: ws.tools });
   const origin = new URL(req.url).origin;
-  const id = `chatcmpl-${run.id}`;
-  const model = `nimbus/${ws.slug}`;
-  const created = Math.floor(Date.now() / 1000);
-
-  if (!body.stream) {
-    let content = "";
-    for await (const p of pieces(run, origin)) content += p;
-    const usage = run.events.filter((e) => e.type === "usage").reduce((a, e) => (e.type === "usage" ? { i: a.i + e.payload.in, o: a.o + e.payload.out } : a), { i: 0, o: 0 });
-    return Response.json({ id, object: "chat.completion", created, model, choices: [{ index: 0, message: { role: "assistant", content: content.trim() }, finish_reason: "stop" }], usage: { prompt_tokens: usage.i, completion_tokens: usage.o, total_tokens: usage.i + usage.o }, nimbus: { run_id: run.id, url: `${origin}/?run=${run.id}` } });
+  const link = `${origin}/?run=${run.id}`;
+  async function* all() {
+    yield `On it: ${ws.title}.\n`; // first token at once; the run takes a while
+    yield* pieces(run, origin);
   }
-
-  const enc = new TextEncoder();
-  const chunk = (delta: Record<string, unknown>, finish: string | null = null) => enc.encode(`data: ${JSON.stringify({ id, object: "chat.completion.chunk", created, model, choices: [{ index: 0, delta, finish_reason: finish }] })}\n\n`);
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      controller.enqueue(chunk({ role: "assistant", content: "" }));
-      try {
-        for await (const p of pieces(run, origin)) for (let i = 0; i < p.length; i += 48) controller.enqueue(chunk({ content: p.slice(i, i + 48) }));
-      } catch (e) {
-        controller.enqueue(chunk({ content: `\n[nimbus error: ${e instanceof Error ? e.message : String(e)}]` }));
-      }
-      controller.enqueue(chunk({}, "stop"));
-      controller.enqueue(enc.encode("data: [DONE]\n\n"));
-      controller.close();
-    },
-    cancel() {},
-  });
-  return new Response(stream, { headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache, no-transform", Connection: "keep-alive" } });
+  const reply: Reply = { id: `chatcmpl-${run.id}`, model: `nimbus/${ws.slug}`, pieces: all(), usage: () => usageOf(run), nimbus: { run_id: run.id, url: link } };
+  if (!body.stream) return jsonCompletion(reply, await collect(reply.pieces));
+  return sseResponse(reply, !!body.stream_options?.include_usage);
 }
