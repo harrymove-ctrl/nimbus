@@ -93,6 +93,8 @@ export type RunView = {
   /** 0..1 saved vs pricing every hop at its ceiling tier; null until there is spend */
   savings: number | null;
   routedHops: number;
+  /** memories and policy lines this run loaded from earlier runs (the "learned" chip) */
+  learned?: { memories: number; policies: number };
 };
 
 export const ROLE_LABEL: Record<AgentRole, string> = {
@@ -190,6 +192,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
         v.title = p.title;
         v.goal = p.goal;
         v.startedAt = p.startedAt;
+        v.learned = p.learned;
         v.active = true;
         lane("orchestrator", "orchestrator");
         break;

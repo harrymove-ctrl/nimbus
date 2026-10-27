@@ -14,3 +14,5 @@ data/
 next-env.d.ts
 .next-*/
 evals/report.json
+docs/demo/.tmp-video/
+.playwright-browsers/

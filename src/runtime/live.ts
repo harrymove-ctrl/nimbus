@@ -9,7 +9,7 @@ import { RunAborted, deferred, untilAborted, type ApprovalResult, type RunCtx } 
 import { runLearner } from "./learner";
 import { topMemories } from "./memory";
 import { runOrchestrator } from "./orchestrator";
-import { appendPolicy, loadSkill, policyAllows } from "./skills";
+import { appendPolicy, loadSkill, policyAllows, policySection } from "./skills";
 import type { ApprovalDecision, RunHandle, StartRunInput } from "./source";
 
 export function createLiveRun(input: StartRunInput): RunHandle {
@@ -107,7 +107,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     ctx.skill = freeze ? "" : await loadSkill(input.workstreamId);
     ctx.memories = freeze ? [] : await topMemories(input.workstreamId, input.goal);
     await db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt });
-    emit("run.start", "orchestrator", "orchestrator", { title: input.title, workstreamId: input.workstreamId, goal: input.goal, startedAt, trigger: input.trigger ?? "manual" });
+    emit("run.start", "orchestrator", "orchestrator", { title: input.title, workstreamId: input.workstreamId, goal: input.goal, startedAt, trigger: input.trigger ?? "manual", learned: { memories: ctx.memories.length, policies: policySection(ctx.skill).length } });
 
     let status: "done" | "failed" | "cancelled" | "stopped" = "done";
     try {

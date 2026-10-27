@@ -24,7 +24,7 @@ export type RunSummary = {
 export type RunEndStatus = "done" | "failed" | "cancelled" | "stopped";
 
 export interface PayloadMap {
-  "run.start": { title: string; workstreamId: string; goal: string; startedAt: number; trigger: "manual" | "cron" | "chat" | "job" };
+  "run.start": { title: string; workstreamId: string; goal: string; startedAt: number; trigger: "manual" | "cron" | "chat" | "job"; /** what this run loaded from earlier runs: memories in the prompt and policy lines from SKILL.md */ learned?: { memories: number; policies: number } };
   "run.end": { status: RunEndStatus; summary?: string };
   "run.error": { message: string };
   "agent.spawn": { by: string; role: AgentRole; instance: string; brief: string };

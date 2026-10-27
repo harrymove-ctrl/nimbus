@@ -45,6 +45,10 @@ check("run 1's orchestrator prompt had no memories yet", !p1.user.includes("Memo
 check("run 2's orchestrator prompt contains run 1's memories", orch.user.includes("Memories from earlier runs") && orch.user.includes("iOS Safari completion is the first segment"));
 check("run 2's orchestrator prompt contains the SKILL.md written by run 1", orch.user.includes("Check the status page for incidents inside the drop window"));
 check("…including the policy line from Approve & always allow", orch.user.includes("allow: send_message to #growth for this workstream"));
+const start1 = r1.events.find((e) => e.type === "run.start");
+const start2 = r2.events.find((e) => e.type === "run.start");
+check("the ✦ learned chip: run 1 loaded nothing, run 2 loaded run 1's memories and policy line",
+  !!start1 && !!start2 && start1.type === "run.start" && start2.type === "run.start" && (start1.payload.learned?.memories ?? 0) === 0 && (start2.payload.learned?.memories ?? 0) >= 5 && (start2.payload.learned?.policies ?? 0) >= 1);
 const stamp = r2.events.find((e) => e.type === "approval.resolve");
 check("run 2 honored the policy (approval resolved by policy, no tray)", !!stamp && stamp.type === "approval.resolve" && stamp.payload.by === "policy");
 const sum1 = r1.events.find((e) => e.type === "message" && e.payload.card === "summary");

@@ -150,7 +150,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
             <div className="flex" style={{ height: Math.max(bodyH, 1) }}>
               <div className="shrink-0" style={{ width: LEGEND_W }}>
                 {view.lanes.map((l, i) => (
-                  <LegendRow key={l.instance} lane={l} index={i} />
+                  <LegendRow key={l.instance} lane={l} index={i} learned={l.instance === "orchestrator" ? view.learned : undefined} />
                 ))}
               </div>
               <div ref={chartRef} className="relative min-w-0 flex-1">
@@ -295,7 +295,7 @@ export function Timeline({ view, now, selected, onSelect, collapsed, onToggle, r
   );
 }
 
-function LegendRow({ lane, index }: { lane: Lane; index: number }) {
+function LegendRow({ lane, index, learned }: { lane: Lane; index: number; learned?: { memories: number; policies: number } }) {
   // One badge with the full model name; a ↓ (routed below ceiling) or ↻ (fell back) glyph sits inside it. Hover has the story.
   const glyph = lane.routed ? (lane.fellBack ? "↻" : "↓") : null;
   const hover = lane.routed
@@ -307,6 +307,14 @@ function LegendRow({ lane, index }: { lane: Lane; index: number }) {
         <span className="size-2 shrink-0 rounded-full" style={{ background: ROLE_COLOR[lane.role] }} />
         <span className="min-w-0 truncate text-[14px] font-bold text-neutral-100">{laneName(lane.instance, lane.role)}</span>
         {lane.status === "running" && <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" aria-label="running" />}
+        {learned && (learned.memories > 0 || learned.policies > 0) && (
+          <span
+            className="nb-pop-slow ms-auto shrink-0 whitespace-nowrap rounded-full bg-[color-mix(in_oklab,var(--rb-accent)_22%,transparent)] px-2 py-0.5 text-[10px] font-extrabold text-[var(--rb-accent)]"
+            title={`This run started with what earlier runs taught it: ${learned.memories} memories in its prompt and ${learned.policies} policy line${learned.policies === 1 ? "" : "s"} from SKILL.md.`}
+          >
+            ✦ learned · {learned.memories} mem{learned.policies ? ` · ${learned.policies} rule` : ""}
+          </span>
+        )}
       </div>
       <div className="ps-4">
         <span title={hover} className="inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md bg-white/8 py-0.5 pe-2 ps-0.5 text-[12px] font-semibold text-neutral-300">

@@ -32,6 +32,7 @@ that goes v1 → v2. Afterwards the Learner writes memories and rewrites the wor
 | `pnpm check:cron` | A cron-triggered run appears without a click and sets the unread dot |
 | `pnpm run:job --workstream ws-mezo --yes` | Headless entrypoint for a Nebius Serverless Job |
 | `pnpm demo --record <name>` | Drafts a golden from a run (empty `expect` arrays to fill in) |
+| `pnpm demo:video` | Records `docs/demo/nimbus-demo.webm` (+ `.mp4` with ffmpeg) with Playwright against a running dev server: boot, run, question, approval, summary, second run with the ✦ learned chip. Needs a local Chrome; not runnable in the restricted dev sandbox |
 | `pnpm smoke` | **Real** Token Factory: three tiers answer, Nano makes a function call. Needs `NEBIUS_API_KEY` |
 
 ## Environment
