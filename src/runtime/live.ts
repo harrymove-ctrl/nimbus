@@ -145,11 +145,14 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       try {
         await runLearner(ctx, transcriptOf(events));
       } catch (e) {
-        console.error("[nimbus] learner failed:", e instanceof Error ? e.message : e);
+        const why = e instanceof Error ? e.message : String(e);
+        console.error("[nimbus] learner failed:", why);
+        // visible in the run, not only in the server log (a failure inside save_learning already said so itself)
+        if (!events.some((x) => x.type === "message" && x.payload.id === "m-learn-failed")) emit("message", "learner", "learner-1", { id: "m-learn-failed", role: "agent", text: `Learning failed, nothing was saved from this run: ${why}` });
       }
     }
     await persistChain;
-    await retryBusy(() => db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd }).where(eq(schema.runs.id, id)));
+    await retryBusy(() => db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd }).where(eq(schema.runs.id, id)), 40); // patient: a lost final update leaves the run "running" forever
     inflight.delete(id);
     if (process.env.NIMBUS_RECORD_REAL === "1") {
       try {

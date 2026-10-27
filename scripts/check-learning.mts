@@ -71,6 +71,16 @@ check("run 3 asked for approval again (resolved by you, not by policy)", !!resol
 const start3 = r3.events.find((e) => e.type === "run.start");
 check("run 3's learned chip shows 4 memories, 0 rules", !!start3 && start3.type === "run.start" && start3.payload.learned?.memories === 4 && start3.payload.learned?.policies === 0);
 
+// a Learner that cannot save must say so, not end in a silent "Done."
+const before = (await getLearning(WS)).memories.length;
+process.env.NIMBUS_TEST_LEARNER_FAIL = "1";
+const r4 = await go(false);
+delete process.env.NIMBUS_TEST_LEARNER_FAIL;
+const failed = r4.events.find((e) => e.type === "message" && e.payload.id === "m-learn-failed");
+check("a Learner that cannot save says so in the run: \"Learning failed, nothing was saved…\"", !!failed && failed.type === "message" && /Learning failed, nothing was saved/.test(failed.payload.text), failed?.type === "message" ? failed.payload.text : "no message");
+check("…the run itself still finished, with no summary card", r4.events.some((e) => e.type === "run.end" && e.payload.status === "done") && !r4.events.some((e) => e.type === "message" && e.payload.card === "summary"));
+check("…and nothing was saved", (await getLearning(WS)).memories.length === before);
+
 await reset();
 await db.delete(schema.skills).where(eq(schema.skills.workstreamId, WS));
 await db.insert(schema.skills).values({ workstreamId: WS, content: w.skill, version: 1, updatedAt: Date.now() });
