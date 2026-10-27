@@ -4,24 +4,24 @@
  ],
  "results": [
   {
-   "title": "Nebius × NVIDIA Global AI Hackathon — Devpost",
-   "url": "https://nebiusglobalaihackathon.devpost.example.com/",
-   "snippet": "Submissions close Oct 30, 10:00 PDT. 312 started, 41 submitted."
+   "title": "Example Hackathon — project gallery (example data)",
+   "url": "https://example-hackathon.example.com/",
+   "snippet": "Submissions close Nov 15, 10:00 UTC. 3 new submissions in the Personal AI track."
   },
   {
-   "title": "Bridge Bot — a personal agent for Mezo wallets",
-   "url": "https://devpost.example.com/software/bridge-bot",
-   "snippet": "Telegram agent on Nemotron 3 Super; drafts transfers for approval. Personal AI track."
+   "title": "Example Project A — a chat agent that asks first (example data)",
+   "url": "https://example-hackathon.example.com/projects/example-project-a",
+   "snippet": "Chat agent that drafts actions for approval. Personal AI track."
   },
   {
-   "title": "Mezo Buildathon — Submissions",
-   "url": "https://devpost.example.com/mezo-buildathon/submissions",
-   "snippet": "Satoshi Pay, Vault Kit and Bridge Bot submitted this week."
+   "title": "Example Hackathon — submissions (example data)",
+   "url": "https://example-hackathon.example.com/submissions",
+   "snippet": "Example Project A, B and C were submitted this week."
   },
   {
-   "title": "Token Factory adds cached-input pricing for Nemotron 3",
-   "url": "https://nebius.example.com/blog/token-factory-nemotron-3",
-   "snippet": "Cached input $0.12 (Ultra) and $0.06 (Super) per 1M tokens."
+   "title": "Hosted-model provider adds cached-input pricing (example data)",
+   "url": "https://provider.example.com/blog/cached-input",
+   "snippet": "Cached input is billed at a lower rate than fresh input."
   }
  ]
 }

@@ -12,13 +12,13 @@
     {
      "name": "web_search",
      "input": {
-      "query": "Nebius NVIDIA hackathon personal agent Devpost"
+      "query": "example hackathon personal agent submissions"
      }
     }
    ]
   },
   {
-   "label": "Reading the Devpost page",
+   "label": "Reading the hackathon page",
    "usage": {
     "in": 2600,
     "out": 200
@@ -28,7 +28,7 @@
     {
      "name": "fetch_url",
      "input": {
-      "url": "https://nebiusglobalaihackathon.devpost.example.com/"
+      "url": "https://example-hackathon.example.com/"
      }
     }
    ]
@@ -44,7 +44,7 @@
     {
      "name": "fetch_url",
      "input": {
-      "url": "https://devpost.example.com/software/bridge-bot"
+      "url": "https://example-hackathon.example.com/projects/example-project-a"
      }
     }
    ]
@@ -56,7 +56,7 @@
     "out": 420
    },
    "complexity": 1,
-   "text": "Hackathon: submissions close Oct 30, 10:00 PDT; 41 of 312 started projects are submitted; the FAQ now requires a public GitHub repo with a visible MIT licence. Competitor: Bridge Bot (Mezo buildathon, Personal AI) is a Telegram agent on Nemotron 3 Super that drafts wallet transfers for approval. Satoshi Pay and Vault Kit do not overlap. News: Token Factory now bills cached input at $0.12 (Ultra) and $0.06 (Super) per 1M."
+   "text": "Hackathon (example data): submissions close Nov 15, 10:00 UTC; 3 new submissions in the Personal AI track; the rules page now requires a public repository with a visible open-source licence. Competitor: Example Project A (Personal AI track) is a chat agent that drafts actions for approval. Example Project B and Example Project C do not overlap. News (example): hosted-model providers are starting to bill cached input at a lower rate."
   }
  ]
 }

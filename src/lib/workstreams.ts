@@ -52,7 +52,7 @@ export const WORKSTREAMS: Workstream[] = [
     estimatedManualMinutes: 25,
     slug: "hackathon-radar",
     title: "Hackathon radar",
-    goal: "Every morning: what changed on the Nebius × NVIDIA hackathon and the Mezo buildathon pages, who else is building a personal agent, and what we should say differently.",
+    goal: "Every morning: what changed on the hackathon pages we follow, who else is building a personal agent, and what we should say differently.",
     scheduleCron: "0 9 * * *",
     scheduleLabel: "Daily 09:00",
     tools: ["web_search", "fetch_url", "write_artifact", "send_message"],

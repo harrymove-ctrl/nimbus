@@ -31,7 +31,7 @@
     {
      "name": "send_message",
      "input": {
-      "channel": "dana@acme.com",
+      "channel": "dana@example.com",
       "text": "Hi Dana, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
      }
     }

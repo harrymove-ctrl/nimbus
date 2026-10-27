@@ -31,7 +31,7 @@
     {
      "name": "send_message",
      "input": {
-      "channel": "sam@devshop.io",
+      "channel": "sam@devshop.example",
       "text": "Hi Sam, not yet: the PR is open and under review. I will tell you the moment it lands, well before Thursday."
      }
     }

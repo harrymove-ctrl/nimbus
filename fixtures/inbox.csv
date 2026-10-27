@@ -1,5 +1,5 @@
 id,from,subject,waiting_days,has_date,snippet
-1,dana@acme.com,Contract signature needed by Fri Nov 7,3,1,Can you sign by Friday? Legal is waiting.
+1,dana@example.com,Contract signature needed by Fri Nov 7,3,1,Can you sign by Friday? Legal is waiting.
 2,newsletter@tools.io,Weekly digest,0,0,Ten tools you should try
 3,omar@partner.co,Re: demo slot Thursday 3pm,2,1,Confirming Thursday 3pm; please reply.
 4,billing@cloudhost.com,Invoice 8841,1,0,Your invoice is ready

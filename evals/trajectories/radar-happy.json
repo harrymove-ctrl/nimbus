@@ -27,7 +27,7 @@
    "agent": "writer",
    "expect": [
     {
-     "artifact_contains": "Bridge Bot"
+     "artifact_contains": "Example Project A"
     }
    ]
   }
@@ -46,7 +46,7 @@
    "spawned_at_least": 3
   },
   {
-   "artifact_contains": "Oct 30"
+   "artifact_contains": "Nov 15"
   },
   {
    "max_cost_usd": 0.06

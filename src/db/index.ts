@@ -131,6 +131,18 @@ async function seedRecordedRuns(db: Db) {
     const s = JSON.parse(readFileSync(path.join(dir, f), "utf8")) as SeedRun;
     const [own] = await db.select({ startedAt: schema.runs.startedAt }).from(schema.runs).where(eq(schema.runs.id, s.run.id));
     if (own) {
+      // a database seeded from an older recording (the fixtures were rewritten): replace the run's events and artifacts in place
+      const a0 = s.artifacts[0];
+      const [have] = a0 ? await db.select({ content: schema.artifacts.content }).from(schema.artifacts).where(eq(schema.artifacts.id, `${s.run.id}:${a0.artifactId}:v${a0.version}`)) : [];
+      if (a0 && have?.content !== a0.content) {
+        await db.delete(schema.runEvents).where(eq(schema.runEvents.runId, s.run.id));
+        await db.delete(schema.artifacts).where(eq(schema.artifacts.runId, s.run.id));
+        await db.update(schema.runs).set({ goal: s.run.goal, title: s.run.title, tokensIn: s.run.tokensIn, tokensOut: s.run.tokensOut, costUsd: s.run.costUsd, baselineUsd: s.run.baselineUsd, endedAt: own.startedAt + s.run.endMs }).where(eq(schema.runs.id, s.run.id));
+        for (let i = 0; i < s.events.length; i += 50)
+          await db.insert(schema.runEvents).values(s.events.slice(i, i + 50).map((e, n) => ({ id: `${s.run.id}-${i + n}`, runId: s.run.id, seq: i + n, tMs: e.tMs, agent: e.agent, agentInstance: e.agentInstance, type: e.type, payload: (e.type === "run.start" ? { ...(e.payload as object), startedAt: own.startedAt } : e.payload) as never })));
+        for (const a of s.artifacts) await db.insert(schema.artifacts).values({ id: `${s.run.id}:${a.artifactId}:v${a.version}`, runId: s.run.id, artifactId: a.artifactId, kind: a.kind, title: a.title, version: a.version, content: a.content, language: a.language, createdAt: own.startedAt + s.run.endMs });
+        continue;
+      }
       // repair for databases seeded before the run.start event carried the seeded time (the transcript divider read it)
       const i = s.events.findIndex((e) => e.type === "run.start");
       if (i >= 0) await db.update(schema.runEvents).set({ payload: { ...(s.events[i].payload as object), startedAt: own.startedAt } as never }).where(eq(schema.runEvents.id, `${s.run.id}-${i}`));

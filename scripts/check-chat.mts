@@ -152,7 +152,7 @@ check("'what needs me?' lists the waiting run with its link, numbers first", st.
 
 const before = await dbRuns();
 const ask = await say("what did the radar find today?");
-check("'what did the radar find today?' answers from the radar's latest document, with no new run", ask.intent === "ask" && /Bridge Bot|MIT|312/.test(ask.text) && /From Hackathon radar/.test(ask.text) && (await dbRuns()) === before && !ask.runId, ask.text);
+check("'what did the radar find today?' answers from the radar's latest document, with no new run", ask.intent === "ask" && /Example Project A|licence|3 new/.test(ask.text) && /From Hackathon radar/.test(ask.text) && (await dbRuns()) === before && !ask.runId, ask.text);
 check("…in phone length", ask.text.length <= 900 && ask.text.split("\n").length <= 8, `${ask.text.length} chars`);
 
 const a1 = await say("approve");

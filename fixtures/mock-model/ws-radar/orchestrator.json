@@ -15,7 +15,7 @@
       "agents": [
        {
         "role": "researcher",
-        "brief": "Read the hackathon and buildathon pages and find other personal agents."
+        "brief": "Read the example hackathon pages and find other personal agents."
        },
        {
         "role": "checker",
@@ -55,7 +55,7 @@
       "agents": [
        {
         "role": "researcher",
-        "brief": "Search the Nebius × NVIDIA hackathon and the Mezo buildathon; fetch the Devpost pages and the closest competitor project."
+        "brief": "Search the example hackathon; fetch its project pages and the closest competitor project."
        },
        {
         "role": "checker",
@@ -78,7 +78,7 @@
      "name": "handoff",
      "input": {
       "to": "writer",
-      "context": "Three changes: licence rule, 41 of 312 submitted, Bridge Bot overlap. Write the digest with a competitor table and what to say differently."
+      "context": "Three changes: licence rule, 3 new submissions in the Personal AI track, Example Project A overlap. Write the digest with a competitor table and what to say differently. All of it is example data."
      }
     }
    ]
@@ -100,7 +100,7 @@
        "risk": "medium",
        "details": {
         "channel": "#team",
-        "text": "Hackathon radar, Oct 27:\n• Rules: public GitHub repo with a visible MIT licence is now required (ours is).\n• 41 of 312 projects submitted; deadline Oct 30, 10:00 PDT.\n• Bridge Bot (Mezo, Personal AI) does approvals for wallet transfers; no crew, no learning. Lead with the crew."
+        "text": "Hackathon radar, Oct 27 (example data):\n• Rules: a public repository with a visible open-source licence is now required (ours has one).\n• 3 new submissions in the Personal AI track; deadline Nov 15, 10:00 UTC.\n• Example Project A (Personal AI) drafts actions for approval in one chat app; no crew, no learning. Lead with the crew."
        }
       }
      }

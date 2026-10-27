@@ -15,7 +15,7 @@
       "artifactId": "pr-body",
       "kind": "doc",
       "title": "PR: bump the AI SDK",
-      "content": "## Bump the AI SDK to 7.0.161\n\n**Why.** The 7.0.161 release fixes tool-call delta order when two tools stream in parallel, which Nimbus does when the Orchestrator spawns agents. No API changes.\n\n**Change.** `ai` ^7.0.154 → ^7.0.161 in package.json.\n\n**Check.** `git apply --check` passes and the tree typechecks."
+      "content": "## Bump the AI SDK to 7.0.161\n\n**Why.** The 7.0.161 release fixes tool-call delta order when two tools stream in parallel, which Nimbus does when the Orchestrator spawns agents. No API changes.\n\n**Change.** `ai` ^7.0.154 → ^7.0.161 in package.json.\n\n**Check.** `git apply --check` passes and the tree typechecks.\n\n*Example data: these release notes come from fixtures, not from the projects' real changelogs.*"
      }
     }
    ]

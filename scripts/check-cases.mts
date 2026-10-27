@@ -72,7 +72,7 @@ if (want("radar")) {
   console.log("— Hackathon radar");
   const r = await go("ws-radar");
   check("radar finishes; the digest is under the seeded rule (resolved by policy)", r.view.status === "done" && resolvedBy(r.events).join() === "policy", resolvedBy(r.events).join());
-  check("the digest doc exists and names Bridge Bot", r.view.artifacts.some((x) => x.kind === "doc" && x.versions.some((v) => v.content.includes("Bridge Bot"))));
+  check("the digest doc exists and names Example Project A", r.view.artifacts.some((x) => x.kind === "doc" && x.versions.some((v) => v.content.includes("Example Project A"))));
 }
 if (want("brief")) {
   console.log("— Morning brief");

@@ -62,11 +62,11 @@
     {
       "claim": "the digest names the competitor and the deadline",
       "requires": [
-        "Bridge Bot",
-        "Oct 30"
+        "Example Project A",
+        "Nov 15"
       ],
       "partial": [
-        "Bridge Bot"
+        "Example Project A"
       ]
     },
     {
