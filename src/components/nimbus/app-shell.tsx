@@ -11,6 +11,7 @@ import { Boot } from "./boot";
 import { AmbientGlow } from "./loading";
 import { Composer, type Mode, type TierChoice } from "./composer";
 import { Inspector, type InspectorTab } from "./inspector";
+import { LEARNING_CHANGED } from "./learning";
 import { Rail } from "./rail";
 import { RunHeader } from "./run-header";
 import { Timeline, type SegRef } from "./timeline";
@@ -250,7 +251,10 @@ export function AppShell() {
                 onDecide={(a, d, n) => void decide(a, d, n)}
                 onRevertSkill={async () => {
                   const r = await fetch(`/api/workstreams/${ws.id}/skill/revert`, { method: "POST" });
-                  if (r.ok) void refreshWorkstreams();
+                  if (r.ok) {
+                    void refreshWorkstreams();
+                    window.dispatchEvent(new Event(LEARNING_CHANGED));
+                  }
                   return r.ok;
                 }}
                 onOpenArtifact={(id, version) => {

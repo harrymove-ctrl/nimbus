@@ -5,7 +5,7 @@ import { Check, Copy } from "lucide-react";
 import type { Workstream } from "@/lib/workstreams";
 import { ROLE_COLOR, TIER_LABEL, fmtTokens, laneName, type Artifact, type RunView } from "@/lib/run-view";
 import { InspectorSkeleton } from "./loading";
-import { SkillDiff } from "./transcript";
+import { MemoryTab } from "./learning";
 import { cx } from "./ui";
 import type { SegRef } from "./timeline";
 
@@ -266,54 +266,4 @@ function Block({ title, children }: { title: string; children: ReactNode }) {
 }
 function Pre({ children, danger }: { children: ReactNode; danger?: boolean }) {
   return <pre className={cx("max-h-56 overflow-auto whitespace-pre-wrap rounded-lg bg-neutral-900 p-2.5 font-mono text-[12px]/[18px]", danger ? "text-red-200" : "text-neutral-300")}>{children}</pre>;
-}
-
-/* ---------- Memory & skill ---------- */
-
-function MemoryTab({ view, workstream }: { view: RunView; workstream?: Workstream }) {
-  return (
-    <div className="flex flex-col gap-5 p-4">
-      <section>
-        <h4 className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wider text-neutral-400">SKILL.md{workstream ? ` · ${workstream.title}` : ""}</h4>
-        {workstream ? (
-          <div className="overflow-hidden rounded-lg border border-white/10 font-mono text-[12px]/[22px]">
-            {workstream.skill.split("\n").map((l, i) => (
-              <div key={i} className="px-2 text-neutral-300">
-                {l || " "}
-              </div>
-            ))}
-            {view.policies.map((p) => (
-              <div key={p} className="bg-emerald-500/12 px-2 text-emerald-200">
-                + {p}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[13px] text-neutral-500">Pick a workstream.</p>
-        )}
-        {view.policies.length > 0 && <p className="mt-1.5 text-[12px] text-neutral-500">Policy lines are written when you choose Approve &amp; always allow; the next run reads them.</p>}
-      </section>
-      {view.summary ? (
-        <>
-          <section>
-            <h4 className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wider text-neutral-400">{view.summary.memories.length} new memories</h4>
-            <ul className="flex flex-col gap-1.5">
-              {view.summary.memories.map((m) => (
-                <li key={m} className="text-[13px]/[19px] text-neutral-200">
-                  <span className="me-1.5 text-[var(--rb-accent)]">•</span>
-                  {m}
-                </li>
-              ))}
-            </ul>
-          </section>
-          <section>
-            <h4 className="mb-1.5 text-[11px] font-extrabold uppercase tracking-wider text-neutral-400">Learner diff</h4>
-            <SkillDiff rows={view.summary.skillDiff} />
-          </section>
-        </>
-      ) : (
-        <p className="text-[13px]/[19px] text-neutral-500">After each run the Learner (Nano) saves memories and rewrites SKILL.md. The diff shows here and in the run summary.</p>
-      )}
-    </div>
-  );
 }

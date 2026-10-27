@@ -19,6 +19,7 @@ const DDL = [
   `CREATE TABLE IF NOT EXISTS approvals (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, action TEXT NOT NULL, status TEXT NOT NULL, always INTEGER NOT NULL DEFAULT 0, note TEXT, decided_at INTEGER)`,
   `CREATE TABLE IF NOT EXISTS memories (id TEXT PRIMARY KEY, workstream_id TEXT NOT NULL, text TEXT NOT NULL, embedding TEXT NOT NULL, source_run_id TEXT NOT NULL, created_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS skills (workstream_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, previous TEXT, updated_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS policies (workstream_id TEXT NOT NULL, rule TEXT NOT NULL, source_run_id TEXT, created_at INTEGER NOT NULL, used_count INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (workstream_id, rule))`,
   `CREATE TABLE IF NOT EXISTS llm_cache (key TEXT PRIMARY KEY, model TEXT NOT NULL, response TEXT NOT NULL, usage TEXT NOT NULL, created_at INTEGER NOT NULL)`,
 ];
 
@@ -55,6 +56,8 @@ function open(): Holder {
     // Columns added after the first release: alter only when missing (an ALTER takes a write lock even when it is a no-op).
     const has = async (table: string, col: string) => (await client.execute(`PRAGMA table_info(${table})`)).rows.some((r) => r.name === col);
     if (!(await has("skills", "previous"))) await client.execute("ALTER TABLE skills ADD COLUMN previous TEXT");
+    if (!(await has("skills", "updated_run_id"))) await client.execute("ALTER TABLE skills ADD COLUMN updated_run_id TEXT");
+    if (!(await has("memories", "used_count"))) await client.execute("ALTER TABLE memories ADD COLUMN used_count INTEGER NOT NULL DEFAULT 0");
     if (!(await has("runs", "model"))) await client.execute("ALTER TABLE runs ADD COLUMN model TEXT");
     // Runs live in memory. A run still marked running after the 5 minute wall-clock cap belonged to a process that is
     // gone. Younger ones may be alive in another process (dev server, cron), so they are left alone.

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { cosine, embedTexts } from "@/lib/tokenfactory";
 
@@ -8,11 +8,13 @@ export async function topMemories(workstreamId: string, query: string, k = 6): P
   const rows = await db.select().from(schema.memories).where(eq(schema.memories.workstreamId, workstreamId));
   if (!rows.length) return [];
   const [q] = await embedTexts([query]);
-  return rows
-    .map((r) => ({ text: r.text, s: cosine(q, r.embedding) }))
+  const top = rows
+    .map((r) => ({ id: r.id, text: r.text, s: cosine(q, r.embedding) }))
     .sort((a, b) => b.s - a.s)
-    .slice(0, k)
-    .map((r) => r.text);
+    .slice(0, k);
+  // Each memory that enters a prompt counts as used (SPEC §16 "used ×").
+  await db.update(schema.memories).set({ usedCount: sql`${schema.memories.usedCount} + 1` }).where(inArray(schema.memories.id, top.map((r) => r.id)));
+  return top.map((r) => r.text);
 }
 
 export async function saveMemories(workstreamId: string, runId: string, texts: string[]) {

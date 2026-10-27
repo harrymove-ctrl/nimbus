@@ -4,8 +4,27 @@
     {
       "name": "nimbus-dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev"],
+      "runtimeArgs": [
+        "dev"
+      ],
       "port": 3000
+    },
+    {
+      "name": "nimbus-check",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "NIMBUS_DATA_DIR=./data/ui-check",
+        "NIMBUS_SCHEDULER=off",
+        "NIMBUS_DIST_DIR=.next-ui",
+        "NIMBUS_MOCK_FAST=1",
+        "WATCHPACK_POLLING=true",
+        "node",
+        "node_modules/next/dist/bin/next",
+        "dev",
+        "-p",
+        "3250"
+      ],
+      "port": 3250
     }
   ]
 }

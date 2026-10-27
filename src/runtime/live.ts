@@ -12,7 +12,7 @@ import { runLearner } from "./learner";
 import { writeRecording } from "./recorder";
 import { topMemories } from "./memory";
 import { runOrchestrator } from "./orchestrator";
-import { appendPolicy, loadSkill, policyAllows, policySection } from "./skills";
+import { appendPolicy, countPolicyUse, loadSkill, policyAllows, policySection } from "./skills";
 import type { ApprovalDecision, RunHandle, StartRunInput } from "./source";
 
 export function createLiveRun(input: StartRunInput): RunHandle {
@@ -74,6 +74,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       // Register before emitting: a synchronous listener (the CLI's --yes) may resolve inside emit().
       const d = deferred<ApprovalResult>();
       if (!auto) pendingApprovals.set(approvalId, { d, action, who });
+      if (auto === "policy") persist(() => countPolicyUse(input.workstreamId, ctx.skill, action));
       emit("approval.request", who.role, who.instance, { approvalId, action });
       persist((db) => db.insert(schema.approvals).values({ id: `${id}:${approvalId}`, runId: id, action: action as never, status: "pending" }));
       if (auto) {
@@ -185,7 +186,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
         const rule = `allow: ${p.action.kind}${scope ? ` to ${scope}` : ""} for this workstream`;
         emit("policy", p.who.role, p.who.instance, { rule });
         persist(async () => {
-          await appendPolicy(input.workstreamId, rule);
+          await appendPolicy(input.workstreamId, rule, id);
           ctx.skill = await loadSkill(input.workstreamId);
         });
       }

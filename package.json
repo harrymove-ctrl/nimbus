@@ -19,7 +19,8 @@
     "eval": "node --env-file-if-exists=.env.local --import tsx scripts/eval.mts",
     "eval:ab": "node --env-file-if-exists=.env.local --import tsx scripts/eval.mts --ab",
     "demo:video": "node --env-file-if-exists=.env.local --import tsx scripts/record-demo.ts",
-    "check:budget": "node --env-file-if-exists=.env.local --import tsx scripts/budget-check.mts"
+    "check:budget": "node --env-file-if-exists=.env.local --import tsx scripts/budget-check.mts",
+    "check:learning": "NIMBUS_MOCK_FAST=1 NIMBUS_DEBUG_PROMPTS=1 node--env-file-if-exists=.env.local --import tsx scripts/check-learning.mts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.79",

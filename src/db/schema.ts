@@ -1,5 +1,5 @@
 // SPEC §5 + §12: SQLite via libsql + drizzle. Tables are created by ensureSchema() in ./index.ts.
-import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const workstreams = sqliteTable("workstreams", {
   id: text("id").primaryKey(),
@@ -73,7 +73,22 @@ export const memories = sqliteTable("memories", {
   embedding: text("embedding", { mode: "json" }).$type<number[]>().notNull(),
   sourceRunId: text("source_run_id").notNull(),
   createdAt: integer("created_at").notNull(),
+  /** how many runs had this memory in their prompt (SPEC §16) */
+  usedCount: integer("used_count").notNull().default(0),
 });
+
+/** Who wrote each `allow:` line in SKILL.md and how often it let an action through. SKILL.md stays the source of truth for enforcement. */
+export const policies = sqliteTable(
+  "policies",
+  {
+    workstreamId: text("workstream_id").notNull(),
+    rule: text("rule").notNull(),
+    sourceRunId: text("source_run_id"),
+    createdAt: integer("created_at").notNull(),
+    usedCount: integer("used_count").notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.workstreamId, t.rule] })],
+);
 
 export const skills = sqliteTable("skills", {
   workstreamId: text("workstream_id").primaryKey(),
@@ -81,6 +96,8 @@ export const skills = sqliteTable("skills", {
   version: integer("version").notNull().default(1),
   /** SKILL.md as it was before the latest rewrite, for "Revert skill change" */
   previous: text("previous"),
+  /** the run whose Learner wrote the latest rewrite (null for seed text, a policy edit or after a revert) */
+  updatedRunId: text("updated_run_id"),
   updatedAt: integer("updated_at").notNull(),
 });
 

@@ -18,7 +18,7 @@ export async function runLearner(ctx: RunCtx, transcript: string) {
       // The learner never rewrites policy: those lines are written only by "Approve & always allow".
       const next = withPolicy(input.skill, policySection(old));
       await saveMemories(ctx.workstreamId, ctx.runId, memories);
-      await saveSkill(ctx.workstreamId, next);
+      await saveSkill(ctx.workstreamId, next, { runId: ctx.runId });
       ctx.emit("message", "learner", instance, {
         id: "m-summary",
         role: "agent",
