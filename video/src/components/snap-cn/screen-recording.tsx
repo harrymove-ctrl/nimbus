@@ -159,6 +159,12 @@ export interface ScreenRecordingProps {
   /** Play the recording's audio. Default false — a demo carries its own bed. */
   audio?: boolean;
   /**
+   * Rate the footage plays at, on top of `speed`, WITHOUT retiming the camera.
+   * Fits a take to a scene of fixed length (Nimbus: 0.5 slows a beat to fill
+   * its voice line). Default 1.
+   */
+  footageRate?: number;
+  /**
    * How the shot arrives. `fade` (default) is the same 18-frame
    * fade-and-unblur `laptop-frame` and `phone-frame` run on screen media, so a
    * recording dropped into either does not double up on two arrivals. `none`
@@ -451,6 +457,7 @@ export function ScreenRecording({
   radius = 0,
   trimBefore,
   audio = false,
+  footageRate = 1,
   entrance = "fade",
   theme,
   mode,
@@ -559,7 +566,7 @@ export function ScreenRecording({
               trimBefore={trimBefore}
               // The camera runs on `frame * speed`; the footage has to as well,
               // or a faster take zooms to a moment the video has not reached.
-              playbackRate={speed}
+              playbackRate={speed * footageRate}
               style={mediaStyle}
             />
           ) : (

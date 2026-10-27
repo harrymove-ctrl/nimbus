@@ -1,0 +1,62 @@
+[
+ {
+  "text": "Three",
+  "startMs": 1600,
+  "endMs": 2025
+ },
+ {
+  "text": "Nemotron",
+  "startMs": 2025,
+  "endMs": 2579
+ },
+ {
+  "text": "tiers,",
+  "startMs": 2579,
+  "endMs": 3047
+ },
+ {
+  "text": "routed",
+  "startMs": 3207,
+  "endMs": 3675
+ },
+ {
+  "text": "by",
+  "startMs": 3675,
+  "endMs": 3972
+ },
+ {
+  "text": "role",
+  "startMs": 3972,
+  "endMs": 4354
+ },
+ {
+  "text": "and",
+  "startMs": 4354,
+  "endMs": 4694
+ },
+ {
+  "text": "cost,",
+  "startMs": 4694,
+  "endMs": 5119
+ },
+ {
+  "text": "graded",
+  "startMs": 5279,
+  "endMs": 5747
+ },
+ {
+  "text": "hop",
+  "startMs": 5747,
+  "endMs": 6087
+ },
+ {
+  "text": "by",
+  "startMs": 6087,
+  "endMs": 6384
+ },
+ {
+  "text": "hop.",
+  "startMs": 6384,
+  "endMs": 6766
+ }
+]

@@ -7,20 +7,12 @@
 
 import path from "node:path";
 import { Config } from "@remotion/cli/config";
-import { enableTailwind } from "@remotion/tailwind-v4";
+import { webpackOverride } from "./webpack-override";
 
 Config.setRspack(true);
 Config.setVideoImageFormat("jpeg");
 Config.setOverwriteOutput(true);
 Config.setDefaultPremountInSeconds(2);
-// snapcn imports `@/…`; Remotion's bundler does not read tsconfig paths.
-Config.overrideBundlerConfig((config) => {
-  const c = enableTailwind(config);
-  return {
-    ...c,
-    resolve: {
-      ...c.resolve,
-      alias: { ...c.resolve?.alias, "@": path.join(process.cwd(), "src") },
-    },
-  };
-});
+// The footage and beats.json live in docs/demo/ (written by scripts/record-demo.ts).
+Config.setPublicDir(path.join(process.cwd(), "..", "docs", "demo"));
+Config.overrideBundlerConfig(webpackOverride);

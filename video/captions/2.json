@@ -1,0 +1,17 @@
+[
+ {
+  "text": "This",
+  "startMs": 3600,
+  "endMs": 3982
+ },
+ {
+  "text": "is",
+  "startMs": 3982,
+  "endMs": 4279
+ },
+ {
+  "text": "Nimbus.",
+  "startMs": 4279,
+  "endMs": 4790
+ }
+]

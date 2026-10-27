@@ -784,7 +784,8 @@ export function WordCaptions({
           <span
             style={{
               ...typeStyle,
-              fontFamily: ROBOTO,
+              // Nimbus: the boxed look takes the caller's face when one is given.
+              fontFamily: fontFamily || t.fontFamily ? face : ROBOTO,
               display: "inline",
               color: ink,
               backgroundColor: withAlpha(t.background, 0.9),

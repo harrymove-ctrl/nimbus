@@ -1,0 +1,127 @@
+[
+ {
+  "text": "It",
+  "startMs": 800,
+  "endMs": 1097
+ },
+ {
+  "text": "speaks",
+  "startMs": 1097,
+  "endMs": 1565
+ },
+ {
+  "text": "OpenAI's",
+  "startMs": 1565,
+  "endMs": 2118
+ },
+ {
+  "text": "API,",
+  "startMs": 2118,
+  "endMs": 2501
+ },
+ {
+  "text": "so",
+  "startMs": 2661,
+  "endMs": 2958
+ },
+ {
+  "text": "OpenClaw",
+  "startMs": 2958,
+  "endMs": 3511
+ },
+ {
+  "text": "or",
+  "startMs": 3511,
+  "endMs": 3808
+ },
+ {
+  "text": "Hermes",
+  "startMs": 3808,
+  "endMs": 4276
+ },
+ {
+  "text": "bring",
+  "startMs": 4276,
+  "endMs": 4701
+ },
+ {
+  "text": "it",
+  "startMs": 4701,
+  "endMs": 4998
+ },
+ {
+  "text": "into",
+  "startMs": 4998,
+  "endMs": 5381
+ },
+ {
+  "text": "your",
+  "startMs": 5381,
+  "endMs": 5763
+ },
+ {
+  "text": "chat",
+  "startMs": 5763,
+  "endMs": 6146
+ },
+ {
+  "text": "apps.",
+  "startMs": 6146,
+  "endMs": 6571
+ },
+ {
+  "text": "Hosted",
+  "startMs": 6951,
+  "endMs": 7419
+ },
+ {
+  "text": "on",
+  "startMs": 7419,
+  "endMs": 7716
+ },
+ {
+  "text": "a",
+  "startMs": 7716,
+  "endMs": 7970
+ },
+ {
+  "text": "Nebius",
+  "startMs": 7970,
+  "endMs": 8438
+ },
+ {
+  "text": "Serverless",
+  "startMs": 8438,
+  "endMs": 9054
+ },
+ {
+  "text": "Endpoint;",
+  "startMs": 9054,
+  "endMs": 9650
+ },
+ {
+  "text": "nightly",
+  "startMs": 9950,
+  "endMs": 10461
+ },
+ {
+  "text": "runs",
+  "startMs": 10461,
+  "endMs": 10843
+ },
+ {
+  "text": "as",
+  "startMs": 10843,
+  "endMs": 11140
+ },
+ {
+  "text": "Serverless",
+  "startMs": 11140,
+  "endMs": 11755
+ },
+ {
+  "text": "Jobs.",
+  "startMs": 11755,
+  "endMs": 12181
+ }
+]
