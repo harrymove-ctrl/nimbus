@@ -26,6 +26,8 @@ type Props = {
   onSelect: (s: Seg) => void;
   /** drop the selection (and with it the trace) */
   onClearSelection?: () => void;
+  /** phone: take the whole height of the tab and scroll the lanes sideways (SPEC §7: lanes scroll sideways) */
+  fill?: boolean;
   /** scrubbing a finished run: the playhead position in ms, or null for "at the end" (SPEC §17.5) */
   scrubMs?: number | null;
   onScrub?: (ms: number | null) => void;
@@ -35,7 +37,7 @@ type Props = {
   reducedMotion: boolean;
 };
 
-export function Timeline({ view, now, selected, onSelect, onClearSelection, scrubMs = null, onScrub, replay, collapsed, onToggle, reducedMotion }: Props) {
+export function Timeline({ view, now, selected, onSelect, onClearSelection, fill, scrubMs = null, onScrub, replay, collapsed, onToggle, reducedMotion }: Props) {
   const dragging = useRef(false);
   // Height of the expanded timeline: drag its bottom edge (120–480 px; pulled under 96 it collapses to the 56 px bar), ↑↓ on the handle, double-click resets.
   const [height, setHeight] = useState(240);
@@ -165,7 +167,8 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, scru
   }
 
   return (
-    <section aria-label="Run timeline" style={{ height }} className="relative flex shrink-0 flex-col border-b border-white/10" onKeyDown={(e) => e.key === "Escape" && selected && onClearSelection?.()}>
+    <section aria-label="Run timeline" style={fill ? undefined : { height }} className={cx("relative flex flex-col border-b border-white/10", fill ? "min-h-0 flex-1" : "shrink-0")} onKeyDown={(e) => e.key === "Escape" && selected && onClearSelection?.()}>
+      {!fill && (
       <div
         role="separator"
         aria-orientation="horizontal"
@@ -198,11 +201,12 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, scru
       >
         <span className="h-0.5 w-10 rounded-full bg-white/15 transition-colors group-hover:bg-white/40 group-focus-visible:bg-[var(--rb-accent)]" />
       </div>
-      <button type="button" onClick={onToggle} aria-label="Collapse timeline" aria-expanded className="absolute right-2 top-2 z-20 grid size-7 place-items-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
+      )}
+      <button type="button" onClick={onToggle} aria-label="Collapse timeline" aria-expanded className={cx("absolute right-2 top-2 z-20 grid size-7 place-items-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-100", fill && "hidden")}>
         <ChevronUp className="size-4" />
       </button>
       {(trace && trace.size > 1) || canScrub ? (
-        <div className="absolute right-11 top-2 z-20 flex items-center gap-1.5 text-[12px] font-bold text-neutral-200">
+        <div className={cx("z-20 flex items-center gap-1.5 text-[12px] font-bold text-neutral-200", fill ? "flex-wrap justify-end border-b border-white/10 px-3 py-1.5" : "absolute right-11 top-2")}>
           {trace && trace.size > 1 && (
             <button type="button" onClick={onClearSelection} className="rounded-full bg-white/10 px-2.5 py-1 hover:bg-white/16" title="Esc clears the trace">
               Tracing {trace.size} lanes · clear
@@ -232,7 +236,8 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, scru
       {view.lanes.length === 0 ? (
         <div className="grid flex-1 place-items-center text-[14px] text-neutral-500">The timeline fills as soon as a run starts.</div>
       ) : (
-        <>
+        <div className={cx("flex min-h-0 flex-1 flex-col", fill && "overflow-x-auto")}>
+        <div className={cx("flex min-h-0 flex-1 flex-col", fill && "min-w-[780px]")}>
           <div
             ref={bodyRef}
             onScroll={(e) => {
@@ -444,7 +449,8 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, scru
               <circle cx={x(playT)} cy={6} r={canScrub ? 6 : 5} fill="var(--color-neutral-950)" stroke="white" strokeWidth={1.75} />
             </svg>
           </div>
-        </>
+        </div>
+        </div>
       )}
     </section>
   );

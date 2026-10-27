@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PanelLeft, PanelRight } from "lucide-react";
+import { PanelLeft, PanelRight, Brain, FileText, GanttChart, MessageSquare } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
 import { useNow, useReducedMotion, useRunEvents } from "@/hooks/use-run";
 import { buildView, type ApprovalItem, type QuestionItem, type Seg } from "@/lib/run-view";
@@ -11,6 +11,7 @@ import { Boot } from "./boot";
 import { EmptyState } from "@/components/dithercn/empty-state";
 import { Aurora } from "@/components/dithercn/aurora";
 import { Ripples } from "@/components/dithercn/ripples";
+import { useMedia } from "@/hooks/use-media";
 import { Overview } from "./overview";
 import { StatusPill, useActiveRuns } from "./status-pill";
 import { AmbientGlow } from "./loading";
@@ -52,6 +53,13 @@ export function AppShell() {
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
   const active = useActiveRuns();
   const draftRef = useRef<import("@/lib/events").PlanStep[] | null>(null);
+  // Phone (< 768 px, SPEC §7): four tabs instead of the three columns; a pending approval badges RUN, the tray sits at the top of CHAT
+  const isPhone = useMedia("(max-width: 767px)");
+  const [phoneTab, setPhoneTab] = useState<"run" | "chat" | "doc" | "memory">("chat");
+  useEffect(() => {
+    if (phoneTab === "memory") setTab("memory");
+    else if (phoneTab === "doc") setTab((t) => (t === "memory" ? "artifact" : t));
+  }, [phoneTab]);
   const restored = useRef(false);
   const { events } = useRunEvents(runId);
   const view = useMemo(() => buildView(events), [events]);
@@ -292,6 +300,15 @@ export function AppShell() {
   const pendingByWs = selectedId && view.pendingApprovals.length ? { [selectedId]: view.pendingApprovals.length } : {};
   const busyWs = selectedId && runBusy ? { [selectedId]: true } : {};
   const needsYou = view.pendingApprovals.length > 0 || view.planAwaiting || view.status === "failed";
+  const tray = (
+    <ApprovalTray
+      pending={view.pendingApprovals}
+      onApprove={(a) => void decide(a, "approve")}
+      onReject={(a) => void decide(a, "reject")}
+      onApproveAllLow={() => view.pendingApprovals.filter((a) => a.action.risk === "low").forEach((a) => void decide(a, "approve"))}
+    />
+  );
+  const waitingN = view.pendingApprovals.length + (view.planAwaiting ? 1 : 0);
 
   return (
     <div className="flex h-dvh flex-col bg-neutral-950 text-neutral-100">
@@ -311,7 +328,7 @@ export function AppShell() {
         </span>
         <span className="flex-1" />
         <StatusPill runs={active.runs} fetchedAt={active.fetchedAt} reload={active.reload} currentRunId={runId} onOpenRun={(wsId, rid) => openRun(wsId, rid)} />
-        <button type="button" aria-label="Inspector" onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className="grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden">
+        <button type="button" aria-label="Inspector" onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden", ws && isPhone ? "hidden" : "grid")}>
           <PanelRight className="size-4" />
         </button>
       </div>
@@ -342,7 +359,7 @@ export function AppShell() {
           className={cx("z-40 xl:static xl:flex xl:w-[280px] xl:shrink-0", drawer === "rail" ? "nb-drawer-left fixed inset-y-12 left-0 flex w-[280px]" : "hidden")}
         />
 
-        <main className="relative isolate flex min-w-0 flex-1 flex-col">
+        <main className={cx("relative isolate min-w-0 flex-1 flex-col", ws && isPhone && (phoneTab === "doc" || phoneTab === "memory") ? "hidden" : "flex")}>
           {/* ambient dither: behind the run view and the empty state only; never the boot screen, composer, cards or cloud */}
           {/* one animated background per column (SPEC §17.6): the run view has the glow, which holds still while ripples run at an approval and at four or more running lanes; the Overview has its contours; the empty state its aurora */}
           {boot === "gone" && ws && <AmbientGlow paused={(view.lanes.length >= 4 && clock) || view.pendingApprovals.length > 0} />}
@@ -351,7 +368,10 @@ export function AppShell() {
           ) : (
             <>
               <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} />
-              <Timeline view={view} now={now} selected={selSeg} onSelect={selectSeg} onClearSelection={() => setSelSeg(null)} scrubMs={scrub} onScrub={(ms) => (setReplaying(false), setScrub(ms))} replay={{ playing: replaying, speed, onSpeed: setSpeed, onToggle: () => (replaying ? setReplaying(false) : (setScrub(0), setReplaying(true))) }} collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />
+              {(!isPhone || phoneTab === "run") && <Timeline fill={isPhone} view={view} now={now} selected={selSeg} onSelect={selectSeg} onClearSelection={() => setSelSeg(null)} scrubMs={scrub} onScrub={(ms) => (setReplaying(false), setScrub(ms))} replay={{ playing: replaying, speed, onSpeed: setSpeed, onToggle: () => (replaying ? setReplaying(false) : (setScrub(0), setReplaying(true))) }} collapsed={collapsed && !isPhone} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />}
+              {isPhone && phoneTab === "chat" && tray}
+              {(!isPhone || phoneTab === "chat") && (
+              <>
               <Transcript
                 waitingForCrew={!!runId && (events.length === 0 || (view.status === "planning" && !view.plan))}
                 view={shown}
@@ -392,12 +412,7 @@ export function AppShell() {
                     </button>
                   </div>
                 )}
-                <ApprovalTray
-                  pending={view.pendingApprovals}
-                  onApprove={(a) => void decide(a, "approve")}
-                  onReject={(a) => void decide(a, "reject")}
-                  onApproveAllLow={() => view.pendingApprovals.filter((a) => a.action.risk === "low").forEach((a) => void decide(a, "approve"))}
-                />
+                {!isPhone && tray}
                 <Composer
                   view={view}
                   now={now}
@@ -425,6 +440,8 @@ export function AppShell() {
                   onOpenTab={(t) => (setTab(t), setDrawer("inspector"))}
                 />
               </div>
+              </>
+              )}
             </>
           )}
         </main>
@@ -437,9 +454,28 @@ export function AppShell() {
           selected={selSeg}
           focusArtifact={focusArtifact}
           loading={!!runId && events.length === 0}
-          className={cx(!ws && "!hidden", "z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "nb-drawer-right fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden")}
+          className={cx(!ws && "!hidden", ws && isPhone && (phoneTab === "doc" || phoneTab === "memory") ? "!flex min-h-0 flex-1 !border-l-0" : cx("z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "nb-drawer-right fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden"))}
         />
       </div>
+      {ws && isPhone && (
+        <nav aria-label="Run sections" className="flex shrink-0 border-t border-white/10 bg-neutral-950 pb-[env(safe-area-inset-bottom)]">
+          {(
+            [
+              ["run", "RUN", GanttChart],
+              ["chat", "CHAT", MessageSquare],
+              ["doc", "DOC", FileText],
+              ["memory", "MEMORY", Brain],
+            ] as const
+          ).map(([key, label, Icon]) => (
+            <button key={key} type="button" aria-current={phoneTab === key ? "page" : undefined} onClick={() => setPhoneTab(key)} className={cx("relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-extrabold tracking-wider", phoneTab === key ? "text-neutral-50" : "text-neutral-500")}>
+              <Icon className="size-5" aria-hidden="true" />
+              {label}
+              {key === "run" && waitingN > 0 && <span className="nb-pop-slow absolute right-[calc(50%-24px)] top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-orange-400 px-1 text-[10px] font-extrabold text-neutral-950">{waitingN}</span>}
+              {phoneTab === key && <span aria-hidden="true" className="absolute inset-x-5 top-0 h-0.5 rounded-full bg-[var(--rb-accent)]" />}
+            </button>
+          ))}
+        </nav>
+      )}
     </div>
   );
 }
