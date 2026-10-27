@@ -9,7 +9,7 @@ import { cx, ghostButton, primaryButton, secondaryButton } from "./ui";
 
 // The composer never changes shape; only placeholder, primary button, secondary button and
 // what Enter does follow the state (UI-SKETCH F11, "Composer states, in full").
-export type ComposerState = "idle" | "drafting" | "slash" | "planning" | "running" | "asked" | "waiting";
+export type ComposerState = "idle" | "drafting" | "slash" | "planning" | "plan" | "running" | "asked" | "waiting";
 export type Mode = "ask" | "auto-low" | "dry";
 export type TierChoice = "auto" | "cheap" | "max";
 
@@ -39,6 +39,8 @@ export type ComposerProps = {
   workstream?: Workstream;
   draft: string;
   setDraft: (s: string) => void;
+  /** approve the draft plan as it stands in the card (the edits live there) */
+  onApprovePlan: () => void;
   files: string[];
   setFiles: (f: string[]) => void;
   tools: string[];
@@ -57,6 +59,7 @@ export type ComposerProps = {
 };
 
 export function deriveComposerState(view: RunView, draft: string, files: string[], menuClosed: boolean): ComposerState {
+  if (view.planAwaiting) return "plan"; // the draft plan is a decision: APPROVE PLAN
   if (view.status === "planning") return "planning";
   if (view.status === "asked") return "asked";
   if (view.status === "waiting") return "waiting";
@@ -71,6 +74,7 @@ const PLACEHOLDER: Record<ComposerState, string> = {
   drafting: "Give the crew a goal…",
   slash: "Give the crew a goal…",
   planning: "Planning…",
+  plan: "Review the plan above, then approve it…",
   running: "Steer the crew…",
   asked: "Answer the crew…",
   waiting: "Steer the crew…",
@@ -96,7 +100,7 @@ export function Composer(p: ComposerProps) {
   const cache = useRef(new Map<string, { cost: number; rest: string }>());
 
   const state = deriveComposerState(view, p.draft, p.files, menuClosed);
-  const live = state === "running" || state === "asked" || state === "waiting";
+  const live = state === "running" || state === "asked" || state === "waiting" || state === "plan";
   const hasText = p.draft.trim().length > 0;
   const remaining = view.plan ? Math.max(0, Math.ceil((view.plan.tMs + 3000 - (p.now - view.startedAt)) / 1000)) : 0;
 
@@ -169,6 +173,7 @@ export function Composer(p: ComposerProps) {
 
   const send = (max = false) => {
     if (state === "planning") return;
+    if (state === "plan") return p.onApprovePlan();
     if (state === "asked") return hasText && p.onAnswer(p.draft.trim());
     if (state === "running" || state === "waiting") return hasText && p.onSteer(p.draft.trim());
     if (state === "idle") return;
@@ -210,6 +215,8 @@ export function Composer(p: ComposerProps) {
 
   const primary = (() => {
     switch (state) {
+      case "plan":
+        return { label: "APPROVE PLAN", disabled: false, onClick: p.onApprovePlan };
       case "planning":
         return { label: remaining > 0 ? `CANCEL · ${remaining}s` : "CANCEL", disabled: false, onClick: p.onCancel };
       case "running":
@@ -327,8 +334,8 @@ export function Composer(p: ComposerProps) {
               </span>
             )}
             {live && !confirmStop && (
-              <button type="button" onClick={() => setConfirmStop(true)} className={cx(secondaryButton, "h-9 gap-1.5 rounded-[var(--rb-r-lg)] px-3.5 text-[13px] font-extrabold")}>
-                <Square className="size-3 fill-current" aria-hidden="true" /> STOP
+              <button type="button" onClick={() => (state === "plan" ? p.onCancel() : setConfirmStop(true))} className={cx(secondaryButton, "h-9 gap-1.5 rounded-[var(--rb-r-lg)] px-3.5 text-[13px] font-extrabold")}>
+                <Square className="size-3 fill-current" aria-hidden="true" /> {state === "plan" ? "CANCEL" : "STOP"}
               </button>
             )}
             <button
@@ -347,7 +354,7 @@ export function Composer(p: ComposerProps) {
         </div>
       </div>
       <p className="mt-1.5 hidden px-1 text-center text-[11px] font-medium text-neutral-500 sm:block">
-        Enter {state === "running" || state === "waiting" ? "steers" : state === "asked" ? "replies" : "runs"} · Shift+Enter newline · ⌘Enter runs on Max · Esc clears · / commands · @ agents
+        Enter {state === "plan" ? "approves the plan" : state === "running" || state === "waiting" ? "steers" : state === "asked" ? "replies" : "runs"} · Shift+Enter newline · ⌘Enter runs on Max · Esc clears · / commands · @ agents
       </p>
     </div>
   );

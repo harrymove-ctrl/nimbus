@@ -19,6 +19,8 @@ type Drill = { title: string; runs: RunRef[]; note?: string } | null;
 const usd = (n: number, d = 3) => `$${n.toFixed(d)}`;
 const TIER_COLOR = { ultra: "blue", super: "purple", nano: "green" } as const;
 const TIER_LABEL = { ultra: "Ultra", super: "Super", nano: "Nano" } as const;
+/** The day buttons under a chart read as part of its legend: small, muted, the open day highlighted. */
+const legendBtn = (active: boolean) => cx("rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums transition-colors hover:bg-white/8 hover:text-neutral-100 disabled:pointer-events-none disabled:opacity-35", active ? "bg-white/12 text-neutral-100" : "text-neutral-400");
 const card = "rounded-[10px] border border-white/10 bg-neutral-950/75 p-4 backdrop-blur-[2px]";
 const eyebrow = "mb-2 text-[11px] font-extrabold uppercase tracking-wider text-neutral-400";
 
@@ -48,6 +50,7 @@ export function Overview({
   const [d, setD] = useState<Data | null>(null);
   const [drill, setDrill] = useState<Drill>(null);
   const [pulse, setPulse] = useState(false);
+  const [activeDay, setActiveDay] = useState<string | null>(null);
   const spendRef = useRef<HTMLDivElement>(null);
   const drillRef = useRef<HTMLDivElement>(null);
 
@@ -65,7 +68,8 @@ export function Overview({
   }, [load, refreshKey]);
 
   const open = useCallback(
-    (title: string, runs: RunRef[], note?: string) => {
+    (title: string, runs: RunRef[], note?: string, day?: string) => {
+      setActiveDay(day ?? null);
       setDrill({ title, runs, note });
       requestAnimationFrame(() => drillRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
     },
@@ -146,12 +150,13 @@ export function Overview({
               height={210}
               format={{ style: "currency", currency: "USD", minimumFractionDigits: 3, maximumFractionDigits: 3 }}
             />
-            <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Open the runs of a day">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-0.5 gap-y-1" role="group" aria-label="Open the runs of a day">
+              <span className="me-1 text-[11px] text-neutral-500">Open a day</span>
               {d.spendByDay.map((s) => {
                 const n = dayRuns(s.date).length;
                 return (
-                  <button key={s.date} type="button" disabled={!n} onClick={() => open(`Runs on ${s.label}`, dayRuns(s.date))} className="rounded-md border border-white/10 px-2 py-1 text-[12px] tabular-nums text-neutral-300 hover:bg-white/8 disabled:opacity-40">
-                    {s.label} · {n} {n === 1 ? "run" : "runs"} · {usd(s.ultra + s.super + s.nano, 2)}
+                  <button key={s.date} type="button" disabled={!n} aria-pressed={activeDay === s.date} title={`${n} ${n === 1 ? "run" : "runs"}`} onClick={() => (activeDay === s.date ? (setDrill(null), setActiveDay(null)) : open(`Runs on ${s.label}`, dayRuns(s.date), undefined, s.date))} className={legendBtn(activeDay === s.date)}>
+                    {s.label} · {usd(s.ultra + s.super + s.nano, 2)}
                   </button>
                 );
               })}
@@ -179,9 +184,10 @@ export function Overview({
           <section className={card} aria-label="Runs calendar">
             <h2 className={eyebrow}>Runs · 8 weeks</h2>
             <Heatmap data={d.calendar.map((c) => ({ date: c.date, value: c.value }))} weeks={8} weekStart={1} unit={{ one: "run", other: "runs" }} color="green" />
-            <div className="mt-2 flex flex-wrap gap-1.5" role="group" aria-label="Open the runs of a recent day">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-0.5 gap-y-1" role="group" aria-label="Open the runs of a recent day">
+              <span className="me-1 text-[11px] text-neutral-500">Open a day</span>
               {d.calendar.slice(-7).map((c) => (
-                <button key={c.date} type="button" disabled={!c.value} onClick={() => open(`Runs on ${c.date}`, dayRuns(c.date))} className="rounded-md border border-white/10 px-2 py-1 text-[12px] tabular-nums text-neutral-300 hover:bg-white/8 disabled:opacity-40">
+                <button key={c.date} type="button" disabled={!c.value} aria-pressed={activeDay === c.date} title={`${c.value} ${c.value === 1 ? "run" : "runs"}`} onClick={() => (activeDay === c.date ? (setDrill(null), setActiveDay(null)) : open(`Runs on ${c.date}`, dayRuns(c.date), undefined, c.date))} className={legendBtn(activeDay === c.date)}>
                   {c.date.slice(5)} · {c.value}
                 </button>
               ))}
@@ -252,7 +258,7 @@ export function Overview({
           <section ref={drillRef} className={cx(card, "nb-rise-fast")} aria-label={drill.title} aria-live="polite">
             <div className="mb-2 flex items-center">
               <h2 className="text-[13px] font-extrabold text-neutral-100">{drill.title}</h2>
-              <button type="button" onClick={() => setDrill(null)} className="ms-auto rounded-md px-2 py-1 text-[12px] font-bold text-neutral-400 hover:bg-white/10">
+              <button type="button" onClick={() => (setDrill(null), setActiveDay(null))} className="ms-auto rounded-md px-2 py-1 text-[12px] font-bold text-neutral-400 hover:bg-white/10">
                 Close
               </button>
             </div>

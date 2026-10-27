@@ -51,6 +51,7 @@ export function AppShell() {
   const ws = workstreams.find((w) => w.id === selectedId);
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
   const active = useActiveRuns();
+  const draftRef = useRef<import("@/lib/events").PlanStep[] | null>(null);
   const { events } = useRunEvents(runId);
   const view = useMemo(() => buildView(events), [events]);
   // Scrubbing a finished run (SPEC §17.5): the transcript and the Inspector show the run as it was at `scrub` ms; the
@@ -147,6 +148,19 @@ export function AppShell() {
     if (hasSummary) void refreshWorkstreams();
   }, [hasSummary, refreshWorkstreams]);
 
+  // A run that finishes while its workstream is open is read already: clear the dot the server just set (F14).
+  const endedHere = view.status === "done" || view.status === "failed" || view.status === "stopped" || view.status === "cancelled";
+  useEffect(() => {
+    if (endedHere && selectedId) void fetch(`/api/workstreams/${selectedId}/read`, { method: "POST" });
+  }, [endedHere, selectedId, runId]);
+  // A run that finished out of view: refresh the rail at once so its dot shows (and not 10 s later).
+  const activeIds = active.runs.map((r) => r.id).join(",");
+  const prevActive = useRef("");
+  useEffect(() => {
+    const before = prevActive.current ? prevActive.current.split(",") : [];
+    prevActive.current = activeIds;
+    if (before.some((id) => !activeIds.split(",").includes(id))) setTimeout(() => void refreshWorkstreams(), 700);
+  }, [activeIds, refreshWorkstreams]);
   // Scheduled runs finish while you are away: refresh the rail's unread dots.
   useEffect(() => {
     if (boot !== "gone") return;
@@ -267,7 +281,7 @@ export function AppShell() {
         </div>
         <span className="text-[16px] font-extrabold tracking-tight">Nimbus</span>
         <span className="ms-2 hidden text-[13px] font-semibold text-neutral-500 sm:inline" aria-live="polite">
-          {needsYou ? <span className="text-orange-300">{view.pendingApprovals.length} waiting for you</span> : view.status === "asked" ? <span className="text-orange-300">the crew asked you a question</span> : view.status === "running" || view.status === "planning" ? "crew at work" : "crew idle"}
+          {needsYou ? <span className="text-orange-300">{view.pendingApprovals.length > 0 ? `${view.pendingApprovals.length + (view.planAwaiting ? 1 : 0)} waiting for you` : view.planAwaiting ? "1 plan waiting for you" : "needs a look"}</span> : view.status === "asked" ? <span className="text-orange-300">the crew asked you a question</span> : view.status === "running" || view.status === "planning" ? "crew at work" : "crew idle"}
         </span>
         <span className="flex-1" />
         <StatusPill runs={active.runs} fetchedAt={active.fetchedAt} reload={active.reload} currentRunId={runId} onOpenRun={(wsId, rid) => openRun(wsId, rid)} />
@@ -306,6 +320,7 @@ export function AppShell() {
                 view={shown}
                 now={now}
                 manualMinutes={ws.estimatedManualMinutes}
+                onDraft={(steps) => (draftRef.current = steps)}
                 onCancelPlan={() => void stop("cancel")}
                 onPlan={async (action, steps) => {
                   if (runId) await post(`/api/runs/${runId}/plan`, { steps, [action]: true });
@@ -360,6 +375,10 @@ export function AppShell() {
                   setMode={setMode}
                   tier={tier}
                   setTier={setTier}
+                  onApprovePlan={() => {
+                    const steps = draftRef.current ?? view.plan?.steps;
+                    if (runId && steps) void post(`/api/runs/${runId}/plan`, { steps, approve: true });
+                  }}
                   onRun={(o) => void startRun(o)}
                   onCancel={() => void stop("cancel")}
                   onStop={() => void stop("stop")}

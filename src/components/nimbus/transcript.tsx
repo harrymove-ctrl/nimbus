@@ -30,6 +30,8 @@ type Props = {
   /** the person approved the draft plan (possibly edited) or sent their edits back for another planning turn */
   /** what the same work costs a person by hand (an estimate), for the impact line */
   manualMinutes?: number;
+  /** the draft plan's current text, so APPROVE PLAN in the composer sends the person's edits */
+  onDraft?: (steps: import("@/lib/events").PlanStep[]) => void;
   onPlan: (action: "approve" | "revise", steps: import("@/lib/events").PlanStep[]) => Promise<void> | void;
   onAnswer: (q: QuestionItem, text: string) => void;
   onDecide: (a: ApprovalItem, decision: "approve" | "approve_always" | "reject", note?: string) => void;
@@ -40,7 +42,7 @@ type Props = {
   onTemplate?: (goal: string) => void;
 };
 
-export function Transcript({ view, now, manualMinutes, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill, waitingForCrew }: Props) {
+export function Transcript({ view, now, manualMinutes, onDraft, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill, waitingForCrew }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -65,7 +67,7 @@ export function Transcript({ view, now, manualMinutes, onCancelPlan, onPlan, onA
         {view.startedAt > 0 && view.transcript.length > 0 && <Divider label={runStamp(view.startedAt, view.trigger)} className="text-[12px] font-bold text-neutral-400" />}
         {view.transcript.map((item) => (
           <div key={item.seq} id={`tr-${item.seq}`} className={cx("scroll-mt-4", item.t === "plan" ? "nb-rise" : "nb-rise-fast")}>
-            <Item item={item} view={view} now={now} manualMinutes={manualMinutes} onCancelPlan={onCancelPlan} onPlan={onPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
+            <Item item={item} view={view} now={now} manualMinutes={manualMinutes} onDraft={onDraft} onCancelPlan={onCancelPlan} onPlan={onPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
           </div>
         ))}
         <PlanSkeleton active={!!waitingForCrew} />
@@ -88,7 +90,7 @@ function Dot({ role }: { role: AgentRole }) {
   return <span className="mt-[7px] size-2 shrink-0 rounded-full" style={{ background: ROLE_COLOR[role] }} />;
 }
 
-function Item({ item, view, now, manualMinutes, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
+function Item({ item, view, now, manualMinutes, onDraft, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
   switch (item.t) {
     case "user":
       return (
@@ -108,7 +110,7 @@ function Item({ item, view, now, manualMinutes, onCancelPlan, onPlan, onAnswer, 
         </div>
       );
     case "plan":
-      return <PlanCard item={item} view={view} now={now} onCancel={onCancelPlan} onPlan={onPlan} />;
+      return <PlanCard item={item} view={view} now={now} onCancel={onCancelPlan} onPlan={onPlan} onDraft={onDraft} />;
     case "handoff": {
       const from = view.lanes.find((l) => l.instance === item.from);
       const to = view.lanes.find((l) => l.instance === item.to);

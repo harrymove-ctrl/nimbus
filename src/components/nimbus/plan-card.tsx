@@ -4,7 +4,7 @@
 // or nudge steps, reword, remove, add; Keep planning sends the edits back, Approve plan starts the crew. After approval
 // the same card is the live checklist (a tick as each step's work ends, a running elapsed, a ✕ on a failure) and
 // collapses to one line when the run is over. Runs nobody is watching (schedules, chat) keep the 3 s window.
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Check, GripVertical, Plus, X } from "lucide-react";
 import { ProgressBar } from "@/components/dithercn/progress-bar";
 import type { PlanStep } from "@/lib/events";
@@ -15,7 +15,7 @@ const ENDED = new Set(["done", "failed", "cancelled", "stopped"]);
 const ROLES: PlanStep["role"][] = ["researcher", "analyst", "writer", "checker"];
 const TIER_OF: Record<string, PlanStep["tier"]> = { researcher: "super", analyst: "super", writer: "super", checker: "nano", orchestrator: "ultra", learner: "nano" };
 
-type Props = { item: PlanItem; view: RunView; now: number; onCancel: () => void; onPlan: (action: "approve" | "revise", steps: PlanStep[]) => Promise<void> | void };
+type Props = { item: PlanItem; view: RunView; now: number; onDraft?: (steps: PlanStep[]) => void; onCancel: () => void; onPlan: (action: "approve" | "revise", steps: PlanStep[]) => Promise<void> | void };
 
 export function PlanCard(props: Props) {
   const { item, view } = props;
@@ -38,13 +38,16 @@ function Header({ item, n, children }: { item: PlanItem; n: number; children?: R
   );
 }
 
-function DraftPlan({ item, onPlan }: Props) {
+function DraftPlan({ item, onPlan, onDraft }: Props) {
   const [steps, setSteps] = useState<PlanStep[]>(item.steps);
   const [busy, setBusy] = useState<null | "approve" | "revise">(null);
   const dragFrom = useRef<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
   const added = useRef(0);
   const ready = steps.length > 0 && steps.every((s) => s.text.trim());
+  useEffect(() => {
+    onDraft?.(steps.map((s) => ({ ...s, text: s.text.trim() })));
+  }, [steps, onDraft]);
 
   const move = (from: number, to: number) =>
     setSteps((cur) => {

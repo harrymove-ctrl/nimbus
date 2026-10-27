@@ -165,6 +165,9 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     await persistChain;
     await retryBusy(() => db.update(schema.runs).set({ status, endedAt: Date.now(), tokensIn: ctx.usage.in, tokensOut: ctx.usage.out, costUsd: ctx.usage.costUsd, baselineUsd: ctx.usage.baselineUsd, usageByTier: ctx.usageByTier }).where(eq(schema.runs.id, id)), 40); // patient: a lost final update leaves the run "running" forever
     inflight.delete(id);
+    // F14: a run that finished marks its workstream unread; the app clears the dot at once when the person was looking at it
+    // (a browser that is watching the run holds its event stream open: that run is already read)
+    if (eventFns.size === 0) await retryBusy(() => db.update(schema.workstreams).set({ unread: 1 }).where(eq(schema.workstreams.id, input.workstreamId))).catch(() => {});
     if (process.env.NIMBUS_RECORD_REAL === "1") {
       try {
         console.log(`[nimbus] recorded ${id} → ${writeRecording(events, input.workstreamId)}`);

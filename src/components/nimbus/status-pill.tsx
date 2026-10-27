@@ -47,6 +47,16 @@ export function StatusPill({ runs, fetchedAt, reload, currentRunId, onOpenRun, c
   const [now, setNow] = useState(() => Date.now());
   const box = useRef<HTMLDivElement>(null);
   const others = runs.filter((r) => r.id !== currentRunId);
+  // Runs that finished while you were looking elsewhere stay in the pill for 25 s, with a way to open them (F14)
+  const seen = useRef(new Map<string, ActiveRun>());
+  const [done, setDone] = useState<{ r: ActiveRun; at: number }[]>([]);
+  useEffect(() => {
+    const ids = new Set(runs.map((r) => r.id));
+    const gone = [...seen.current.values()].filter((r) => !ids.has(r.id) && r.id !== currentRunId);
+    for (const g of [...seen.current.keys()]) if (!ids.has(g)) seen.current.delete(g);
+    for (const r of runs) seen.current.set(r.id, r);
+    if (gone.length) setDone((d) => [...d, ...gone.map((r) => ({ r, at: Date.now() }))]);
+  }, [runs, currentRunId]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
@@ -64,7 +74,34 @@ export function StatusPill({ runs, fetchedAt, reload, currentRunId, onOpenRun, c
     if (others.length === 0) setOpen(false);
   }, [others.length]);
 
-  if (others.length === 0) return null;
+  const finished = done.filter((d) => now - d.at < 25_000);
+  if (others.length === 0 && finished.length === 0) return null;
+  if (others.length === 0) {
+    const last = finished[finished.length - 1].r;
+    return (
+      <div ref={box} className={cx("relative", className)}>
+        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="dialog" className="nb-pop-slow flex h-9 max-w-[min(420px,60vw)] items-center gap-2.5 rounded-full border border-white/12 bg-neutral-900 ps-2 pe-3.5 text-[13px] font-semibold text-neutral-100 transition-colors hover:bg-neutral-800">
+          <span aria-hidden="true" className="grid size-6 shrink-0 place-items-center rounded-full" style={{ background: `${last.color}33`, color: last.color }}>
+            <Check className="size-3.5" />
+          </span>
+          <span className="min-w-0 truncate">{finished.length > 1 ? `${finished.length} runs finished` : `${last.title} finished`}</span>
+        </button>
+        {open && (
+          <div role="dialog" aria-label="Finished runs" className="nb-scale-in absolute right-0 top-11 z-50 flex w-[320px] max-w-[92vw] flex-col gap-2 rounded-xl border border-white/12 bg-neutral-950 p-3 shadow-[0_18px_48px_-12px_rgba(0,0,0,0.8)]">
+            {finished.map(({ r }) => (
+              <div key={r.id} className="flex items-center gap-2 rounded-lg border border-white/8 bg-white/3 p-2.5">
+                <span className="size-2 shrink-0 rounded-full" style={{ background: r.color }} />
+                <p className="min-w-0 flex-1 truncate text-[14px] font-bold">{r.title}</p>
+                <button type="button" onClick={() => (setOpen(false), setDone((d) => d.filter((x) => x.r.id !== r.id)), onOpenRun(r.workstreamId, r.id))} className="h-8 rounded-md bg-white/10 px-2.5 text-[12px] font-extrabold hover:bg-white/16">
+                  Open run
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
   const lead = others.find((r) => r.approval || r.planAwaiting || r.question) ?? others[0];
   const waiting = others.filter((r) => r.approval || r.planAwaiting || r.question).length;
   const elapsed = (r: ActiveRun) => r.elapsedMs + Math.max(0, now - fetchedAt);
