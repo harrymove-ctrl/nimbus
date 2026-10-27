@@ -9,10 +9,12 @@
 // table, the summary → Memory & skill → Hackathon radar from the rail → the status pill (Morning brief runs in the
 // background, its replies approved inline) → Ship Nimbus run two (✦ learned, plan approved as drafted, no question, no
 // approval) → the Overview again.
-// Output: docs/demo/nimbus-demo.webm, plus nimbus-demo.mp4 (libx264, slow, crf 17, 30 fps) when ffmpeg is installed.
+// Output: docs/demo/nimbus-demo.webm, plus nimbus-demo.mp4 (libx264, slow, crf 17, 30 fps) when ffmpeg is installed; for the
+// video session, docs/demo/raw/nimbus-demo-<stamp>.webm and docs/demo/raw/beats.json: [{ beat, tStart, tEnd }] in seconds from
+// the start of the recording, so the edit can cut by beat.
 // Dev tooling only: nothing in src/ imports this, so it never reaches the production bundle.
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, renameSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { chromium, type Locator, type Page } from "playwright";
@@ -23,6 +25,11 @@ const BASE = process.env.NIMBUS_URL ?? "http://localhost:3000";
 const OUT = path.join(process.cwd(), "docs", "demo");
 const TMP = path.join(OUT, ".tmp-video");
 const SHIP = WORKSTREAMS.find((w) => w.id === "ws-ship-nimbus")!;
+
+// Beat markers: seconds of wall clock since the recording started (the video starts when the page is created).
+let t0 = 0;
+const marks: { beat: string; at: number }[] = [];
+const mark = (beat: string) => marks.push({ beat, at: +((Date.now() - t0) / 1000).toFixed(2) });
 
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -55,7 +62,10 @@ async function resetLearning() {
 }
 
 async function glide(page: Page, target: Locator) {
-  await target.scrollIntoViewIfNeeded();
+  // Timeline segments grow with the clock and dithered surfaces animate, so Playwright's "stable" check can never pass
+  // on a live run: scroll with a short timeout, fall back to a plain scrollIntoView, and never wait for stability.
+  await target.scrollIntoViewIfNeeded({ timeout: 2000 }).catch(() => target.evaluate((el) => el.scrollIntoView({ block: "center", inline: "nearest" })).catch(() => {}));
+  await pause(120);
   const box = await target.boundingBox();
   if (!box) throw new Error("element has no box");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 28 });
@@ -63,11 +73,13 @@ async function glide(page: Page, target: Locator) {
 }
 async function click(page: Page, target: Locator) {
   await glide(page, target);
-  await target.click({ delay: 90 });
+  await target.click({ delay: 90, force: true });
 }
 
 /** Type the Ship Nimbus goal, then the plan arrives as a draft: edit it on the first run, approve it as drafted on the second. */
 async function runShip(page: Page, opts: { first: boolean }) {
+  const p = opts.first ? "ship1" : "ship2";
+  mark(`${p}-goal`);
   await click(page, page.locator("textarea"));
   await page.keyboard.type(SHIP.goal, { delay: 28 });
   await page.getByText(/≈ \$/).first().waitFor({ timeout: 10_000 }).catch(() => {}); // the cost pill, before Enter
@@ -78,6 +90,7 @@ async function runShip(page: Page, opts: { first: boolean }) {
   // the plan is a draft: nothing runs until Approve plan
   const steps = page.locator('ol[aria-label="Plan steps"] > li');
   await steps.first().waitFor({ timeout: 30_000 });
+  mark(`${p}-plan-draft`);
   await pause(opts.first ? 2200 : 1400);
   if (opts.first) {
     await steps.nth(3).dragTo(steps.nth(1)); // drag "Verify the patch" two steps up
@@ -87,15 +100,17 @@ async function runShip(page: Page, opts: { first: boolean }) {
     await page.getByRole("textbox", { name: `Step ${n}` }).fill("Run the full suite before the PR");
     await pause(1600);
   }
-  await click(page, page.getByRole("button", { name: "Approve plan" }));
+  await click(page, page.getByRole("button", { name: "Approve plan", exact: true }));
+  mark(`${p}-checklist`);
   await pause(opts.first ? 2400 : 1600); // the checklist ticks as the lanes fill
 
   const analyst = page.locator('g[role="button"][aria-label^="Analyst"]').first();
-  await analyst.waitFor({ timeout: 60_000 });
+  await analyst.waitFor({ timeout: 180_000 });
   if (opts.first) {
     // the Analyst's wrong flag fails for real; the Loop view shows it as loop 1 Verify ✕ → loop 2
     const failed = page.locator('g[role="button"][aria-label*="pnpm eval --golden"]').first();
-    await failed.waitFor({ timeout: 60_000 });
+    await failed.waitFor({ timeout: 180_000 });
+    mark("ship1-loop-view");
     await click(page, failed);
     await click(page, page.getByRole("tab", { name: "Agent I/O" }));
     await pause(1200);
@@ -106,40 +121,46 @@ async function runShip(page: Page, opts: { first: boolean }) {
     }
     await pause(1800);
     const real = page.locator('g[role="button"][aria-label*="pnpm eval --only"]').first();
-    await real.waitFor({ timeout: 60_000 });
+    await real.waitFor({ timeout: 180_000 });
     await click(page, real);
     await click(page, page.getByRole("button", { name: "Calls", exact: true }));
     await pause(3600);
 
     // the question: fix in the router or in the golden
+    mark("ship1-question");
     const chip = page.getByRole("button", { name: "Router", exact: true });
-    await chip.waitFor({ timeout: 90_000 });
+    await chip.waitFor({ timeout: 180_000 });
     await pause(1600);
     await click(page, chip);
 
+    mark("ship1-patch");
     // the patch (CODE tab), then the PR approval: Approve & always allow writes the rule
     await page.getByRole("tab", { name: "Artifact" }).click();
-    await page.getByRole("button", { name: /^code$/i }).first().waitFor({ timeout: 90_000 });
+    await page.getByRole("button", { name: /^code$/i }).first().waitFor({ timeout: 180_000 });
     await click(page, page.getByRole("button", { name: /^code$/i }).first());
     await pause(3000);
     const always = page.getByRole("button", { name: /Approve & always allow/ }).first();
-    await always.waitFor({ timeout: 120_000 });
+    mark("ship1-pr-approval");
+    await always.waitFor({ timeout: 240_000 });
     await pause(3400);
     await click(page, always);
     await pause(1600);
     await click(page, page.getByRole("button", { name: /^doc$/i }).first());
   } else {
     // run two: the answer is remembered, the PR goes through under the rule, so there is no question and no approval card
-    await page.getByText(/learned ·/).first().waitFor({ timeout: 60_000 });
+    mark("ship2-learned");
+    await page.getByText(/learned ·/).first().waitFor({ timeout: 180_000 });
     await pause(2600);
   }
 
   // PR body v2 with the eval table, then the run summary (impact line, tiles resolving cell by cell)
+  mark(`${p}-eval-table`);
   await page.getByText(/EVALS/i).first().waitFor({ timeout: 180_000 });
   await pause(2800);
   const summary = page.locator("p", { hasText: /^Run summary$/ });
-  await summary.waitFor({ timeout: 120_000 });
+  await summary.waitFor({ timeout: 240_000 });
   await summary.scrollIntoViewIfNeeded();
+  mark(`${p}-summary`);
   await pause(opts.first ? 4600 : 3800);
 }
 
@@ -151,10 +172,11 @@ async function backgroundRunWithPill(page: Page) {
   await pause(1200);
   await page.request.post(`${BASE}/api/runs/${runId}/plan`, { data: { approve: true } }); // approved as drafted
   const pill = page.locator('button[aria-haspopup="dialog"]');
+  mark("status-pill");
   await pill.waitFor({ timeout: 20_000 });
   await pause(2400);
   await click(page, pill);
-  await page.getByRole("button", { name: "Approve", exact: true }).first().waitFor({ timeout: 60_000 });
+  await page.getByRole("button", { name: "Approve", exact: true }).first().waitFor({ timeout: 180_000 });
   await pause(2400);
   for (let k = 0; k < 3; k++) {
     const approve = page.getByRole("button", { name: "Approve", exact: true }).first();
@@ -174,16 +196,19 @@ async function main() {
   const browser = await chromium.launch({ channel: "chrome", headless: true });
   const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, colorScheme: "dark", recordVideo: { dir: TMP, size: { width: 1920, height: 1080 } } });
   await ctx.addInitScript(CURSOR);
+  t0 = Date.now();
   const page = await ctx.newPage();
   const started = Date.now();
 
   // beat 1: the boot cloud, then the shell with the rail's sweep skeleton for a visible beat (?loaders=1)
+  mark("boot");
   await page.goto(`${BASE}/?loaders=1`);
   await pause(2400);
   await page.locator("nav").waitFor({ timeout: 20_000 });
   await pause(1800);
 
   // beat 2: the Overview: stat cards count up, the charts draw in; a click on a day of the spend chart lists its runs
+  mark("overview");
   await page.getByText("Spend by tier").first().waitFor({ timeout: 20_000 });
   await pause(4200);
   const days = page.locator('[role="group"][aria-label="Open the runs of a day"] button:not([disabled])');
@@ -196,6 +221,7 @@ async function main() {
   await runShip(page, { first: true });
 
   // beat 4: Memory & skill: the rule card, the skill as cards, the diff, the memories
+  mark("memory-skill");
   await click(page, page.getByRole("tab", { name: "Memory & skill" }));
   await pause(2600);
   await click(page, page.getByRole("button", { name: /show diff/i }));
@@ -204,6 +230,7 @@ async function main() {
   await pause(600);
 
   // beat 5: the radar from the rail: it ran at 09:00 on its own; then the status pill while it is open
+  mark("radar");
   await click(page, page.locator("nav button", { hasText: "Hackathon radar" }).first());
   await pause(4200);
   await backgroundRunWithPill(page);
@@ -216,15 +243,25 @@ async function main() {
   await pause(1500);
 
   // beat 7: back on the Overview: today's numbers moved
+  mark("overview-after");
   await click(page, page.locator("nav button", { hasText: "Overview" }).first());
   await pause(5200);
 
+  const total = +((Date.now() - t0) / 1000).toFixed(2);
   const video = page.video();
   await ctx.close();
   await browser.close();
   const src = await video!.path();
   const webm = path.join(OUT, "nimbus-demo.webm");
   renameSync(src, webm);
+  // for the video session: the raw take under a dated name, and where each beat starts and ends
+  const raw = path.join(OUT, "raw");
+  mkdirSync(raw, { recursive: true });
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "-");
+  copyFileSync(webm, path.join(raw, `nimbus-demo-${stamp}.webm`));
+  const beats = marks.map((m, i) => ({ beat: m.beat, tStart: m.at, tEnd: marks[i + 1]?.at ?? total }));
+  writeFileSync(path.join(raw, "beats.json"), JSON.stringify(beats, null, 2) + "\n");
+  console.log(`raw take and beats → docs/demo/raw (${beats.length} beats, ${total}s)`);
   rmSync(TMP, { recursive: true, force: true });
   console.log(`recorded ${(Date.now() - started) / 1000}s of wall time → ${path.relative(process.cwd(), webm)}`);
 
