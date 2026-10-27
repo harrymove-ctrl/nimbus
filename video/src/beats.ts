@@ -17,8 +17,17 @@ const beat = (name: string) => {
 export const at = (name: string) => beat(name).tStart;
 export const end = (name: string) => beat(name).tEnd;
 
+/** Targets measured by eye on the take where beats.json's box has scrolled away by the time
+ *  the callout shows: the lanes panel scrolls while the run plays, so "model-badge" (y 6, the
+ *  orchestrator's badge, already under the header) becomes the Writers' three "Nemotron 3
+ *  Super" badges, read off the take at 44–50 s. */
+const MEASURED: Record<string, Box> = {
+  "model-badge": { x: 310, y: 137, w: 138, h: 156 },
+};
+
 /** A callout target's box in take pixels: from `inBeat` if given, else the first beat that has it. */
 export function target(name: string, inBeat?: string): Box {
+  if (MEASURED[name] && !inBeat) return MEASURED[name];
   const b = inBeat ? beat(inBeat) : BEATS.find((x) => x.targets[name]);
   const box = b?.targets[name];
   if (!box) throw new Error(`beats.json has no target "${name}"${inBeat ? ` in ${inBeat}` : ""}`);

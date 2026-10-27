@@ -107,7 +107,7 @@ export function Footage({
       </AbsoluteFill>
       <Dim boxes={active.map((a) => a.box)} level={Math.max(0, ...active.map((a) => a.level))} />
       {active.map((a) => (
-        <Callout key={a.c.target + a.c.from} spec={a.c} box={a.box} />
+        <Callout key={a.c.target + a.c.from} spec={a.c} box={a.box} scope={shot} />
       ))}
     </AbsoluteFill>
   );

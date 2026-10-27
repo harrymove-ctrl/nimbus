@@ -44,10 +44,16 @@ npx remotion render NimbusX out/nimbus-x.mp4 --codec h264 --crf 17
 
 - `src/grid.ts`: `BPM`, `FPS`, `framesPerBeat`, `bars()`; scenes are laid out in
   bars and the bundle refuses to load if one starts off the beat.
-- `src/compositions.tsx`: both cuts, their shots, callouts and SFX cues.
+- `src/shots.ts`: every shot (camera moves, callouts, click rings) and both cuts' layouts;
+  `src/compositions.tsx` renders them with the SFX cues.
+- `src/palette.ts`: the app's colours, each citing `globals.css` or the component it is from.
 - `src/Footage.tsx`: a shot with a camera, click rings and callouts that ride the camera.
-- `src/components/Callout.tsx`: the explainer callout and the chapter eyebrow;
-  `TitleCard.tsx` the title.
+- `src/components/Callout.tsx`: the explainer callout and the chapter eyebrow (solid chip
+  on a corner scrim); `TitleCard.tsx` the title. Rings stay 24 px inside the frame.
+- `src/callout-layout.json`: where each callout card sits, measured by
+  `python3 scripts/layout-callouts.py` (renders each callout's frames with only its ring,
+  then keeps the nearest spot that covers no text cell). Re-run it after any camera or
+  take change; `node scripts/callout-index.mjs full|x` lists the callouts at their frames.
 - `src/scenes/PhoneChat.tsx` (the chat on snapcn `phone-frame`), `Proof.tsx`
   (count-grid, adapted) and the end card. `PromptRoll`, `CommentStorm`,
   `ColumnCut` and `AgentChat` are from rev 4 and not in this cut.

@@ -1,10 +1,22 @@
-status: Gate 3 · rev 5 previews (temp music) for review · 2026-10-28
-script: rev 5 (approved) · board, music, sfx: rev C (approved) · take: docs/demo/raw/nimbus-demo-20261027-1633.webm (209.6 s) cut by its beats.json
-previews (720p, h264 crf 23, AAC 192k, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (23.4 MB, 2:54) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (5.5 MB, 0:44)
-evidence sheets: `docs/demo/preview/callouts-middle-frames.png` (each callout's middle frame) · `docs/demo/preview/compare-v3-rev4-rev5.png` (v3 · rev 4 preview · rev 5, three scenes)
+status: locked · 2026-10-28 · "Fix the two overlaps and the three clipped rings, then lock both cuts and wait for the Suno music."
+locked: NimbusFull 2:54 (87 bars) · NimbusX 0:44 (22 bars) · script rev 5 · board, music, sfx rev C
+remaining before the final render: (1) the Suno tracks `video/public/audio/music-full.mp3` and `music-x.mp3` (swap at `MUSIC` in `video/src/compositions.tsx`, re-master), (2) the final-day real run as footage, its numbers replacing every "mock" label, then `python3 video/scripts/layout-callouts.py` and a fresh eye check of the callout frames. No other changes.
+take: docs/demo/raw/nimbus-demo-20261027-1633.webm (209.6 s) cut by its beats.json
+previews (720p, h264 crf 23, AAC 192k, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (22.6 MB, 2:54) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (5.5 MB, 0:44)
+evidence sheets: `docs/demo/preview/callouts-middle-frames.png` (each callout's middle frame, after the Gate 3 fixes) · `docs/demo/preview/compare-v3-rev4-rev5.png` (v3 · rev 4 preview · rev 5, three scenes)
 sound: Tone.js temp score (`video/sound/music-map.json` = music.md rev C) + 26 sheet sounds (14 cuelume renders, 12 Tone.js designs), mastered with `video/scripts/master.sh`
 
-# QA, rev 5 (build-qa.md)
+# Gate 3 fixes (2026-10-28), frame times in the full cut
+
+| Fix | Result | Evidence |
+|---|---|---|
+| Eyebrow over the app header (0:44, "1 · You approve the plan" over "Nimbus · 3 waiting for you") | FIXED | Every eyebrow (4 chapters, full cut; the X clip has none) is a solid neutral-950 chip on a neutral-950 corner scrim, so no app text shows through or half-cut around it: 0:44 (f1320), 1:52 (f3360), 2:02 (f3660), 2:08 (f3840) checked by eye. The plan shot is framed so "Plan · 4 steps · Ultra" sits below the chip (0:26–0:32) |
+| Estimate callout over the plan list (0:30) | FIXED | Card placement is measured, not guessed: `video/scripts/layout-callouts.py` renders each callout's frames with only its ring, maps text cells (8 px cells with edges both ways: glyphs, icons, charts) and keeps the nearest spot covering none, worst of three frames per callout. 31 of 33 spots cover 0 text cells; chat-run (2:24) and the X lanes (0:16) touch 4 cells each, a lane bar's corner and a panel corner, no text. The estimate card (0:28–0:32) sits in the plan card's empty lower right, the plan card (0:26–0:30) in its header strip between the title and the estimate chip. Two shots were reframed so a clear spot exists: the router gauge (0:18–0:22, 2:34–2:38) now sits right of centre with its card on the Runs panel's empty half, and the plan is held at 1.9× for its two cards |
+| Rings clipped by the frame (brief-doc 0:00–0:04, workstreams 0:10–0:14, model-badge 0:42–0:46) | FIXED | Every ring's rect is kept 25 px inside the frame (`Callout.tsx` SAFE), so its stroke has a 24 px margin; measured on all 36 ring renders. model-badge was ringing a badge that had scrolled under the app header in the take; it now rings the three visible "Nemotron 3 Super" lane badges (measured on the take at 44–50 s, `video/src/beats.ts` MEASURED) |
+| Approve plan ring (optional) | ADDED | At the click, full 0:34.1 (f1024) and X 0:15.1 (f452): the button's position is derived from the plan card's box in beats.json (its bottom-right, 41 px in and 103 px down, read off the take) and lands on the button on the render |
+| Re-check of all 30 callouts | PASS | `callouts-middle-frames.png` regenerated; each of the 30 middle frames plus 0:18.7 and 0:26.7 looked at in full size: no card over UI text, every ring whole and on its element |
+
+# QA, rev 5 locked (build-qa.md)
 
 | Check | Result | Evidence |
 |---|---|---|
@@ -14,14 +26,16 @@ sound: Tone.js temp score (`video/sound/music-map.json` = music.md rev C) + 26 s
 | Frame 1 is the payoff | PASS | Frame 0: the finished brief beside the approval cards, the tray "3 waiting", the cloud orange |
 | Captions safe | N/A | No captions, no sentence captions (story.md rule 12) |
 | Phone readability | PASS | Callout line 1 is 34 px, line 2 28 px; eyebrows 28 px; phone chat 18 device px × 1.58 ≈ 28 px; footage pushed in 1.9–2.6× on the parts a callout names |
-| Loudness | PASS | After `master.sh`: full −14.1 LUFS integrated, −1.2 dBTP, LRA 7.0; X −14.2 LUFS, −1.0 dBTP (measured on the previews) |
+| Loudness | PASS | After `master.sh`: full −14.1 LUFS integrated, −1.2 dBTP, LRA 7.0; X −14.2 LUFS, −1.0 dBTP (measured on the locked previews) |
 | Hackathon requirements | PASS | Model ids on the proof tiles, "Nebius Token Factory" under them and on the title, the spend callout and the Overview; the app works on screen throughout |
 | Honest numbers | PASS (labelled) | Every number in a callout or tile is from the mock run and says "mock": ≈ $0.03, $0.024, $0.016; the proof card carries "mock run"; 19/19 kept under that tag until RELEASE.md traces it |
 | End card | PASS | URL and `pnpm dev` held still 6 s (full) and 2 s after the wordmark (X, 4 s total card) |
-| Palette matches the app | PASS | `video/src/theme.ts` values each cite `globals.css`, `run-view.ts` ROLE_COLOR or the Overview tiers; `scripts/qa-frames.py` on 10 frames per cut: saturated hues sit on mint (165°), writer/teal and checker/analyst, no foreign bin ≥ 2 % |
-| Frame density | PASS with one exception | A frame every 2 s (87 full, 22 X): X none; full flags only 23 s, the 2 s goal close-up (the composer is at the bottom edge of the app, the page above it is empty by design). Fixed on the way: the phone now sits on the web app (lightly blurred), the plan and estimate are framed tighter |
+| Palette matches the app | PASS | `video/src/palette.ts` values each cite `globals.css`, `run-view.ts` ROLE_COLOR, the Overview tiers or the timeline's NVIDIA badge; `scripts/qa-frames.py` on 10 frames per cut: saturated hues sit on mint (165°), writer/teal and checker/analyst, no foreign bin ≥ 2 % |
+| Frame density | PASS with one exception | A frame every 2 s (87 full, 22 X; title and end cards exempt): X none; full flags only 23 s, the 2 s goal close-up (the composer is at the bottom edge of the app, the page above it is empty by design). The phone sits on the web app (lightly blurred) |
 | No click track, no raw tones | PASS | No click track exists any more (`click-120.wav` deleted, no `ClickTrack` in the code); every SFX is a cuelume render or a Tone.js design (`scripts/make-sound.mjs`); the score is Tone.js; nothing from `anoisesrc`/`aevalsrc` |
-| Callout rings on target | PASS (3 clipped) | 30 callouts, middle frames in `callouts-middle-frames.png`: 27 rings sit on their element; `brief-doc` and `workstreams` (panels that run to the frame edge) and `model-badge` (at the very top of the app) are clipped by the frame edge |
+| Callout rings on target | PASS | 30 callouts (33 with the X clip's own), middle frames in `callouts-middle-frames.png`: every ring sits on its element, whole, ≥ 24 px from the frame edge (Gate 3 fixes above) |
+| Callout cards clear of UI text | PASS | Measured placement (`layout-callouts.py`, `video/src/callout-layout.json`): 0 text cells under 31 of 33 cards, 4 (a bar corner, a panel corner) under 2; checked by eye on every middle frame |
+| Eyebrows clear of the app header | PASS | Solid chip on a corner scrim (Gate 3 fixes above) |
 | Better than the last liked cut | PASS on picture; sound not auditioned | `compare-v3-rev4-rev5.png`, rows Overview/crew · approval gate · learning, columns v3 · rev 4 · rev 5: rev 5 shows readable everyday content (Dana's contract, the brief) with a callout naming each part, where v3 shows router jargon with sentence captions and rev 4 kinetic cards. I cannot listen in this environment: the temp score and the mix are checked by waveform, spectrum and loudness only |
 
 # Rev 5 build notes (deviations from board rev C, all forced by the take)
@@ -32,7 +46,9 @@ sound: Tone.js temp score (`video/sound/music-map.json` = music.md rev C) + 26 s
 - **Scene 9**: starts 1.5 s into `memory-skill`, after the panel has loaded.
 - **Scene 12**: the phone sits on the web app (the `chat-run` beat, blurred 3 px, 50 % brightness) instead of a bare background; its callout starts a bar later, after the phone's entrance.
 - **Scene 13**: second half is `overview-after` (the router gauge is not on screen during `watch`).
-- **Approve plan** gets no click ring: its button's position is not in `beats.json`.
+- **Approve plan** gets a click ring placed from the plan card's box (its button is not in `beats.json`).
+- **Scene 4** (Gate 3): the plan is held at 1.9× while its two callouts are up; the router gauge (scene 3, scene 13) is framed right of centre. Both leave room for a card that covers no text.
+- **Scene 5** (Gate 3): "Model per step" rings the Writers' three Super badges; the orchestrator's badge in `beats.json` has scrolled under the header by then.
 
 # History
 

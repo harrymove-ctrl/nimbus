@@ -7,7 +7,7 @@
   A frame with more than 3 empty cells is "more than a third empty". Title and end-card spans
   (--cards, seconds) are excepted, as the board allows.
 - Palette: 10 frames spread over the cut; the saturated pixels' hues, binned, against the hues
-  of the colours in src/theme.ts (the app's own). Prints any bin with ≥ 2 % of the saturated
+  of the colours in src/palette.ts (the app's own). Prints any bin with ≥ 2 % of the saturated
   pixels that is more than 20° from every theme hue.
 """
 import colorsys, math, re, subprocess, sys, tempfile
@@ -62,7 +62,7 @@ def oklch_to_rgb(l, c, h):
     f = lambda x: 12.92 * x if x <= 0.0031308 else 1.055 * x ** (1 / 2.4) - 0.055
     return tuple(min(1, max(0, f(v))) for v in rgb)
 
-theme = (Path(__file__).parent.parent / "src/theme.ts").read_text()
+theme = (Path(__file__).parent.parent / "src/palette.ts").read_text()
 hues = []
 for m in re.finditer(r'oklch\(([\d.]+)(%?) ([\d.]+) ([\d.]+)', theme):
     l = float(m.group(1)) / (100 if m.group(2) else 1)

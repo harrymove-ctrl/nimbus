@@ -1,0 +1,134 @@
+{
+ "chatRun:chat-run:0": {
+  "x": 672,
+  "y": 272
+ },
+ "cold:brief-doc:0": {
+  "x": 656,
+  "y": 576
+ },
+ "cold:tray:60": {
+  "x": 80,
+  "y": 304
+ },
+ "doc:can-wait:180": {
+  "x": 400,
+  "y": 736
+ },
+ "doc:needs-you:0": {
+  "x": 400,
+  "y": 480
+ },
+ "gate:approval-card:0": {
+  "x": 656,
+  "y": 128
+ },
+ "gate:approve-buttons:180": {
+  "x": 928,
+  "y": 432
+ },
+ "gate:rule-line:420": {
+  "x": 672,
+  "y": 416
+ },
+ "learned:learned-chip:60": {
+  "x": 656,
+  "y": 384
+ },
+ "memory:forget:300": {
+  "x": 320,
+  "y": 288
+ },
+ "memory:memories:0": {
+  "x": 400,
+  "y": 448
+ },
+ "memory:skill-file:180": {
+  "x": 352,
+  "y": 368
+ },
+ "overview:router-gauge:240": {
+  "x": 160,
+  "y": 544
+ },
+ "overview:spend-chart:120": {
+  "x": 960,
+  "y": 912
+ },
+ "overview:workstreams:0": {
+  "x": 512,
+  "y": 688
+ },
+ "overviewAfter:router-gauge:0": {
+  "x": 160,
+  "y": 592
+ },
+ "phone:phone:120": {
+  "x": 1248,
+  "y": 480
+ },
+ "pill:status-pill:60": {
+  "x": 304,
+  "y": 352
+ },
+ "plan:estimate:120": {
+  "x": 1136,
+  "y": 592
+ },
+ "plan:plan:60": {
+  "x": 656,
+  "y": 96
+ },
+ "plan:tools:240": {
+  "x": 672,
+  "y": 896
+ },
+ "radar:unread-dot:0": {
+  "x": 416,
+  "y": 832
+ },
+ "run2End:run2-cost:60": {
+  "x": 736,
+  "y": 320
+ },
+ "summary:summary-cost:60": {
+  "x": 672,
+  "y": 352
+ },
+ "summary:vs-baseline:180": {
+  "x": 1152,
+  "y": 112
+ },
+ "timeline:agent-io:480": {
+  "x": 384,
+  "y": 480
+ },
+ "timeline:lanes:60": {
+  "x": 1088,
+  "y": 800
+ },
+ "timeline:model-badge:180": {
+  "x": 272,
+  "y": 864
+ },
+ "timeline:run-cost:300": {
+  "x": 1264,
+  "y": 816
+ },
+ "watch:routing-table:0": {
+  "x": 400,
+  "y": 736
+ },
+ "xGate:approval-card:0": {
+  "x": 656,
+  "y": 144
+ },
+ "xLanes:lanes:0": {
+  "x": 1248,
+  "y": 864
+ },
+ "xPlan:estimate:0": {
+  "x": 1168,
+  "y": 720
+ }
+}
