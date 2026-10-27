@@ -17,6 +17,7 @@ const AXIS_H = 32;
 const RED = "oklch(0.68 0.21 25)";
 
 export type SegRef = { instance: string; id: string };
+const segDomId = (s: { instance: string; id: string }) => `seg-${s.instance}-${s.id}`.replace(/[^\w-]/g, "_");
 
 type Props = {
   view: RunView;
@@ -36,6 +37,10 @@ type Props = {
 
 export function Timeline({ view, now, selected, onSelect, onClearSelection, scrubMs = null, onScrub, replay, collapsed, onToggle, reducedMotion }: Props) {
   const dragging = useRef(false);
+  // Height of the expanded timeline: drag its bottom edge (120–480 px; pulled under 96 it collapses to the 56 px bar), ↑↓ on the handle, double-click resets.
+  const [height, setHeight] = useState(240);
+  const resizing = useRef<{ y: number; h: number } | null>(null);
+  const clampH = (h: number) => Math.min(480, Math.max(120, Math.round(h)));
   const chartRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const followLanes = useRef(true);
@@ -98,6 +103,18 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, scru
     }
     return set;
   }, [selected, view.lanes]);
+  // Keyboard on the lanes: ←→ step through a lane's segments in time, ↑↓ jump to the nearest segment of the lane above or below.
+  const byLane = useMemo(() => view.lanes.map((l) => [...l.segments].sort((a, b) => a.startMs - b.startMs)), [view.lanes]);
+  const neighbour = (s: Seg, key: string): Seg | undefined => {
+    const li = laneIdx.get(s.instance);
+    if (li === undefined) return undefined;
+    const idx = byLane[li].findIndex((x) => x.id === s.id);
+    if (key === "ArrowRight") return byLane[li][idx + 1];
+    if (key === "ArrowLeft") return byLane[li][idx - 1];
+    const to = key === "ArrowDown" ? li + 1 : key === "ArrowUp" ? li - 1 : -1;
+    if (to < 0 || to >= byLane.length || !byLane[to].length) return undefined;
+    return byLane[to].reduce((best, x) => (Math.abs(x.startMs - s.startMs) < Math.abs(best.startMs - s.startMs) ? x : best));
+  };
   const dim = (instance: string) => (trace && !trace.has(instance) ? 0.2 : 1);
   const laneIdx = useMemo(() => new Map(view.lanes.map((l, i) => [l.instance, i])), [view.lanes]);
   const firstSegStart = (l?: Lane) => (l && l.segments.length ? Math.min(...l.segments.map((s) => s.startMs)) : undefined);
@@ -148,7 +165,39 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, scru
   }
 
   return (
-    <section aria-label="Run timeline" className="relative flex h-[240px] shrink-0 flex-col border-b border-white/10" onKeyDown={(e) => e.key === "Escape" && trace && onClearSelection?.()}>
+    <section aria-label="Run timeline" style={{ height }} className="relative flex shrink-0 flex-col border-b border-white/10" onKeyDown={(e) => e.key === "Escape" && selected && onClearSelection?.()}>
+      <div
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label="Resize the timeline"
+        aria-valuemin={120}
+        aria-valuemax={480}
+        aria-valuenow={height}
+        tabIndex={0}
+        title="Drag to resize · double-click resets"
+        onPointerDown={(e) => {
+          resizing.current = { y: e.clientY, h: height };
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          const r = resizing.current;
+          if (!r) return;
+          const next = r.h + (e.clientY - r.y);
+          if (next < 96) {
+            resizing.current = null;
+            onToggle();
+          } else setHeight(clampH(next));
+        }}
+        onPointerUp={() => (resizing.current = null)}
+        onDoubleClick={() => setHeight(240)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") (e.preventDefault(), setHeight((h) => clampH(h + 24)));
+          if (e.key === "ArrowUp") (e.preventDefault(), setHeight((h) => clampH(h - 24)));
+        }}
+        className="group absolute inset-x-0 -bottom-1.5 z-30 flex h-3 cursor-row-resize items-center justify-center outline-none"
+      >
+        <span className="h-0.5 w-10 rounded-full bg-white/15 transition-colors group-hover:bg-white/40 group-focus-visible:bg-[var(--rb-accent)]" />
+      </div>
       <button type="button" onClick={onToggle} aria-label="Collapse timeline" aria-expanded className="absolute right-2 top-2 z-20 grid size-7 place-items-center rounded-md text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
         <ChevronUp className="size-4" />
       </button>
@@ -263,13 +312,22 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, scru
                       return (
                         <g
                           key={`${s.instance}:${s.id}`}
+                          id={segDomId(s)}
                           opacity={dim(s.instance)}
                           className="cursor-pointer outline-none transition-opacity duration-150"
                           tabIndex={0}
                           role="button"
                           aria-label={`${laneName(l.instance, l.role)}: ${s.label}${s.failed ? " (failed)" : ""}`}
                           onClick={() => onSelect(s)}
-                          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(s)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") return void (e.preventDefault(), onSelect(s));
+                            const t = neighbour(s, e.key);
+                            if (t) {
+                              e.preventDefault();
+                              onSelect(t);
+                              setTimeout(() => document.getElementById(segDomId(t))?.focus(), 0);
+                            }
+                          }}
                           onMouseMove={(e) => {
                             const r = chartRef.current?.getBoundingClientRect();
                             if (r) setTip({ x: e.clientX - r.left, y: i * LANE_H, text: s.label, sub: `${((end - s.startMs) / 1000).toFixed(1)}s${s.route ? ` · ${TIER_LABEL[s.route.chosen]}` : ""}` });
