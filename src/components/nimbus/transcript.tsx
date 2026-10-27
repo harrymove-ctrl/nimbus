@@ -28,6 +28,8 @@ type Props = {
   now: number;
   onCancelPlan: () => void;
   /** the person approved the draft plan (possibly edited) or sent their edits back for another planning turn */
+  /** what the same work costs a person by hand (an estimate), for the impact line */
+  manualMinutes?: number;
   onPlan: (action: "approve" | "revise", steps: import("@/lib/events").PlanStep[]) => Promise<void> | void;
   onAnswer: (q: QuestionItem, text: string) => void;
   onDecide: (a: ApprovalItem, decision: "approve" | "approve_always" | "reject", note?: string) => void;
@@ -38,7 +40,7 @@ type Props = {
   onTemplate?: (goal: string) => void;
 };
 
-export function Transcript({ view, now, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill, waitingForCrew }: Props) {
+export function Transcript({ view, now, manualMinutes, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill, waitingForCrew }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const scroller = useRef<HTMLDivElement>(null);
@@ -63,7 +65,7 @@ export function Transcript({ view, now, onCancelPlan, onPlan, onAnswer, onDecide
         {view.startedAt > 0 && view.transcript.length > 0 && <Divider label={runStamp(view.startedAt, view.trigger)} className="text-[12px] font-bold text-neutral-400" />}
         {view.transcript.map((item) => (
           <div key={item.seq} id={`tr-${item.seq}`} className={cx("scroll-mt-4", item.t === "plan" ? "nb-rise" : "nb-rise-fast")}>
-            <Item item={item} view={view} now={now} onCancelPlan={onCancelPlan} onPlan={onPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
+            <Item item={item} view={view} now={now} manualMinutes={manualMinutes} onCancelPlan={onCancelPlan} onPlan={onPlan} onAnswer={onAnswer} onDecide={onDecide} onOpenArtifact={onOpenArtifact} onRevertSkill={onRevertSkill} />
           </div>
         ))}
         <PlanSkeleton active={!!waitingForCrew} />
@@ -86,7 +88,7 @@ function Dot({ role }: { role: AgentRole }) {
   return <span className="mt-[7px] size-2 shrink-0 rounded-full" style={{ background: ROLE_COLOR[role] }} />;
 }
 
-function Item({ item, view, now, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
+function Item({ item, view, now, manualMinutes, onCancelPlan, onPlan, onAnswer, onDecide, onOpenArtifact, onRevertSkill }: { item: TItem; view: RunView } & Omit<Props, "view" | "onTemplate" | "now"> & { now: number }) {
   switch (item.t) {
     case "user":
       return (
@@ -142,7 +144,7 @@ function Item({ item, view, now, onCancelPlan, onPlan, onAnswer, onDecide, onOpe
         </button>
       );
     case "summary":
-      return <SummaryCard item={item} view={view} onRevert={onRevertSkill} />;
+      return <SummaryCard item={item} view={view} onRevert={onRevertSkill} manualMinutes={manualMinutes} />;
     case "end":
       return <p className="text-center text-[13px] font-semibold text-neutral-400">Run {item.status}.</p>;
     case "error":
@@ -299,7 +301,17 @@ function runStamp(startedAt: number, trigger?: string) {
   return `${day} · ${time} · ${trigger === "cron" ? "scheduled" : trigger === "chat" ? "from chat" : trigger === "job" ? "job" : "you started it"}`;
 }
 
-function SummaryCard({ item, view, onRevert }: { item: Extract<TItem, { t: "summary" }>; view: RunView; onRevert?: () => Promise<boolean> }) {
+function SummaryCard({ item, view, onRevert, manualMinutes }: { item: Extract<TItem, { t: "summary" }>; view: RunView; onRevert?: () => Promise<boolean>; manualMinutes?: number }) {
+  // Impact (SPEC §17.7): counted from this run's own events; only the minutes are an estimate
+  const prs = view.toolCalls.filter((c) => c.ok !== false && /\/pull\//.test(String((c.output as { url?: string } | undefined)?.url ?? ""))).length;
+  const sent = view.toolCalls.filter((c) => c.ok !== false && !(c.output as { url?: string } | undefined)?.url && (c.output as { logged?: boolean } | undefined)?.logged && (c.tool === "send_message" || c.tool === "request_approval")).length;
+  const docs = view.artifacts.filter((a) => a.kind === "doc").length;
+  const savedUsd = Math.max(0, view.baselineUsd - view.costUsd);
+  const impact: string[] = [];
+  if (prs) impact.push(`${prs} pull request${prs > 1 ? "s" : ""} opened`);
+  if (sent) impact.push(`${sent} message${sent > 1 ? "s" : ""} sent`);
+  if (docs) impact.push(`${docs} document${docs > 1 ? "s" : ""} produced`);
+  if (savedUsd >= 0.001) impact.push(`${savedUsd.toFixed(3)} saved vs every hop at its ceiling`);
   const [reverted, setReverted] = useState<"no" | "busy" | "yes" | "none">("no");
   const secs = view.endedMs ?? view.lastTMs;
   // DitherNumber: the five tiles resolve cell by cell into their values (docs/DITHER.md "In the demo video")
@@ -326,6 +338,15 @@ function SummaryCard({ item, view, onRevert }: { item: Extract<TItem, { t: "summ
             </div>
           ))}
         </div>
+        {(impact.length > 0 || manualMinutes) && (
+          <div>
+            <p className="mb-1 text-[12px] font-bold uppercase tracking-wide text-neutral-400">Impact</p>
+            <p className="text-[14px]/[21px] text-neutral-100">
+              {impact.join(" · ")}
+              {manualMinutes ? <>{impact.length ? " · " : ""}<span title="A per-workstream estimate of doing this work by hand, not a measurement">≈ {manualMinutes} min of your time</span> <span className="text-[12px] text-neutral-400">(estimate)</span></> : null}
+            </p>
+          </div>
+        )}
         <div>
           <p className="mb-1 text-[12px] font-bold uppercase tracking-wide text-neutral-400">{item.summary.memories.length} memories saved</p>
           <ul className="flex flex-col gap-1">

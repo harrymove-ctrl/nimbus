@@ -9,6 +9,8 @@ import type { Workstream } from "@/lib/workstreams";
 import { ApprovalTray } from "./approval-tray";
 import { Boot } from "./boot";
 import { EmptyState } from "@/components/dithercn/empty-state";
+import { Aurora } from "@/components/dithercn/aurora";
+import { Ripples } from "@/components/dithercn/ripples";
 import { Overview } from "./overview";
 import { StatusPill, useActiveRuns } from "./status-pill";
 import { AmbientGlow } from "./loading";
@@ -266,7 +268,8 @@ export function AppShell() {
 
         <main className="relative isolate flex min-w-0 flex-1 flex-col">
           {/* ambient dither: behind the run view and the empty state only; never the boot screen, composer, cards or cloud */}
-          {boot === "gone" && <AmbientGlow paused={view.lanes.length >= 4 && clock} />}
+          {/* one animated background per column (SPEC §17.6): the run view has the glow, which holds still while ripples run at an approval and at four or more running lanes; the Overview has its contours; the empty state its aurora */}
+          {boot === "gone" && ws && <AmbientGlow paused={(view.lanes.length >= 4 && clock) || view.pendingApprovals.length > 0} />}
           {!ws ? (
             <Overview titles={Object.fromEntries(workstreams.map((w) => [w.id, w.title]))} onOpenRun={openRun} refreshKey={view.status === "done" ? 1 : 0} empty={<PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />} />
           ) : (
@@ -277,6 +280,7 @@ export function AppShell() {
                 waitingForCrew={!!runId && (events.length === 0 || (view.status === "planning" && !view.plan))}
                 view={view}
                 now={now}
+                manualMinutes={ws.estimatedManualMinutes}
                 onCancelPlan={() => void stop("cancel")}
                 onPlan={async (action, steps) => {
                   if (runId) await post(`/api/runs/${runId}/plan`, { steps, [action]: true });
@@ -297,7 +301,12 @@ export function AppShell() {
                   setDrawer("inspector");
                 }}
               />
-              <div className="flex shrink-0 flex-col gap-2 px-4 pb-4 pt-2">
+              <div className="relative isolate flex shrink-0 flex-col gap-2 px-4 pb-4 pt-2">
+                {view.pendingApprovals.length > 0 && (
+                  <div className="nb-fade pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 opacity-[0.1]" aria-hidden="true">
+                    <Ripples sources={[[0.5, 0.6]]} rings={9} decay={1.1} intensity={0.55} cell={3} className="absolute inset-0" />
+                  </div>
+                )}
                 {notice && (
                   <div role="alert" className="mx-auto flex w-full max-w-[720px] items-start gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 px-3 py-2 text-[13px]/[19px] text-orange-100">
                     <span className="flex-1">{notice}</span>
@@ -356,7 +365,11 @@ export function AppShell() {
 
 function PickWorkstream({ workstreams, onPick }: { workstreams: Workstream[]; onPick: (id: string) => void }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto p-6">
+    <div className="relative isolate flex min-h-0 flex-1 flex-col items-center overflow-y-auto p-6">
+      {/* the empty state's background: aurora, cell 4, low (SPEC §17.6) */}
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07]" aria-hidden="true">
+        <Aurora cell={4} intensity={0.6} glow={0.7} mask="bottom" className="absolute inset-0" />
+      </div>
       <div className="my-auto w-full max-w-xl">
         <EmptyState visual={<div className="size-40" aria-hidden={false}><GlowCloud color="blue" background={false} label="Nimbus" /></div>} titleAs="h2" title="Pick a workstream" description="A workstream is a standing goal. Each run is a crew of Nemotron agents working on it, with you approving anything that acts." className="pb-4 pt-0" />
         <ul className="mt-2 flex flex-col gap-2">

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import type { Workstream } from "@/lib/workstreams";
 import type { RunView } from "@/lib/run-view";
 import type { Learning, LearnedMemory, LearnedRule } from "@/runtime/learning";
+import { NoiseField } from "@/components/dithercn/noise-field";
 import { SkillDiff } from "./transcript";
 import { cx } from "./ui";
 
@@ -107,7 +108,11 @@ export function MemoryTab({ view, workstream }: { view: RunView; workstream?: Wo
   const empty = memories.length === 0 && rules.length === 0;
 
   return (
-    <div className="px-4 pb-6">
+    <div className="relative isolate px-4 pb-6">
+      {/* noise-field behind the tab: cell 2, at most 4 % ink, cleared in the middle where the text sits (SPEC §17.6) */}
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.04]" aria-hidden="true">
+        <NoiseField cell={2} mask="center" maskSize={0.8} className="absolute inset-0" />
+      </div>
       {/* Header strip */}
       <div className="flex h-14 items-center gap-3 border-b border-white/10">
         {empty ? (
@@ -346,7 +351,9 @@ function Memories({ memories, currentRunId, fresh, leaving, onForget }: { memori
               <Collapse open={!leaving.has(`mem:${m.id}`)}>
                 <div className="group flex items-start gap-2 border-b border-white/8 py-2.5">
                   <div className="min-w-0 flex-1">
-                    <p className="text-[14px]/[20px] text-neutral-100 [overflow-wrap:anywhere]">{m.text}</p>
+                    <p className="text-[14px]/[20px] text-neutral-100 [overflow-wrap:anywhere]">
+                      <Inline text={m.text} />
+                    </p>
                     <p className="mt-0.5 flex items-center gap-1.5 text-[12px]/[16px] text-neutral-400">
                       <span>
                         run {m.runNumber || "?"} · {day(m.createdAt)} · used {m.usedCount}×
