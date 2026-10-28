@@ -110,6 +110,9 @@ export async function callHop(
           tools: o.tools,
           maxRetries: 0,
           maxOutputTokens: maxOutTokens(tier, o.role),
+          // The Learner makes one structured call. With thinking on, real Nano spent whole output budgets thinking and
+          // never called save_learning (or wrote the call as text): thinking off, and the reply must be a tool call.
+          ...(o.role === "learner" ? { toolChoice: "required" as const, providerOptions: { nebius: { chat_template_kwargs: { enable_thinking: false } } } } : {}),
           abortSignal: AbortSignal.any([ctx.signal, AbortSignal.timeout(60_000)]),
         });
         const out: ModelCall = {

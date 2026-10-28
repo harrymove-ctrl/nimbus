@@ -10,7 +10,7 @@ import type { SCHEMAS } from "./tools";
 export async function runLearner(ctx: RunCtx, transcript: string) {
   const instance = "learner-1";
   ctx.instances.add(instance);
-  const brief = `Run transcript summary:\n${transcript}\n\nExtract memories worth keeping and rewrite SKILL.md. Keep its "## Policy" section as is.`;
+  const brief = `Run transcript summary:\n${transcript}\n\nExtract memories worth keeping and rewrite SKILL.md. Keep its "## Policy" section as is.\nCall save_learning once with { "memories": string[] (at most 8, one durable fact each), "skill": string (the whole rewritten SKILL.md) }.`;
   ctx.emit("agent.spawn", "learner", instance, { by: "orchestrator", role: "learner", instance, brief: "Extract memories and rewrite this workstream's SKILL.md." });
   let saved = false;
   let failure: string | undefined;

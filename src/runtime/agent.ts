@@ -115,7 +115,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
     const results = [];
     for (const tc of call.toolCalls) {
       const r = await execTool(ctx, ref, tc, exec);
-      if (tc.toolName === "finish") finished = true;
+      if (tc.toolName === "finish" || tc.toolName === "save_learning") finished = true; // the Learner's one call ends its run
       results.push({ type: "tool-result" as const, toolCallId: tc.toolCallId, toolName: tc.toolName, output: { type: "json" as const, value: json(r) } });
     }
     messages.push({ role: "tool", content: results });
