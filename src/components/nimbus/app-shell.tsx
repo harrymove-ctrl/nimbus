@@ -28,7 +28,7 @@ import { cx } from "./ui";
 
 const post = (url: string, body: unknown) => fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
-export function AppShell() {
+export function AppShell({ initialBudget }: { initialBudget?: { todayUsd: number; dayCapUsd: number; runCapUsd: number; mock: boolean } } = {}) {
   const reduced = useReducedMotion();
   const [workstreams, setWorkstreams] = useState<Workstream[]>([]);
   const [boot, setBoot] = useState<"boot" | "fading" | "gone">("boot");
@@ -39,7 +39,7 @@ export function AppShell() {
   const [tab, setTab] = useState<InspectorTab>("artifact");
   const [selSeg, setSelSeg] = useState<SegRef | null>(null);
   const [wsLoaded, setWsLoaded] = useState(false);
-  const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number; mock?: boolean }>();
+  const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number; mock?: boolean } | undefined>(initialBudget);
   const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
   const [creating, setCreating] = useState(false);
