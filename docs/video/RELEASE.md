@@ -61,16 +61,63 @@ The mock checks are green after every fix: eval 19/19, check:cases 27/27, budget
 
 None of the five recording attempts produced a take. Attempts 1 and 2 stopped on real-model behaviour (1, 5), and attempts 3 to 5 on recorder assumptions taken from the mock scripts. Every product bug found along the way is fixed and committed (1 to 6). The one thing left is in the recorder (7). The data directories of all five attempts are kept under `data/`.
 
-## The rendered cuts (Oct 28, 23:35, video session)
+## Video (locked 2026-10-28, "Lock them", rev 6, commit 36922cb)
 
-Footage: mock take 1258. Music: the Suno track fitted by `video/scripts/fit-music.py`. Numbers: the callouts, Metric Morph and the proof line carry the measured headless figures above, with no tag on the frame (the planner's instruction of 22:30, which supersedes "labelled that way on screen" in the status above). The footage under them still shows the mock take's own figures ($0.024, $0.016, ≈ $0.03). `docs/video/QA.md` lists where each number comes from.
+Script rev 6, board rev E, music rev D. Two compositions at 1920 × 1080, 30 fps, 120 BPM: NimbusFull (88 bars) and NimbusX (22 bars).
 
-| File | What |
-|---|---|
-| `video/out/nimbus-full.mp4` | Full cut, 1920 × 1080, crf 17, mastered to −14 LUFS (gitignored) |
-| `video/out/nimbus-x.mp4` | X clip, 1920 × 1080, crf 17, mastered (gitignored) |
-| `video/out/nimbus-full-4k.mp4` | Full cut at `--scale=2`, 3840 × 2160, crf 17; the 1080p footage is upscaled 2× (gitignored) |
-| `docs/demo/preview/nimbus-full-preview.mp4`, `nimbus-x-preview.mp4` | 720p previews |
-| `docs/demo/gallery/gallery-1.png` … `gallery-5.png` | Devpost gallery stills, 1920 × 1080, from the 1080p render (same picture as the master): 1 hook, frame 200 (0:06.7) · 2 timeline with "One row per agent", frame 1260 (0:42) · 3 the gate with the drawn tick on Approve, frame 2283 (1:16.1) · 4 the Nebius tiles and endpoint line, frame 4760 (2:38.7) · 5 the phone stack, "approve all" → "Approved", frame 4290 (2:23) |
+### Files
 
-Gallery 3 shows the tick but not the "Sending is an action" card. That card closes a beat before the click, so the two never share a frame.
+| File | Duration | Size | Picture | Audio |
+|---|---|---|---|---|
+| `video/out/nimbus-full.mp4` | 2:56.1 | 82.5 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.8 LUFS, −1.8 dBTP, LRA 8.3 |
+| `video/out/nimbus-full-4k.mp4` | 2:56.1 | 188.8 MB | 3840 × 2160, h264 crf 17 (`--scale=2`) | AAC 256k, −13.8 LUFS, −1.8 dBTP, LRA 8.3 |
+| `video/out/nimbus-x.mp4` | 0:44.1 | 16.3 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.7 LUFS, −1.8 dBTP, LRA 7.1 |
+| `docs/demo/preview/nimbus-full-preview.mp4` | 2:56.1 | 19.8 MB | 1280 × 720 | as the master |
+| `docs/demo/preview/nimbus-x-preview.mp4` | 0:44.1 | 4.3 MB | 1280 × 720 | as the master |
+| `docs/demo/gallery/gallery-1.png` … `gallery-5.png` | — | 0.3–1.0 MB | 1920 × 1080, from `nimbus-full.mp4` | — |
+| `docs/demo/preview/motion-frames.png` | — | — | one still per motion scene (12) | — |
+
+`video/out/` is gitignored, so the masters live on the Dev volume only. Loudness is measured on each file with ffmpeg `loudnorm` (integrated, true peak, LRA), after `video/scripts/master.sh` (two-pass loudnorm to −14 LUFS, then a true-peak limiter).
+
+Gallery frames (SUBMISSION.md "Devpost gallery"):
+1. Frame 200 (0:06.7): the hook, "every run." in the orb loop.
+2. Frame 1260 (0:42): the timeline, "One row per agent".
+3. Frame 2283 (1:16.1): the gate, the drawn tick on Approve. The "Sending is an action" card closes a beat before the click, so they never share a frame.
+4. Frame 4760 (2:38.7): the three Nemotron tiles over the call scatter, the Token Factory endpoint line, and "One morning: $0.0276 · 22 % saved by the router".
+5. Frame 4290 (2:23): the phone stack, "approve all" → "Approved".
+
+### Take and numbers
+
+- **Footage:** the mock take `docs/demo/raw/nimbus-demo-20261028-1258.webm` (1920 × 1080, role-named contacts, the scripted mock model) in every file. The 4K master upscales it 2×, because the composition renders at scale 2. No real-model take exists (see "Take attempts"). If one lands, `video/scripts/sync-take.mjs` swaps it in.
+- **Numbers in the callouts and motion scenes,** measured in the Oct 28 headless real runs on Nebius Token Factory (above), with no tag on the frame (the planner's instruction of 22:30):
+  - Plan estimate ≈ $0.0276 and "The whole morning" $0.0276: check 6, run one.
+  - Router savings 22 %: check 6, against a baseline of $0.0356.
+  - Run two $0.0288: check 5. It costs more than run one, so the callout says "Same brief, using what it learned", not "cheaper".
+  - 8 memories: check 6.
+  - Metric Morph's 26 bars: check 6's run one, hop by hop.
+  - The proof line "One morning: $0.0276 · 22 % saved by the router": check 6.
+- **The footage itself still shows the mock take's own figures** ($0.024 summary tile, $0.016 run-two header, ≈ $0.03 plan chip). Scatter Bloom plots the dev database's mock call log, with no count shown.
+- **The chat phones** show the old-fixture `/v1` transcript (`docs/video/chat-transcript.json`), with the three addresses mapped to take 1258's role addresses.
+- **Same in every file:** the full, 4K and X renders all carry this footage and these numbers.
+
+### Music
+
+The user's own Suno generation, variant A "Glassy Arpeggio" (`video/public/audio/music-full.mp3`, 208 s, not redistributed: gitignored, and not in the public repo).
+
+`video/scripts/fit-music.py` stretches it from its measured 122.09 BPM to 120 (pitch kept) and cuts it onto the bar lines:
+- Full cut, four segments: entries on 0:12, 0:38, 1:16 (the first Approve, frame 2280), 2:04 and 2:40; the track's own ending on 2:56.
+- X clip, three segments: entries on 0:08 and 0:23 (frame 690).
+
+In the mix the bed sits about −18 LUFS under footage. It ducks 3 dB under every sound cue and comes back +3 dB on the drop and the finale. Details are in `docs/video/music.md`, "Fit".
+
+### Sound effects
+
+Every cue is in `docs/video/sfx.md` (the rev E cue sheet), rendered offline by `video/scripts/make-sound.mjs`:
+- **UI sounds:** the app's own [cuelume](https://www.npmjs.com/package/cuelume) cues (0.2.8, MIT): attention, tap, type, select, open, navigate, loading, ready, success, count.
+- **Transitions:** designed in Tone.js (MIT) for this video: whooshes, risers, impacts, sub hits, bells, the marker scribble, morph, orbit, orb bursts, block flashes, lid, word drops, slot rolls, dry cut. These are original sounds, so no third-party licence applies.
+
+No stock library, no metronome.
+
+### Not verified
+
+The sound has not been checked by ear in the video session.

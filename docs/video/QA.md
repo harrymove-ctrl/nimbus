@@ -1,4 +1,4 @@
-status: Gate 3 · rev E final renders on take 1258 with the fitted Suno track · 2026-10-28 23:35
+status: locked · 2026-10-28 · "Lock them" · rev 6, commit 36922cb
 approved: script rev 6 (hook line updated 2026-10-28), board rev E, music rev D · "Approve rev 6"
 cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · compositions 1920 × 1080, 30 fps
 footage: **mock take 1258** (`docs/demo/raw/nimbus-demo-20261028-1258.webm`, 1920 × 1080, role-named contacts, the scripted mock model). No real-model take was recorded (RELEASE.md, commit 9b22814). The 4K master renders the same composition at `--scale=2`, so the 1080p footage is **upscaled 2×** in it. If a real take lands, `scripts/sync-take.mjs` swaps it in (and halves its beats.json boxes if it was recorded at device scale 2)
