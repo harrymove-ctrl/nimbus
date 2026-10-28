@@ -75,8 +75,15 @@ allow: send_message to #team for this workstream`,
     scheduleLabel: "Weekdays 08:00",
     tools: ["read_repo", "fetch_url", "write_artifact", "send_message"],
     skill: `## Morning brief
+Sources (read them with read_repo; nothing else is connected):
+- inbox export: fixtures/inbox/*.eml, one email per file
+- today's calendar: fixtures/calendar.ics
+- GitHub notifications: fixtures/github-notifications.json
 1. Urgent = a person waiting on us with a date.
-2. Draft replies as artifacts; approval before any send.
+2. Crew: the Researcher reads the sources and reports what they say; one Writer writes the page and the replies. No Analyst is needed. Hand the Researcher's full report to the Writer once.
+3. The Writer writes the page as one doc artifact titled "Morning brief · <weekday> <date>" with four sections: "Needs you today" (people waiting on us, by their deadline), "Today" (the calendar as a table), "GitHub", "Can wait" (no drafts for these).
+4. For each person under "Needs you today", the Writer drafts the reply as its own doc artifact, then sends it with send_message to the address it came from. send_message asks for approval itself: do not use request_approval for replies and do not ask whether to send.
+5. Say only what the sources say; if they do not answer a question, the reply says so.
 
 ## Policy
 (none yet)`,

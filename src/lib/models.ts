@@ -27,7 +27,9 @@ export const PRICE_PER_M: Record<Tier, readonly [number, number]> = {
 };
 
 /** Output token ceiling per hop (docs/BUDGET.md): keeps one runaway hop from spending the credit. */
-export const MAX_OUT_TOKENS: Record<Tier, number> = { ultra: 1200, super: 1500, nano: 600 };
+// Nano was 600: the Learner (always Nano) thinks before it writes five memories and a whole SKILL.md, and a real run
+// cut it off before its save_learning call.
+export const MAX_OUT_TOKENS: Record<Tier, number> = { ultra: 1200, super: 1500, nano: 1500 };
 
 export function tierFor(role: AgentRole): Tier {
   return process.env.NIMBUS_DEV_CHEAP === "1" ? "nano" : ROLE_TIER[role];

@@ -7,6 +7,13 @@
   "unread": true
  },
  {
+  "id": "5",
+  "reason": "author",
+  "repo": "harrymove-ctrl/nimbus",
+  "title": "PR: fix the login bug · in review, not merged yet",
+  "unread": true
+ },
+ {
   "id": "2",
   "reason": "mention",
   "repo": "harrymove-ctrl/nimbus",

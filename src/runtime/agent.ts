@@ -41,7 +41,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
   const names = ROLE_TOOLS[role];
   const tools = toolSet(names, ctx.allowedTools);
   const ceiling = ROLE_TIER[role];
-  const maxTurns = role === "orchestrator" ? 10 : 8;
+  const maxTurns = role === "orchestrator" ? 10 : 12;
   const messages: ModelMessage[] = [{ role: "user", content: firstPrompt(ctx, brief) }];
   const now = () => Date.now() - ctx.startedAt;
   let report = "";
@@ -61,8 +61,13 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
         ctx.ackSteering(n.id, n.text);
       }
     }
+    // A child that spends every turn on tool calls (a real model reading files one per turn) would report nothing back:
+    // its last turn has no tools and asks for the report.
+    const last = turn === maxTurns && role !== "orchestrator";
+    if (last) messages.push({ role: "user", content: "That was your last tool call. Write your report now from what you have." });
+    const hopTools = last ? {} : tools;
     const hopNo = ++ctx.hop;
-    const { tier, reason } = await pickTier(ctx, { role, turn, brief: messages.map((m) => (typeof m.content === "string" ? m.content : "")).join("\n").slice(-1200), hasTools: Object.keys(tools).length > 0, ws: ctx.script, instance }, ceiling);
+    const { tier, reason } = await pickTier(ctx, { role, turn, brief: messages.map((m) => (typeof m.content === "string" ? m.content : "")).join("\n").slice(-1200), hasTools: Object.keys(hopTools).length > 0, ws: ctx.script, instance }, ceiling);
     ctx.emit("route", role, instance, { hop: hopNo, role, chosen: tier, ceiling, reason });
     if (tier !== ceiling) ctx.routedHops++;
 
@@ -72,7 +77,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
     let call;
     try {
       call = await callHop(ctx, {
-        role, instance, turn, hopNo, ceiling, tier, system: ROLE_PROMPT[role], messages, tools,
+        role, instance, turn, hopNo, ceiling, tier, system: ROLE_PROMPT[role], messages, tools: hopTools,
         onFallback: (to, why) => {
           ctx.emit("route", role, instance, { hop: hopNo, role, chosen: to, ceiling, reason: why, fallback: true });
           ctx.routedHops++;
