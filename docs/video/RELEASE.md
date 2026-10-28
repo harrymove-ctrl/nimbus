@@ -81,7 +81,7 @@ The mock checks are green after every fix: eval 19/19, check:cases 27/27, budget
 
 None of the six recording attempts produced a full take. Attempts 1 and 2 stopped on real-model behaviour (1, 5). Attempts 3 to 5 stopped on recorder assumptions taken from the mock scripts. Attempt 6 recorded run one in full and stopped in run two (8). Every product bug found along the way is fixed and committed (1 to 6). The one thing left is in the recorder (7). The data directories of all five attempts are kept under `data/`.
 
-## Video (locked 2026-10-28, "Lock them", rev 6, commit 36922cb)
+## Video (final render on the real-model take 1915, 2026-10-29; rev 6 locked "Lock them")
 
 Script rev 6, board rev E, music rev D. Two compositions at 1920 × 1080, 30 fps, 120 BPM: NimbusFull (88 bars) and NimbusX (22 bars).
 
@@ -89,63 +89,66 @@ Script rev 6, board rev E, music rev D. Two compositions at 1920 × 1080, 30 fps
 
 | File | Duration | Size | Picture | Audio |
 |---|---|---|---|---|
-| `video/out/nimbus-full.mp4` | 2:56.1 | 82.5 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.8 LUFS, −1.8 dBTP, LRA 8.3 |
-| `video/out/nimbus-full-4k.mp4` | 2:56.1 | 188.8 MB | 3840 × 2160, h264 crf 17 (`--scale=2`) | AAC 256k, −13.8 LUFS, −1.8 dBTP, LRA 8.3 |
-| `video/out/nimbus-x.mp4` | 0:44.1 | 16.3 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.7 LUFS, −1.8 dBTP, LRA 7.1 |
-| `docs/demo/preview/nimbus-full-preview.mp4` | 2:56.1 | 19.8 MB | 1280 × 720 | as the master |
-| `docs/demo/preview/nimbus-x-preview.mp4` | 0:44.1 | 4.3 MB | 1280 × 720 | as the master |
-| `docs/demo/gallery/gallery-1.png` … `gallery-5.png` | — | 0.3–1.0 MB | 1920 × 1080, from `nimbus-full.mp4` | — |
+| `video/out/nimbus-full.mp4` | 2:56.1 | 89.1 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.8 LUFS, −1.8 dBTP |
+| `video/out/nimbus-full-4k.mp4` | 2:56.1 | (rendering) | 3840 × 2160, h264 crf 17 (`--scale=2`, footage upscaled 2×) | AAC 256k, (rendering) |
+| `video/out/nimbus-x.mp4` | 0:44.1 | 16.4 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.7 LUFS, −1.8 dBTP |
+| `docs/demo/preview/nimbus-full-preview.mp4` | 2:56.1 | 21.4 MB | 1280 × 720 | −13.8 LUFS, −1.8 dBTP |
+| `docs/demo/preview/nimbus-x-preview.mp4` | 0:44.1 | 4.3 MB | 1280 × 720 | −13.7 LUFS, −1.8 dBTP |
+| `docs/demo/gallery/gallery-1.png` … `gallery-5.png` | — | — | 1920 × 1080, from `nimbus-full.mp4` | — |
 | `docs/demo/preview/motion-frames.png` | — | — | one still per motion scene (12) | — |
 
-`video/out/` is gitignored, so the masters live on the Dev volume only. Loudness is measured on each file with ffmpeg `loudnorm` (integrated, true peak, LRA), after `video/scripts/master.sh` (two-pass loudnorm to −14 LUFS, then a true-peak limiter).
+`video/out/` is gitignored, so the masters live on the Dev volume only. Loudness is measured on each file with ffmpeg `loudnorm`, after `video/scripts/master.sh` (two-pass loudnorm to −14 LUFS, then a true-peak limiter).
 
 Gallery frames (SUBMISSION.md "Devpost gallery"):
 1. Frame 200 (0:06.7): the hook, "every run." in the orb loop.
-2. Frame 1260 (0:42): the timeline, "One row per agent".
-3. Frame 2283 (1:16.1): the gate, the drawn tick on Approve. The "Sending is an action" card closes a beat before the click, so they never share a frame.
-4. Frame 4760 (2:38.7): the three Nemotron tiles over the call scatter, the Token Factory endpoint line, and "One morning: $0.0276 · 22 % saved by the router".
-5. Frame 4290 (2:23): the phone stack, "approve all" → "Approved".
+2. Frame 1260 (0:42): the real timeline with its Orchestrator, Researcher and Writer rows, "One row per agent".
+3. Frame 2283 (1:16.1): the client's approval card, the drawn tick on Approve.
+4. Frame 4760 (2:38.7): the three Nemotron tiles, the Token Factory endpoint line, and "One morning: $0.0216 · 24 % saved by the router".
+5. Frame 4290 (2:23): the phone stack on the live Railway chat run.
 
 ### Take and numbers
 
-- **Footage:** the mock take `docs/demo/raw/nimbus-demo-20261028-1258.webm` (1920 × 1080, role-named contacts, the scripted mock model) in every file. The 4K master upscales it 2×, because the composition renders at scale 2. No real-model take exists (see "Take attempts"). If one lands, `video/scripts/sync-take.mjs` swaps it in.
-- **Numbers in the callouts and motion scenes,** measured in the Oct 28 headless real runs on Nebius Token Factory (above), with no tag on the frame (the planner's instruction of 22:30):
-  - Plan estimate ≈ $0.0276 and "The whole morning" $0.0276: check 6, run one.
-  - Router savings 22 %: check 6, against a baseline of $0.0356.
-  - Run two $0.0288: check 5. It costs more than run one, so the callout says "Same brief, using what it learned", not "cheaper".
-  - 8 memories: check 6.
-  - Metric Morph's 26 bars: check 6's run one, hop by hop.
-  - The proof line "One morning: $0.0276 · 22 % saved by the router": check 6.
-- **The footage itself still shows the mock take's own figures** ($0.024 summary tile, $0.016 run-two header, ≈ $0.03 plan chip). Scatter Bloom plots the dev database's mock call log, with no count shown.
-- **The chat phones** show the old-fixture `/v1` transcript (`docs/video/chat-transcript.json`), with the three addresses mapped to take 1258's role addresses.
-- **Same in every file:** the full, 4K and X renders all carry this footage and these numbers.
+- **Real footage (take 1915, real Nemotron models on Token Factory):**
+  - Scene 3: the Overview.
+  - Scenes 5–10: the goal, the plan, the timeline, Agent I/O, the brief, the four approvals (one card at a time, the fourth with Approve & always allow) and the summary.
+  - Scene 12: Memory & skill.
+  - Scene 13: run two.
+  - Scene 17: the web run started from chat.
+  - The X clip's plan, lanes, gate and run two.
+- **Mock footage (take 1258):**
+  - Scene 15, the radar and status pill: the real take never reached the pill's approval.
+  - Scene 18, the Token Factory watch: no proposal on the real run.
+- **Phone stack (scene 16, X scene 6):** the live Railway chat run on the real models, `docs/video/chat-transcript-real.json` (run_6b393ab6, $0.0282).
+- **Numbers on screen, all from take 1915** (above), and they match the footage under them:
+  - The plan estimate and "The whole morning": $0.0216.
+  - "Router savings: 24 %".
+  - "Run two: $0.0209 · Cheaper and faster".
+  - The learned chip as the take shows it: 6 memories and 1 rule.
+  - Metric Morph: run one's 23 calls, hop by hop.
+  - The proof line: "One morning: $0.0216 · 24 % saved by the router".
+  - Scatter Bloom plots the dev database's mock call log, with no count shown.
+- **Known:**
+  - The real Writer's drafts end with a placeholder signature ("[Your Name]") on the approval cards. It is the last body line, directly above the buttons, so it stays in frame; a product fix is queued.
+  - The 4K master upscales the 1080p takes 2×.
 
 ### Music
 
-The user's own Suno generation, variant A "Glassy Arpeggio" (`video/public/audio/music-full.mp3`, 208 s, not redistributed: gitignored, and not in the public repo).
+The user's own Suno generation, variant A "Glassy Arpeggio" (`video/public/audio/music-full.mp3`, 208 s; gitignored and not in the public repo).
 
 `video/scripts/fit-music.py` stretches it from its measured 122.09 BPM to 120 (pitch kept) and cuts it onto the bar lines:
-- Full cut, four segments: entries on 0:12, 0:38, 1:16 (the first Approve, frame 2280), 2:04 and 2:40; the track's own ending on 2:56.
-- X clip, three segments: entries on 0:08 and 0:23 (frame 690).
+- **Full cut:** entries on 0:12, 0:38, 1:16 (frame 2280, the first Approve), 2:04 and 2:40, and the track's own ending on 2:56.
+- **X clip:** entries on 0:08 and 0:23 (frame 690).
 
-In the mix the bed sits about −18 LUFS under footage. It ducks 3 dB under every sound cue and comes back +3 dB on the drop and the finale. Details are in `docs/video/music.md`, "Fit".
+The bed sits about −18 LUFS under footage, ducks 3 dB under every sound cue and comes back +3 dB on the drop and the finale (`docs/video/music.md` "Fit").
 
 ### Sound effects
 
-Every cue is in `docs/video/sfx.md` (the rev E cue sheet), rendered offline by `video/scripts/make-sound.mjs`:
-- **UI sounds:** the app's own [cuelume](https://www.npmjs.com/package/cuelume) cues (0.2.8, MIT): attention, tap, type, select, open, navigate, loading, ready, success, count.
-- **Transitions:** designed in Tone.js (MIT) for this video: whooshes, risers, impacts, sub hits, bells, the marker scribble, morph, orbit, orb bursts, block flashes, lid, word drops, slot rolls, dry cut. These are original sounds, so no third-party licence applies.
+The cue sheet is `docs/video/sfx.md` (rev E), rendered offline by `video/scripts/make-sound.mjs`:
+- **UI sounds:** the app's own [cuelume](https://www.npmjs.com/package/cuelume) cues (0.2.8, MIT).
+- **Transitions:** designed in Tone.js (MIT) for this video. These are original sounds, so no third-party licence applies.
 
 No stock library, no metronome.
 
 ### Not verified
 
 The sound has not been checked by ear in the video session.
-
-### Staged for the final render (Oct 29)
-
-The Phone Stack (full scene 16, X scene 6) replays `docs/video/chat-transcript-real.json`: the live Railway run run_6b393ab6 on the real models, $0.0282, approvals resolved from the chat. The selection rules are unchanged: link lines dropped, and the last reply's brief cut after its first item with " …".
-- **Full cut:** seven phones two beats apart, from the first "Needs your OK" to the last reply.
-- **X clip:** three phones a bar apart: "Needs your OK", an "approve", and the last reply.
-
-Every message fits its phone; the longest, the last reply, is 7 lines. The locked masters above still carry the old-fixture transcript until that render.

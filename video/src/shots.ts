@@ -1,7 +1,7 @@
 // Every shot, scene layout and callout of both cuts, as plain data (no React, no fonts), so
 // Node scripts can read it: scripts/callout-index.mjs prints the callout index that
 // scripts/layout-callouts.py measures card spots from. compositions.tsx renders it.
-import { MOMENTS, momentFrame, type ShotName, SUB, target } from "./beats";
+import { MOMENTS, momentFrame, type ShotName, SUB, type TakeId, target } from "./beats";
 import { type CalloutSpec, layoutKey } from "./callout-spec";
 import type { SourceMove } from "./Footage";
 import { bars, beats, framesPerBeat, layout } from "./grid";
@@ -17,8 +17,8 @@ export const call = (
   to: number,
   extra: Partial<CalloutSpec> = {},
 ): CalloutSpec => ({ target, what, why, side, from, to, ...extra });
-export const fo = (name: string, inBeat?: string) => {
-  const t = target(name, inBeat);
+export const fo = (name: string, inBeat?: string, take: TakeId = "real") => {
+  const t = target(name, inBeat, take);
   return { u: (t.x + t.w / 2) / 1920, v: (t.y + t.h / 2) / 1080 };
 };
 export const cam = (
@@ -113,32 +113,43 @@ export const PLAN: Shot = {
   ticks: [planClick("plan", b(4))],
   callouts: [
     call("plan", "The plan", "Who does what, before anything runs", "right", 0, b(2), { inBeat: "brief1-plan-arrives" }),
-    call("estimate", "≈ $0.0276", "You see the cost first", "below", b(1), b(3)),
+    call("estimate", "$0.0216", "You see the cost first", "below", b(1), b(3)),
     call("tools", "Allowed tools", "It can't use anything else", "below", b(2), b(4)),
   ],
 };
 
 export const LANES_U = { u: 0.45, v: 0.2 };
 const TIMELINE_OPEN = { u: 0.38, v: 0.2 };
-export const timelineAgentIo = momentFrame("timeline", b(10), MOMENTS.agentIo);
-export const TIMELINE: Shot = {
-  shot: "timeline",
-  frames: b(10),
+/** The timeline in two shots cut on bar 6 (take 1915's beat runs 60 s): the lanes filling,
+ *  then the Writer through Agent I/O. */
+export const timelineAgentIo = b(5) + momentFrame("timelineB", b(5), MOMENTS.agentIo);
+export const TIMELINE_A: Shot = {
+  shot: "timelineA",
+  frames: b(5),
   tilt: 12,
   camera: [
     // framed left of the lanes' centre, so the dark band beside the plan card can take the card
     cam(0, 1.3, TIMELINE_OPEN, 1),
     cam(2, 1.5, TIMELINE_OPEN, b(3) - 22),
     cam(b(3) - 20, 2.2, { u: 0.25, v: 0.12 }, 40),
-    cam(b(5) - 20, 1.85, { u: 0.44, v: 0.12 }, 40),
-    cam(timelineAgentIo, 2.3, fo("agent-io"), 30),
   ],
   callouts: [
-    // the lanes fill about a bar in
     call("lanes", "One row per agent", "They work at the same time", "right", b(1), b(3)),
-    call("model-badge", "Model per step", "Ultra plans, Super reads and writes", "below", b(3), b(5), { role: ROLE.analyst }),
-    call("run-cost", "Live cost", "Stops at your budget", "below", b(5), b(7)),
-    call("agent-io", "What it read", "Every step is open to check", "left", b(8), b(10)),
+    call("model-badge", "Model per step", "Ultra plans, Super reads and writes", "below", b(3), b(5), { role: ROLE.researcher }),
+  ],
+};
+export const TIMELINE_B: Shot = {
+  shot: "timelineB",
+  frames: b(5),
+  tilt: 12,
+  camera: [
+    cam(0, 1.85, { u: 0.44, v: 0.12 }, 1),
+    cam(2, 1.95, { u: 0.44, v: 0.12 }, timelineAgentIo - b(5) - 4),
+    cam(timelineAgentIo - b(5), 2.3, fo("agent-io"), 30),
+  ],
+  callouts: [
+    call("run-cost", "Live cost", "Stops at your budget", "below", 0, b(2)),
+    call("agent-io", "What it read", "Every step is open to check", "left", b(3), b(5)),
   ],
 };
 
@@ -158,50 +169,57 @@ export const DOC: Shot = {
   ],
 };
 
-/** Scene-relative frames of the three approval clicks (shot A is the scene's first 3 bars). */
+/** Scene-relative frames of the four approval clicks (take 1915 asks one card at a time): shot A
+ *  is the scene's first 3 bars, B, C and D 2 bars each, cut on downbeats. */
 export const gate1 = momentFrame("gateA", b(3), MOMENTS.approve1);
-export const gate2 = b(3) + momentFrame("gateB", b(6), MOMENTS.approve2);
-export const gateAllow = b(3) + momentFrame("gateB", b(6), MOMENTS.alwaysAllow);
+export const gate2 = b(3) + momentFrame("gateB", b(2), MOMENTS.approve2);
+export const gate3 = b(5) + momentFrame("gateC", b(2), MOMENTS.approve3);
+export const gateAllow = b(7) + momentFrame("gateD", b(2), MOMENTS.alwaysAllow);
 /** The Approve button: 48 px in from the right of the approval's button row (each approval has
  *  its own row box); "Approve & always allow" sits 200 px in (read off the take at the click). */
 export const approveBtn = (inBeat: string, fromRight = 48) => {
   const t = target("approve-buttons", inBeat);
   return { u: (t.x + t.w - fromRight) / 1920, v: (t.y + t.h / 2) / 1080 };
 };
+const click = (at: number, inBeat: string, fromRight = 48) => ({ at, ...approveBtn(inBeat, fromRight) });
 export const GATE_A: Shot = {
   shot: "gateA",
   frames: b(3),
   tilt: 8,
   camera: [cam(0, 1.7, fo("approval-card", SUB.approve1), 1), cam(2, 1.9, fo("approval-card", SUB.approve1), b(3) - 2)],
-  rings: [{ at: gate1, ...approveBtn(SUB.approve1) }],
-  ticks: [{ at: gate1, ...approveBtn(SUB.approve1) }],
+  rings: [click(gate1, SUB.approve1)],
+  ticks: [click(gate1, SUB.approve1)],
   callouts: [call("approval-card", "Sending is an action", "So it waits for you", "above", 0, b(2))],
 };
-const gB = (f: number) => f - b(3);
 export const GATE_B: Shot = {
   shot: "gateB",
-  frames: b(6),
+  frames: b(2),
   tilt: 8,
-  // the approvals fill the frame here (the take's Artifact panel is right of them), so the
-  // card's best spot is over the header of the card already approved above (20 text cells)
+  camera: [cam(0, 1.85, fo("approval-card", SUB.approve2), 1), cam(2, 1.95, fo("approval-card", SUB.approve2), b(2) - 2)],
+  rings: [click(gate2 - b(3), SUB.approve2)],
+  ticks: [click(gate2 - b(3), SUB.approve2)],
+  callouts: [call("approve-buttons", "Approve, reject with a note", "Or allow from now on", "above", 0, b(2), { inBeat: SUB.approve2 })],
+};
+export const GATE_C: Shot = {
+  shot: "gateC",
+  frames: b(2),
+  tilt: 8,
+  camera: [cam(0, 1.85, fo("approval-card", SUB.approve3), 1), cam(2, 1.95, fo("approval-card", SUB.approve3), b(2) - 2)],
+  rings: [click(gate3 - b(5), SUB.approve3)],
+  ticks: [click(gate3 - b(5), SUB.approve3)],
+};
+export const GATE_D: Shot = {
+  shot: "gateD",
+  frames: b(2),
+  tilt: 8,
   camera: [
-    cam(0, 1.85, fo("approval-card", SUB.approve2), 1),
-    cam(2, 1.95, fo("approval-card", SUB.approve2), gB(gateAllow) - 10),
+    cam(0, 1.85, fo("approval-card", "always-allow"), 1),
     // to the rule line once "Approve & always allow" has landed
-    cam(gB(gateAllow) + 12, 2.1, fo("rule-line"), 30),
+    cam(gateAllow - b(7) + 10, 2.1, fo("rule-line"), 24),
   ],
-  rings: [
-    { at: gB(gate2), ...approveBtn(SUB.approve2) },
-    { at: gB(gateAllow), ...approveBtn("always-allow", 200) },
-  ],
-  ticks: [
-    { at: gB(gate2), ...approveBtn(SUB.approve2) },
-    { at: gB(gateAllow), ...approveBtn("always-allow", 200) },
-  ],
-  callouts: [
-    call("approve-buttons", "Approve, reject with a note", "Or allow from now on", "above", 0, b(3), { inBeat: SUB.approve2 }),
-    call("rule-line", "One rule saved", "You can revoke it anytime", "above", b(4), b(6)),
-  ],
+  rings: [click(gateAllow - b(7), "always-allow", 200)],
+  ticks: [click(gateAllow - b(7), "always-allow", 200)],
+  callouts: [call("rule-line", "One rule saved", "You can revoke it anytime", "above", gateAllow - b(7) + 24, b(2))],
 };
 
 export const SUMMARY: Shot = {
@@ -209,8 +227,8 @@ export const SUMMARY: Shot = {
   frames: b(4),
   camera: [cam(0, 1.9, { u: 0.42, v: 0.62 }, 1), cam(2, 2.2, { u: 0.42, v: 0.62 }, b(4) - 2)],
   callouts: [
-    call("summary-cost", "The whole morning", "$0.0276", "above", 0, b(2), { inBeat: "brief1-summary" }),
-    call("vs-baseline", "Router savings: 22 %", "Versus always using the biggest model", "above", b(2), b(4)),
+    call("summary-cost", "The whole morning", "$0.0216", "above", 0, b(2), { inBeat: "brief1-summary" }),
+    call("vs-baseline", "Router savings: 24 %", "Versus always using the biggest model", "above", b(2), b(4)),
   ],
 };
 
@@ -225,12 +243,14 @@ export const MEMORY: Shot = {
     cam(b(4) - 10, 2.6, fo("forget"), 30),
   ],
   callouts: [
-    call("memories", "8 memories", "What it learned from your morning", "left", 0, b(2)),
+    call("memories", "Memories", "What it learned from your morning", "left", 0, b(2)),
     call("skill-file", "Its own how-to", "Rewritten after each run", "left", b(2), b(4)),
     call("forget", "Forget or revoke", "You stay in charge", "left", b(4), b(6)),
   ],
 };
 
+// the chip in take 1915 reads "learned · 6 mem · 1 rule" at run two's plan (16 memories is the
+// count after both runs)
 export const LEARNED: Shot = {
   shot: "learned",
   frames: b(3),
@@ -239,29 +259,29 @@ export const LEARNED: Shot = {
     cam(0, 2.0, fo("learned-chip", "brief2-plan-arrives"), 1),
     cam(2, 2.3, fo("learned-chip", "brief2-plan-arrives"), b(3) - 2),
   ],
-  callouts: [call("learned-chip", "Uses what it learned", "No repeat questions", "below", 0, b(2), { inBeat: "brief2-plan-arrives" })],
+  callouts: [call("learned-chip", "Uses 6 memories and 1 rule", "No repeat questions", "below", 0, b(2), { inBeat: "brief2-plan-arrives" })],
 };
 export const RUN2END: Shot = {
   shot: "run2End",
   frames: b(2),
   tilt: 10,
   camera: [cam(0, 2.2, fo("run2-cost"), 1), cam(2, 2.35, fo("run2-cost"), b(2) - 2)],
-  // measured: run two cost more than run one ($0.0288 vs $0.0276), so no "cheaper" claim
-  callouts: [call("run2-cost", "Run two: $0.0288", "Same brief, using what it learned", "below", 0, b(2))],
+  // take 1915: run two $0.0209 against run one's $0.0216
+  callouts: [call("run2-cost", "Run two: $0.0209", "Cheaper and faster", "below", 0, b(2))],
 };
 
 export const RADAR: Shot = {
   shot: "radar",
   frames: b(2),
   tilt: 12,
-  camera: [cam(0, 2.2, fo("unread-dot"), 1), cam(2, 2.5, fo("unread-dot"), b(2) - 2)],
+  camera: [cam(0, 2.2, fo("unread-dot", undefined, "mock"), 1), cam(2, 2.5, fo("unread-dot", undefined, "mock"), b(2) - 2)],
   callouts: [call("unread-dot", "Ran on schedule", "While you were away", "right", 0, b(2))],
 };
 export const PILL: Shot = {
   shot: "pill",
   frames: b(2),
   tilt: 12,
-  camera: [cam(0, 2.2, fo("status-pill"), 1), cam(2, 2.5, fo("status-pill"), b(2) - 2)],
+  camera: [cam(0, 2.2, fo("status-pill", undefined, "mock"), 1), cam(2, 2.5, fo("status-pill", undefined, "mock"), b(2) - 2)],
   callouts: [call("status-pill", "Status pill", "Answer from anywhere in the app", "below", 0, b(2))],
 };
 export const PILL_APPROVE: Shot = {
@@ -282,7 +302,7 @@ export const WATCH: Shot = {
   shot: "watch",
   frames: b(2),
   tilt: 8,
-  camera: [cam(0, 2.0, fo("routing-table"), 1), cam(2, 2.3, fo("routing-table"), b(2) - 2)],
+  camera: [cam(0, 2.0, fo("routing-table", undefined, "mock"), 1), cam(2, 2.3, fo("routing-table", undefined, "mock"), b(2) - 2)],
   callouts: [call("routing-table", "It watches its own bill", "Proposes cheaper routing", "right", 0, b(2))],
 };
 export const OVERVIEW_AFTER: Shot = {
@@ -344,9 +364,9 @@ export const CHAPTERS = [
 export const FULL_SCENE_SHOTS: Partial<Record<keyof typeof F, Shot[]>> = {
   overview: [OVERVIEW],
   plan: [GOAL, PLAN],
-  timeline: [TIMELINE],
+  timeline: [TIMELINE_A, TIMELINE_B],
   doc: [DOC],
-  gate: [GATE_A, GATE_B],
+  gate: [GATE_A, GATE_B, GATE_C, GATE_D],
   summary: [SUMMARY],
   memory: [MEMORY],
   run2: [LEARNED, RUN2END],
@@ -387,7 +407,7 @@ export const X_PLAN: Shot = {
   camera: [cam(0, 1.9, fo("plan", "brief1-plan-arrives"), 1), cam(2, 2.2, fo("plan", "brief1-plan-arrives"), b(3) - 2)],
   rings: [planClick("xPlan", b(3))],
   ticks: [planClick("xPlan", b(3))],
-  callouts: [call("estimate", "≈ $0.0276", "You see the cost first", "below", 0, b(2))],
+  callouts: [call("estimate", "$0.0216", "You see the cost first", "below", 0, b(2))],
 };
 export const X_LANES: Shot = {
   shot: "xLanes",
@@ -401,7 +421,7 @@ export const X_GATE: Shot = {
   shot: "xGate",
   frames: b(2),
   tilt: 8,
-  camera: [cam(0, 1.7, fo("approval-card"), 1), cam(2, 1.95, fo("approval-card"), b(2) - 2)],
+  camera: [cam(0, 1.7, fo("approval-card", SUB.approve1), 1), cam(2, 1.95, fo("approval-card", SUB.approve1), b(2) - 2)],
   rings: [{ at: xApprove, ...approveBtn(SUB.approve1) }],
   ticks: [{ at: xApprove, ...approveBtn(SUB.approve1) }],
   callouts: [call("approval-card", "Sending is an action", "So it waits for you", "above", 0, b(2))],

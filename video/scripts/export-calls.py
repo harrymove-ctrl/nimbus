@@ -21,11 +21,10 @@ REPO = ROOT.parent
 # USD per 1M tokens [in, out], src/lib/models.ts PRICE_PER_M
 PRICE = {"ultra": (1, 3), "super": (0.3, 0.9), "nano": (0.06, 0.24)}
 ICT_MS = 7 * 3600 * 1000
-# Metric Morph's bars: a measured real-model run one, hop by hop. Until a recorded real take
-# exists this is the Oct 28 headless check 6 (Token Factory, real routing; docs/video/RELEASE.md),
-# run_7dae236f, $0.02756 over 26 hops. Set both to the real take's run one when it lands.
-TAKE_DB = "/tmp/claude-501/real-check/nimbus.db"
-TAKE_RUN = "run_7dae236f"
+# Metric Morph's bars: the real-model take 1915's run one, hop by hop (RELEASE.md "Measured on
+# take 1915": run_724b8d9d, $0.0216)
+TAKE_DB = "data/real-take-20261029b/nimbus.db"
+TAKE_RUN = "run_724b8d9d"
 
 
 def db(path):

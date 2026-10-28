@@ -31,6 +31,7 @@ import {
   FULL_SCENE_SHOTS,
   gate1,
   gate2,
+  gate3,
   gateAllow,
   LAPTOP_FRAMES,
   PHONE_CALLOUT,
@@ -201,6 +202,7 @@ function fullCues(): Cue[] {
   add(F.gate.from + gate1, "success", -16);
   add(F.gate.from + gate1, "sub-hit", -18);
   add(F.gate.from + gate2, "success", -20);
+  add(F.gate.from + gate3, "success", -20);
   add(F.gate.from + gateAllow, "success-strong", -16);
   // 10 summary
   add(F.summary.from, "morph-suck", -20);

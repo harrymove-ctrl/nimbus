@@ -118,7 +118,7 @@ Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1
 | E15 | 1732 / 1740 | 7 | Into the brief | whoosh (b) · ready | designed · cuelume | −22 / −20 | |
 | E16 | 2108 / 2145 | 8 | The marker wipes "without you." · the cloud turns orange on beat 4 | scribble · attention | designed · cuelume | −20 / −18 | `marker.wav` |
 | E17 | **2280** | 9 | The first Approve (the drawn tick) = **music drop 2** | success + sub hit | cuelume + designed | −16 / −18 | |
-| E18 | ≈ 2379 / ≈ 2545 | 9 | The second Approve (shot B, after the cut on bar 4) · Approve & always allow | success · success strong | cuelume | −20 / −16 | |
+| E18 | ≈ 2370 / ≈ 2490 / ≈ 2600 | 9 | Take 1915: the second and third Approve (shots B, C) · Approve & always allow (shot D), each card in its own shot cut on a downbeat | success · success · success strong | cuelume | −20 / −20 / −16 | |
 | E19 | 2700 / 2734 | 10 | Metric Morph: the pill collapses · slams in as the tallest bar | suck · short impact | designed | −20 / −16 | |
 | E20 | 2768 / 2793 | 10 | The summary tiles count · settle | count 700 · ready | cuelume | −22 / −20 | |
 | E21 | 3000 | 11 | The ticked box | success, quiet | cuelume | −28 | `success.wav` |

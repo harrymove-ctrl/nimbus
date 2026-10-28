@@ -1,48 +1,43 @@
-// Every footage cut, in source seconds of the take in take.ts (generated from its beats.json),
-// so a new take only needs `node scripts/sync-take.mjs <file>` and a look at the fit.
-// Shots start inside their beats where the take waits (board.md "Fit against the take");
-// the composition plays each one fitted to its scene at MIN_RATE–MAX_RATE.
-import { BEATS, type Box, TAKE_FILE } from "./take";
+// Every footage cut, in source seconds of its take (generated from each take's beats.json by
+// scripts/sync-take.mjs), so a new take only needs a sync and a look at the fit.
+// Two takes play in the cut: the real-model take 1915 (src/take.ts, the live beats.json) for
+// the Overview, the Morning brief run one and run two, the web run; the mock take 1258
+// (src/take-1258.ts) for the radar + status pill and the Token Factory watch, which the real
+// take never reached (RELEASE.md "Measured on take 1915").
+// Shots start inside their beats where the take waits; the composition plays each one
+// fitted to its scene at MIN_RATE–MAX_RATE.
+import * as REAL from "./take";
+import * as MOCK from "./take-1258";
+import type { Box } from "./take";
 
-export const TAKE = TAKE_FILE;
+export type TakeId = "real" | "mock";
+const TAKES = { real: REAL, mock: MOCK } as const;
+export const TAKE_FILES: Record<TakeId, string> = { real: REAL.TAKE_FILE, mock: MOCK.TAKE_FILE };
 export const TAKE_W = 1920;
 export const TAKE_H = 1080;
 
-const beat = (name: string) => {
-  const b = BEATS.find((x) => x.beat === name);
-  if (!b) throw new Error(`beats.json has no beat "${name}"`);
+const beat = (name: string, take: TakeId = "real") => {
+  const b = TAKES[take].BEATS.find((x) => x.beat === name);
+  if (!b) throw new Error(`beats.json (${take}) has no beat "${name}"`);
   return b;
 };
 /** When a beat starts (sub-beats mark a click or an arrival). */
-export const at = (name: string) => beat(name).tStart;
-export const end = (name: string) => beat(name).tEnd;
+export const at = (name: string, take: TakeId = "real") => beat(name, take).tStart;
+export const end = (name: string, take: TakeId = "real") => beat(name, take).tEnd;
 
-/** Board rev E renames the approval sub-beats (the real-model take has role-named contacts);
- *  take 1633 still has the old names, so each new name falls back to its old one. */
-const RENAMED: Record<string, string> = { "approve-1": "approve-dana", "approve-2": "approve-priya" };
-const sub = (name: string) => (BEATS.some((x) => x.beat === name) ? name : (RENAMED[name] ?? name));
-/** The approval sub-beats under the take's own names. */
-export const SUB = { approve1: sub("approve-1"), approve2: sub("approve-2") };
-
-/** Targets measured by eye on the take where beats.json's box has scrolled away by the time
- *  the callout shows: the lanes panel scrolls while the run plays, so "model-badge" (y 6, the
- *  orchestrator's badge, already under the header) becomes the Writers' three "Nemotron 3
- *  Super" badges, read off the take at 44–50 s. */
-const MEASURED: Record<string, Box> = {
-  "model-badge": { x: 310, y: 137, w: 138, h: 156 },
-};
+/** The approval sub-beats (take 1915: four clicks, the fourth with always-allow). */
+export const SUB = { approve1: "approve-1", approve2: "approve-2", approve3: "approve-3" };
 
 /** A callout target's box in take pixels: from `inBeat` if given, else the first beat that has it. */
-export function target(name: string, inBeat?: string): Box {
-  if (MEASURED[name] && !inBeat) return MEASURED[name];
-  const b = inBeat ? beat(inBeat) : BEATS.find((x) => x.targets[name]);
+export function target(name: string, inBeat?: string, take: TakeId = "real"): Box {
+  const b = inBeat ? beat(inBeat, take) : TAKES[take].BEATS.find((x) => x.targets[name]);
   const box = b?.targets[name];
-  if (!box) throw new Error(`beats.json has no target "${name}"${inBeat ? ` in ${inBeat}` : ""}`);
+  if (!box) throw new Error(`beats.json (${take}) has no target "${name}"${inBeat ? ` in ${inBeat}` : ""}`);
   return box;
 }
 
-export type Cut = { from: number; to: number };
-const cut = (from: number, to: number): Cut => ({ from, to });
+export type Cut = { from: number; to: number; take: TakeId };
+const cut = (from: number, to: number, take: TakeId = "real"): Cut => ({ from, to, take });
 /** A cut from before `t` to `to`, starting early enough that, fitted to a `sceneS` scene, `t`
  *  plays `atS` seconds in. */
 const landOn = (t: number, to: number, sceneS: number, atS: number): Cut => {
@@ -50,49 +45,50 @@ const landOn = (t: number, to: number, sceneS: number, atS: number): Cut => {
   return cut(t - atS * rate, to);
 };
 
-// Board rev E scenes → source windows. Comments say what each window shows.
+// Board rev E scenes → source windows. Comments say what each window shows (take 1915 unless
+// marked mock).
 export const SHOTS = {
   // 3 Overview: cards count up, the spend chart, the router gauge (also inside the laptop).
-  // From 4.7 s in: the boot overlay fades by ~1.2 s and the workstream list shows loading
-  // placeholders until ~4.5 s (take 1258)
-  overview: cut(at("overview") + 4.7, end("overview")),
-  // 5 the goal typing into the composer and sent (the composer is empty for ~4.5 s; the plan
-  // wait after the send is cut), then the plan draft through Approve plan
-  goal: cut(at("brief1-goal") + 4.6, at("brief1-goal") + 10.6),
+  // From 6 s in: the boot overlay and the list's loading placeholders are gone by then
+  overview: cut(at("overview") + 6, end("overview")),
+  // 5 the last 6 s of the goal typing and the send (typing runs ~29–45 s), then the plan
+  // draft through Approve plan
+  goal: cut(39, 45),
   plan: cut(at("brief1-plan-arrives") - 0.24, end("brief1-approve-plan")),
-  // 6 lanes fill, then Agent I/O on the first email (the first 4.7 s, the plan card folding
-  // away before any lane exists, are trimmed: pacing)
-  timeline: cut(at("brief1-timeline") + 4.7, end("brief1-agent-io")),
-  // 7 the brief doc (a drafted reply shows first; the brief opens ~3 s in)
-  doc: cut(at("brief1-doc") + 3, end("brief1-doc")),
-  // 9 the card, Approve ×2, Approve & always allow, the rule line, in two shots cut on the
-  // scene's bar 4 (pacing: the real app asks one card at a time, and the wait for the second
-  // card is cut). A: the first Approve plays 2 bars in = frame 2280, the music's drop 2.
-  // B: from just before the second Approve to the rule line.
-  gateA: landOn(at(sub("approve-1")), at(sub("approve-1")) + 2, 6, 4),
-  gateB: cut(at(sub("approve-2")) - 1.5, end("always-allow")),
+  // 6 the timeline beat runs 60 s: the plan card and the planning wait are cut, the lanes
+  // filling (from ~75 s) and the Writer through Agent I/O are two shots cut on bar 6
+  timelineA: cut(75, 90),
+  timelineB: cut(end("brief1-agent-io") - 15, end("brief1-agent-io")),
+  // 7 the brief doc (it opens in the right panel ~4.4 s into its beat)
+  doc: cut(at("brief1-doc") + 4.4, end("brief1-doc")),
+  // 9 four clicks, one card at a time, in four shots cut on downbeats. A: the first Approve
+  // plays 2 bars in = frame 2280, the music's drop 2. B, C: the second and third Approve, a
+  // second into each. D: Approve & always allow, then the rule line.
+  gateA: landOn(at(SUB.approve1), at(SUB.approve1) + 2, 6, 4),
+  gateB: cut(at(SUB.approve2) - 1, at(SUB.approve2) + 3),
+  gateC: cut(at(SUB.approve3) - 1, at(SUB.approve3) + 3),
+  gateD: cut(at("always-allow") - 1, at("always-allow") + 5),
   // 10 the run summary
-  summary: cut(at("brief1-summary"), end("brief1-summary")),
-  // 12 Memory & skill (the panel is still loading for ~3.5 s)
-  memory: cut(at("memory-skill") + 3.5, end("memory-skill")),
-  // 13 the next morning: the plan with the learned chip, then the end of run two
+  summary: cut(at("brief1-summary") + 0.5, end("brief1-summary")),
+  // 12 Memory & skill (the panel is up ~1.2 s in)
+  memory: cut(at("memory-skill") + 1.2, end("memory-skill")),
+  // 13 the next morning: the plan with the learned chip, then the end of run two (91 s run)
   learned: cut(at("brief2-plan-arrives"), end("brief2-plan-arrives")),
   run2End: cut(end("brief2-run") - 6, end("brief2-run")),
-  // 15 radar from the rail, the status pill, the approve from the pill (before the /v1 wait)
-  radar: cut(at("radar"), at("radar") + 4),
-  pill: cut(at("status-pill") + 1.5, at("status-pill") + 7.5),
-  pillApprove: cut(at("pill-approve"), at("pill-approve") + 3),
-  // 17 the same run in the web timeline, tagged chat
+  // 15 (mock 1258) radar from the rail, the status pill, the approve from the pill
+  radar: cut(at("radar", "mock"), at("radar", "mock") + 4, "mock"),
+  pill: cut(at("status-pill", "mock") + 1.5, at("status-pill", "mock") + 7.5, "mock"),
+  pillApprove: cut(at("pill-approve", "mock"), at("pill-approve", "mock") + 3, "mock"),
+  // 17 the run started from chat, in the web timeline (trigger "chat")
   chatRun: cut(end("chat-run") - 6, end("chat-run")),
-  // 18 Token Factory watch: the routing table and its approval, then the Overview after it
-  // (the router gauge is not on screen during `watch`)
-  watch: cut(at("watch-approve") - 5, at("watch-approve") + 1),
-  overviewAfter: cut(at("overview-after"), at("overview-after") + 3),
+  // 18 (mock 1258) Token Factory watch: the routing table and its approval, then the Overview
+  watch: cut(at("watch-approve", "mock") - 5, at("watch-approve", "mock") + 1, "mock"),
+  overviewAfter: cut(at("overview-after", "mock"), at("overview-after", "mock") + 3, "mock"),
   // X clip variants
   xPlan: cut(at("brief1-plan-arrives") - 0.4, end("brief1-approve-plan")),
-  xLanes: cut(at("brief1-timeline") + 4, at("brief1-timeline") + 10), // the lanes fill ~4 s in
+  xLanes: cut(76, 82),
   // the X gate is 2 bars and its Approve lands 1.5 bars in (frame 690)
-  xGate: landOn(at(sub("approve-1")), at(sub("approve-1")) + 1.5, 4, 3),
+  xGate: landOn(at(SUB.approve1), at(SUB.approve1) + 1.5, 4, 3),
 } satisfies Record<string, Cut>;
 export type ShotName = keyof typeof SHOTS;
 
@@ -101,12 +97,13 @@ export const MOMENTS = {
   planArrives: at("brief1-plan-arrives"),
   approvePlan: at("brief1-approve-plan"),
   agentIo: at("brief1-agent-io"),
-  approve1: at(sub("approve-1")),
-  approve2: at(sub("approve-2")),
+  approve1: at(SUB.approve1),
+  approve2: at(SUB.approve2),
+  approve3: at(SUB.approve3),
   alwaysAllow: at("always-allow"),
   learnedPlan: at("brief2-plan-arrives"),
-  pillApprove: at("pill-approve") + 0.6,
-  watchApprove: at("watch-approve"),
+  pillApprove: at("pill-approve", "mock") + 0.6,
+  watchApprove: at("watch-approve", "mock"),
 };
 
 export const MIN_RATE = 0.5;
@@ -115,7 +112,7 @@ export const MAX_RATE = 1.5;
 /** A cut fitted to a scene: its playback rate, clamped; past the clamp the cut is shortened. */
 export function fit(c: Cut, sceneSeconds: number): Cut & { rate: number } {
   const rate = Math.min(MAX_RATE, Math.max(MIN_RATE, (c.to - c.from) / sceneSeconds));
-  return { from: c.from, to: c.from + rate * sceneSeconds, rate };
+  return { ...c, to: c.from + rate * sceneSeconds, rate };
 }
 
 /** Frame inside a shot of `frames` where source second `t` plays. */

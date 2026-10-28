@@ -13,11 +13,10 @@ const TIERS = [
   { id: "nemotron-3-super-120b-a12b", role: "reads, writes, researches", color: TIER.super },
   { id: "NVIDIA-Nemotron-3-Nano-30B-A3B", role: "checks, learns", color: TIER.nano },
 ];
-// one measured morning: run one of the Oct 28 headless check 6 on Token Factory (run-hops.json,
-// $0.0276) and its router saving against every hop at its role's ceiling tier
-// (docs/video/RELEASE.md: baseline $0.0356, 22 %)
+// one measured morning: run one of the real-model take 1915 (run-hops.json, $0.0216) and its
+// router saving against every hop at its role's ceiling tier (RELEASE.md: baseline $0.0283, 24 %)
 const SPEND = RUN.total;
-const SAVED = 22;
+const SAVED = 24;
 
 /** Tiles rush in one per beat from bar 2 (over the plane); the endpoint line and its numbers on bar 3. */
 export const PROOF = { tiles: [bars(1), bars(1) + beats(1), bars(1) + beats(2)], line: bars(2), count: bars(2) + 4 };

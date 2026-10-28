@@ -36,10 +36,13 @@ only after the real-model take and the Suno tracks are in.
 
 ## Inputs
 
-- The take: `public/demo` links to `../docs/demo/`. After a new take,
-  `node scripts/sync-take.mjs demo/raw/<file>.webm` writes `src/take.ts` from its
-  `beats.json` (beat windows, sub-beat clicks, callout target boxes); `src/beats.ts`
-  turns those into the shots, fitted to their scenes at 0.5–1.5×.
+- The takes: `public/demo` links to `../docs/demo/`. `node scripts/sync-take.mjs
+  demo/raw/<file>.webm [beats.json] [module]` writes `src/take.ts` (the live take) or a second
+  module from a take's `beats.json` (beat windows, sub-beat clicks, callout target boxes).
+  `src/beats.ts` turns those into shots, each tagged with its take, fitted to their scenes
+  at 0.5–1.5×. Today: the real-model take 1915 (`src/take.ts`) for every footage scene but the
+  radar + status pill and the Token Factory watch, which play the mock take 1258
+  (`src/take-1258.ts`, from `demo/raw/beats-20261028-1258.json`).
 - `../docs/video/chat-transcript.json`: real `/v1` replies for the phone scene,
   shown verbatim (the selection is in `src/compositions.tsx`).
 - Numbers on screen are the fixture take's until the real-model take lands; no "mock" tag

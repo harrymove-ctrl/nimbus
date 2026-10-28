@@ -6,7 +6,7 @@ import {
   clampFocus,
   ScreenRecording,
 } from "@/components/snap-cn/screen-recording";
-import { fit, SHOTS, type ShotName, TAKE, TAKE_H, TAKE_W, target } from "./beats";
+import { fit, SHOTS, type ShotName, TAKE_FILES, TAKE_H, TAKE_W, target } from "./beats";
 import { Callout, type CalloutSpec, calloutLevel, Dim, type ScreenBox } from "./components/Callout";
 import { C, SORBET } from "./theme";
 
@@ -158,7 +158,7 @@ export function Footage({
 
   const recording = (
     <ScreenRecording
-      src={staticFile(TAKE)}
+      src={staticFile(TAKE_FILES[cut.take])}
       sourceAspect={TAKE_W / TAKE_H}
       trimBefore={Math.round(cut.from * fps)}
       footageRate={cut.rate}
@@ -170,7 +170,7 @@ export function Footage({
     />
   );
   const active = callouts
-    .map((c) => ({ c, level: calloutLevel(frame, c.from, c.to), box: project(target(c.target, c.inBeat), frame) }))
+    .map((c) => ({ c, level: calloutLevel(frame, c.from, c.to), box: project(target(c.target, c.inBeat, cut.take), frame) }))
     .filter((a) => a.level > 0);
 
   return (

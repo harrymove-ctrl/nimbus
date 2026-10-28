@@ -11,12 +11,15 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
-const video = process.argv[2];
+// node scripts/sync-take.mjs <video under public/> [beats file under public/] [module name]
+// The module defaults to src/take.ts (the live take); a second take for some scenes gets its own
+// module, e.g. `… demo/raw/beats-20261028-1258.json take-1258`.
+const [video, beatsArg, moduleName = "take"] = process.argv.slice(2);
 if (!video) {
-  console.error("usage: node scripts/sync-take.mjs <video path under public/>");
+  console.error("usage: node scripts/sync-take.mjs <video path under public/> [beats.json] [module]");
   process.exit(1);
 }
-const beatsPath = path.join(root, "public", path.dirname(video), "beats.json");
+const beatsPath = path.join(root, "public", beatsArg ?? path.join(path.dirname(video), "beats.json"));
 const beats = JSON.parse(readFileSync(beatsPath, "utf8"));
 const list = Array.isArray(beats) ? beats : beats.beats;
 const width = Number(
@@ -47,5 +50,5 @@ export const BEATS: TakeBeat[] = ${JSON.stringify(
   2,
 )};
 `;
-writeFileSync(path.join(root, "src/take.ts"), out);
-console.log(`src/take.ts: ${list.length} beats from ${video} (${width} px wide${k !== 1 ? `, boxes ÷${k}` : width < 3840 ? ", the 4K master upscales it 2×" : ""})`);
+writeFileSync(path.join(root, `src/${moduleName}.ts`), out);
+console.log(`src/${moduleName}.ts: ${list.length} beats from ${video} (${width} px wide${k !== 1 ? `, boxes ÷${k}` : width < 3840 ? ", the 4K master upscales it 2×" : ""})`);

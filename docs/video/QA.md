@@ -1,3 +1,35 @@
+status: locked · 2026-10-28 · "Lock them" · rev 6; final render on the real-model take 1915 (2026-10-29)
+approved: script rev 6, board rev E, music rev D · "Approve rev 6" · Gate 3 "Lock them"
+cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · compositions 1920 × 1080, 30 fps; the 4K master is the same composition at `--scale=2`
+footage, stated plainly:
+- **real** (take 1915, `docs/demo/raw/nimbus-demo-20261028-1915.webm`, real Nemotron models on Token Factory, 885 s): scene 3 Overview, scenes 5–10 (goal, plan, timeline, Agent I/O, brief, the four approvals, summary), 12 Memory & skill, 13 run two, 17 the web run started from chat. X: plan, lanes, the gate, run two
+- **mock** (take 1258, the scripted mock model): scene 15 radar + status pill (the real take never reached the pill's approval) and scene 18 Token Factory watch (no proposal on the real run)
+- the phone stack (scene 16, X scene 6): the live Railway chat run on the real models (`docs/video/chat-transcript-real.json`, run_6b393ab6)
+- the 4K master renders the 1080p takes upscaled 2×
+numbers on screen, all from take 1915 (RELEASE.md "Measured on take 1915"): plan estimate $0.0216; "The whole morning $0.0216"; "Router savings: 24 %"; "Run two: $0.0209 · Cheaper and faster"; the learned chip as it reads in the take, "Uses 6 memories and 1 rule" (16 is the count after both runs); Metric Morph's bars = run one (run_724b8d9d) hop by hop, 23 calls, $0.0216; the proof line "One morning: $0.0216 · 24 % saved by the router". The footage now shows the same figures (summary tile $0.022, run two $0.021). Scatter Bloom still plots the dev database's mock call log, with no count shown
+known: **the real Writer's draft ends with a placeholder signature** ("Best, [Your Name]"; the teammate's ends "Thanks. [Your Name]") on all four approval cards in scene 9, including the first Approve at 1:16. It is the last body line, directly above the buttons, so no framing can crop it with the buttons whole; left as the real model wrote it, product fix queued
+music: the Suno track fitted by `video/scripts/fit-music.py`; the bed about −18 LUFS under footage, ducked 3 dB under every cue
+
+# QA, final (checklist.md F, build-qa.md), on the 03:03 renders
+
+| Check | Result | Evidence |
+|---|---|---|
+| Duration | PASS · note | full 176.1 s, X 44.1 s; 3.9 s spare under 3:00 (the approved 2:56) |
+| Scenes on downbeats | PASS | Whole-bar layout; the timeline (2 shots, cut on bar 6) and the gate (4 shots: 3 + 2 + 2 + 2 bars) cut on bar lines |
+| First Approve on 2280 / 690 | PASS | Frame extract: the drawn tick is absent on 2279 and present on **2280** (full, the client's card), absent on 689 and present on **690** (X) |
+| Four approvals | PASS | Ticks at 2280, 2370, ≈ 2490 and 2600 (always-allow, on "Approve & always allow"); the rule line ("Policy saved to SKILL.md · allow: send_message to reviewer@example.com") is ringed with "One rule saved" |
+| Fit rates (≤ 1.5×) | PASS | timeline A/B 1.5×, Overview 0.9×, plan 1.3×, gate shots 1.0–1.5×, run two end 1.5×; the 60 s timeline and the 91 s run two are trimmed inside their beats |
+| Lane names in frame | PASS | stills at 1250 / 1400 / 1500: Orchestrator, Researcher, Writer rows with their names |
+| Cards clear of UI text | PASS | `layout-callouts.py`: 30 of 31 spots cover no text cell; `timelineB:agent-io` covers 1 |
+| No watermark | PASS | as on the locked cut (the code is unchanged); nothing on the frame outside the story |
+| Freeze and black | PASS | freeze only on the end card (full 166.5–, X 40.5–); black only on the designed dark motion openings |
+| Loudness | PASS | full −13.8 LUFS, −1.8 dBTP; X −13.7 LUFS, −1.8 dBTP |
+| No metronome | PASS | the Suno fit and the cue sheet only |
+| 4K master | PENDING | re-rendering on take 1915 at `--concurrency=4` (the first try lost its Chrome target at 03:08) |
+| Sound by ear | NOT VERIFIED | no listening in this environment |
+
+# History: the take-1258 render (locked 2026-10-28 23:35, the shipping cut before take 1915)
+
 status: locked · 2026-10-28 · "Lock them" · rev 6, commit 36922cb
 approved: script rev 6 (hook line updated 2026-10-28), board rev E, music rev D · "Approve rev 6"
 cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · compositions 1920 × 1080, 30 fps

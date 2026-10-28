@@ -1,110 +1,98 @@
 {
- "source": "/tmp/claude-501/real-check/nimbus.db run_7dae236f",
- "total": 0.0275627,
+ "source": "data/real-take-20261029b/nimbus.db run_724b8d9d",
+ "total": 0.0215644,
  "hops": [
   {
    "tier": "ultra",
-   "usd": 0.003235
+   "usd": 0.002844
   },
   {
    "tier": "super",
-   "usd": 0.0007671
+   "usd": 0.0007419
   },
   {
    "tier": "super",
-   "usd": 0.0003975
+   "usd": 0.0003762
   },
   {
    "tier": "super",
-   "usd": 0.0004338
+   "usd": 0.0004287
   },
   {
    "tier": "super",
-   "usd": 0.000495
+   "usd": 0.00048
   },
   {
    "tier": "super",
-   "usd": 0.0005445
+   "usd": 0.0005457
   },
   {
    "tier": "super",
-   "usd": 0.0005838
+   "usd": 0.000594
   },
   {
    "tier": "super",
-   "usd": 0.0006453
+   "usd": 0.0006402
   },
   {
    "tier": "super",
-   "usd": 0.0006819
+   "usd": 0.000684
   },
   {
    "tier": "super",
-   "usd": 0.00072
+   "usd": 0.0007185
   },
   {
    "tier": "super",
-   "usd": 0.0008157
+   "usd": 0.0008151
   },
   {
    "tier": "super",
-   "usd": 0.0018009
+   "usd": 0.0017679
   },
   {
    "tier": "super",
-   "usd": 0.0014907
+   "usd": 0.0010425
   },
   {
    "tier": "super",
-   "usd": 0.0009519
+   "usd": 0.0012495
   },
   {
    "tier": "super",
-   "usd": 0.0008832
+   "usd": 0.001032
   },
   {
    "tier": "super",
-   "usd": 0.0014982
+   "usd": 0.0009483
   },
   {
    "tier": "super",
-   "usd": 0.0013299
+   "usd": 0.0010218
   },
   {
    "tier": "super",
-   "usd": 0.0011085
+   "usd": 0.0010047
   },
   {
    "tier": "super",
-   "usd": 0.0011355
+   "usd": 0.001083
   },
   {
    "tier": "super",
-   "usd": 0.0011511
+   "usd": 0.0010815
   },
   {
    "tier": "super",
-   "usd": 0.0012084
+   "usd": 0.001092
   },
   {
    "tier": "super",
-   "usd": 0.0012213
-  },
-  {
-   "tier": "super",
-   "usd": 0.0015444
-  },
-  {
-   "tier": "super",
-   "usd": 0.0013815
-  },
-  {
-   "tier": "super",
-   "usd": 0.0011892
+   "usd": 0.001098
   },
   {
    "tier": "nano",
-   "usd": 0.0003484
+   "usd": 0.0002749
   }
  ]
 }
