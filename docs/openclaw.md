@@ -77,6 +77,55 @@ Choose the custom OpenAI-compatible endpoint, base URL `http://localhost:3241/v1
 `NIMBUS_API_TOKEN` (any non-empty value when the token is unset in dev). Then "what needs me?" and "run release watch"
 work in the Hermes CLI. One Telegram bot cannot be read by two clients: Hermes on Telegram needs its own bot.
 
+## Against the live demo (Railway)
+
+The demo runs at `https://nimbus-production-6f7b.up.railway.app` on the real Nemotron models. Its `/v1/chat/completions`
+needs the bearer token that was set as `NIMBUS_API_TOKEN` on Railway; the local copy is in `data/railway-api-token`
+(gitignored). Put it in your shell, without printing it:
+
+```bash
+export NIMBUS_API_TOKEN="$(cat /Volumes/Dev/nimbus/data/railway-api-token)"
+```
+
+First check that the token works (you should see `"intent":"help"`):
+
+```bash
+curl -s https://nimbus-production-6f7b.up.railway.app/v1/chat/completions -H "authorization: Bearer $NIMBUS_API_TOKEN" -H 'content-type: application/json' -d '{"model":"nimbus","user":"me","messages":[{"role":"user","content":"help"}]}'
+```
+
+**OpenClaw** (`~/.openclaw/openclaw.json`). This is the same provider as above with the Railway host. OpenClaw expands
+`${NIMBUS_API_TOKEN}` from the environment it starts in:
+
+```json
+{ "models": { "mode": "merge", "providers": { "nimbus": {
+  "baseUrl": "https://nimbus-production-6f7b.up.railway.app/v1", "apiKey": "${NIMBUS_API_TOKEN}",
+  "api": "openai-completions",
+  "models": [
+    { "id": "nimbus", "name": "Nimbus", "input": ["text"], "contextWindow": 256000, "maxTokens": 8192 }
+  ] } } } }
+```
+
+Then pick the model `nimbus/nimbus` in OpenClaw's local chat.
+
+**Hermes Agent.** Run `hermes model`, choose the custom OpenAI-compatible endpoint, and enter:
+
+- base URL `https://nimbus-production-6f7b.up.railway.app/v1`
+- model `nimbus`
+- the API key from `$NIMBUS_API_TOKEN`
+
+If you edit Hermes's `config.yaml` by hand instead, the same three values go in its custom provider (provider `custom`,
+`base_url`, `api_key`, model `nimbus`). I took those key names from Hermes's docs and haven't checked them on an install.
+
+**The exchange to run**, in one conversation:
+
+1. `what needs me?` gets a status reply.
+2. `run morning brief` gets "On it: Morning brief", then "Needs your OK: Send message to client@example.com" once the
+   first reply waits. The real Writer asks for one reply at a time, so it shows one waiting item.
+3. `approve all` (or `approve`, then again as each next reply waits) gets "Approved: …" and, at the end, the brief.
+
+Each run costs about $0.03 on Token Factory. The demo's day cap is $1, and when it is reached the endpoint answers 429.
+The same run shows up in the web app with the trigger "from chat".
+
 ## Try it with curl
 
 ```bash
