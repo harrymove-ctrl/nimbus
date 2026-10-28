@@ -50,7 +50,7 @@ export type Artifact = {
 export type TItem =
   | { t: "user"; seq: number; tMs: number; id: string; text: string; queued: boolean; via?: "chat" | "auto" }
   | { t: "agent"; seq: number; tMs: number; instance: string; role: AgentRole; text: string }
-  | { t: "plan"; seq: number; tMs: number; agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string }; steps: PlanStep[]; /** a person is reviewing this draft */ awaiting: boolean; approved: boolean; edited: boolean; revision: number }
+  | { t: "plan"; seq: number; tMs: number; agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string }; steps: PlanStep[]; /** a person is reviewing this draft */ awaiting: boolean; approved: boolean; edited: boolean; revision: number; /** when the person approved it (ms since run start) */ approvedMs?: number }
   | { t: "handoff"; seq: number; tMs: number; from: string; to: string; context: string }
   | { t: "question"; seq: number; tMs: number; instance: string; role: AgentRole; questionId: string; text: string; options?: string[]; answer?: string }
   | { t: "approval"; seq: number; tMs: number; approvalId: string; action: ProposedAction; status: "pending" | "approved" | "rejected"; always?: boolean; note?: string; by?: string; resolvedMs?: number }
@@ -338,6 +338,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
           v.plan.steps = e.payload.steps;
           v.plan.awaiting = false;
           v.plan.approved = true;
+          v.plan.approvedMs = e.tMs;
           v.plan.edited = e.payload.edited;
           v.stepState = Object.fromEntries(e.payload.steps.map((s) => [s.id, { state: "pending" as const }]));
         }

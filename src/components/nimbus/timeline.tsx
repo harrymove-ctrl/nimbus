@@ -124,15 +124,19 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
 
   const planning = view.status === "planning";
   const bodyH = view.lanes.length * LANE_H;
-  // Major tick step: the smallest of these with step × pxPerSec ≥ 80 px, so labels can never pile up (SPEC §15).
-  const STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 300];
-  const step = STEPS.find((st) => st * ((plotW - 24) / targetWindowS) >= 80) ?? 300;
+  // waits for the person and "cancelled after …" are drawn on the Orchestrator's lane: it is the one that asked
+  const waitLane = Math.max(0, view.lanes.findIndex((l) => l.instance === "orchestrator"));
+  // Major tick step: the smallest of these whose gap fits the widest label plus 16 px and is at least 110 px (about 8
+  // labels on a 1000 px lane), so labels
+  // never pile up (SPEC §15); up to an hour, for a run that waited on you for most of a morning.
+  const STEPS = [1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200, 14400];
+  const pps = (plotW - 24) / targetWindowS;
+  const step = STEPS.find((st) => st * pps >= Math.max(110, fmtTick(Math.ceil(targetWindowS / st) * st).length * 6.4 + 16)) ?? STEPS[STEPS.length - 1];
   const visibleS = (plotW - 12) / pxPerSec;
   const majors: number[] = [];
   for (let t = 0; t <= visibleS; t += step) majors.push(t);
   const minors: number[] = [];
   if (step >= 10) for (let t = step / 5; t <= visibleS; t += step / 5) if (t % step !== 0) minors.push(t);
-  const fmtTick = (t: number) => (t < 60 ? `${t}s` : `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`);
 
   if (collapsed) {
     return (
@@ -263,7 +267,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
               <div className="shrink-0" style={{ width: LEGEND_W }}>
                 {view.lanes.map((l, i) => (
                   <div key={l.instance} style={{ opacity: dim(l.instance) }} className="transition-opacity duration-150">
-                    <LegendRow lane={l} index={i} learned={l.instance === "orchestrator" ? view.learned : undefined} />
+                    <LegendRow lane={l} index={i} learned={l.instance === "orchestrator" ? view.learned : undefined} runStatus={view.status} />
                   </div>
                 ))}
               </div>
@@ -303,6 +307,29 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
                     );
                   })}
 
+                  {/* the time the crew waited on you, so a long gap explains itself; and where a run you ended stopped */}
+                  {waitsForYou(view, tNow).map((w) => {
+                    const y = waitLane * LANE_H + SEG_TOP;
+                    const x0 = x(w.startMs);
+                    const width = Math.max(SEG_H, x(w.endMs) - x0);
+                    const text = `waiting for you · ${fmtDur(w.endMs - w.startMs)}`;
+                    return (
+                      <g key={`wait-${w.startMs}`} aria-label={text}>
+                        <rect x={x0} y={y} width={width} height={SEG_H} rx={SEG_H / 2} fill="rgb(251 146 60 / 0.08)" stroke="rgb(251 146 60 / 0.55)" strokeDasharray="4 4" />
+                        {width >= text.length * 6.4 + 24 && (
+                          <text x={x0 + width / 2} y={y + SEG_H / 2 + 4} textAnchor="middle" fontSize={11} fontWeight={600} fill="rgb(253 186 116)">
+                            {text}
+                          </text>
+                        )}
+                      </g>
+                    );
+                  })}
+                  {(view.status === "cancelled" || view.status === "stopped") && view.endedMs !== undefined && (
+                    // under the lane's segments, ending at the moment it stopped: clear of the replay controls top right
+                    <text x={x(view.endedMs)} y={waitLane * LANE_H + SEG_TOP + SEG_H + 14} textAnchor={x(view.endedMs) > 160 ? "end" : "start"} fontSize={11} fontWeight={600} fill="currentColor" opacity={0.6}>
+                      {view.status} after {fmtDur(view.endedMs)}
+                    </text>
+                  )}
                   {view.lanes.map((l, i) =>
                     l.segments.map((s) => {
                       const x0 = x(s.startMs);
@@ -460,7 +487,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
   );
 }
 
-function LegendRow({ lane, index, learned }: { lane: Lane; index: number; learned?: { memories: number; policies: number } }) {
+function LegendRow({ lane, index, learned, runStatus }: { lane: Lane; index: number; learned?: { memories: number; policies: number }; runStatus: RunView["status"] }) {
   // One badge with the full model name; a ↓ (routed below ceiling) or ↻ (fell back) glyph sits inside it. Hover has the story.
   const glyph = lane.routed ? (lane.fellBack ? "↻" : "↓") : null;
   const hover = lane.routed
@@ -495,7 +522,48 @@ function LegendRow({ lane, index, learned }: { lane: Lane; index: number; learne
           {TIER_LABEL[lane.tier]}
         </span>
       </div>
-      <p className="ps-4 text-[11px] font-semibold tabular-nums text-neutral-500">{lane.tokens ? `${fmtTokens(lane.tokens)} tok · ${fmtCost3(lane.costUsd)}` : "—"}</p>
+      <p className="ps-4 text-[11px] font-semibold tabular-nums text-neutral-500">{lane.tokens ? `${fmtTokens(lane.tokens)} tok · ${fmtCost3(lane.costUsd)}` : laneState(lane, runStatus)}</p>
     </div>
   );
+}
+
+/** "45s", "1m 30s", "1h 50m": axis labels and waits past a minute read as durations, not clock times. */
+function fmtTick(t: number): string {
+  if (t < 60) return `${t}s`;
+  if (t < 3600) return t % 60 ? `${Math.floor(t / 60)}m ${t % 60}s` : `${t / 60}m`;
+  const m = Math.floor((t % 3600) / 60);
+  return m ? `${Math.floor(t / 3600)}h ${m}m` : `${t / 3600}h`;
+}
+function fmtDur(ms: number): string {
+  if (ms < 60_000) return `${Math.round(ms / 1000)} s`;
+  if (ms < 3_600_000) return fmtTick(Math.round(ms / 1000));
+  return fmtTick(Math.round(ms / 60_000) * 60); // past an hour, to the minute
+}
+
+/** Stretches of at least 30 s when the run waited on the person (the draft plan, approvals), overlapping ones merged. */
+function waitsForYou(view: RunView, tNow: number): { startMs: number; endMs: number }[] {
+  const end = view.endedMs ?? tNow;
+  const spans: [number, number][] = [];
+  for (const i of view.transcript) {
+    if (i.t === "plan" && (i.awaiting || i.approvedMs !== undefined)) spans.push([i.tMs, i.approvedMs ?? end]);
+    if (i.t === "approval" && i.by !== "policy" && i.by !== "mode") spans.push([i.tMs, i.resolvedMs ?? end]);
+  }
+  spans.sort((a, b) => a[0] - b[0]);
+  const merged: [number, number][] = [];
+  for (const sp of spans) {
+    const last = merged[merged.length - 1];
+    if (last && sp[0] <= last[1]) last[1] = Math.max(last[1], sp[1]);
+    else merged.push([...sp]);
+  }
+  return merged.filter(([a, b]) => b - a >= 30_000).map(([startMs, endMs]) => ({ startMs, endMs }));
+}
+
+/** A lane with no model calls says what it is doing instead of a bare dash. */
+function laneState(lane: Lane, runStatus: RunView["status"]): string {
+  if (lane.status === "error") return "failed";
+  if (runStatus === "cancelled" || runStatus === "stopped") return runStatus;
+  if (runStatus === "waiting" || runStatus === "asked" || (runStatus === "planning" && lane.status !== "running")) return "waiting";
+  if (lane.status === "pending") return "waiting";
+  if (lane.status === "running") return "starting";
+  return "no model calls";
 }
