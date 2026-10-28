@@ -21,9 +21,11 @@ REPO = ROOT.parent
 # USD per 1M tokens [in, out], src/lib/models.ts PRICE_PER_M
 PRICE = {"ultra": (1, 3), "super": (0.3, 0.9), "nano": (0.06, 0.24)}
 ICT_MS = 7 * 3600 * 1000
-# the take's first Morning brief run; set both to the real-model take's when it lands
-TAKE_DB = "data/video-rev6/nimbus.db"
-TAKE_RUN = "run_0ccb7cb0"
+# Metric Morph's bars: a measured real-model run one, hop by hop. Until a recorded real take
+# exists this is the Oct 28 headless check 6 (Token Factory, real routing; docs/video/RELEASE.md),
+# run_7dae236f, $0.02756 over 26 hops. Set both to the real take's run one when it lands.
+TAKE_DB = "/tmp/claude-501/real-check/nimbus.db"
+TAKE_RUN = "run_7dae236f"
 
 
 def db(path):
@@ -51,7 +53,7 @@ out = ROOT / "src/datasets"
 out.mkdir(exist_ok=True)
 (out / "calls.json").write_text(json.dumps({"source": "data/nimbus.db usage events", "models": models, "runs": len({r for r, *_ in rows}), "calls": calls}) + "\n")
 
-hops = usage_rows(db(REPO / TAKE_DB), "and r.id = ?", (TAKE_RUN,))
+hops = usage_rows(db(REPO / TAKE_DB if not TAKE_DB.startswith("/") else Path(TAKE_DB)), "and r.id = ?", (TAKE_RUN,))
 run_hops = [{"tier": u["tier"], "usd": round(cost(u), 7)} for *_, u in hops]
 (out / "run-hops.json").write_text(json.dumps({"source": f"{TAKE_DB} {TAKE_RUN}", "total": round(sum(h["usd"] for h in run_hops), 7), "hops": run_hops}, indent=1) + "\n")
 print(f"calls.json: {len(calls)} calls ({', '.join(models)}) from {len({r for r, *_ in rows})} runs · run-hops.json: {len(run_hops)} hops, ${sum(h['usd'] for h in run_hops):.5f}")

@@ -1,8 +1,8 @@
 // Metric Morph (board rev D, scene 8), our own build: the "Approve & always allow" pill from
 // scene 7 settles, its label dissolves, it collapses into a square that runs neutral-900 →
 // mint and slams in as the tallest bar of the run's cost chart; the chart rises around it as
-// one object. The bars are the take's run, hop by hop (src/datasets/run-hops.json, the $0.024
-// run on screen in scene 10), so the tallest bar is the real first hop (Ultra plans).
+// one object. The bars are the take's run, hop by hop (src/datasets/run-hops.json: a measured
+// real-model run one, $0.0276), so the tallest bar is the real first hop (Ultra plans).
 import { AbsoluteFill, Easing, interpolateColors, useCurrentFrame } from "remotion";
 import { ramp } from "../components/CloudMark";
 import RUN from "../datasets/run-hops.json";
@@ -10,8 +10,9 @@ import { C, GROUND, MANROPE, TIER } from "../theme";
 
 const out = Easing.out(Easing.cubic);
 const accel = Easing.in(Easing.cubic);
-const BAR = { w: 56, gap: 16, base: 830, max: 540 };
 const N = RUN.hops.length;
+// up to 56 px a bar, narrower for a long run so the chart stays inside 1600 px
+const BAR = { w: Math.min(56, (1600 - 16 * (N - 1)) / N), gap: 16, base: 830, max: 540 };
 const LEFT = 960 - (N * (BAR.w + BAR.gap) - BAR.gap) / 2;
 const TOP = Math.max(...RUN.hops.map((h) => h.usd));
 const tallest = RUN.hops.findIndex((h) => h.usd === TOP);
@@ -74,7 +75,7 @@ export function MetricMorph() {
           <span style={{ fontSize: 40, fontWeight: 600, color: C.ink, whiteSpace: "nowrap", opacity: label, filter: `blur(${(1 - label) * 8}px)` }}>Approve &amp; always allow</span>
         </div>
         <div style={{ position: "absolute", left: 0, right: 0, top: BAR.base + 34, textAlign: "center", fontSize: 34, fontWeight: 600, color: C.muted, opacity: ramp(frame, MORPH.rise + 8, MORPH.rise + 16) }}>
-          <span style={{ color: C.ink }}>${RUN.total.toFixed(3)}</span> · {N} model calls
+          <span style={{ color: C.ink }}>${RUN.total.toFixed(4)}</span> · {N} model calls
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

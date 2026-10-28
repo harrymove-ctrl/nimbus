@@ -52,19 +52,25 @@ const landOn = (t: number, to: number, sceneS: number, atS: number): Cut => {
 
 // Board rev E scenes → source windows. Comments say what each window shows.
 export const SHOTS = {
-  // 3 Overview: cards count up, the spend chart, the router gauge (also inside the laptop)
-  overview: cut(at("overview"), end("overview")),
+  // 3 Overview: cards count up, the spend chart, the router gauge (also inside the laptop).
+  // From 4.7 s in: the boot overlay fades by ~1.2 s and the workstream list shows loading
+  // placeholders until ~4.5 s (take 1258)
+  overview: cut(at("overview") + 4.7, end("overview")),
   // 5 the goal typing into the composer and sent (the composer is empty for ~4.5 s; the plan
   // wait after the send is cut), then the plan draft through Approve plan
   goal: cut(at("brief1-goal") + 4.6, at("brief1-goal") + 10.6),
   plan: cut(at("brief1-plan-arrives") - 0.24, end("brief1-approve-plan")),
-  // 6 lanes fill, then Agent I/O on the first email
-  timeline: cut(at("brief1-timeline"), end("brief1-agent-io")),
+  // 6 lanes fill, then Agent I/O on the first email (the first 4.7 s, the plan card folding
+  // away before any lane exists, are trimmed: pacing)
+  timeline: cut(at("brief1-timeline") + 4.7, end("brief1-agent-io")),
   // 7 the brief doc (a drafted reply shows first; the brief opens ~3 s in)
   doc: cut(at("brief1-doc") + 3, end("brief1-doc")),
-  // 9 the card, Approve ×2, Approve & always allow, the rule line. It starts so the first
-  // Approve plays 2 bars in: the scene's bar 3 = frame 2280, the music's drop 2
-  gate: landOn(at(sub("approve-1")), end("always-allow"), 18, 4),
+  // 9 the card, Approve ×2, Approve & always allow, the rule line, in two shots cut on the
+  // scene's bar 4 (pacing: the real app asks one card at a time, and the wait for the second
+  // card is cut). A: the first Approve plays 2 bars in = frame 2280, the music's drop 2.
+  // B: from just before the second Approve to the rule line.
+  gateA: landOn(at(sub("approve-1")), at(sub("approve-1")) + 2, 6, 4),
+  gateB: cut(at(sub("approve-2")) - 1.5, end("always-allow")),
   // 10 the run summary
   summary: cut(at("brief1-summary"), end("brief1-summary")),
   // 12 Memory & skill (the panel is still loading for ~3.5 s)

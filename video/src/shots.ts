@@ -53,21 +53,24 @@ function onTheBeat(
 }
 
 // ── Scene shots (board rev E) ─────────────────────────────────────────────────────────────
-// Callout spans are frames inside the shot. Numbers are the fixture take's until the real-model
-// take lands (the preview watermark says so); no "mock" tag (script rev 6).
+// Callout spans are frames inside the shot. Numbers are measured on Token Factory in the Oct 28
+// headless real runs (docs/video/RELEASE.md, QA.md says which); no tag on the frame.
 
 /** The router gauge framed with room on its left: the empty right half of the Runs panel. */
 const GAUGE_ROOM = { u: 0.708, v: 0.75 };
 /** Scene 3: the laptop dives into the screen over the first 75 frames, then the callouts. */
 export const LAPTOP_FRAMES = 75;
+/** The workstream list and the spend chart both whole (Gate 3 on rev 6: the tighter push
+ *  landed on an empty card and the callout covered the chart). */
+const OVERVIEW_WIDE = { u: 0.4, v: 0.42 };
 export const OVERVIEW: Shot = {
   shot: "overview",
   frames: b(6),
   tilt: 10,
   camera: [
-    cam(0, 1.5, fo("workstreams"), 1),
-    cam(10, 1.7, { u: 0.22, v: 0.5 }, 60),
-    cam(beats(11) - 20, 1.55, fo("spend-chart", "overview"), 40),
+    cam(0, 1.15, OVERVIEW_WIDE, 1),
+    cam(2, 1.22, OVERVIEW_WIDE, beats(11) - 24),
+    cam(beats(11) - 20, 1.45, fo("spend-chart", "overview"), 40),
     // the gauge sits right of centre so its card has the Runs panel's empty half (no card
     // over UI text); the move lands before the card is in
     cam(beats(18) - 24, 2.0, GAUGE_ROOM, 30),
@@ -110,29 +113,31 @@ export const PLAN: Shot = {
   ticks: [planClick("plan", b(4))],
   callouts: [
     call("plan", "The plan", "Who does what, before anything runs", "right", 0, b(2), { inBeat: "brief1-plan-arrives" }),
-    call("estimate", "≈ $0.03", "You see the cost first", "below", b(1), b(3)),
+    call("estimate", "≈ $0.0276", "You see the cost first", "below", b(1), b(3)),
     call("tools", "Allowed tools", "It can't use anything else", "below", b(2), b(4)),
   ],
 };
 
 export const LANES_U = { u: 0.45, v: 0.2 };
+const TIMELINE_OPEN = { u: 0.38, v: 0.2 };
 export const timelineAgentIo = momentFrame("timeline", b(10), MOMENTS.agentIo);
 export const TIMELINE: Shot = {
   shot: "timeline",
   frames: b(10),
   tilt: 12,
   camera: [
-    cam(0, 1.3, LANES_U, 1),
-    cam(2, 1.5, LANES_U, b(3)),
-    cam(b(4) - 20, 2.2, { u: 0.25, v: 0.12 }, 40),
-    cam(b(6) - 20, 1.85, { u: 0.44, v: 0.12 }, 40),
+    // framed left of the lanes' centre, so the dark band beside the plan card can take the card
+    cam(0, 1.3, TIMELINE_OPEN, 1),
+    cam(2, 1.5, TIMELINE_OPEN, b(3) - 22),
+    cam(b(3) - 20, 2.2, { u: 0.25, v: 0.12 }, 40),
+    cam(b(5) - 20, 1.85, { u: 0.44, v: 0.12 }, 40),
     cam(timelineAgentIo, 2.3, fo("agent-io"), 30),
   ],
   callouts: [
-    // the lanes fill about 2 bars in (the run plans first)
-    call("lanes", "One row per agent", "They work at the same time", "right", b(2), b(4)),
-    call("model-badge", "Model per step", "Ultra plans, Super reads and writes", "below", b(4), b(6), { role: ROLE.analyst }),
-    call("run-cost", "Live cost", "Stops at your budget", "below", b(6), b(8)),
+    // the lanes fill about a bar in
+    call("lanes", "One row per agent", "They work at the same time", "right", b(1), b(3)),
+    call("model-badge", "Model per step", "Ultra plans, Super reads and writes", "below", b(3), b(5), { role: ROLE.analyst }),
+    call("run-cost", "Live cost", "Stops at your budget", "below", b(5), b(7)),
     call("agent-io", "What it read", "Every step is open to check", "left", b(8), b(10)),
   ],
 };
@@ -153,39 +158,49 @@ export const DOC: Shot = {
   ],
 };
 
-export const gate1 = momentFrame("gate", b(9), MOMENTS.approve1);
-export const gate2 = momentFrame("gate", b(9), MOMENTS.approve2);
-export const gateAllow = momentFrame("gate", b(9), MOMENTS.alwaysAllow);
+/** Scene-relative frames of the three approval clicks (shot A is the scene's first 3 bars). */
+export const gate1 = momentFrame("gateA", b(3), MOMENTS.approve1);
+export const gate2 = b(3) + momentFrame("gateB", b(6), MOMENTS.approve2);
+export const gateAllow = b(3) + momentFrame("gateB", b(6), MOMENTS.alwaysAllow);
 /** The Approve button: 48 px in from the right of the approval's button row (each approval has
  *  its own row box); "Approve & always allow" sits 200 px in (read off the take at the click). */
 export const approveBtn = (inBeat: string, fromRight = 48) => {
   const t = target("approve-buttons", inBeat);
   return { u: (t.x + t.w - fromRight) / 1920, v: (t.y + t.h / 2) / 1080 };
 };
-export const GATE: Shot = {
-  shot: "gate",
-  frames: b(9),
+export const GATE_A: Shot = {
+  shot: "gateA",
+  frames: b(3),
   tilt: 8,
+  camera: [cam(0, 1.7, fo("approval-card", SUB.approve1), 1), cam(2, 1.9, fo("approval-card", SUB.approve1), b(3) - 2)],
+  rings: [{ at: gate1, ...approveBtn(SUB.approve1) }],
+  ticks: [{ at: gate1, ...approveBtn(SUB.approve1) }],
+  callouts: [call("approval-card", "Sending is an action", "So it waits for you", "above", 0, b(2))],
+};
+const gB = (f: number) => f - b(3);
+export const GATE_B: Shot = {
+  shot: "gateB",
+  frames: b(6),
+  tilt: 8,
+  // the approvals fill the frame here (the take's Artifact panel is right of them), so the
+  // card's best spot is over the header of the card already approved above (20 text cells)
   camera: [
-    cam(0, 1.7, fo("approval-card"), 1),
-    cam(2, 1.9, fo("approval-card"), b(2)),
+    cam(0, 1.85, fo("approval-card", SUB.approve2), 1),
+    cam(2, 1.95, fo("approval-card", SUB.approve2), gB(gateAllow) - 10),
     // to the rule line once "Approve & always allow" has landed
-    cam(gateAllow + 12, 2.1, fo("rule-line"), 30),
+    cam(gB(gateAllow) + 12, 2.1, fo("rule-line"), 30),
   ],
   rings: [
-    { at: gate1, ...approveBtn(SUB.approve1) },
-    { at: gate2, ...approveBtn(SUB.approve2) },
-    { at: gateAllow, ...approveBtn("always-allow", 200) },
+    { at: gB(gate2), ...approveBtn(SUB.approve2) },
+    { at: gB(gateAllow), ...approveBtn("always-allow", 200) },
   ],
   ticks: [
-    { at: gate1, ...approveBtn(SUB.approve1) },
-    { at: gate2, ...approveBtn(SUB.approve2) },
-    { at: gateAllow, ...approveBtn("always-allow", 200) },
+    { at: gB(gate2), ...approveBtn(SUB.approve2) },
+    { at: gB(gateAllow), ...approveBtn("always-allow", 200) },
   ],
   callouts: [
-    call("approval-card", "Sending is an action", "So it waits for you", "above", 0, b(2)),
-    call("approve-buttons", "Approve, reject with a note", "Or allow from now on", "above", b(3), b(6)),
-    call("rule-line", "One rule saved", "You can revoke it anytime", "above", b(7), b(9)),
+    call("approve-buttons", "Approve, reject with a note", "Or allow from now on", "above", 0, b(3), { inBeat: SUB.approve2 }),
+    call("rule-line", "One rule saved", "You can revoke it anytime", "above", b(4), b(6)),
   ],
 };
 
@@ -194,8 +209,8 @@ export const SUMMARY: Shot = {
   frames: b(4),
   camera: [cam(0, 1.9, { u: 0.42, v: 0.62 }, 1), cam(2, 2.2, { u: 0.42, v: 0.62 }, b(4) - 2)],
   callouts: [
-    call("summary-cost", "The whole morning", "$0.024", "above", 0, b(2), { inBeat: "brief1-summary" }),
-    call("vs-baseline", "Router savings", "Versus always using the biggest model", "above", b(2), b(4)),
+    call("summary-cost", "The whole morning", "$0.0276", "above", 0, b(2), { inBeat: "brief1-summary" }),
+    call("vs-baseline", "Router savings: 22 %", "Versus always using the biggest model", "above", b(2), b(4)),
   ],
 };
 
@@ -210,7 +225,7 @@ export const MEMORY: Shot = {
     cam(b(4) - 10, 2.6, fo("forget"), 30),
   ],
   callouts: [
-    call("memories", "Memories", "What it learned from your morning", "left", 0, b(2)),
+    call("memories", "8 memories", "What it learned from your morning", "left", 0, b(2)),
     call("skill-file", "Its own how-to", "Rewritten after each run", "left", b(2), b(4)),
     call("forget", "Forget or revoke", "You stay in charge", "left", b(4), b(6)),
   ],
@@ -231,7 +246,8 @@ export const RUN2END: Shot = {
   frames: b(2),
   tilt: 10,
   camera: [cam(0, 2.2, fo("run2-cost"), 1), cam(2, 2.35, fo("run2-cost"), b(2) - 2)],
-  callouts: [call("run2-cost", "Run two: $0.016", "Cheaper and faster", "below", 0, b(2))],
+  // measured: run two cost more than run one ($0.0288 vs $0.0276), so no "cheaper" claim
+  callouts: [call("run2-cost", "Run two: $0.0288", "Same brief, using what it learned", "below", 0, b(2))],
 };
 
 export const RADAR: Shot = {
@@ -330,7 +346,7 @@ export const FULL_SCENE_SHOTS: Partial<Record<keyof typeof F, Shot[]>> = {
   plan: [GOAL, PLAN],
   timeline: [TIMELINE],
   doc: [DOC],
-  gate: [GATE],
+  gate: [GATE_A, GATE_B],
   summary: [SUMMARY],
   memory: [MEMORY],
   run2: [LEARNED, RUN2END],
@@ -371,7 +387,7 @@ export const X_PLAN: Shot = {
   camera: [cam(0, 1.9, fo("plan", "brief1-plan-arrives"), 1), cam(2, 2.2, fo("plan", "brief1-plan-arrives"), b(3) - 2)],
   rings: [planClick("xPlan", b(3))],
   ticks: [planClick("xPlan", b(3))],
-  callouts: [call("estimate", "≈ $0.03", "You see the cost first", "below", 0, b(2))],
+  callouts: [call("estimate", "≈ $0.0276", "You see the cost first", "below", 0, b(2))],
 };
 export const X_LANES: Shot = {
   shot: "xLanes",

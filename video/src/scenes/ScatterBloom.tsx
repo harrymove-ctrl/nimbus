@@ -65,7 +65,7 @@ export function ScatterBloom({ dimFrom }: { dimFrom: number }) {
         </svg>
       </div>
       <div style={{ position: "absolute", left: 64, top: 56, fontFamily: MANROPE, fontSize: 30, fontWeight: 600, color: C.muted, opacity: ramp(frame, 20, 30) * dim }}>
-        <span style={{ color: C.ink }}>{DATA.calls.length.toLocaleString("en-US")}</span> model calls from {DATA.runs} runs · time of day × cost
+        Every model call in the log · time of day × cost
       </div>
     </AbsoluteFill>
   );

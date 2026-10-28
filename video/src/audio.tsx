@@ -42,11 +42,25 @@ export function SfxTrack({ cues }: { cues: Cue[] }) {
 }
 
 /**
- * The music bed: the Suno track once it exists (music-full.mp3 / music-x.mp3), until then the
- * Tone.js temp score. About 2 dB lower under footage than on title cards (sound.md: −18 under
- * footage, −14 on cards, after mastering). The click track is never rendered.
+ * The music bed: the fitted Suno track (music-full-fit.mp3 / music-x.mp3). Gate 3 on rev 6
+ * ("music too loud"): under footage it sits 6 dB lower than before (0.8 → 0.4), on cards at
+ * full level; it ducks 3 dB under every SFX cue (3-frame attack, 18-frame hold, 8-frame release),
+ * chapter-card transitions included, and comes back up 3 dB over `lifts` (the drop on the
+ * first Approve, the finale). The master is levelled to −14 LUFS after the render, so the SFX
+ * come up and the bed does not. The click track is never rendered.
  */
-export function MusicBed({ src, footage }: { src: string; footage: [number, number][] }) {
-  const v = (f: number) => (footage.some(([a, b]) => f >= a && f < b) ? 0.8 : 1);
-  return <Audio src={staticFile(src)} volume={v} />;
+const BED = { footage: 0.4, card: 1, duck: 10 ** (-3 / 20), lift: 10 ** (3 / 20) };
+export function bedVolume(f: number, footage: [number, number][], cues: Cue[], lifts: [number, number][]) {
+  let v = footage.some(([a, b]) => f >= a && f < b) ? BED.footage : BED.card;
+  if (lifts.some(([a, b]) => f >= a && f < b)) v *= BED.lift;
+  let duck = 0;
+  for (const c of cues) {
+    const d = f - c.at;
+    if (d < -3 || d > 26) continue;
+    duck = Math.max(duck, d < 0 ? (d + 3) / 3 : d <= 18 ? 1 : 1 - (d - 18) / 8);
+  }
+  return Math.min(1, v * (1 - (1 - BED.duck) * duck));
+}
+export function MusicBed({ src, footage, cues = [], lifts = [] }: { src: string; footage: [number, number][]; cues?: Cue[]; lifts?: [number, number][] }) {
+  return <Audio src={staticFile(src)} volume={(f) => bedVolume(f, footage, cues, lifts)} />;
 }

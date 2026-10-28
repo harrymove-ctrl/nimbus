@@ -15,17 +15,17 @@
   "x": 400,
   "y": 464
  },
- "gate:approval-card:0": {
-  "x": 688,
-  "y": 128
+ "gateA:approval-card:0": {
+  "x": 704,
+  "y": 144
  },
- "gate:approve-buttons:180": {
-  "x": 1104,
-  "y": 896
+ "gateB:approve-buttons:0": {
+  "x": 896,
+  "y": 288
  },
- "gate:rule-line:420": {
+ "gateB:rule-line:240": {
   "x": 640,
-  "y": 304
+  "y": 96
  },
  "learned:learned-chip:0": {
   "x": 640,
@@ -48,20 +48,16 @@
   "y": 544
  },
  "overview:spend-chart:165": {
-  "x": 672,
-  "y": 912
+  "x": 688,
+  "y": 896
  },
  "overview:workstreams:75": {
-  "x": 512,
-  "y": 688
+  "x": 368,
+  "y": 768
  },
  "overviewAfter:router-gauge:0": {
   "x": 400,
   "y": 208
- },
- "phone:phone:60": {
-  "x": 112,
-  "y": 736
  },
  "pill:status-pill:0": {
   "x": 304,
@@ -99,17 +95,17 @@
   "x": 384,
   "y": 480
  },
- "timeline:lanes:120": {
-  "x": 656,
-  "y": 912
+ "timeline:lanes:60": {
+  "x": 112,
+  "y": 752
  },
- "timeline:model-badge:240": {
+ "timeline:model-badge:180": {
   "x": 432,
   "y": 688
  },
- "timeline:run-cost:360": {
-  "x": 1264,
-  "y": 288
+ "timeline:run-cost:300": {
+  "x": 720,
+  "y": 48
  },
  "watch:routing-table:0": {
   "x": 400,

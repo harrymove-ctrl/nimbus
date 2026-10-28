@@ -44,7 +44,7 @@ export function Hook({ script, frames }: { script: string; frames: number }) {
     </Ground>
   );
 }
-export const HOOK_FULL = "Your standing work, | done every | morning | by a crew of | Nemotron agents | that asks before it acts.";
+export const HOOK_FULL = "Your standing work, | done every morning | by a crew | that asks before it acts | and gets better | every run.";
 export const HOOK_X = "Your standing work, | done every | morning | by a crew | that asks | before it acts.";
 
 const MARK = 168;
@@ -122,6 +122,8 @@ export function LaptopDive() {
           showNotch
           indicatorColor={C.mint}
           floatLoop={false}
+          // the machine fills 85 % of the frame width before the dive (820 px lid × 2)
+          scale={2}
           fontFamily={MANROPE}
           speed={LAPTOP_END / LAPTOP_FRAMES}
           screenColor={C.bg}

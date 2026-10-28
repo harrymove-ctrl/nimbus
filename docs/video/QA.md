@@ -1,3 +1,55 @@
+status: Gate 3 · rev E final renders on take 1258 with the fitted Suno track · 2026-10-28 23:35
+approved: script rev 6 (hook line updated 2026-10-28), board rev E, music rev D · "Approve rev 6"
+cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · compositions 1920 × 1080, 30 fps
+footage: **mock take 1258** (`docs/demo/raw/nimbus-demo-20261028-1258.webm`, 1920 × 1080, role-named contacts, the scripted mock model). No real-model take was recorded (RELEASE.md, commit 9b22814). The 4K master renders the same composition at `--scale=2`, so the 1080p footage is **upscaled 2×** in it. If a real take lands, `scripts/sync-take.mjs` swaps it in (and halves its beats.json boxes if it was recorded at device scale 2)
+numbers on screen: measured in the Oct 28 headless real runs on Nebius Token Factory (no recording; RELEASE.md), not the footage's fixture numbers, with no tag on the frame:
+- plan estimate "≈ $0.0276" and "The whole morning $0.0276": check 6, run one after the Learner fix (75,291 tokens; run_7dae236f in `/tmp/claude-501/real-check`, 26 model calls, $0.02756 by src/lib/models.ts prices)
+- "Router savings: 22 %": check 6, baseline $0.0356 (every hop at its role's ceiling tier)
+- "Run two: $0.0288": check 5. It costs more than run one, so the line now says "Same brief, using what it learned" and no longer claims "cheaper"
+- "8 memories": check 6 (8 memories saved, SKILL.md rewritten)
+- Metric Morph's bars: run_7dae236f hop by hop (26 bars, $0.0276; `src/datasets/run-hops.json`)
+- proof line "One morning: $0.0276 · 22 % saved by the router": check 6, held still
+- **The footage underneath still shows the mock take's own figures** (its summary tile reads $0.024, the run-two header $0.016, the plan chip ≈ $0.03). The callout cards carry the measured numbers.
+- Scatter Bloom plots the dev database's call log (`data/nimbus.db`, mock runs) with no count on screen ("Every model call in the log")
+music: the Suno track (variant A, 122.09 BPM) stretched to 120 and fitted by `video/scripts/fit-music.py` (music.md "Fit"). Bed under footage: gain 0.8 → 0.4 (−6 dB). Before the change that put the bed at about −15.5 LUFS short-term before mastering; after, about −21.6 before mastering and **about −18 LUFS in the master** (the board's level for footage). It ducks 3 dB under every SFX cue and comes back +3 dB on the 1:16 drop and the finale; the master's loudnorm brought the mix (and so the SFX) up 3.5 dB
+chat transcript: `docs/video/chat-transcript.json` (old fixtures) with the three addresses mapped to take 1258's role addresses
+files (gitignored, `video/out/`): `nimbus-full.mp4` (1080p master, crf 17) · `nimbus-x.mp4` (X master) · `nimbus-full-4k.mp4` (3840 × 2160, crf 17, footage upscaled 2×)
+previews (720p, mastered): `docs/demo/preview/nimbus-full-preview.mp4` (19.8 MB) · `docs/demo/preview/nimbus-x-preview.mp4` (4.3 MB)
+stills: `docs/demo/preview/motion-frames.png` (12 motion scenes) · `docs/demo/gallery/gallery-1.png` … `gallery-5.png` (SUBMISSION.md "Devpost gallery"; frames 200, 1260, 2283, 4760, 4290)
+
+# QA, rev E final (checklist.md F, build-qa.md), on the 23:35 renders
+
+| Check | Result | Evidence |
+|---|---|---|
+| Duration | PASS · note | full 176.1 s, X 44.1 s (ffprobe). The full cut leaves 3.9 s of spare under 3:00, not the ≥ 5 s build-qa.md asks for; the approved script sets 2:56 |
+| Scenes on downbeats | PASS | `shots.ts` lays out whole bars and `onTheBeat` refuses an off-beat scene; the gate's two shots and the timeline's trimmed start cut on bar lines |
+| First Approve on 2280 / 690 | PASS | Frame extract: the drawn tick is absent on 2279 and present on **2280** (full), absent on 689 and present on **690** (X) |
+| Rings on targets, cards clear of UI text | PASS · 3 small | `layout-callouts.py` on take 1258: 28 of 31 spots cover no text cell. `gateB:approve-buttons` covers 20 cells (the approval cards fill the frame and the take's Artifact panel is beside them, so it sits over the header of the card already approved). `chatRun` covers 4 and the X `lanes` card 1 |
+| Overview callouts | PASS | The camera opens wide (1.15–1.22×) on the whole workstream list and spend chart; each of the three Overview cards covers 0 text cells |
+| Chapter chips on empty space | PASS | Corner scrim, off over the motion scenes |
+| Palette | PASS | Generated from globals.css / run-view.ts; the terminal now paints in the app's tokens |
+| No watermark, nothing outside the story | PASS | Eight frames sampled (60, 735, 2130, 3030, 3750, 4250, 4900, 5100): the bottom-right corner is flat apart from the dither (max − min ≤ 11/255); `Watermark.tsx` is deleted |
+| Freeze and black | PASS | Freeze: only the end card (full 166.5–, X 40.5–). Black ≥ 0.3 s only on the designed dark openings of motion scenes (the orbs, hook → name 7.1–9.2 s, Word Gather's lone word, Metric Morph, Check Cycle, Orbit Flow, Phone Stack, Scatter Bloom); the X phone hold is gone |
+| Pacing (no footage hold > 2 bars without a callout or a UI change) | PASS · note | Still spans in each footage window were measured on the take (5 fps frame difference). The long ones (doc, summary, memory, learned plan, run-two end) sit under an open callout with the camera moving between targets. Changed: the Overview starts at the first clean frame, the timeline skips its 4.7 s plan-card wait, and the gate is two shots cut on bar 4 so the wait for the second card is gone |
+| Loudness | PASS | full −13.8 LUFS, −1.8 dBTP, LRA 8.3; X −13.7 LUFS, −1.8 dBTP, LRA 7.1 |
+| No metronome | PASS | The bed is the Suno fit; every cue is a cuelume render or a Tone.js design |
+| Sound by ear | NOT VERIFIED | No listening in this environment |
+
+# Changes after the 22:49 preview (timestamps in the full cut)
+
+1. **0:12–0:14.5 laptop dive**: the screen showed the boot overlay; the Overview cut now starts 4.7 s into its beat (after the boot fade and the list's loading placeholders), and the laptop renders at 2× (85 % of the frame width) before it dives.
+2. **0:14.5–0:24 Overview**: the camera opens wide on the workstream list and the spend chart (was 1.5–1.7× onto an empty card). All three Overview callout cards were re-measured and each covers 0 text cells.
+3. **2:38 proof line**: "One morning: $0.0276 · 22 % saved by the router", held still (the count-up showed in-between figures like "9 calls · $0.0096").
+4. **2:34–2:40 proof tiles**: rise into place, with no sideways rush under blur (that was the grey smudge).
+5. **2:40–2:46 terminal**: our own window, 88 % × 87 % of the frame from its first frame; the pin onto the URL runs only in the last bar.
+6. **Music**: the bed sits 6 dB lower under footage, ducks 3 dB under every SFX cue, and comes back +3 dB on the 1:16 drop and the 2:40 finale.
+7. **0:38–0:58 timeline**: starts 4.7 s later (the plan card folding away is cut); its callouts move a bar earlier (lanes 0:40, model 0:44, cost 0:48).
+8. **1:12–1:30 gate**: two shots cut at 1:18 (bar 4). The first Approve stays on 2280, the second moves to 2379 (1:19.3), always-allow to 2545 (1:24.8).
+9. **Numbers**: the measured headless figures above replace the fixture ones in the callouts; "Run two" no longer says "cheaper".
+10. **Hook (0:00–0:08)**: "Your standing work, · done every morning · by a crew · that asks before it acts · and gets better · every run."
+
+# History: rev E QA on the 20:48 previews
+
 status: Gate 3 · rev E QA on the 2026-10-28 20:48 previews, fixes in code; renders on hold (the builder records the real-model take) · 2026-10-28
 approved: script rev 6, board rev E, music rev D · "Approve rev 6"
 cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · 1920 × 1080, 30 fps; the 4K master is the same composition at `--scale=2`
@@ -8,7 +60,7 @@ music: the Suno track (variant A, 122.09 BPM) stretched to 120 and fitted by `vi
 previews (720p, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (19.3 MB, 2:56) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (4.2 MB, 0:44) — rendered 20:48 / 20:51, before the fixes below
 evidence: `docs/demo/preview/callouts-middle-frames.png` (every callout's middle frame, both cuts) · `docs/demo/preview/motion-frames.png` (one still per motion scene, 12) — both from the 20:48 previews, so they still show the corner label and the old Orbit Flow radius
 
-# QA, rev E (checklist.md F and build-qa.md), on the 20:48 previews
+## QA, rev E, on the 20:48 previews
 
 | Check | Result | Evidence |
 |---|---|---|

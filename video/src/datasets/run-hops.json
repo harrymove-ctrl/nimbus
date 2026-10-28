@@ -1,90 +1,110 @@
 {
- "source": "data/video-rev6/nimbus.db run_0ccb7cb0",
- "total": 0.0240428,
+ "source": "/tmp/claude-501/real-check/nimbus.db run_7dae236f",
+ "total": 0.0275627,
  "hops": [
   {
    "tier": "ultra",
-   "usd": 0.00584
+   "usd": 0.003235
+  },
+  {
+   "tier": "super",
+   "usd": 0.0007671
+  },
+  {
+   "tier": "super",
+   "usd": 0.0003975
+  },
+  {
+   "tier": "super",
+   "usd": 0.0004338
+  },
+  {
+   "tier": "super",
+   "usd": 0.000495
+  },
+  {
+   "tier": "super",
+   "usd": 0.0005445
+  },
+  {
+   "tier": "super",
+   "usd": 0.0005838
+  },
+  {
+   "tier": "super",
+   "usd": 0.0006453
+  },
+  {
+   "tier": "super",
+   "usd": 0.0006819
+  },
+  {
+   "tier": "super",
+   "usd": 0.00072
+  },
+  {
+   "tier": "super",
+   "usd": 0.0008157
+  },
+  {
+   "tier": "super",
+   "usd": 0.0018009
+  },
+  {
+   "tier": "super",
+   "usd": 0.0014907
+  },
+  {
+   "tier": "super",
+   "usd": 0.0009519
+  },
+  {
+   "tier": "super",
+   "usd": 0.0008832
+  },
+  {
+   "tier": "super",
+   "usd": 0.0014982
+  },
+  {
+   "tier": "super",
+   "usd": 0.0013299
+  },
+  {
+   "tier": "super",
+   "usd": 0.0011085
+  },
+  {
+   "tier": "super",
+   "usd": 0.0011355
+  },
+  {
+   "tier": "super",
+   "usd": 0.0011511
+  },
+  {
+   "tier": "super",
+   "usd": 0.0012084
+  },
+  {
+   "tier": "super",
+   "usd": 0.0012213
+  },
+  {
+   "tier": "super",
+   "usd": 0.0015444
+  },
+  {
+   "tier": "super",
+   "usd": 0.0013815
+  },
+  {
+   "tier": "super",
+   "usd": 0.0011892
   },
   {
    "tier": "nano",
-   "usd": 0.0001236
-  },
-  {
-   "tier": "nano",
-   "usd": 0.000102
-  },
-  {
-   "tier": "super",
-   "usd": 0.000792
-  },
-  {
-   "tier": "nano",
-   "usd": 0.0002208
-  },
-  {
-   "tier": "nano",
-   "usd": 0.0002748
-  },
-  {
-   "tier": "super",
-   "usd": 0.002244
-  },
-  {
-   "tier": "super",
-   "usd": 0.001881
-  },
-  {
-   "tier": "super",
-   "usd": 0.001224
-  },
-  {
-   "tier": "super",
-   "usd": 0.001014
-  },
-  {
-   "tier": "super",
-   "usd": 0.001014
-  },
-  {
-   "tier": "super",
-   "usd": 0.001014
-  },
-  {
-   "tier": "super",
-   "usd": 0.001026
-  },
-  {
-   "tier": "super",
-   "usd": 0.001026
-  },
-  {
-   "tier": "super",
-   "usd": 0.001026
-  },
-  {
-   "tier": "super",
-   "usd": 0.001035
-  },
-  {
-   "tier": "super",
-   "usd": 0.001035
-  },
-  {
-   "tier": "super",
-   "usd": 0.001035
-  },
-  {
-   "tier": "super",
-   "usd": 0.00147
-  },
-  {
-   "tier": "nano",
-   "usd": 0.000588
-  },
-  {
-   "tier": "nano",
-   "usd": 5.76e-05
+   "usd": 0.0003484
   }
  ]
 }

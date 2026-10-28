@@ -60,3 +60,17 @@ The mock checks are green after every fix: eval 19/19, check:cases 27/27, budget
 ## Take attempts
 
 None of the five recording attempts produced a take. Attempts 1 and 2 stopped on real-model behaviour (1, 5), and attempts 3 to 5 on recorder assumptions taken from the mock scripts. Every product bug found along the way is fixed and committed (1 to 6). The one thing left is in the recorder (7). The data directories of all five attempts are kept under `data/`.
+
+## The rendered cuts (Oct 28, 23:35, video session)
+
+Footage: mock take 1258. Music: the Suno track fitted by `video/scripts/fit-music.py`. Numbers: the callouts, Metric Morph and the proof line carry the measured headless figures above, with no tag on the frame (the planner's instruction of 22:30, which supersedes "labelled that way on screen" in the status above). The footage under them still shows the mock take's own figures ($0.024, $0.016, ≈ $0.03). `docs/video/QA.md` lists where each number comes from.
+
+| File | What |
+|---|---|
+| `video/out/nimbus-full.mp4` | Full cut, 1920 × 1080, crf 17, mastered to −14 LUFS (gitignored) |
+| `video/out/nimbus-x.mp4` | X clip, 1920 × 1080, crf 17, mastered (gitignored) |
+| `video/out/nimbus-full-4k.mp4` | Full cut at `--scale=2`, 3840 × 2160, crf 17; the 1080p footage is upscaled 2× (gitignored) |
+| `docs/demo/preview/nimbus-full-preview.mp4`, `nimbus-x-preview.mp4` | 720p previews |
+| `docs/demo/gallery/gallery-1.png` … `gallery-5.png` | Devpost gallery stills, 1920 × 1080, from the 1080p render (same picture as the master): 1 hook, frame 200 (0:06.7) · 2 timeline with "One row per agent", frame 1260 (0:42) · 3 the gate with the drawn tick on Approve, frame 2283 (1:16.1) · 4 the Nebius tiles and endpoint line, frame 4760 (2:38.7) · 5 the phone stack, "approve all" → "Approved", frame 4290 (2:23) |
+
+Gallery 3 shows the tick but not the "Sending is an action" card. That card closes a beat before the click, so the two never share a frame.

@@ -20,7 +20,7 @@ import { HOOK_FULL, HOOK_X, Hook, LAPTOP, LaptopDive, Name, NAME } from "./scene
 import { ORBIT, OrbitFlow } from "./scenes/OrbitFlow";
 import { ChatScreen } from "./scenes/PhoneChat";
 import { PROOF, Proof } from "./scenes/Proof";
-import { RunIt } from "./scenes/RunIt";
+import { RunIt, TYPING, URL_LINE_AT } from "./scenes/RunIt";
 import { ScatterBloom } from "./scenes/ScatterBloom";
 import {
   after,
@@ -252,9 +252,9 @@ function fullCues(): Cue[] {
   add(F.proof.from + 4, "bloom-sparkle", -22);
   PROOF.tiles.forEach((f) => add(F.proof.from + f, "sub-hit", -16));
   add(F.proof.from + PROOF.count, "count-700", -22);
-  // 20 terminal: a key every 3 frames while it types; ready on the URL line
-  for (let f = 8; f < 96; f += 3) add(F.terminal.from + f, "type", -32);
-  add(F.terminal.from + b(2) - 10, "ready", -20);
+  // 20 terminal: a key every 3 frames while a command types; ready on the URL line
+  for (const [a, z] of TYPING) for (let f = a; f < z; f += 3) add(F.terminal.from + f, "type", -32);
+  add(F.terminal.from + URL_LINE_AT, "ready", -20);
   // 21 end
   add(F.end.from, "impact-deep", -14);
   return c;
@@ -308,6 +308,11 @@ export function NimbusFull() {
       <MusicBed
         src={MUSIC.full}
         footage={span(["overview", "plan", "timeline", "doc", "gate", "summary", "memory", "run2", "radar", "chatRun", "watch"])}
+        cues={FULL_CUES}
+        lifts={[
+          [F.gate.from + gate1, F.gate.from + gate1 + b(2)],
+          [F.terminal.from, F.terminal.from + F.terminal.frames - beats(1)],
+        ]}
       />
       <SfxTrack cues={FULL_CUES} />
     </Shell>
@@ -335,7 +340,9 @@ function xCues(): Cue[] {
     const last = i === STACK_X.length - 1;
     add(X.chat.from + f, last ? "success-strong" : i === 1 ? "tap" : "ready-subtle", last ? -18 : -24);
   });
-  for (let f = 4; f < 40; f += 3) add(X.terminal.from + f, "type", -32);
+  // the X terminal runs at 3× (one bar): a key per 3 frames over each command, ready on the URL
+  for (const [a, z] of TYPING) for (let f = Math.round(a / 3); f < z / 3; f += 3) add(X.terminal.from + f, "type", -32);
+  add(X.terminal.from + Math.round(URL_LINE_AT / 3), "ready", -22);
   add(X.end.from, "impact-deep", -14);
   return c;
 }
@@ -364,6 +371,11 @@ export function NimbusX() {
         footage={[
           [X.plan.from, X.ch2.from],
           [X.gate.from, X.chat.from],
+        ]}
+        cues={X_CUES}
+        lifts={[
+          [X.gate.from + xApprove, X.gate.from + xApprove + b(2)],
+          [X.terminal.from, X.end.from + X.end.frames],
         ]}
       />
       <SfxTrack cues={X_CUES} />
