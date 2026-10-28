@@ -8,7 +8,7 @@ https://nebiusglobalaihackathon.devpost.com/ before Phase 5 starts.
 - [ ] Working project on Token Factory with Nemotron 3 (Ultra/Super/Nano)
 - [ ] Track chosen: Personal AI (fallback: Best Apps & Agents)
 - [ ] Project description (below, edited to what actually shipped)
-- [ ] Demo URL: Nebius Serverless Endpoint (fallback: Vercel/Railway, say so)
+- [x] Demo URL: https://nimbus-production-6f7b.up.railway.app (Railway, real Nemotron on Nebius Token Factory, day cap $1; /v1 needs the bearer token). Nebius Serverless Endpoint: not deployed yet
 - [ ] YouTube video, public, ≤ 3:00, shows Token Factory + Nemotron in use
 - [ ] Public GitHub repo on `harrymove-ctrl`, MIT `LICENSE` at root, visible on the repo page
 - [ ] README: setup, env vars, run instructions, "How we used Nemotron / Token Factory / other Nebius services"

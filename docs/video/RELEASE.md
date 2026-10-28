@@ -1,5 +1,7 @@
 # Release notes for the video
 
+**Demo URL:** https://nimbus-production-6f7b.up.railway.app (Railway, Oct 28). It runs on the real models: `NIMBUS_MODEL=nebius`, `NIMBUS_DEV_CHEAP=0`, a $1 day cap and a $0.25 run cap. SQLite is on a Railway volume at `/data`. `/v1/chat/completions` needs the bearer token in `NIMBUS_API_TOKEN`. A smoke run there (Morning brief, cancelled after its plan) cost $0.0032.
+
 ## Status on Oct 28
 
 There is no recorded real-model take yet. The video ships on the role-named mock take `docs/demo/raw/nimbus-demo-20261028-1258.webm`. Its numbers are fixture numbers (the scripted mock model) and must be labelled that way on screen. The real run is kept for a later day.
