@@ -1,12 +1,52 @@
-status: locked · 2026-10-28 · "Fix the two overlaps and the three clipped rings, then lock both cuts and wait for the Suno music."
-locked: NimbusFull 2:54 (87 bars) · NimbusX 0:44 (22 bars) · script rev 5 · board, music, sfx rev C
-remaining before the final render: (1) the Suno tracks `video/public/audio/music-full.mp3` and `music-x.mp3` (swap at `MUSIC` in `video/src/compositions.tsx`, re-master), (2) the final-day real run as footage, its numbers replacing every "mock" label, then `python3 video/scripts/layout-callouts.py` and a fresh eye check of the callout frames. No other changes.
+status: Gate 3 · rev D motion layer previews (temp music) for review · 2026-10-28
+unlocked for rev D by the user (via the planner): "các animation đâu ui ux show như [Text Highlight, Punch Lines, Focus Pull, Lockup Reveal, Metric Morph, Orbit Flow, Scatter Bloom, Screen Wall] … kết hợp để transition và chọn font cũng như ui ux như bản web đang dùng"
+cuts: NimbusFull 2:54 (87 bars) · NimbusX 0:44 (22 bars) · script rev 5 · board rev C + rev D motion layer · music map rev C (unchanged) · sfx rev D
 take: docs/demo/raw/nimbus-demo-20261027-1633.webm (209.6 s) cut by its beats.json
-previews (720p, h264 crf 23, AAC 192k, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (22.6 MB, 2:54) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (5.5 MB, 0:44)
-evidence sheets: `docs/demo/preview/callouts-middle-frames.png` (each callout's middle frame, after the Gate 3 fixes) · `docs/demo/preview/compare-v3-rev4-rev5.png` (v3 · rev 4 preview · rev 5, three scenes)
-sound: Tone.js temp score (`video/sound/music-map.json` = music.md rev C) + 26 sheet sounds (14 cuelume renders, 12 Tone.js designs), mastered with `video/scripts/master.sh`
+previews (720p, h264 crf 23, AAC 192k, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (21.9 MB, 2:54) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (5.4 MB, 0:44)
+evidence sheets: `docs/demo/preview/motion-frames.png` (one still per motion scene) · `docs/demo/preview/callouts-middle-frames.png` (each callout's middle frame, rev D timings)
+sound: Tone.js temp score (`video/sound/music-map.json` = music.md rev C) + 37 sheet sounds (14 cuelume renders, 23 Tone.js designs, 11 of them new for rev D), mastered with `video/scripts/master.sh`
+remaining before the final render: the Suno tracks, the final-day real run (then `export-mock-calls.py` and `layout-callouts.py` again), Gate 3 on these previews
 
-# Gate 3 fixes (2026-10-28), frame times in the full cut
+# Rev D motion layer (2026-10-28), frame times in the full cut
+
+| Scene | Frames | Motion scene | Built from | Footage after it |
+|---|---|---|---|---|
+| 2 title | 180–300 | Lockup Reveal: the cloud alone on the dark with dashed construction hairlines, "Nimbus" slides out of a slot behind it and settles from 1.1×, the boot sky rises in the letters; bar 2 cuts to the boot sky, the cloud blinks, the two lines build a word at a time | ours (`scenes/Lockup.tsx`) + `CloudMark` | — |
+| 4 Ch 1 | 660–720 | Punch Lines: "You ask." · "It plans." · "You approve the plan" (mint, from a third of its size) | snapcn `punch-lines` (free, installed) | Plan 6 bars, unchanged; the 1-bar goal close-up is gone (Punch Lines' "You ask." stands for it) |
+| 7 Ch 2 | 1980–2040 | Text Highlight: "Nothing leaves without you." with a mint marker on "without you."; the cloud at the end of the line turns orange as it lands | snapcn `text-highlight` + `CloudMark` | Gate 8 bars; the cut is re-derived so Approve (Dana) still lands on **2160** (measured: 2160) |
+| 8 summary | 2520–2580 | Metric Morph: the "Approve & always allow" pill dissolves, collapses into a square (neutral-900 → mint) and slams in as the tallest bar of the run's cost chart, the chart rising around it | ours; bars = the take's run hop by hop (`src/datasets/run-hops.json`, $0.02404 from data/video-rev5) | Summary 4 bars (0.64×) |
+| 9 Ch 3 | 2820–2940 | Focus Pull: "It remembers." then "It gets better every run.", each pulled into focus a glyph at a time over the dither glow | ours | Memory 5 bars (1.07×); its three callouts hold 7, 7 and 6 beats |
+| 11 Ch 4 | 3600–3720 | Orbit Flow (dark): three dashed orbits round "Always on, wherever you are", three pills on the inner orbit ("08:00 SCHEDULE", "CHAT APP", "STATUS PILL"), wind-up and whip | ours | Radar 6 beats + status pill 6 beats + approve 1 bar |
+| 12 chat | 3960–4080 | Screen Wall: four phones down a tunnel with real `/v1` frames ("what needs me?", "run morning brief", "approve all", "Approved: …"), the camera backs out, "Same crew, in your chat app" builds with a shove | ours (transcript verbatim) | Phone 4 bars ("run morning brief" → "approve all"), web run 2 bars |
+| 14 proof | 4740–4980 | Scatter Bloom: 1,492 model calls from 83 mock runs in `data/nimbus.db`, x = time of day, y = cost (log), tier colours, on a tilted plane; the tiles land on it from bar 3 | ours; `src/datasets/mock-calls.json` by `scripts/export-mock-calls.py` (read-only, every run model "mock") | — |
+| 15 end | 4980–5220 | Lockup reprise on the boot sky, held still, with the repo URL and `pnpm dev` (8 s) | ours; replaces `wordmark-cut` | — |
+
+X clip: Lockup on the title (180–300) and the end (1200–1320); a 1-bar Screen Wall at 960–1020, the phone 3 bars after it; Dana still on **690**.
+
+Rules checked: Manrope only (500/600/700; the reference faces are not used); the app palette, and the boot sky (`boot.tsx:15`) only in the Lockup and the end card; `CloudMark` is `glow-cloud.tsx` with the same PUFFS, CORE, EYES, goo filter and gradients, driven by `useCurrentFrame()` (no requestAnimationFrame, no Math.random); no paid snapcn source used or copied; every motion scene enters on a downbeat with its own designed sound (sfx.md rows 46–56) and cuts hard to footage on a downbeat; the chapter eyebrow slides in as each motion scene cuts to footage and is off over the motion scenes inside a chapter.
+
+# QA, rev D (build-qa.md)
+
+| Check | Result | Evidence |
+|---|---|---|
+| Duration | PASS | Full 174.1 s (87 bars); X 44.1 s; scene lengths and the music map unchanged |
+| No frozen spots | PASS | `freezedetect n=0.003 d=1.5`: only the end cards (full 166.5–174, X 40.5–44). Three motion scenes first read as frozen (the held Text Highlight line, Orbit Flow's small pills, Scatter Bloom's first beat); they got a slow push, a faster orbit and a camera swing |
+| Black spots | PASS (by design) | `blackdetect d=0.3`: 6.0–6.8 (Lockup bar 1, the cloud alone on the dark), 84.6–85.2 (Metric Morph, the square on the dark), 120.0–120.4 (Orbit Flow drawing in), 158.0–159.5 (Scatter Bloom's first points). Each is a designed dark card with something moving on it; no footage goes black |
+| Cuts on the beat | PASS | Every scene in bars (`grid.ts`); every motion scene a whole number of bars from its scene's start; Approve (Dana) on 2160 (bar 36, drop 2), X on 690 |
+| Loudness | PASS | After `master.sh` (limiter ceiling lowered to ≈ −2 dBFS so the 720p AAC re-encode keeps ≤ −1 dBTP): full −14.3 LUFS, −1.0 dBTP, LRA 7.0; X −14.3 LUFS, −1.7 dBTP, LRA 6.2 (measured on the previews) |
+| Palette matches the app | PASS | `qa-frames.py`: saturated hues sit on the boot sky blues (205°/215°, now in `palette.ts` with its source line), mint and the tier colours; no foreign bin ≥ 2 % in either cut |
+| Frame density | PASS | A frame every 2 s with the motion cards exempt like the title and end: no flags in either cut (the 23 s goal close-up exception of rev 5 is gone with the goal shot) |
+| Callout cards clear of UI text | PASS | `layout-callouts.py` re-run for the rev D timings: 31 of 33 cards on 0 text cells, chat-run and the X lanes on 4 (a bar corner, a panel corner); `callouts-middle-frames.png` regenerated and looked at |
+| Rings in frame | PASS | ≥ 24 px from the edge (unchanged from the lock) |
+| Honest numbers | PASS (labelled) | Metric Morph says "$0.024 · 21 model calls · mock" (sum of the take's hops: $0.02404); Scatter Bloom says "1,492 model calls from 83 mock runs" and the proof keeps its mock tag |
+| Hackathon requirements | PASS | Title: "NVIDIA Nemotron · Nebius Token Factory"; proof tiles with the three model ids and "Nebius Token Factory" |
+| Sound | not auditioned | Every new sound peaks at −1 dBFS with mean levels −27 to −15 dB; placement is checked against the sheet, but I cannot listen in this environment |
+
+# History: the rev C lock (superseded by rev D)
+
+status: locked · 2026-10-28 · "Fix the two overlaps and the three clipped rings, then lock both cuts and wait for the Suno music." · commit 54a0f38
+
+# Gate 3 fixes (2026-10-28), frame times in the full cut (rev C)
 
 | Fix | Result | Evidence |
 |---|---|---|

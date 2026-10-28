@@ -4,6 +4,7 @@
 //   public/audio/music-temp-*.mp3 the Tone.js temp score on the music.md section map
 //   node scripts/make-sound.mjs            (everything)
 //   node scripts/make-sound.mjs sfx|score  (one half)
+//   node scripts/make-sound.mjs new        (only the sounds whose file is missing)
 // BROWSER_EXECUTABLE: a Chrome to use instead of Remotion's chrome-headless-shell.
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -48,6 +49,18 @@ const SOUNDS = {
   "impact-soft": des("impact", 1.2, { f0: 120, f1: 48, decay: 2.2 }),
   "impact-deep": des("impact", 2.4, { f0: 100, f1: 38, decay: 4, wet: 0.4 }),
   "sub-hit": des("sub", 0.7),
+  // rev D: one designed sound per motion scene (sfx.md rows 50–60)
+  "lockup-chime": des("bells", 1.4, { notes: "E5 B5 E6 G#6", spacing: 0.06 }),
+  "punch-whip": des("whoosh", 0.3, { f0: 3200, f1: 700, peak: 0.25 }),
+  "punch-thud": des("thud", 0.6),
+  marker: des("scribble", 0.55, { f0: 2200, f1: 3800, rate: 24 }),
+  "morph-suck": des("suck", 1.1, { f0: 300, f1: 2400 }),
+  "morph-slam": des("impact", 0.9, { f0: 150, f1: 55, decay: 1.2 }),
+  "focus-shimmer": des("shimmer", 1.6),
+  "orbit-swell": des("whoosh", 1.2, { f0: 180, f1: 900, peak: 0.7 }),
+  "orbit-suck": des("suck", 0.45, { f0: 800, f1: 5200 }),
+  "wall-tunnel": des("whoosh", 1.4, { f0: 2400, f1: 300, peak: 0.35 }),
+  "bloom-sparkle": des("bells", 2.2, { notes: "C6 E6 G6 B6 D7 E7", spacing: 0.09 }),
 };
 
 // ── The temp score's section maps: sound/music-map.json (mirrors docs/video/music.md) ──
@@ -102,15 +115,17 @@ await page.addScriptTag({ content: bundle.outputFiles[0].text });
 const SR = await page.evaluate(() => window.sound.SR);
 
 if (only !== "score") {
-  rmSync(SFX, { recursive: true, force: true });
+  // `new`: render only the sounds whose file is missing (keeps the approved ones byte-for-byte)
+  if (only !== "new") rmSync(SFX, { recursive: true, force: true });
   mkdirSync(SFX, { recursive: true });
   for (const [name, { type, spec }] of Object.entries(SOUNDS)) {
+    if (only === "new" && existsSync(path.join(SFX, `${name}.wav`))) continue;
     const b64 = await page.evaluate(([t, s]) => window.sound[t](s), [type, spec]);
     wav(path.join(SFX, `${name}.wav`), b64, SR, true);
   }
   console.log(`sfx: ${Object.keys(SOUNDS).length} files`);
 }
-if (only !== "sfx") {
+if (only !== "sfx" && only !== "new") {
   for (const [cut, { sections: map, seconds }] of Object.entries(MAP).filter(([k]) => k !== "note")) {
     const b64 = await page.evaluate(([s, sec]) => window.sound.score(s, sec), [sections(map), seconds]);
     const tmp = path.join(root, `out/music-temp-${cut}.wav`);

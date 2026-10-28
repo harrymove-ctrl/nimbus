@@ -35,7 +35,8 @@ npx remotion render NimbusX out/nimbus-x.mp4 --codec h264 --crf 17
 - Sound: `node scripts/make-sound.mjs` renders, offline in headless Chromium,
   every cue-sheet sound into `public/audio/sfx/` (the app's own cuelume cues,
   Tone.js-designed transitions) and the Tone.js temp score
-  `public/audio/music-temp-*.mp3` from `sound/music-map.json`. Swap in the Suno
+  `public/audio/music-temp-*.mp3` from `sound/music-map.json`. `node scripts/make-sound.mjs new`
+  renders only the sounds whose file is missing. Swap in the Suno
   tracks at `MUSIC` in `src/compositions.tsx`. No click track is ever rendered.
 - Master: `bash scripts/master.sh out/nimbus-full.mp4 out/nimbus-full-master.mp4`
   levels a render to −14 LUFS, ≤ −1 dBTP (picture copied).
@@ -54,6 +55,15 @@ npx remotion render NimbusX out/nimbus-x.mp4 --codec h264 --crf 17
   `python3 scripts/layout-callouts.py` (renders each callout's frames with only its ring,
   then keeps the nearest spot that covers no text cell). Re-run it after any camera or
   take change; `node scripts/callout-index.mjs full|x` lists the callouts at their frames.
+- Rev D motion scenes (board rev D), each a pure function of the frame, our own builds
+  unless noted: `Lockup.tsx` (title and end card, on the app's boot sky), `ChapterCards.tsx`
+  (chapter 1 on snapcn `punch-lines`, chapter 2 on snapcn `text-highlight`), `MetricMorph.tsx`,
+  `FocusPull.tsx`, `OrbitFlow.tsx`, `ScreenWall.tsx`, `ScatterBloom.tsx`.
+  `src/components/CloudMark.tsx` is the app's `glow-cloud.tsx`, frame-pure.
+- `src/datasets/`: real rows for the motion scenes, written by
+  `python3 scripts/export-mock-calls.py` (read-only on `data/nimbus.db` and the take's
+  `data/video-rev5/nimbus.db`): every mock model call (Scatter Bloom) and the take's run hop
+  by hop (Metric Morph).
 - `src/scenes/PhoneChat.tsx` (the chat on snapcn `phone-frame`), `Proof.tsx`
   (count-grid, adapted) and the end card. `PromptRoll`, `CommentStorm`,
   `ColumnCut` and `AgentChat` are from rev 4 and not in this cut.

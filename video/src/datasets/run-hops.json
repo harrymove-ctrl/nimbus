@@ -1,0 +1,90 @@
+{
+ "source": "data/video-rev5/nimbus.db run_5d03029a",
+ "total": 0.0240428,
+ "hops": [
+  {
+   "tier": "ultra",
+   "usd": 0.00584
+  },
+  {
+   "tier": "nano",
+   "usd": 0.0001236
+  },
+  {
+   "tier": "nano",
+   "usd": 0.000102
+  },
+  {
+   "tier": "super",
+   "usd": 0.000792
+  },
+  {
+   "tier": "nano",
+   "usd": 0.0002208
+  },
+  {
+   "tier": "nano",
+   "usd": 0.0002748
+  },
+  {
+   "tier": "super",
+   "usd": 0.002244
+  },
+  {
+   "tier": "super",
+   "usd": 0.001881
+  },
+  {
+   "tier": "super",
+   "usd": 0.001224
+  },
+  {
+   "tier": "super",
+   "usd": 0.001014
+  },
+  {
+   "tier": "super",
+   "usd": 0.001014
+  },
+  {
+   "tier": "super",
+   "usd": 0.001014
+  },
+  {
+   "tier": "super",
+   "usd": 0.001026
+  },
+  {
+   "tier": "super",
+   "usd": 0.001026
+  },
+  {
+   "tier": "super",
+   "usd": 0.001026
+  },
+  {
+   "tier": "super",
+   "usd": 0.001035
+  },
+  {
+   "tier": "super",
+   "usd": 0.001035
+  },
+  {
+   "tier": "super",
+   "usd": 0.001035
+  },
+  {
+   "tier": "super",
+   "usd": 0.00147
+  },
+  {
+   "tier": "nano",
+   "usd": 0.000588
+  },
+  {
+   "tier": "nano",
+   "usd": 5.76e-05
+  }
+ ]
+}

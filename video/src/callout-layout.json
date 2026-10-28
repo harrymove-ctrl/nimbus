@@ -23,11 +23,11 @@
   "x": 656,
   "y": 128
  },
- "gate:approve-buttons:180": {
+ "gate:approve-buttons:120": {
   "x": 928,
   "y": 432
  },
- "gate:rule-line:420": {
+ "gate:rule-line:360": {
   "x": 672,
   "y": 416
  },
@@ -35,7 +35,7 @@
   "x": 656,
   "y": 384
  },
- "memory:forget:300": {
+ "memory:forget:210": {
   "x": 320,
   "y": 288
  },
@@ -43,9 +43,9 @@
   "x": 400,
   "y": 448
  },
- "memory:skill-file:180": {
+ "memory:skill-file:105": {
   "x": 352,
-  "y": 368
+  "y": 416
  },
  "overview:router-gauge:240": {
   "x": 160,
@@ -67,8 +67,8 @@
   "x": 1248,
   "y": 480
  },
- "pill:status-pill:60": {
-  "x": 304,
+ "pill:status-pill:0": {
+  "x": 320,
   "y": 352
  },
  "plan:estimate:120": {
@@ -91,11 +91,11 @@
   "x": 736,
   "y": 320
  },
- "summary:summary-cost:60": {
-  "x": 672,
-  "y": 352
+ "summary:summary-cost:0": {
+  "x": 768,
+  "y": 400
  },
- "summary:vs-baseline:180": {
+ "summary:vs-baseline:120": {
   "x": 1152,
   "y": 112
  },

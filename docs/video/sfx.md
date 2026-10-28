@@ -1,4 +1,5 @@
 status: approved · 2026-10-27 · "Approve the rev 5 board, music brief and SFX sheet: build it." · rev C
+rev D (motion layer, board rev D, 2026-10-28): rows 46–56 added, the rows they replace or move are listed under "Rev D changes"; the rev C rows above stay as the record
 frames: absolute in NimbusFull at 30 fps (X clip rows at the end)
 levels: LUFS short-term at the hit, after mastering; SFX sit 3–6 dB above the bed at their moment; master −14 LUFS integrated, ≤ −1 dBTP
 sources:
@@ -57,6 +58,26 @@ Rules: one cue per moment (a burst of three approvals gets one attention); no so
 | 43 | 4860 | 14 | 19/19 counts up | count, 700 ms | cuelume | −22 | `count-700.wav` |
 | 44 | 4965–4980 | 14→15 | One beat of silence | — | — | — | — |
 | 45 | 4980 | 15 | Wordmark cut, end card | impact, deep | designed | −14 | `impact-deep.wav` |
+
+# Rev D changes (motion layer)
+
+Each motion scene enters on a downbeat with its own designed sound (Tone.js, `make-sound.mjs`, rendered with `node scripts/make-sound.mjs new` so the rev C files stay byte for byte).
+
+| # | Frame | Scene | Moment | Sound | Source | Level | File |
+|---|---|---|---|---|---|---|---|
+| 46 | 240 | 2 | Lockup Reveal: the cut to the boot sky | bells, E5 B5 E6 G♯6 | designed | −18 | `lockup-chime.wav` |
+| 47 | 656 | 3→4 | Punch Lines: "You ask." flicks in (replaces 6; 7 and 8 go with the goal shot) | whoosh, falling 3.2 k → 700 | designed | −18 | `punch-whip.wav` |
+| 48 | 690 | 4 | The hero line punches up | thud | designed | −18 | `punch-thud.wav` |
+| 49 | 1988 | 7 | Text Highlight: the marker wipes "without you." (replaces 17) | scribble | designed | −20 | `marker.wav` |
+| 50 | 2520 | 7→8 | Metric Morph: the pill collapses (suck into the slam) | suck | designed | −20 | `morph-suck.wav` |
+| 51 | 2554 | 8 | The square slams in as the tallest bar | impact, short | designed | −16 | `morph-slam.wav` |
+| 52 | 2820 | 8→9 | Focus Pull: the glyphs pull into focus (replaces 24) | shimmer | designed | −20 | `focus-shimmer.wav` |
+| 53 | 3600 | 10→11 | Orbit Flow: the orbits draw in (replaces 29) | whoosh, low swell | designed | −20 | `orbit-swell.wav` |
+| 54 | 3706 | 11 | The inner orbit winds up and whips into the radar | suck, high | designed | −18 | `orbit-suck.wav` |
+| 55 | 3960 | 11→12 | Screen Wall: the camera backs out of the phones (replaces 33) | whoosh, falling 2.4 k → 300 | designed | −18 | `wall-tunnel.wav` |
+| 56 | 4744 | 14 | Scatter Bloom: the calls bloom onto the plane | bells, C6–E7 run | designed | −22 | `bloom-sparkle.wav` |
+
+Moved by the motion bars (same sounds): 18 attention → 2000 (the cloud turns orange in the Text Highlight); 19 Approve (Dana) stays on **2160**; 22 / 23 → 2588 / 2613; 25 → 2940; 26 → 3150; 30 → 3720; 31 → 3820; 32 → `pill-approve` ≈ 3900; 34–36 from 4080 (the phone plays "run morning brief" → "approve all"); 37 → 4314; 42 → 4860, 4875, 4890 (the tiles land on the plane); 43 → 4920; 45 → 4980 on the Lockup reprise. X clip: 46 at 240; row 8's whoosh is `wall-tunnel` at 960, the phone from 1020.
 
 # X clip (frames absolute in NimbusX)
 

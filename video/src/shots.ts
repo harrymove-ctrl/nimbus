@@ -4,7 +4,7 @@
 import { MOMENTS, momentFrame, type ShotName, target } from "./beats";
 import { type CalloutSpec, layoutKey } from "./callout-spec";
 import type { SourceMove } from "./Footage";
-import { bars, framesPerBeat, layout } from "./grid";
+import { bars, beats, framesPerBeat, layout } from "./grid";
 import { ROLE } from "./palette";
 
 export const b = bars;
@@ -122,15 +122,6 @@ export const OVERVIEW: Shot = {
   ],
 };
 
-// the goal: 1 bar, a push from the whole page to the composer as the words type
-export const GOAL: Shot = {
-  shot: "goal",
-  frames: b(1),
-  camera: [
-    cam(0, 1.6, { u: 0.46, v: 0.75 }, 1),
-    cam(2, 2.4, { u: 0.46, v: 0.88 }, b(1) - 4),
-  ],
-};
 // Approve plan: its button sits 41 px in from the plan card's right edge and 103 px below it
 // (measured on the take at the click; beats.json has no box for the button itself).
 const approvePlanBtn = (() => {
@@ -241,20 +232,20 @@ export const DOC: Shot = {
   ],
 };
 
-export const gateDana = momentFrame("gate", b(9), MOMENTS.approveDana);
-export const gatePriya = momentFrame("gate", b(9), MOMENTS.approvePriya);
-export const gateAllow = momentFrame("gate", b(9), MOMENTS.alwaysAllow);
+export const gateDana = momentFrame("gate", b(8), MOMENTS.approveDana);
+export const gatePriya = momentFrame("gate", b(8), MOMENTS.approvePriya);
+export const gateAllow = momentFrame("gate", b(8), MOMENTS.alwaysAllow);
 export const approveBtn = (() => {
   const t = target("approve-buttons");
   return { u: (t.x + t.w - 48) / 1920, v: (t.y + t.h / 2) / 1080 };
 })();
 export const GATE: Shot = {
   shot: "gate",
-  frames: b(9),
+  frames: b(8),
   camera: [
     cam(0, 1.7, fo("approval-card"), 1),
-    cam(2, 1.9, fo("approval-card"), b(3)),
-    cam(b(6), 2.1, fo("rule-line"), 40),
+    cam(2, 1.9, fo("approval-card"), b(2)),
+    cam(b(5), 2.1, fo("rule-line"), 40),
   ],
   rings: [
     { at: gateDana, ...approveBtn },
@@ -267,33 +258,33 @@ export const GATE: Shot = {
       "So it waits for you",
       "above",
       0,
-      b(3),
+      b(2),
     ),
     call(
       "approve-buttons",
       "Approve, reject with a note",
       "Or allow from now on",
       "above",
-      b(3),
-      b(6),
+      b(2),
+      b(5),
     ),
     call(
       "rule-line",
       "One rule saved",
       "You can revoke it anytime",
       "above",
-      b(7),
-      b(9),
+      b(6),
+      b(8),
     ),
   ],
 };
 
 export const SUMMARY: Shot = {
   shot: "summary",
-  frames: b(5),
+  frames: b(4),
   camera: [
     cam(0, 1.9, { u: 0.42, v: 0.62 }, 1),
-    cam(2, 2.2, { u: 0.42, v: 0.62 }, b(5) - 2),
+    cam(2, 2.2, { u: 0.42, v: 0.62 }, b(4) - 2),
   ],
   callouts: [
     call(
@@ -301,8 +292,8 @@ export const SUMMARY: Shot = {
       "The whole morning",
       "$0.024 · mock",
       "above",
-      b(1),
-      b(3),
+      0,
+      b(2),
       { inBeat: "brief1-summary" },
     ),
     call(
@@ -310,20 +301,20 @@ export const SUMMARY: Shot = {
       "Router savings",
       "Versus always using the biggest model",
       "above",
-      b(3),
-      b(5),
+      b(2),
+      b(4),
     ),
   ],
 };
 
 export const MEMORY: Shot = {
   shot: "memory",
-  frames: b(7),
+  frames: b(5),
   camera: [
     cam(0, 2.0, fo("memories"), 1),
-    cam(2, 2.2, fo("memories"), b(2)),
-    cam(b(3), 2.3, fo("skill-file"), 40),
-    cam(b(5), 2.6, fo("forget"), 40),
+    cam(2, 2.2, fo("memories"), beats(7) - 2),
+    cam(beats(7), 2.3, fo("skill-file"), 30),
+    cam(beats(14), 2.6, fo("forget"), 30),
   ],
   callouts: [
     call(
@@ -332,23 +323,23 @@ export const MEMORY: Shot = {
       "What it learned from your morning",
       "left",
       0,
-      b(2),
+      beats(7),
     ),
     call(
       "skill-file",
       "Its own how-to",
       "Rewritten after each run",
       "left",
-      b(3),
-      b(5),
+      beats(7),
+      beats(14),
     ),
     call(
       "forget",
       "Forget or revoke",
       "You stay in charge",
       "left",
+      beats(14),
       b(5),
-      b(7),
     ),
   ],
 };
@@ -393,10 +384,10 @@ export const RUN2END: Shot = {
 
 export const RADAR: Shot = {
   shot: "radar",
-  frames: b(2),
+  frames: beats(6),
   camera: [
     cam(0, 2.2, fo("unread-dot"), 1),
-    cam(2, 2.5, fo("unread-dot"), b(2) - 2),
+    cam(2, 2.5, fo("unread-dot"), beats(6) - 2),
   ],
   callouts: [
     call(
@@ -405,16 +396,16 @@ export const RADAR: Shot = {
       "While you were away",
       "right",
       0,
-      b(2),
+      beats(6),
     ),
   ],
 };
 export const PILL: Shot = {
   shot: "pill",
-  frames: b(3),
+  frames: beats(6),
   camera: [
     cam(0, 2.2, fo("status-pill"), 1),
-    cam(2, 2.5, fo("status-pill"), b(3) - 2),
+    cam(2, 2.5, fo("status-pill"), beats(6) - 2),
   ],
   callouts: [
     call(
@@ -422,8 +413,8 @@ export const PILL: Shot = {
       "Status pill",
       "Answer from anywhere in the app",
       "below",
-      b(1),
-      b(3),
+      0,
+      beats(6),
     ),
   ],
 };
@@ -512,21 +503,26 @@ export const F = Object.fromEntries(FULL.map((s) => [s.id, s])) as Record<
   (typeof FULL)[number]
 >;
 
+/** Rev D: the motion scene that opens a scene, in frames; its footage starts after it. */
+export const FULL_MOTION: Partial<Record<keyof typeof F, number>> = {
+  plan: b(1), // Punch Lines
+  gate: b(1), // Text Highlight
+  summary: b(1), // Metric Morph
+  memory: b(2), // Focus Pull
+  radar: b(2), // Orbit Flow
+  chat: b(2), // Screen Wall
+};
+const after = (id: keyof typeof F) => F[id].from + (FULL_MOTION[id] ?? 0);
+
+/** The chapter eyebrow's spans: it slides in as each motion scene cuts to footage, and is
+ *  off during the motion scenes inside a chapter (Metric Morph, Screen Wall). */
 export const CHAPTERS = [
-  { n: 1, title: "You approve the plan", from: F.plan.from, to: F.gate.from },
-  {
-    n: 2,
-    title: "Nothing leaves without you",
-    from: F.gate.from,
-    to: F.memory.from,
-  },
-  {
-    n: 3,
-    title: "It gets better every run",
-    from: F.memory.from,
-    to: F.radar.from,
-  },
-  { n: 4, title: "Always on", from: F.radar.from, to: F.proof.from },
+  { n: 1, title: "You approve the plan", from: after("plan"), to: F.gate.from },
+  { n: 2, title: "Nothing leaves without you", from: after("gate"), to: F.summary.from },
+  { n: 2, title: "Nothing leaves without you", from: after("summary"), to: F.memory.from },
+  { n: 3, title: "It gets better every run", from: after("memory"), to: F.radar.from },
+  { n: 4, title: "Always on", from: after("radar"), to: F.chat.from },
+  { n: 4, title: "Always on", from: after("chat"), to: F.proof.from },
 ];
 
 export const XCUT = layout([
@@ -545,6 +541,8 @@ export const X = Object.fromEntries(XCUT.map((s) => [s.id, s])) as Record<
   (typeof XCUT)[number]["id"],
   (typeof XCUT)[number]
 >;
+/** Rev D in the X clip: a 1-bar Screen Wall before the phone. */
+export const X_MOTION: Partial<Record<keyof typeof X, number>> = { chat: b(1) };
 
 export const X_PLAN: Shot = {
   shot: "xPlan",
@@ -615,7 +613,7 @@ export const PHONE_CALLOUT: CalloutSpec = call(
 export const FULL_SCENE_SHOTS: Partial<Record<keyof typeof F, Shot[]>> = {
   cold: [COLD],
   overview: [OVERVIEW],
-  plan: [GOAL, PLAN],
+  plan: [PLAN],
   timeline: [TIMELINE],
   doc: [DOC],
   gate: [GATE],
@@ -648,9 +646,10 @@ export function calloutIndex(cut: "full" | "x"): CalloutAt[] {
     string,
     Shot[] | undefined
   >;
+  const motion = (cut === "full" ? FULL_MOTION : X_MOTION) as Record<string, number | undefined>;
   const out: CalloutAt[] = [];
   for (const s of scenes) {
-    let at = s.from;
+    let at = s.from + (motion[s.id] ?? 0);
     for (const shot of map[s.id] ?? []) {
       for (const c of shot.callouts ?? [])
         out.push({
@@ -669,12 +668,12 @@ export function calloutIndex(cut: "full" | "x"): CalloutAt[] {
     out.push({
       key: layoutKey("phone", c),
       target: c.target,
-      from: F.chat.from + c.from,
-      to: F.chat.from + c.to,
+      from: after("chat") + c.from,
+      to: after("chat") + c.to,
       why: c.why,
       what: c.what,
     });
-    let at = F.chat.from + b(6);
+    let at = after("chat") + b(4);
     for (const c2 of CHAT_RUN.callouts ?? [])
       out.push({
         key: layoutKey(CHAT_RUN.shot, c2),

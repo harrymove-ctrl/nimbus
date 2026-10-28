@@ -3,6 +3,45 @@ script: docs/video/script.md rev 5 (approved 2026-10-27, "Approve script rev 5 a
 captions: none, and no sentence captions (story.md rule 12); words live in callouts, the title and the end card
 grid: 120 BPM · 30 fps · beat = 15 f · bar = 60 f · full cut 87 bars (5220 f, 2:54) + 1-bar audio tail · X clip 22 bars (1320 f, 0:44)
 supersedes: the rev A and rev B scene boards (in git history). PromptRoll, CommentStorm, ColumnCut and AgentChat are not in this cut; their files stay in `video/src/scenes/`.
+rev D (motion layer, on top of rev C): requested 2026-10-28 · "các animation đâu ui ux show như [Text Highlight, Punch Lines, Focus Pull, Lockup Reveal, Metric Morph, Orbit Flow, Scatter Bloom, Screen Wall] … kết hợp để transition và chọn font cũng như ui ux như bản web đang dùng"
+
+# Motion layer · rev D
+
+Why: the locked rev C cut is a walkthrough with callouts, but it has no motion design.
+The title is plain text on black, the cloud never appears, and each chapter starts with only a small chip.
+The user wants the walkthrough kept, with real motion scenes as the transitions between parts, in the web app's font and look.
+
+**Rules for every motion scene**
+- Font: Manrope only, at the weights the app uses (500, 600, 700). Do not use the reference clips' faces (Archivo and others).
+- Colour: the app's palette from `video/src/theme.ts`, dark-first.
+  - The one bright surface allowed is the app's own boot sky, used in the Lockup and the end card.
+  - Boot sky: `linear-gradient(180deg, #1659c8, #2aa6e6)` plus the radial `rgba(90, 205, 255, 0.45)`, both from `src/components/nimbus/boot.tsx:15`.
+  - No light paper scenes: the Orbit Flow reference is light, and ours is dark.
+- **The cloud is the mark.** Port `src/components/glow-cloud.tsx` as a frame-pure `video/src/components/CloudMark.tsx`.
+  - Keep the same PUFFS, CORE, EYES, goo filter and gradients.
+  - Drive the breathe, glance, blink and wink from `useCurrentFrame()`, not from requestAnimationFrame.
+  - It looks like the boot screen (blue, eyes) and turns orange where the app turns it orange.
+- **Sources:**
+  - `punch-lines` is a free install: `npx shadcn@latest add @snapcn/punch-lines`.
+  - `text-highlight` is already in `video/src/components/snap-cn/`.
+  - Focus Pull, Lockup Reveal, Metric Morph, Orbit Flow, Scatter Bloom and Screen Wall are not in the free catalogue. Build our own from the described behaviour in `video/src/scenes/`, and never copy paid source (components.md "Signature scenes").
+- Each motion scene enters on a downbeat with its designed transition sound, which gets a new sfx.md row. The cut out of it to footage is hard, on a downbeat.
+- **Scene lengths and the music map do not change.** A motion scene takes bars from the start of its own scene, and the footage is refitted to what is left (see the Fit column). That keeps `music.md` valid for the Suno takes.
+- The chapter eyebrow chip stays; it slides in as the motion scene cuts to footage.
+
+| Scene | Frames | Motion scene | What it does on screen (our content) | Footage left · fit |
+|---|---|---|---|---|
+| 2 title | 180–300 (2 bars) | **Lockup Reveal** with the cloud | Beat 1: the CloudMark sits alone on a dark card with dashed construction hairlines on every edge. It slides aside while "Nimbus" slides out of a slot behind it, and the lockup settles from 1.1×. The boot-sky gradient rises inside the letterforms. On bar 2's downbeat, cut to the same gradient full-frame with the lockup knocked out in white. The cloud blinks once. "An AI crew that asks before it acts" and "NVIDIA Nemotron · Nebius Token Factory" build under it, a word per beat. | — |
+| 4 Ch 1 | 660–720 (1 bar) | **Punch Lines** (free) | "You ask." and "It plans." flick in and rush past the camera. The hero line "You approve the plan" punches up from a third of its size. | 6 bars. The fit is 1.72×, over the cap, so cut the planning wait inside `brief1-goal` (rule 7). |
+| 7 Ch 2 | 1980–2040 (1 bar) | **Text Highlight** (installed) | The static line "Nothing leaves without you." A mint marker wipes across "without you". As it lands, a small CloudMark at the end of the line turns orange. | 8 bars. Approve (Dana) must still land on **2160**, which needs about 1.5×. Check it; if it misses, trim the card wait before the click. |
+| 8 summary | 2520–2580 (1 bar) | **Metric Morph** | The "Approve & always allow" pill from scene 7 settles and its label dissolves. It collapses into a square that runs neutral-900 → mint and slams in as the tallest bar of the run's cost chart. The chart rises around it as one object, then cut to the summary tiles. | 4 bars, 0.64× ✓ |
+| 9 Ch 3 | 2820–2940 (2 bars) | **Focus Pull** | Over a slow field from the app's dither glow (mint and blue, low): "It remembers." then "It gets better every run." Each line arrives from the right, oversized and soft, and pulls into focus a glyph at a time. The next line resolves over the last. The ink is plain white. | 5 bars, 1.07× ✓ |
+| 11 Ch 4 | 3600–3720 (2 bars) | **Orbit Flow** (dark) | Three dashed orbits round "Always on, wherever you are". Three stops ride the inner orbit as pills with a role-colour half-dot: "08:00 SCHEDULE", "CHAT APP", "STATUS PILL". The inner orbit winds up to a blur on the last beat, then whips into the radar footage. | 4 bars, inside the trims already planned ✓ |
+| 12 chat | 3960–4080 (2 bars) | **Screen Wall** | Four phones down a tunnel. Each screen is a real frame of the `/v1` chat from `docs/video/chat-transcript.json`: "what needs me?", "run morning brief", "approve all", "Approved". The camera backs out until they frame "Same crew, in your chat app", which builds a word at a time with the horizontal shove. | Phone chat 4 bars (was 6): "run morning brief" → "approve all" → "Approved". Web run 2 bars. |
+| 14 proof | 4740–4860 (2 bars) | **Scatter Bloom** under the tiles | One point per model call from the local mock runs (real rows from the dev database, never invented counts). x = time of day, y = cost, and the colour is the tier colour (Ultra, Super, Nano) from the Overview. The points bloom onto a tilted plane while the camera drifts. A "mock" tag stays in the corner until the real run. | The three model-id tiles land on the plane, b2–b4. |
+| 15 end | 4980–5220 | **Lockup Reveal**, reprise | The same lockup on the boot sky, now held still. github.com/harrymove-ctrl/nimbus and `pnpm dev` sit under it for at least 3 s. It replaces `wordmark-cut`. | — |
+
+The X clip uses the Lockup on the title (180–300) and on the end card (1200–1320), plus a 1-bar Screen Wall at 960–1020 before the phone. The drop on Dana stays at 690.
 
 Note on length: the script header says "85 bars + 1-bar tail", but its scene table adds up to 87 bars = 2:54, which is the length it states. This board follows the table (87 bars, 6 s under 3:00).
 

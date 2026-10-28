@@ -36,6 +36,12 @@ export function target(name: string, inBeat?: string): Box {
 
 export type Cut = { from: number; to: number };
 const cut = (from: number, to: number): Cut => ({ from, to });
+/** A cut from before `t` to `to`, starting early enough that, fitted to a `sceneS` scene, `t`
+ *  plays `atS` seconds in. */
+const landOn = (t: number, to: number, sceneS: number, atS: number): Cut => {
+  const rate = (to - t) / (sceneS - atS);
+  return cut(t - atS * rate, to);
+};
 
 // Board rev C scenes → source windows. Comments say what each window shows.
 export const SHOTS = {
@@ -43,16 +49,16 @@ export const SHOTS = {
   cold: cut(at("brief1-approvals"), at("approve-dana")),
   // 3 Overview: cards count up, the spend chart, the router gauge
   overview: cut(at("overview"), end("overview")),
-  // 4 the goal types (after the page opens), then the plan draft through Approve plan
-  goal: cut(at("brief1-goal") + 3.7, at("brief1-goal") + 7.7),
+  // 4 the plan draft through Approve plan (rev D: Punch Lines' "You ask." stands for the goal)
   plan: cut(at("brief1-plan-arrives") - 1, end("brief1-approve-plan")),
   // 5 lanes fill, then Agent I/O on Dana's email
   timeline: cut(at("brief1-timeline"), end("brief1-agent-io")),
   // 6 the brief doc
   doc: cut(at("brief1-doc") + 3, end("brief1-doc")), // the draft to Sam shows first; the brief opens ~3 s in
-  // 7 the cloud orange, the cards, Approve ×2, Approve & always allow, the rule line; the
-  // start is set so Approve (Dana) lands on the scene's bar 3 (the music's drop 2)
-  gate: cut(at("approve-dana") - 5.24, end("always-allow")),
+  // 7 the cards, Approve ×2, Approve & always allow, the rule line. The shot is the 8 bars
+  // after the chapter's Text Highlight bar (rev D); it starts so Approve (Dana) plays 2 bars
+  // in, the scene's bar 3 = frame 2160, the music's drop 2
+  gate: landOn(at("approve-dana"), end("always-allow"), 16, 4),
   // 8 the run summary
   summary: cut(at("brief1-summary"), end("brief1-summary")),
   // 9 Memory & skill

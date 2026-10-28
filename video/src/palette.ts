@@ -45,6 +45,13 @@ export const TIER = {
 // the cloud itself is drawn (the chat avatar).
 export const CLOUD = { blue: "#18b2ff", orange: "#fa7342" } as const;
 
+// src/components/nimbus/boot.tsx:15, the boot screen's sky: the one bright surface the motion
+// scenes may use (board rev D), in the Lockup and the end card.
+export const BOOT_SKY =
+  "radial-gradient(60% 55% at 62% 42%, rgba(90, 205, 255, 0.45), transparent 70%), linear-gradient(180deg, #1659c8, #2aa6e6)";
+/** The same sky as a plain gradient, for type filled with it (background-clip: text). */
+export const BOOT_SKY_FILL = "linear-gradient(180deg, #1659c8, #2aa6e6)";
+
 // src/components/nimbus/timeline.tsx:487, the "N" model badge on every lane. Footage only;
 // listed so scripts/qa-frames.py counts it as the app's own.
 export const NVIDIA_BADGE = "#76b900";

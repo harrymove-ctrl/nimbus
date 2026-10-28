@@ -12,7 +12,7 @@ export const MANROPE = manrope.fontFamily;
 export const manropeReady = manrope.waitUntilDone;
 export const MONO = "ui-monospace, SFMono-Regular, Menlo, monospace";
 
-export { C, CLOUD, DITHER_GLOW, ROLE, TIER } from "./palette";
+export { BOOT_SKY, BOOT_SKY_FILL, C, CLOUD, DITHER_GLOW, ROLE, TIER } from "./palette";
 
 export const SORBET: Partial<SnapCnTheme> = {
   background: C.bg,

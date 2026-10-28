@@ -1,5 +1,6 @@
-// Scene 18 (count-grid, adapted: its rush-and-settle on three tier tiles, then counters) and
-// scene 19's end card.
+// Scene 14 (count-grid, adapted: its rush-and-settle on three tier tiles, then counters) and
+// the old end card. Rev D: the tiles land on Scatter Bloom's plane from bar 3, so the scene
+// is transparent and its clock starts two bars in.
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { MockTag } from "../components/cards";
 import { beats, bars } from "../grid";
@@ -14,8 +15,8 @@ const TIERS = [
   { name: "Nemotron 3 Nano", id: "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B", role: "checks", color: TIER.nano },
 ];
 
-/** Tiles rush in one per beat; each number counts up over one bar. */
-export const PROOF = { tiles: [0, beats(1), beats(2)], factory: beats(4), counts: [bars(2)] };
+/** Tiles rush in one per beat from bar 3 (over the plane); the number counts up over 2 beats. */
+export const PROOF = { tiles: [bars(2), bars(2) + beats(1), bars(2) + beats(2)], factory: bars(2) + beats(3), counts: [bars(3)] };
 
 export function Proof() {
   const frame = useCurrentFrame();
@@ -30,7 +31,7 @@ export function Proof() {
     },
   ];
   return (
-    <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE, color: C.ink }}>
+    <AbsoluteFill style={{ fontFamily: MANROPE, color: C.ink }}>
       <AbsoluteFill style={{ transform: `scale(${push})`, alignItems: "center", justifyContent: "center" }}>
         <div style={{ display: "flex", gap: 32 }}>
           {TIERS.map((t, i) => {
@@ -69,7 +70,7 @@ export function Proof() {
         </div>
         <div style={{ display: "flex", gap: 140, marginTop: 64 }}>
           {stats.map((st) => {
-            const p = interpolate(frame, [st.at, st.at + bars(1)], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+            const p = interpolate(frame, [st.at, st.at + beats(2)], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
             return (
               <div key={st.label} style={{ textAlign: "center", opacity: interpolate(frame, [st.at - 4, st.at + 4], [0, 1], clamp) }}>
                 <div style={{ fontSize: 110, fontWeight: 800, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>{st.fmt(st.to * p)}</div>
