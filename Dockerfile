@@ -13,6 +13,9 @@ FROM node:22-alpine AS build
 RUN corepack enable
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# the public address goes into the prerendered share-image URLs (Railway passes service variables to declared ARGs)
+ARG NIMBUS_PUBLIC_URL
+ENV NIMBUS_PUBLIC_URL=$NIMBUS_PUBLIC_URL
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build

@@ -21,7 +21,8 @@ export const metadata: Metadata = {
   description,
   // the pixel-art mark is the icon; the glow cloud stays the in-app character
   icons: {
-    icon: [{ url: "/favicon.ico", sizes: "16x16 32x32 64x64" }, { url: "/brand/nimbus-icon-512.png", sizes: "512x512", type: "image/png" }],
+    // app/favicon.ico (16, 32, 64) is linked by Next itself
+    icon: [{ url: "/brand/nimbus-icon-512.png", sizes: "512x512", type: "image/png" }],
     apple: [{ url: "/brand/apple-touch-icon.png", sizes: "180x180" }],
   },
   openGraph: { title: "Nimbus", description, images: [{ url: "/brand/og-paper-1200x630.jpg", width: 1200, height: 630, alt: "Nimbus" }] },
