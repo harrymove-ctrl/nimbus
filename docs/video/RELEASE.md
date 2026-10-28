@@ -2,11 +2,13 @@
 
 **Demo URL:** https://nimbus-production-6f7b.up.railway.app (Railway, Oct 28). It runs on the real models: `NIMBUS_MODEL=nebius`, `NIMBUS_DEV_CHEAP=0`, a $1 day cap and a $0.25 run cap. SQLite is on a Railway volume at `/data`. `/v1/chat/completions` needs the bearer token in `NIMBUS_API_TOKEN`. A smoke run there (Morning brief, cancelled after its plan) cost $0.0032.
 
+**Chat run on the live demo (Oct 29, real models):** run `run_6b393ab6`, trigger "chat", started and approved entirely through `/v1/chat/completions`, with curl as the client and the bearer token. The exchange: "what needs me?" (status), "run morning brief" (it planned with a researcher and a writer, then "Needs your OK: Send message to client@example.com"), and "approve" three times, as each reply waited in turn (client, teammate, reviewer). The last reply carries the brief. It cost **$0.0282**, 76,827 tokens and 65 s; 8 memories were saved; all three approvals were resolved by chat. The transcript is in `docs/video/chat-transcript-real.json`. OpenClaw and Hermes themselves are still untested against it; `docs/openclaw.md` has their config.
+
 ## Status on Oct 28
 
 There is no recorded real-model take yet. The video ships on the role-named mock take `docs/demo/raw/nimbus-demo-20261028-1258.webm`. Its numbers are fixture numbers (the scripted mock model) and must be labelled that way on screen. The real run is kept for a later day.
 
-Real spend: about **$0.35** on Nebius Token Factory (laptop runs, plus $0.007 on the Railway demo), from the runs' own cost logs. Tavily: 0 calls. The cleared budget was $0.50. Recording stopped after the last attempt on Oct 29 (see "Take attempts"). The video ships on mock take 1258.
+Real spend: about **$0.38** on Nebius Token Factory (laptop runs, plus $0.035 on the Railway demo, the chat run included), from the runs' own cost logs. Tavily: 0 calls. The cleared budget was $0.50. Recording stopped after the last attempt on Oct 29 (see "Take attempts"). The video ships on mock take 1258.
 
 On screen, the numbers come from the mock take and are labelled as fixture numbers. The measured numbers below come from headless runs (no recording) and are labelled "measured in a headless run".
 

@@ -1,0 +1,74 @@
+{
+  "captured": "2026-10-29 01:34",
+  "endpoint": "https://nimbus-production-6f7b.up.railway.app/v1/chat/completions",
+  "model": "nimbus",
+  "user": "harry-phone-0133",
+  "mode": "nebius (real Nemotron on Token Factory)",
+  "placeholder": false,
+  "run": {
+    "id": "run_6b393ab6",
+    "status": "done",
+    "trigger": "chat",
+    "costUsd": 0.0282,
+    "tokensIn": 69154,
+    "tokensOut": 7673,
+    "seconds": 65.4,
+    "approvalsResolvedBy": [
+      "chat",
+      "chat",
+      "chat"
+    ]
+  },
+  "exchanges": [
+    {
+      "role": "user",
+      "text": "what needs me?"
+    },
+    {
+      "role": "nimbus",
+      "text": "Nothing is running or waiting.\nLast: Morning brief, stopped 2 h ago.",
+      "seconds": 0.5,
+      "intent": "status"
+    },
+    {
+      "role": "user",
+      "text": "run morning brief"
+    },
+    {
+      "role": "nimbus",
+      "text": "On it: Morning brief.\nPlan: researcher, writer.\nNeeds your OK: Send message to client@example.com.\nReply approve or deny.\nhttps://nimbus-production-6f7b.up.railway.app/?run=run_6b393ab6",
+      "seconds": 44.9,
+      "intent": "run"
+    },
+    {
+      "role": "user",
+      "text": "approve"
+    },
+    {
+      "role": "nimbus",
+      "text": "Approved: Send message to client@example.com.\nNeeds your OK: Send message to teammate@example.com.\nReply approve or deny.\nhttps://nimbus-production-6f7b.up.railway.app/?run=run_6b393ab6",
+      "seconds": 6.8,
+      "intent": "approve"
+    },
+    {
+      "role": "user",
+      "text": "approve"
+    },
+    {
+      "role": "nimbus",
+      "text": "Approved: Send message to teammate@example.com.\nNeeds your OK: Send message to reviewer@example.com.\nReply approve or deny.\nhttps://nimbus-production-6f7b.up.railway.app/?run=run_6b393ab6",
+      "seconds": 4.3,
+      "intent": "approve"
+    },
+    {
+      "role": "user",
+      "text": "approve"
+    },
+    {
+      "role": "nimbus",
+      "text": "Approved: Send message to reviewer@example.com.\nNeeds you today\n• Client (client@example.com) – Contract signature needed by Fri Nov 7\n• Teammate (teammate@example.com) – Showcase demo slot: confirm by 5 pm today\n• Reviewer (reviewer@example.com) – Re: did the login bug fix ship? – Answer needed before Thursday\nToday\nSummary · Start (UTC) · End (UTC) …\nhttps://nimbus-production-6f7b.up.railway.app/?run=run_6b393ab6",
+      "seconds": 3.8,
+      "intent": "approve"
+    }
+  ]
+}
