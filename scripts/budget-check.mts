@@ -1,7 +1,7 @@
 // Spend guards and record/replay (docs/BUDGET.md), proven in mock mode at $0.
 process.env.NIMBUS_MOCK_FAST = "1";
 process.env.NIMBUS_CACHE = "off";
-import { MAX_OUT_TOKENS } from "../src/lib/models";
+import { LEARNER_MAX_OUT_TOKENS, MAX_OUT_TOKENS, maxOutTokens } from "../src/lib/models";
 import { buildView } from "../src/lib/run-view";
 import { mockCallLog } from "../src/lib/tokenfactory";
 import { checkDayBudget, dayCapUsd, runCapUsd } from "../src/runtime/budget";
@@ -47,8 +47,8 @@ process.env.NIMBUS_MOCK_LOG = "1";
 mockCallLog.length = 0;
 const normal = await demo();
 check("the demo under the default cap finishes done", normal.view.status === "done" && !normal.view.capHit, `$${normal.view.costUsd.toFixed(3)}`);
-const bad = mockCallLog.filter((c) => c.maxOutputTokens !== MAX_OUT_TOKENS[c.tier]);
-check(`every model call carries its tier's max_tokens (ultra ${MAX_OUT_TOKENS.ultra}, super ${MAX_OUT_TOKENS.super}, nano ${MAX_OUT_TOKENS.nano})`, mockCallLog.length > 0 && bad.length === 0, `${mockCallLog.length} calls`);
+const bad = mockCallLog.filter((c) => c.maxOutputTokens !== maxOutTokens(c.tier, c.role));
+check(`every model call carries its tier's max_tokens (ultra ${MAX_OUT_TOKENS.ultra}, super ${MAX_OUT_TOKENS.super}, nano ${MAX_OUT_TOKENS.nano}; the Learner ${LEARNER_MAX_OUT_TOKENS})`, mockCallLog.length > 0 && bad.length === 0, `${mockCallLog.length} calls`);
 
 console.log("\nDay cap:");
 const before = await checkDayBudget();

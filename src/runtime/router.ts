@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { generateText, type ModelMessage, type ToolSet } from "ai";
 import { getDb, schema } from "@/db";
-import { MAX_OUT_TOKENS, TIERS, type Tier } from "@/lib/models";
+import { maxOutTokens, TIERS, type Tier } from "@/lib/models";
 import { getModel, MockHttpError, mockTurn, modelMode } from "@/lib/tokenfactory";
 import type { RunCtx } from "./context";
 import { RunAborted, sleep } from "./context";
@@ -109,7 +109,7 @@ export async function callHop(
           messages: o.messages,
           tools: o.tools,
           maxRetries: 0,
-          maxOutputTokens: MAX_OUT_TOKENS[tier],
+          maxOutputTokens: maxOutTokens(tier, o.role),
           abortSignal: AbortSignal.any([ctx.signal, AbortSignal.timeout(60_000)]),
         });
         const out: ModelCall = {

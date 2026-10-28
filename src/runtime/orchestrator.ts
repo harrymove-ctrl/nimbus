@@ -71,6 +71,12 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
     }
   };
 
+  // What the crew reported so far rides along with every handoff: a real Orchestrator does not reliably paste a child's
+  // report into the next brief (seen: "Researcher's report: … (include the report)"), so the next agent never re-reads it.
+  const crewReports: { instance: string; report: string }[] = [];
+  const withReports = (context: string) =>
+    crewReports.length ? `${context}\n\nReports from the crew so far:\n${crewReports.map((r) => `[${r.instance}]\n${r.report.slice(0, 6000)}`).join("\n\n")}` : context;
+
   const exec: Exec = {
     plan: async (input: z.infer<typeof SCHEMAS.plan>) => {
       const agents = input.agents.map((a) => ({ role: a.role, instance: `${a.role}-1`, tier: ROLE_TIER[a.role], brief: a.brief }));
@@ -107,6 +113,7 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
         });
         // concurrently: the timeline shows the lanes filling at the same time
         const reports = await Promise.all(kids.map((k) => runChild(ctx, k.ref, k.brief, {})));
+        for (const r of reports) if (r.report) crewReports.push(r);
         return { reports: Object.fromEntries(reports.map((r) => [r.instance, r.report])) };
       })),
     handoff: stepped(async (input: z.infer<typeof SCHEMAS.handoff>) => {
@@ -114,7 +121,8 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
       ctx.emit("handoff", "orchestrator", ORCH.instance, { from: ORCH.instance, to: instance, context: input.context });
       ctx.emit("agent.spawn", input.to, instance, { by: ORCH.instance, role: input.to, instance, brief: input.context });
       return wait(`Waiting on ${input.to[0].toUpperCase()}${input.to.slice(1)}`, async () => {
-        const r = await runChild(ctx, { role: input.to, instance }, input.context, {});
+        const r = await runChild(ctx, { role: input.to, instance }, withReports(input.context), {});
+        if (r.report) crewReports.push(r);
         return { report: r.report };
       });
     }),
