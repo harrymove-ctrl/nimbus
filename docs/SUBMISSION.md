@@ -9,7 +9,7 @@ https://nebiusglobalaihackathon.devpost.com/ before Phase 5 starts.
 - [ ] Track chosen: Personal AI (fallback: Best Apps & Agents)
 - [ ] Project description (below, edited to what actually shipped)
 - [x] Demo URL: https://nimbus-production-6f7b.up.railway.app (Railway, real Nemotron on Nebius Token Factory, day cap $1; /v1 needs the bearer token). Nebius Serverless Endpoint: not deployed yet
-- [ ] YouTube video, public, ≤ 3:00 (rule confirmed 2026-10-28: "3-minute or shorter"), shows Token Factory + Nemotron in use
+- [ ] YouTube video, public, ≤ 3:00 (rule confirmed 2026-10-28: "3-minute or shorter"), shows Token Factory + Nemotron in use. Title, description, chapters and tags drafted below ("YouTube upload")
 - [x] Public GitHub repo on `harrymove-ctrl`, MIT `LICENSE` at root, visible on the repo page: https://github.com/harrymove-ctrl/nimbus (pushed 2026-10-29 01:50 ICT on the user's "Push now"; GitHub detects MIT; topics set; the eval workflow runs green on push: typecheck + `pnpm eval --cheap` on the mock model)
 - [ ] README: setup, env vars, run instructions, "How we used Nemotron / Token Factory / other Nebius services"
 - [ ] Feedback on Token Factory, Serverless, and NVIDIA tools (below)
@@ -207,6 +207,49 @@ Structure from the user's reference (lessons.sh #01): line 1 names the problem a
 > [the 44 s clip]
 
 Reply, posted within a minute: "Repo (MIT): github.com/harrymove-ctrl/nimbus · `pnpm dev` runs it with no keys. Three Nemotron sizes on Nebius Token Factory, routed by job: Ultra plans, Super writes, Nano checks."
+
+### YouTube upload · title and description (draft 2026-10-29)
+
+Same voice as the launch post. YouTube shows about 70 characters of the title in search and the first two lines of the description before "more", so line 1 carries the problem and the price. Chapters need the first stamp at 0:00 and at least three, 10 s or longer, which the list below satisfies. Set the video to public (the rules ask for a public link), category Science & Technology, and upload the 4K master when it lands (`video/out/nimbus-full-4k.mp4`); the 1080p master is fine otherwise.
+
+**Title (76 characters):**
+
+> Nimbus: a crew of Nemotron agents runs my morning and asks before it sends
+
+Shorter alternative (58): "Nimbus: my morning, run by Nemotron agents for $0.02"
+
+**Description:**
+
+> Every morning I read my inbox, my calendar and GitHub, then write the same replies I wrote yesterday. Nimbus does that for me, learns from each run, and asks before anything is sent.
+>
+> One morning, measured on the run in this video: $0.0216 (58,950 tokens) on NVIDIA Nemotron 3 via Nebius Token Factory. The same morning with every step on the biggest model would cost $0.0283, so the router saves 24 %. Run two, after it learned from run one: $0.0209. Replies sent without my OK: 0.
+>
+> What you see, in order:
+> 0:00 Your standing work, done every morning
+> 0:12 The Overview: workstreams on a schedule, the spend chart, the cost router
+> 0:26 Set the goal once. Nemotron 3 Ultra plans it and shows the price first
+> 0:38 The crew on a timeline, one row per agent, the model on each step
+> 0:58 The brief: what needs me today, ranked by who waits
+> 1:12 Nothing leaves without me: approve, reject with a note, or allow from now on
+> 1:30 What the morning cost and what the router saved
+> 1:42 Memory and skill: what it learned, its own how-to rewritten after each run
+> 1:54 Run two, cheaper, and the ruled reply goes out with no card
+> 2:06 Always on: schedule, status pill, chat app through an OpenAI-compatible endpoint
+> 2:28 It watches its own Token Factory bill and proposes cheaper routing
+> 2:34 How I used Nebius: Nemotron 3 Ultra plans, Super reads and writes, Nano checks and learns, all on api.tokenfactory.nebius.com
+> 2:40 Run it yourself
+>
+> Repo (MIT): https://github.com/harrymove-ctrl/nimbus
+> Live demo: https://nimbus-production-6f7b.up.railway.app
+> Run it with no keys: git clone https://github.com/harrymove-ctrl/nimbus && pnpm dev. Add a Token Factory key and it is real.
+>
+> Built alone in three days for the Nebius x NVIDIA Global AI Hackathon, Personal AI track. Models: Nemotron-3-Ultra-550b-a55b, nemotron-3-super-120b-a12b, NVIDIA-Nemotron-3-Nano-30B-A3B, every call through Nebius Token Factory. The numbers on screen come from one recorded take on the real models; the release notes in docs/video/RELEASE.md say where each was measured. One drafted reply in the video ends with a placeholder signature the model wrote; that is fixed in the app and left in the recording as it happened.
+>
+> Music: my own Suno generation. No voiceover.
+
+**Tags:** Nemotron, Nebius, Token Factory, AI agents, personal AI, NVIDIA, Next.js, open source, hackathon
+
+**Thumbnail:** `public/brand/devpost-thumbnail-1024.jpg` scaled to 1280 x 720 on the boot sky, or frame 2280 (the first Approve) from the master; both are in `docs/demo/gallery/`.
 
 ### README voice
 
