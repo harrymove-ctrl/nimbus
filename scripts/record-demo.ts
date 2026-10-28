@@ -116,6 +116,22 @@ async function click(page: Page, target: Locator, beat?: string) {
 const railItem = (page: Page, title: string) => page.locator("nav button", { hasText: title }).first();
 const approveIn = (card: Locator, name: string | RegExp) => card.getByRole("button", { name, exact: typeof name === "string" });
 const card = (page: Page, to: string) => page.locator('[data-demo="approval-card"]', { hasText: to }).first();
+const pendingCards = (page: Page) => page.locator('[data-demo="approval-card"]');
+/** The pending card for this recipient; a real model may word the recipient differently, so fall back to the first pending card. */
+async function cardFor(page: Page, to: string): Promise<Locator> {
+  const exact = card(page, to);
+  return (await exact.count()) ? exact : pendingCards(page).first();
+}
+/** Wait for the first pending card, then a little longer for the rest of a batch (replies are asked for together). */
+async function waitForCards(page: Page, n: number) {
+  await pendingCards(page).first().waitFor({ timeout: 180_000 });
+  for (let i = 0; i < 40 && (await pendingCards(page).count()) < n; i++) await pause(500);
+}
+/** Prefer the mock script's label; a real model's segments are labelled differently, so fall back by position. */
+async function preferred(primary: Locator, fallback: Locator): Promise<Locator> {
+  return (await primary.count()) ? primary.first() : fallback;
+}
+const chat: { role: "user" | "nimbus"; text: string; seconds?: number }[] = [];
 
 /** An approval click as its own sub-beat: the pointer arrives, the beat starts, that card's boxes are read, then the click. */
 async function approveAt(page: Page, approval: Locator, name: string | RegExp, beat: string) {
@@ -158,14 +174,15 @@ async function briefOne(page: Page) {
   // the lanes fill: the Analyst reads, three Writers draft at the same time
   await pause(1200);
   mark("brief1-timeline");
-  await page.locator('g[role="button"][aria-label^="Writer 3"]').first().waitFor({ timeout: 120_000 });
+  await page.locator('g[role="button"][aria-label^="Writer 3"]').or(pendingCards(page)).first().waitFor({ timeout: 180_000 });
   await pause(1800);
   await targets(page, { lanes: demo(page, "lanes"), "model-badge": demo(page, "model-badge"), "run-cost": demo(page, "run-cost") });
   // the board wants 13–30 s from Approve plan to the Agent I/O click: room for three callouts on the lanes
   await pause(Math.max(1800, 15_000 - (Date.now() - approvedAt)));
 
   // the Analyst's segment that read the client's email: Agent I/O shows what it read
-  await click(page, page.locator('g[role="button"][aria-label*="Reading the three that matter"]').first(), "brief1-agent-io");
+  const analystRead = await preferred(page.locator('g[role="button"][aria-label*="Reading the three that matter"]'), page.locator('g[role="button"][aria-label^="Analyst"]').nth(1));
+  await click(page, analystRead, "brief1-agent-io");
   await pause(1200);
   // the ring goes on the client's email itself: scroll the Inspector so its first lines sit near the top, then read the box
   const email = demo(page, "agent-io").locator("pre", { hasText: "client@example.com" }).first();
@@ -177,8 +194,8 @@ async function briefOne(page: Page) {
   // the brief itself: Needs you today, ranked; Can wait
   mark("brief1-doc");
   await click(page, page.getByRole("tab", { name: "Artifact" }));
-  await click(page, page.locator("main button", { hasText: /Morning brief ·/ }).first());
-  await section(page, /Needs you today/).waitFor({ timeout: 30_000 });
+  await click(page, await preferred(page.locator("main button", { hasText: /Morning brief ·/ }), page.locator("main button", { hasText: /doc · open/ }).first()));
+  await section(page, /Needs you today/).waitFor({ timeout: 30_000 }).catch(() => {});
   await pause(1200);
   await targets(page, { "brief-doc": demo(page, "brief-doc") });
   await sectionBox(page, "needs-you", /Needs you today/);
@@ -190,9 +207,8 @@ async function briefOne(page: Page) {
 
   // the gate: Approve the client's reply, Approve the teammate's, Approve & always allow on the reviewer's
   mark("brief1-approvals");
-  const client = card(page, "client@example.com");
-  await client.waitFor({ timeout: 120_000 });
-  await card(page, "reviewer@example.com").waitFor({ timeout: 120_000 });
+  await waitForCards(page, 3);
+  const client = await cardFor(page, "client@example.com");
   await client.scrollIntoViewIfNeeded().catch(() => {});
   await pause(1600);
   await targets(page, { "approval-card": client, "approve-buttons": client.locator('[data-demo="approve-buttons"]'), tray: demo(page, "tray") });
@@ -200,10 +216,10 @@ async function briefOne(page: Page) {
   // about 2 s between the clicks: the music's drop lands on approve-1
   await approveAt(page, client, "Approve", "approve-1");
   await pause(2000);
-  await approveAt(page, card(page, "teammate@example.com"), "Approve", "approve-2");
+  await approveAt(page, await cardFor(page, "teammate@example.com"), "Approve", "approve-2");
   await pause(2000);
-  await approveAt(page, card(page, "reviewer@example.com"), /Approve & always allow/, "always-allow");
-  await demo(page, "rule-line").waitFor({ timeout: 20_000 });
+  await approveAt(page, await cardFor(page, "reviewer@example.com"), /Approve & always allow/, "always-allow");
+  await demo(page, "rule-line").waitFor({ timeout: 20_000 }).catch(() => {});
   await demo(page, "rule-line").scrollIntoViewIfNeeded().catch(() => {});
   await pause(1200);
   await targets(page, { "rule-line": demo(page, "rule-line") });
@@ -234,11 +250,12 @@ async function briefTwo(page: Page) {
 
   mark("brief2-run");
   // the client and the teammate still ask; the reviewer's reply goes out under the rule with no card
-  await card(page, "teammate@example.com").waitFor({ timeout: 120_000 });
+  await waitForCards(page, 2);
   await pause(2400);
   await targets(page, { "run2-cost": demo(page, "run-cost"), "learned-chip": demo(page, "learned-chip") });
-  for (const to of ["client@example.com", "teammate@example.com"]) {
-    await click(page, approveIn(card(page, to), "Approve"));
+  // whatever still asks (the mock: the client and the teammate); a ruled reply never shows a card
+  for (let k = 0; k < 4 && (await pendingCards(page).count()) > 0; k++) {
+    await click(page, approveIn(pendingCards(page).first(), "Approve"));
     await pause(1300);
   }
   const summary = page.locator("p", { hasText: /^Run summary$/ });
@@ -274,15 +291,22 @@ async function radarInThePill(page: Page) {
 
 /** A run started from a chat app: the same endpoint OpenClaw and Hermes call, then the same run in the web app. */
 async function chatRun(page: Page): Promise<boolean> {
-  const ask = (text: string, user = "demo-phone") =>
-    page.request.post(`${BASE}/v1/chat/completions`, { data: { model: "nimbus", user, messages: [{ role: "user", content: text }] }, timeout: 180_000 });
+  // every exchange is kept for the video's phone screens (raw/chat-transcript-<stamp>.json)
+  const ask = async (text: string, user = "demo-phone") => {
+    const t = Date.now();
+    chat.push({ role: "user", text });
+    const res = await page.request.post(`${BASE}/v1/chat/completions`, { data: { model: "nimbus", user, messages: [{ role: "user", content: text }] }, timeout: 240_000 });
+    const body = res.ok() ? ((await res.json()) as { choices?: { message?: { content?: string } }[]; nimbus?: { run_id?: string } }) : null;
+    chat.push({ role: "nimbus", text: body?.choices?.[0]?.message?.content ?? `HTTP ${res.status()}`, seconds: +((Date.now() - t) / 1000).toFixed(1) });
+    return { res, body };
+  };
+  await ask("what needs me?").catch(() => null);
   const r = await ask("run morning brief").catch(() => null);
-  if (!r || !r.ok()) {
-    console.log(`chat-run skipped: /v1 answered ${r ? r.status() : "nothing"}`);
+  if (!r || !r.res.ok()) {
+    console.log(`chat-run skipped: /v1 answered ${r ? r.res.status() : "nothing"}`);
     return false;
   }
-  const j = (await r.json()) as { nimbus?: { run_id?: string } };
-  const runId = j.nimbus?.run_id;
+  const runId = r.body?.nimbus?.run_id;
   if (!runId) {
     console.log("chat-run skipped: the reply carried no run id");
     return false;
@@ -402,6 +426,8 @@ async function main() {
   copyFileSync(webm, path.join(raw, `nimbus-demo-${stamp}.webm`));
   const beats = marks.map((m, i) => ({ beat: m.beat, tStart: m.at, tEnd: marks[i + 1]?.at ?? total, targets: m.targets }));
   writeFileSync(path.join(raw, "beats.json"), JSON.stringify(beats, null, 2) + "\n");
+  if (chat.length)
+    writeFileSync(path.join(raw, `chat-transcript-${stamp}.json`), JSON.stringify({ captured: new Date().toISOString().slice(0, 10), endpoint: "/v1/chat/completions", model: "nimbus", user: "demo-phone", mode: process.env.NIMBUS_MODEL || "unknown", placeholder: false, exchanges: chat }, null, 2) + "\n");
   console.log(`raw take and beats → docs/demo/raw/nimbus-demo-${stamp}.webm (${beats.length} beats, ${total}s)`);
   if (missing.length) console.log(`targets not found: ${missing.join(", ")}`);
   rmSync(TMP, { recursive: true, force: true });
