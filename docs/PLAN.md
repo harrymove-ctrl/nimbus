@@ -18,11 +18,11 @@ What is real, what is mock, and what is left. "Real" means run on Nemotron 3 thr
 | 1b Cost router | Done | Real: 22–27 % under the all-ceiling baseline on the same mornings |
 | 2 Timeline + composer UI | Done, live | Real on Railway (mock:false, $1 day cap); fixes of Oct 29: footer names the real model, long-run axis, cancelled state, translucent card, New workstream |
 | 3 Memory, skills, schedules | Done | Real: Learner on Nano saves memories (8) and rewrites SKILL.md after the fix (thinking off, required tool call); the always-allow rule sends run two's reply with no card (check 5). Not yet shown on real: run two cheaper than run one after the Learner fix (the take's run two stopped on a recorder bug, fixed in 1dc4a05) |
-| 3b Evals + CI gate | Done | Mock: 19/19 goldens, 27/27 cases, chat 62/62; the GitHub Actions workflow has never run (nothing pushed yet) |
+| 3b Evals + CI gate | Done | Mock: 19/19 goldens, 27/27 cases, chat 62/62; the GitHub Actions eval workflow ran green on the first push (after a pnpm version fix) |
 | 4 Chat apps | Built | Mock-tested; the real curl exchange against the live /v1 is queued (about $0.03); a real OpenClaw or Hermes client is the user's step (docs/openclaw.md "Against the live demo"); Telegram send-only path unverified |
 | 4 Deploy | Done on Railway | Real: https://nimbus-production-6f7b.up.railway.app, volume at /data, bearer on /v1, day cap $1. Nebius Serverless Endpoint: not deployed (encouraged, not required by the rules; the feedback says so) |
 | 5 Video | Locked rev 6 | Footage: the role-named mock take 1258; numbers on screen: measured on the real headless runs; music: the user's Suno track. Masters rendered: 1080p full and X, 4K full, five gallery stills. One last full real take is in progress (user: "One more take"); if it lands, the video swaps to real footage |
-| 5 README, LICENSE, repo | README in the user's voice with the measured numbers; MIT at root | Not pushed; the push needs the user's go and `gh auth status` = harrymove-ctrl |
+| 5 README, LICENSE, repo | README in the user's voice with the measured numbers; MIT at root | Pushed 2026-10-29 01:50 on the user's "Push now": https://github.com/harrymove-ctrl/nimbus, public, MIT detected; the eval workflow is green on push (mock model, $0) |
 | 5 Devpost, YouTube | Drafts ready in docs/SUBMISSION.md (description, story, form answers, feedback, thumbnail, gallery) | The user fills ratings and uploads on Oct 30 |
 
 Real spend to date: about $0.35 on the laptop runs plus about $0.01 on Railway, of a $0.50 cap. Keys are in `.env.local` and Railway only; both were pasted in chat once and must be rotated after the hackathon.
