@@ -4,7 +4,7 @@ cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · 192
 take: `docs/demo/raw/nimbus-demo-20261028-1258.webm` (251.4 s, 1920 × 1080, role-named contacts) cut by its beats.json; the 4K master upscales it 2× (the real take will be checked for device scale 2 by `scripts/sync-take.mjs`)
 numbers on screen (fixture take, `data/video-rev6`): estimate ≈ $0.03 · run one $0.024 (21 hops, run_0ccb7cb0) · run two $0.016 (run_f34484ad) · proof 1,492 calls / $2.25 from `data/nimbus.db` (83 runs, all model "mock"); the real-model take replaces every one, then `export-calls.py` and `layout-callouts.py` run again
 chat transcript: `docs/video/chat-transcript.json` (old fixtures), with the three addresses mapped to take 1258's role addresses in `compositions.tsx`; the real run's transcript replaces it
-music: Tone.js temp score on the music.md rev D map (Suno tracks pending)
+music: the Suno track (variant A, 122.09 BPM) stretched to 120 and fitted by `video/scripts/fit-music.py` (music.md "Fit"); the 20:48 previews still carry the Tone.js temp score
 previews (720p, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (19.3 MB, 2:56) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (4.2 MB, 0:44) — rendered 20:48 / 20:51, before the fixes below
 evidence: `docs/demo/preview/callouts-middle-frames.png` (every callout's middle frame, both cuts) · `docs/demo/preview/motion-frames.png` (one still per motion scene, 12) — both from the 20:48 previews, so they still show the corner label and the old Orbit Flow radius
 

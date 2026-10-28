@@ -5,3 +5,6 @@ dist
 
 # Ignore the output video from Git but not videos you import into src/.
 out
+
+# Suno music fitted to the cut (scripts/fit-music.py); the user's own generation, not redistributed
+public/audio/music-full-fit.mp3

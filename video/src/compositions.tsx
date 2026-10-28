@@ -170,9 +170,11 @@ function ProofScene() {
   );
 }
 
-// The music bed. Swap for "audio/music-full.mp3" / "audio/music-x.mp3" when the Suno tracks
-// land; the temp score (scripts/make-sound.mjs) follows the same map.
-const MUSIC = { full: "audio/music-temp-full.mp3", x: "audio/music-temp-x.mp3" };
+// The music bed: the Suno track fitted to each cut by scripts/fit-music.py (stretched to
+// 120 BPM, segments on bar lines; music.md "Fit"). Both files are gitignored: run the script
+// after placing public/audio/music-full.mp3. The temp score (scripts/make-sound.mjs,
+// music-temp-*.mp3) follows the same map if the track is missing.
+const MUSIC = { full: "audio/music-full-fit.mp3", x: "audio/music-x.mp3" };
 /** Footage spans for the music bed (motion scenes count as cards). */
 const span = (ids: (keyof typeof F)[]) => ids.map((id) => [after(id), F[id].from + F[id].frames] as [number, number]);
 

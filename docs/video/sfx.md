@@ -97,7 +97,7 @@ Moved by the motion bars (same sounds): 18 attention → 2000 (the cloud turns o
 
 # Rev E cue sheet (plays in the rev E cuts)
 
-Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1 720, plan 780, timeline 1140, doc 1740, ch2 2100, gate 2160, summary 2700, ch3 3000, memory 3060, run2 3420, ch4 3720, radar 3780, chat 4080, web run 4320, watch 4440, proof 4620, terminal 4800, end 4980). Frames marked ≈ follow the take's sub-beats and move with the real-model take. The drop of the music lands on E17.
+Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1 720, plan 780, timeline 1140, doc 1740, ch2 2100, gate 2160, summary 2700, ch3 3000, memory 3060, run2 3420, ch4 3720, radar 3780, chat 4080, web run 4320, watch 4440, proof 4620, terminal 4800, end 4980). Frames marked ≈ follow the take's sub-beats and move with the real-model take. The drop of the music lands on E17 (the fitted Suno track's S48 entry, measured +13 ms). With the Suno fit no cue moves: E2's riser still lands on the track's first entry at 360, and E37's impact lands under the finale.
 
 | # | Frame | Scene | Moment | Sound | Source | Level | File |
 |---|---|---|---|---|---|---|---|
@@ -136,7 +136,7 @@ Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1
 | E33 | 4744 | 19 | The call count and spend count up | count 700 | cuelume | −22 | `count-700.wav` |
 | E34 | 4808–4904 | 20 | The terminal types (one key per 3 f) | type | cuelume | −32 | `type.wav` |
 | E35 | 4910 | 20 | The URL line | ready | cuelume | −20 | `ready.wav` |
-| E36 | 4965–4980 | — | One beat of silence (the temp score's break) | — | — | — | |
+| E36 | 4965–4980 | — | One beat of silence (cut into the fitted Suno track by `fit-music.py`, music.md "Fit") | — | — | — | |
 | E37 | 4980 | 21 | The end card | impact, deep | designed | −14 | `impact-deep.wav` |
 
 ## X clip, rev E (frames absolute in NimbusX; scenes: hook 0, name 120, plan 240, lanes 420, ch2 540, gate 600, run2 720, chat 900, terminal 1140, end 1200)

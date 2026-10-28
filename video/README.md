@@ -48,8 +48,11 @@ only after the real-model take and the Suno tracks are in.
   every cue-sheet sound into `public/audio/sfx/` (the app's own cuelume cues,
   Tone.js-designed transitions) and the Tone.js temp score
   `public/audio/music-temp-*.mp3` from `sound/music-map.json`. `node scripts/make-sound.mjs new`
-  renders only the sounds whose file is missing. Swap in the Suno
-  tracks at `MUSIC` in `src/compositions.tsx`. No click track is ever rendered.
+  renders only the sounds whose file is missing. No click track is ever rendered.
+- Music: the Suno track at `public/audio/music-full.mp3` (gitignored). `python3 scripts/fit-music.py`
+  stretches it to 120 BPM and cuts it onto both cuts' bar lines (`music-full-fit.mp3`,
+  `music-x.mp3`, gitignored; the segments and why are in the script and `docs/video/music.md`).
+  `MUSIC` in `src/compositions.tsx` points at them.
 - Master: `bash scripts/master.sh out/nimbus-full.mp4 out/nimbus-full-master.mp4`
   levels a render to −14 LUFS, ≤ −1 dBTP (picture copied).
 

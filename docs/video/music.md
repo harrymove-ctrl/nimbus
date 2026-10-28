@@ -112,6 +112,50 @@ vocals, singing, voice, spoken word, choir, rap, humming, lyrics, vocal chops, v
 
 The edit nudges each drop onto its click by at most half a beat. The click times come from the take's sub-beats (`approve-1`); see board.md "From the new take".
 
+# Fit of the Suno track (2026-10-28)
+
+Track: variant A "Glassy Arpeggio", `video/public/audio/music-full.mp3`, 208.0 s, 48 kHz (gitignored). Fitted by `video/scripts/fit-music.py` into `music-full-fit.mp3` (178 s) and `music-x.mp3` (46 s), both gitignored.
+
+**Tempo.** The take is a steady **122.09 BPM**, not 120: a comb over the onset envelope gives 122.09 overall, and 30 s windows agree within 0.1 BPM through 150 s. Left at 122, its bars would drift 1.5 s a minute against the grid, so no single offset can hold the drops. It is time-stretched to 120 BPM first (ffmpeg `atempo` 0.98288, pitch kept; 211.6 s), and the stretched take measures 119.98 BPM.
+
+**Sections on the stretched take** (bar lines at 0.094 + 2·S s; mean level per bar), in 16-bar phrases:
+
+| Track bars S | Seconds | What it is |
+|---|---|---|
+| 0–8 | 0.1–16.1 | Intro: keys and pluck, about −20 dB |
+| 8 | 16.1 | First entry, the full groove (about −11 dB) |
+| 15 | 30.1 | A one-bar dip |
+| 29–31 | 58.1–64.1 | A three-bar dip, then the entry at **32** |
+| 45–47 | 90.1–96.1 | A three-bar dip, then the entry at **48** (the biggest jump in the middle of the track) |
+| 61–71 | 122.1–144.1 | Breakdown: down to −19 dB at S66, building from S68 |
+| 72 | 144.1 | Entry |
+| 77–79 | 154.1–160.1 | A dip, then the entry at **80** |
+| 93–95 | 186.1–192.1 | A dip, then the finale at **96** (about −9.6 dB) |
+| 104 | 208.1 | The track ends (decay to 211.6) |
+
+**Full cut: four segments**, each placed so a track bar line is a video bar line (video bar V plays track bar V + Δ). They're joined by 8-frame equal-power crossfades that end on a bar line, with one beat of silence at 165.5–166.0 s.
+
+| Video bars | Δ | Track bars | What lands where |
+|---|---|---|---|
+| V0–16 (0:00–0:32) | +2 | S2–18 | The intro under the hook and the name; the S8 entry lands on **0:12**, the cut into the laptop and the Overview (with the riser and impact-soft) |
+| V16–29 (0:32–0:58) | +13 | S29–42 | The S29–31 dip under the goal being sent; the S32 entry lands on **0:38**, as the timeline fills |
+| V29–64 (0:58–2:08) | +10 | S39–74 | The S45–47 dip under the Ch 2 card; the S48 entry lands on **1:16, frame 2280, the first Approve** (drop 2); the breakdown (quietest 1:46–1:56, building to 2:04) under Calm and run two; the S72 entry lands on **2:04**, the Ch 4 card |
+| V64–89 (2:08–2:58) | +16 | S80–105 | The groove under radar, the chat and the watch; the S93–95 dip under the proof; the S96 finale lands on **2:40**, the terminal; the track's own ending lands on **2:56**, the cut's last frame |
+
+Crossfades end at 0:32 (A → B: −11.6 into the −13.5 dip), 0:58 (−11.4 / −11.7) and 2:08 (−10.0 / −10.2). The silence is at V82.75–83, the beat before the end card. Measured entries: 0:12 +16 ms, 0:38 +16 ms, 1:16 +13 ms, 2:04 −45 ms, 2:40 +205 ms. The last one is the finale's first strong hit, inside half a beat, so it isn't nudged.
+
+Changes from the proposed fit (a single +18.5 s offset with one intro segment): that offset assumed 120 BPM. At 122.09 the 94.5 s jump would sit on 1:16, but the others would drift by up to a second. The breakdown would fall at 1:41–1:56, close to Calm. The finale would fall at 2:50 under the end card, and the track would run past 2:58. On the stretched grid the finale lands on the terminal, which is the map's "Finale: biggest". The track's own ending closes the cut, so no fade is needed inside the 2:56 (a 1.5 s fade sits on the tail).
+
+**X clip: three segments** (22 bars + tail, 46 s):
+
+| Video bars | Δ | What lands where |
+|---|---|---|
+| V0–8.5 (0:00–0:17) | +4 | The intro under the hook and the name; the S8 entry lands on **0:08**, the cut into the plan |
+| V8.5–19 (0:17–0:38) | +36.5 | The S45–47 dip under the lanes and the Ch 2 card; the S48 entry lands on **0:23, frame 690, the Approve**. The half-bar offset is because the Approve sits on a half bar of the X grid |
+| V19–23 (0:38–0:46) | +82 | The last bars of the finale under the terminal and the end card; the track's ending lands on **0:44** |
+
+Silence at 37.5–38.0 s; the second crossfade sits inside it. Measured entries: 0:08 +16 ms, 0:23 +13 ms.
+
 # Until the Suno track exists
 
 Previews use a temp score composed in Tone.js on this same map (`video/sound/music-map.json`, rendered by `video/scripts/make-sound.mjs`) and are labelled "temp music". The metronome is never rendered.
