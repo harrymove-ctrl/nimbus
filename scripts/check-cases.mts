@@ -40,6 +40,12 @@ async function go(wsId: string, o: { always?: boolean; answer?: string } = {}) {
   const events = run.events as AnyRunEvent[];
   return { events, view: buildView(events), questions, maxPending };
 }
+// a template gap left in text meant for a person ("Best, [Your Name]"); code like d[key] and markdown links don't count
+const PLACEHOLDER = /(^|\s)\[[A-Za-z][^\]\n]{1,40}\](?!\()/m;
+const placeholders = (r: Awaited<ReturnType<typeof go>>) => [
+  ...r.view.artifacts.flatMap((a) => a.versions.map((v) => v.content)),
+  ...r.events.flatMap((e) => (e.type === "approval.request" ? [(e.payload.action.details as { text?: unknown })?.text].filter((t): t is string => typeof t === "string") : [])),
+].flatMap((t) => t.match(PLACEHOLDER)?.[0].trim() ?? []);
 const results = (ev: AnyRunEvent[]) => ev.filter((e) => e.type === "tool.result").map((e) => (e.type === "tool.result" ? e : null)!);
 const text = (v: unknown) => JSON.stringify(v);
 const resolvedBy = (ev: AnyRunEvent[]) => ev.filter((e) => e.type === "approval.resolve").map((e) => (e.type === "approval.resolve" ? e.payload.by : ""));
@@ -79,6 +85,7 @@ if (want("brief")) {
   const r = await go("ws-brief");
   check("three replies wait at once (3 concurrent approvals), all approved by you", r.maxPending === 3 && resolvedBy(r.events).join() === "you,you,you", `${r.maxPending} ${resolvedBy(r.events)}`);
   check("the brief and three drafts are artifacts", r.view.artifacts.length === 4);
+  check("no draft or reply keeps a placeholder like [Your Name]", placeholders(r).length === 0, placeholders(r).join(", "));
   check("the analyst read the real inbox files", results(r.events).some((t) => t.payload.tool === "read_repo" && /client@example\.com/.test(text(t.payload.output))));
 }
 if (want("audit")) {

@@ -15,12 +15,16 @@ import { CONTROL_TOOLS, ROLE_TOOLS, fetchUrl, openPr, readRepo, runCode, sendMes
 export type AgentRef = { role: AgentRole; instance: string };
 export type Exec = Partial<Record<ToolName, (input: never) => Promise<unknown>>>;
 
+// Who the replies are from: NIMBUS_USER_NAME when set. Without it the Writer signs nothing rather than "[Your Name]".
+const SIGNER = process.env.NIMBUS_USER_NAME?.trim();
+const SIGN_OFF = SIGNER ? `Sign each reply "${SIGNER}".` : "End each reply after its closing line, with no signature.";
+
 // Role prompts are a stable prefix (Token Factory's cached-input price); per-run material goes in the first user message.
 const ROLE_PROMPT: Record<AgentRole, string> = {
   orchestrator: "You are the Orchestrator of a small crew of agents working for one person. First call plan, then spawn_agents for parallel work, handoff for sequential work, request_approval before any action with side effects, ask_user only when blocked, and finish when done. Be brief.",
   researcher: "You are the Researcher. Use web_search and fetch_url, cite sources, and return a short sourced report. Ask the person with ask_user only if the brief is ambiguous.",
   analyst: "You are the Analyst. Use run_code on the attached data to compute exact numbers, fix your own script errors, save useful code with write_artifact, and report the numbers.",
-  writer: "You are the Writer. Produce the document with write_artifact: the number first, then cause, evidence, open questions and next step. Edit by writing a new version of the same artifactId. When the brief asks you to send something, call send_message once per message, to its address; send_message asks for approval itself. Say only what your sources and the crew's reports say, using the latest of them.",
+  writer: `You are the Writer. Produce the document with write_artifact: the number first, then cause, evidence, open questions and next step. Edit by writing a new version of the same artifactId. When the brief asks you to send something, call send_message once per message, to its address; send_message asks for approval itself. Say only what your sources and the crew's reports say, using the latest of them. Never leave a placeholder in brackets such as [Your Name] or [Date]. ${SIGN_OFF}`,
   checker: "You are the Checker. Validate data and fact-check claims quickly; report what is supported and any caveat.",
   learner: "You are the Learner. From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).",
 };
