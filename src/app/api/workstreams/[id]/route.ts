@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { getDb, retryBusy, schema } from "@/db";
 import { restartScheduler } from "@/runtime/scheduler";
 
@@ -27,4 +27,22 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   await retryBusy(() => db.update(schema.workstreams).set(set).where(eq(schema.workstreams.id, id)));
   if (body.schedule) await restartScheduler();
   return Response.json({ ok: true });
+}
+
+// DELETE /api/workstreams/[id]: only for a workstream a person made ("+ New workstream"); the seeded ones are archived instead.
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  if (!id.startsWith("ws-u-")) return Response.json({ error: "only a workstream you made can be deleted; archive this one" }, { status: 400 });
+  const db = await getDb();
+  const runIds = (await db.select({ id: schema.runs.id }).from(schema.runs).where(eq(schema.runs.workstreamId, id))).map((r) => r.id);
+  if (runIds.length) {
+    await retryBusy(() => db.delete(schema.runEvents).where(inArray(schema.runEvents.runId, runIds)));
+    await retryBusy(() => db.delete(schema.artifacts).where(inArray(schema.artifacts.runId, runIds)));
+    await retryBusy(() => db.delete(schema.approvals).where(inArray(schema.approvals.runId, runIds)));
+    await retryBusy(() => db.delete(schema.runs).where(eq(schema.runs.workstreamId, id)));
+  }
+  for (const t of [schema.memories, schema.policies, schema.skills]) await retryBusy(() => db.delete(t).where(eq(t.workstreamId, id)));
+  await retryBusy(() => db.delete(schema.workstreams).where(eq(schema.workstreams.id, id)));
+  await restartScheduler();
+  return Response.json({ ok: true, runs: runIds.length });
 }

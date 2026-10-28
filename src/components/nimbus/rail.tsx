@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Archive, Clock, LayoutDashboard, MoreHorizontal, Pencil, Play, RotateCcw } from "lucide-react";
+import { Archive, Clock, LayoutDashboard, MoreHorizontal, Pencil, Play, RotateCcw, Plus } from "lucide-react";
 import type { Workstream } from "@/lib/workstreams";
 import { RailSkeleton } from "./loading";
 import { cx } from "./ui";
@@ -13,6 +13,7 @@ export function Rail({
   busyWs,
   onSelect,
   onOverview,
+  onNew,
   onRun,
   onArchive,
   onSchedule,
@@ -27,6 +28,8 @@ export function Rail({
   onSelect: (id: string) => void;
   /** the Overview item at the top of the rail; selected when no workstream is */
   onOverview?: () => void;
+  /** "+ New workstream" */
+  onNew?: () => void;
   onRun: (id: string) => void;
   /** rail menu: hide a workstream, or bring it back */
   onArchive?: (id: string, archived: boolean) => void;
@@ -51,7 +54,14 @@ export function Rail({
           </button>
         </div>
       )}
-      <p className="px-4 pb-2 pt-4 text-[11px] font-extrabold uppercase tracking-wider text-neutral-500">Workstreams</p>
+      <div className="flex items-center px-4 pb-2 pt-4">
+        <p className="flex-1 text-[11px] font-extrabold uppercase tracking-wider text-neutral-500">Workstreams</p>
+        {onNew && (
+          <button type="button" data-cuelume-open="" onClick={onNew} aria-label="New workstream" title="New workstream" className="-me-1.5 flex h-6 items-center gap-1 rounded-md px-1.5 text-[11px] font-extrabold uppercase tracking-wider text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
+            <Plus className="size-3.5" aria-hidden="true" /> New
+          </button>
+        )}
+      </div>
       <RailSkeleton active={!!loading && workstreams.length === 0} />
       {menu && <RailMenu menu={menu} ws={workstreams.find((w) => w.id === menu.id)} close={() => setMenu(null)} edit={() => setMenu((m) => (m ? { ...m, editing: true } : m))} onRun={onRun} onArchive={onArchive} onSchedule={onSchedule} />}
       <ul data-demo="workstreams" className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-2">

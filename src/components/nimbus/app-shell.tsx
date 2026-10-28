@@ -18,6 +18,7 @@ import { AmbientGlow } from "./loading";
 import { Composer, type Mode, type TierChoice } from "./composer";
 import { Inspector, type InspectorTab } from "./inspector";
 import { LEARNING_CHANGED } from "./learning";
+import { NewWorkstream } from "./new-workstream";
 import { Rail } from "./rail";
 import { RunHeader } from "./run-header";
 import { cue, SoundToggle, useRunCues, useSound } from "./sound";
@@ -41,6 +42,7 @@ export function AppShell() {
   const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number; mock?: boolean }>();
   const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
+  const [creating, setCreating] = useState(false);
 
   const [draft, setDraft] = useState("");
   const [files, setFiles] = useState<string[]>([]);
@@ -358,6 +360,7 @@ export function AppShell() {
           onSelect={(id) => void openWorkstream(id)}
           onOverview={() => (setSelectedId(null), setDrawer(null))}
           onRun={(id) => void startRun({ saved: true }, id)}
+          onNew={() => (setCreating(true), setDrawer(null))}
           onArchive={async (id, archived) => {
             await fetch(`/api/workstreams/${id}`, { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ archived }) });
             if (archived && selectedId === id) setSelectedId(null);
@@ -453,11 +456,27 @@ export function AppShell() {
                   onAnswer={(t) => view.openQuestion && answer(view.openQuestion, t)}
                   onApproveFirst={() => view.pendingApprovals[0] && void decide(view.pendingApprovals[0], "approve")}
                   onOpenTab={(t) => (setTab(t), setDrawer("inspector"))}
+                  onNew={() => setCreating(true)}
                 />
               </div>
               </>
               )}
             </>
+          )}
+          {creating && (
+            <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/50 p-4" onClick={(e) => e.target === e.currentTarget && setCreating(false)}>
+              <NewWorkstream
+                onCancel={() => setCreating(false)}
+                onCreated={async ({ id, goal }) => {
+                  setCreating(false);
+                  await refreshWorkstreams();
+                  setSelectedId(id);
+                  setDraft(goal);
+                  // the goal is in the composer: one Enter starts the first run
+                  setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message the crew"]')?.focus(), 150);
+                }}
+              />
+            </div>
           )}
         </main>
 

@@ -26,6 +26,7 @@ const TIERS: { key: TierChoice; label: string }[] = [
 ];
 const SLASH = [
   { cmd: "/run", hint: "Run the workstream's saved goal", act: "run" },
+  { cmd: "/new", hint: "Make a new workstream", act: "new" },
   { cmd: "/schedule", hint: "Schedule it: a cron or words, e.g. /schedule Mondays 9am", act: "fill" },
   { cmd: "/stop", hint: "Stop the run", act: "stop" },
   { cmd: "/approve", hint: "Approve the first pending action", act: "approve" },
@@ -56,6 +57,7 @@ export type ComposerProps = {
   onSteer: (text: string) => void;
   onAnswer: (text: string) => void;
   onApproveFirst: () => void;
+  onNew?: () => void;
   onOpenTab: (tab: "memory") => void;
 };
 
@@ -158,6 +160,10 @@ export function Composer(p: ComposerProps) {
     } else if (item.act === "stop") {
       p.setDraft("");
       if (live) setConfirmStop(true);
+    } else if (item.act === "new") {
+      p.setDraft("");
+      p.onNew?.();
+      return;
     } else if (item.act === "approve") {
       p.setDraft("");
       p.onApproveFirst();
