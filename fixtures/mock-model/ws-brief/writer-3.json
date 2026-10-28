@@ -14,8 +14,8 @@
           "input": {
             "artifactId": "reply-sam",
             "kind": "doc",
-            "title": "Reply to Sam",
-            "content": "Hi Sam, not yet: the fix is in review. I will tell you the moment it ships, well before Thursday."
+            "title": "Reply to the reviewer",
+            "content": "Hi, not yet: the fix is in review. I will tell you the moment it ships, well before Thursday."
           }
         }
       ]
@@ -31,8 +31,8 @@
         {
           "name": "send_message",
           "input": {
-            "channel": "sam@devshop.example",
-            "text": "Hi Sam, not yet: the fix is in review. I will tell you the moment it ships, well before Thursday."
+            "channel": "reviewer@example.com",
+            "text": "Hi, not yet: the fix is in review. I will tell you the moment it ships, well before Thursday."
           }
         }
       ]

@@ -20,7 +20,7 @@
    "agent": "writer",
    "expect": [
     {
-     "artifact_contains": "Dana"
+     "artifact_contains": "Reply to the client"
     }
    ]
   }
@@ -36,7 +36,7 @@
    "approval_count": 3
   },
   {
-   "artifact_contains": "Priya"
+   "artifact_contains": "Teammate · demo link"
   },
   {
    "max_cost_usd": 0.05

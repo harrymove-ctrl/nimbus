@@ -1,50 +1,50 @@
 {
- "role": "writer",
- "turns": [
-  {
-   "label": "Drafting the reply",
-   "usage": {
-    "in": 2600,
-    "out": 260
-   },
-   "complexity": 1,
-   "toolCalls": [
+  "role": "writer",
+  "turns": [
     {
-     "name": "write_artifact",
-     "input": {
-      "artifactId": "reply-priya",
-      "kind": "doc",
-      "title": "Reply to Priya",
-      "content": "Hi Priya, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
-     }
-    }
-   ]
-  },
-  {
-   "label": "Sending (needs approval)",
-   "usage": {
-    "in": 3000,
-    "out": 140
-   },
-   "complexity": 1,
-   "toolCalls": [
+      "label": "Drafting the reply",
+      "usage": {
+        "in": 2600,
+        "out": 260
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "write_artifact",
+          "input": {
+            "artifactId": "reply-priya",
+            "kind": "doc",
+            "title": "Reply to the teammate",
+            "content": "Hi, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
+          }
+        }
+      ]
+    },
     {
-     "name": "send_message",
-     "input": {
-      "channel": "priya@nebius.example",
-      "text": "Hi Priya, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
-     }
+      "label": "Sending (needs approval)",
+      "usage": {
+        "in": 3000,
+        "out": 140
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "send_message",
+          "input": {
+            "channel": "teammate@example.com",
+            "text": "Hi, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reporting",
+      "usage": {
+        "in": 3300,
+        "out": 50
+      },
+      "complexity": 1,
+      "text": "Reply drafted and handled."
     }
-   ]
-  },
-  {
-   "label": "Reporting",
-   "usage": {
-    "in": 3300,
-    "out": 50
-   },
-   "complexity": 1,
-   "text": "Reply drafted and handled."
-  }
- ]
+  ]
 }

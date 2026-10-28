@@ -79,7 +79,7 @@ if (want("brief")) {
   const r = await go("ws-brief");
   check("three replies wait at once (3 concurrent approvals), all approved by you", r.maxPending === 3 && resolvedBy(r.events).join() === "you,you,you", `${r.maxPending} ${resolvedBy(r.events)}`);
   check("the brief and three drafts are artifacts", r.view.artifacts.length === 4);
-  check("the analyst read the real inbox files", results(r.events).some((t) => t.payload.tool === "read_repo" && /Dana/.test(text(t.payload.output))));
+  check("the analyst read the real inbox files", results(r.events).some((t) => t.payload.tool === "read_repo" && /client@example\.com/.test(text(t.payload.output))));
 }
 if (want("audit")) {
   console.log("— Token Factory cost audit");

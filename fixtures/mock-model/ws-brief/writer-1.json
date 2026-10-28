@@ -1,50 +1,50 @@
 {
- "role": "writer",
- "turns": [
-  {
-   "label": "Drafting the reply",
-   "usage": {
-    "in": 2600,
-    "out": 260
-   },
-   "complexity": 1,
-   "toolCalls": [
+  "role": "writer",
+  "turns": [
     {
-     "name": "write_artifact",
-     "input": {
-      "artifactId": "reply-dana",
-      "kind": "doc",
-      "title": "Reply to Dana",
-      "content": "Hi Dana, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
-     }
-    }
-   ]
-  },
-  {
-   "label": "Sending (needs approval)",
-   "usage": {
-    "in": 3000,
-    "out": 140
-   },
-   "complexity": 1,
-   "toolCalls": [
+      "label": "Drafting the reply",
+      "usage": {
+        "in": 2600,
+        "out": 260
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "write_artifact",
+          "input": {
+            "artifactId": "reply-dana",
+            "kind": "doc",
+            "title": "Reply to the client",
+            "content": "Hi, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
+          }
+        }
+      ]
+    },
     {
-     "name": "send_message",
-     "input": {
-      "channel": "dana@example.com",
-      "text": "Hi Dana, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
-     }
+      "label": "Sending (needs approval)",
+      "usage": {
+        "in": 3000,
+        "out": 140
+      },
+      "complexity": 1,
+      "toolCalls": [
+        {
+          "name": "send_message",
+          "input": {
+            "channel": "client@example.com",
+            "text": "Hi, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
+          }
+        }
+      ]
+    },
+    {
+      "label": "Reporting",
+      "usage": {
+        "in": 3300,
+        "out": 50
+      },
+      "complexity": 1,
+      "text": "Reply drafted and handled."
     }
-   ]
-  },
-  {
-   "label": "Reporting",
-   "usage": {
-    "in": 3300,
-    "out": 50
-   },
-   "complexity": 1,
-   "text": "Reply drafted and handled."
-  }
- ]
+  ]
 }

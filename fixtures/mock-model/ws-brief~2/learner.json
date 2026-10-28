@@ -13,7 +13,7 @@
           "name": "save_learning",
           "input": {
             "memories": [
-              "Sam's replies go out under the rule; keep them to one line."
+              "Replies to the reviewer go out under the rule; keep them to one line."
             ],
             "skill": "## Morning brief\n1. Rank by who is waiting and by the date they gave.\n2. Draft replies as artifacts; each send waits for approval unless a rule below allows it.\n3. Put the calendar after the three asks; invoices and digests under \"can wait\".\n\n## Policy\n(none yet)"
           }

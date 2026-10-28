@@ -14,8 +14,8 @@
           "input": {
             "artifactId": "reply-priya",
             "kind": "doc",
-            "title": "Reply to Priya",
-            "content": "Hi Priya, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
+            "title": "Reply to the teammate",
+            "content": "Hi, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
           }
         }
       ]
@@ -31,8 +31,8 @@
         {
           "name": "send_message",
           "input": {
-            "channel": "priya@nebius.example",
-            "text": "Hi Priya, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
+            "channel": "teammate@example.com",
+            "text": "Hi, confirming the 11:30 dry run. Demo link: https://nimbus.example.com/demo . See you there."
           }
         }
       ]

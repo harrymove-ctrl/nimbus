@@ -13,7 +13,7 @@
           "name": "read_repo",
           "input": {
             "action": "read",
-            "path": "fixtures/inbox/01-dana.eml"
+            "path": "fixtures/inbox/01-client.eml"
           }
         }
       ]
@@ -49,7 +49,7 @@
             "artifactId": "morning-brief",
             "kind": "doc",
             "title": "Morning brief · Wed Oct 28",
-            "content": "# Morning brief · Wed Oct 28\n\n## Needs you today\n\n1. **Dana (Acme): contract signature by Fri Nov 7.** Legal is waiting; you have a call with Dana at 14:00 today. Draft 1 asks to walk through the two open clauses on that call.\n2. **Priya (Nebius): confirm the 11:30 showcase dry run by 5 pm** and send the demo link. Draft 2 confirms and attaches the link.\n3. **Sam (DevShop): did the login bug fix ship?** One-word answer wanted before Thursday. Draft 3 says: not yet, the fix is in review. It goes out under your rule, no approval needed.\n\n## Today\n\n| time | what |\n|---|---|\n| 09:00 | Standup |\n| 11:30 | Hackathon showcase dry run (Priya) |\n| 14:00 | Contract call with Dana |\n| 16:30 | Focus: submission video |\n\n## GitHub\n\nCI failed on the checkout tests (you were mentioned). A review is requested on DevShop's staging pins.\n\n## Can wait\n\nOctober invoice ($18.40, autopay), the Tools Weekly digest, Sunday lunch with Linh.\n\nTwo drafts are waiting for your approval; the reply to Sam goes out under your rule."
+            "content": "# Morning brief · Wed Oct 28\n\n## Needs you today\n\n1. **Client · contract review: signature by Fri Nov 7.** Legal is waiting; you have a call with the client at 14:00 today. Draft 1 asks to walk through the two open clauses on that call.\n2. **Teammate · demo link: confirm the 11:30 showcase dry run by 5 pm** and send the demo link. Draft 2 confirms and attaches the link.\n3. **Reviewer · bug fix: did the login bug fix ship?** One-word answer wanted before Thursday. Draft 3 says: not yet, the fix is in review. It goes out under your rule, no approval needed.\n\n## Today\n\n| time | what |\n|---|---|\n| 09:00 | Standup |\n| 11:30 | Hackathon showcase dry run (teammate) |\n| 14:00 | Contract call with the client |\n| 16:30 | Focus: submission video |\n\n## GitHub\n\nCI failed on the checkout tests (you were mentioned). A review is requested on DevShop's staging pins.\n\n## Can wait\n\nOctober invoice ($18.40, autopay), the Tools Weekly digest, Sunday lunch with family.\n\nTwo drafts are waiting for your approval; the reply to the reviewer goes out under your rule."
           }
         }
       ]

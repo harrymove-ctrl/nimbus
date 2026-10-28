@@ -52,11 +52,11 @@
     {
       "claim": "the drafts name the people who are waiting",
       "requires": [
-        "Dana",
+        "client",
         "Kim"
       ],
       "partial": [
-        "Dana"
+        "client"
       ]
     },
     {
@@ -72,12 +72,12 @@
     {
       "claim": "the brief lists the three people who are waiting",
       "requires": [
-        "Dana",
-        "Priya",
-        "Sam"
+        "Client",
+        "Teammate",
+        "Reviewer"
       ],
       "partial": [
-        "Dana"
+        "Client"
       ]
     }
   ]

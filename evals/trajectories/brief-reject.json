@@ -16,7 +16,7 @@
    "agent": "writer",
    "expect": [
     {
-     "artifact_contains": "Sam"
+     "artifact_contains": "Reply to the reviewer"
     }
    ]
   }
@@ -32,7 +32,7 @@
    "approval_resolved_by": "you"
   },
   {
-   "artifact_contains": "Dana"
+   "artifact_contains": "Client · contract review"
   }
  ]
 }

@@ -1,12 +1,12 @@
 id,from,subject,waiting_days,has_date,snippet
-1,dana@example.com,Contract signature needed by Fri Nov 7,3,1,Can you sign by Friday? Legal is waiting.
+1,client@example.com,Contract signature needed by Fri Nov 7,3,1,Can you sign by Friday? Legal is waiting.
 2,newsletter@tools.io,Weekly digest,0,0,Ten tools you should try
 3,omar@partner.co,Re: demo slot Thursday 3pm,2,1,Confirming Thursday 3pm; please reply.
 4,billing@cloudhost.com,Invoice 8841,1,0,Your invoice is ready
 5,lee@team.dev,Review request: PR 412,4,0,Whenever you have time
 6,hr@company.com,Benefits enrollment closes Nov 15,2,1,Reminder: enrollment closes Nov 15.
 7,promo@shop.com,20% off today,0,0,Sale ends tonight
-8,sam@investor.vc,Intro call?,5,0,Happy to chat when convenient
+8,intro@investor.vc,Intro call?,5,0,Happy to chat when convenient
 9,support@saas.com,Ticket #3321 update,1,0,We fixed the issue
 10,kim@client.org,Deliverable due Nov 10,6,1,"Need the report by Nov 10, still waiting on numbers."
 11,noreply@bank.com,Statement available,0,0,Your statement is ready

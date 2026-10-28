@@ -43,11 +43,11 @@
                 "role": "analyst"
               },
               {
-                "text": "Draft replies to Dana, Priya and Sam",
+                "text": "Draft replies to the client, the teammate and the reviewer",
                 "role": "writer"
               },
               {
-                "text": "Send Dana's and Priya's after you approve; Sam's goes out under your rule",
+                "text": "Send the client's and the teammate's after you approve; the reviewer's goes out under your rule",
                 "role": "writer"
               }
             ]
@@ -90,15 +90,15 @@
             "agents": [
               {
                 "role": "writer",
-                "brief": "Reply to Dana: sign this week, walk through two clauses on the 14:00 call."
+                "brief": "Reply to the client: sign this week, walk through two clauses on the 14:00 call."
               },
               {
                 "role": "writer",
-                "brief": "Reply to Priya: confirm the 11:30 dry run and send the demo link."
+                "brief": "Reply to the teammate: confirm the 11:30 dry run and send the demo link."
               },
               {
                 "role": "writer",
-                "brief": "Reply to Sam: the login fix has not shipped, it is in review."
+                "brief": "Reply to the reviewer: the login fix has not shipped, it is in review."
               }
             ]
           }
@@ -112,7 +112,7 @@
         "out": 160
       },
       "complexity": 1,
-      "text": "Done. The brief is in the Artifact tab; Sam's reply went out under your rule, Dana's and Priya's after your approval.",
+      "text": "Done. The brief is in the Artifact tab; the reviewer's reply went out under your rule, the client's and the teammate's after your approval.",
       "toolCalls": [
         {
           "name": "finish",

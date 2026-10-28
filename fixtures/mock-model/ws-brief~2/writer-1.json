@@ -14,8 +14,8 @@
           "input": {
             "artifactId": "reply-dana",
             "kind": "doc",
-            "title": "Reply to Dana",
-            "content": "Hi Dana, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
+            "title": "Reply to the client",
+            "content": "Hi, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
           }
         }
       ]
@@ -31,8 +31,8 @@
         {
           "name": "send_message",
           "input": {
-            "channel": "dana@example.com",
-            "text": "Hi Dana, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
+            "channel": "client@example.com",
+            "text": "Hi, yes: I will sign this week. Can we use today's 14:00 call to walk through the two open clauses before I sign? Thanks."
           }
         }
       ]

@@ -39,7 +39,7 @@
                 "role": "analyst"
               },
               {
-                "text": "Draft replies to Dana, Priya and Sam",
+                "text": "Draft replies to the client, the teammate and the reviewer",
                 "role": "writer"
               },
               {
@@ -90,15 +90,15 @@
             "agents": [
               {
                 "role": "writer",
-                "brief": "Reply to Dana: sign this week, walk through two clauses on the 14:00 call."
+                "brief": "Reply to the client: sign this week, walk through two clauses on the 14:00 call."
               },
               {
                 "role": "writer",
-                "brief": "Reply to Priya: confirm the 11:30 dry run and send the demo link."
+                "brief": "Reply to the teammate: confirm the 11:30 dry run and send the demo link."
               },
               {
                 "role": "writer",
-                "brief": "Reply to Sam: the login fix has not shipped, it is in review."
+                "brief": "Reply to the reviewer: the login fix has not shipped, it is in review."
               }
             ]
           }

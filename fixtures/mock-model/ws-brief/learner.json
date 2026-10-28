@@ -1,28 +1,28 @@
 {
- "role": "learner",
- "turns": [
-  {
-   "label": "Extracting memories, rewriting SKILL.md",
-   "usage": {
-    "in": 6200,
-    "out": 900
-   },
-   "complexity": 0,
-   "toolCalls": [
+  "role": "learner",
+  "turns": [
     {
-     "name": "save_learning",
-     "input": {
-      "memories": [
-       "Replies that name a date (Dana, Nov 7) come first; Priya's 5 pm slot second.",
-       "The GitHub notifications list is at api.github.com/notifications; mentions outrank subscriptions.",
-       "Invoices and digests go under \"can wait\" without a draft.",
-       "Every reply is a send_message and waits for approval; none is low-risk.",
-       "Put the calendar table right after the three asks."
-      ],
-      "skill": "## Morning brief\n1. Rank by who is waiting and by the date they gave.\n2. Draft replies as artifacts; each send waits for approval.\n3. Put the calendar after the three asks; invoices and digests under \"can wait\".\n\n## Policy\n(none yet)"
-     }
+      "label": "Extracting memories, rewriting SKILL.md",
+      "usage": {
+        "in": 6200,
+        "out": 900
+      },
+      "complexity": 0,
+      "toolCalls": [
+        {
+          "name": "save_learning",
+          "input": {
+            "memories": [
+              "Replies that name a date (the client's Nov 7) come first; the teammate's 5 pm slot second.",
+              "The GitHub notifications list is at api.github.com/notifications; mentions outrank subscriptions.",
+              "Invoices and digests go under \"can wait\" without a draft.",
+              "Every reply is a send_message and waits for approval; none is low-risk.",
+              "Put the calendar table right after the three asks."
+            ],
+            "skill": "## Morning brief\n1. Rank by who is waiting and by the date they gave.\n2. Draft replies as artifacts; each send waits for approval.\n3. Put the calendar after the three asks; invoices and digests under \"can wait\".\n\n## Policy\n(none yet)"
+          }
+        }
+      ]
     }
-   ]
-  }
- ]
+  ]
 }
