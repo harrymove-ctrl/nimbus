@@ -38,7 +38,7 @@ export function AppShell() {
   const [tab, setTab] = useState<InspectorTab>("artifact");
   const [selSeg, setSelSeg] = useState<SegRef | null>(null);
   const [wsLoaded, setWsLoaded] = useState(false);
-  const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number }>();
+  const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number; mock?: boolean }>();
   const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
 

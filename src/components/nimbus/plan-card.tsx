@@ -5,12 +5,12 @@
 // the same card is the live checklist (a tick as each step's work ends, a running elapsed, a ✕ on a failure) and
 // collapses to one line when the run is over. Runs nobody is watching (schedules, chat) keep the 3 s window.
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Check, GripVertical, Plus, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, GripVertical, Plus, Square, X } from "lucide-react";
 import { ProgressBar } from "@/components/dithercn/progress-bar";
 import type { PlanStep } from "@/lib/events";
 import { ROLE_LABEL, ROLE_COLOR, TIER_SHORT, fmtSecs, type PlanItem, type RunView } from "@/lib/run-view";
 import { cue } from "./sound";
-import { buttonSm, cx, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton } from "./ui";
+import { buttonSm, cx, panel, panelGlass, panelBody, panelFoot, panelHead, primaryButton, secondaryButton } from "./ui";
 
 const ENDED = new Set(["done", "failed", "cancelled", "stopped"]);
 const ROLES: PlanStep["role"][] = ["researcher", "analyst", "writer", "checker"];
@@ -160,12 +160,17 @@ function LivePlan({ item, view, now, onCancel, ended }: Props & { ended: boolean
   const remaining = Math.max(0, Math.ceil((item.tMs + 3000 - (now - view.startedAt)) / 1000));
   const countdown = !item.approved && !ended && view.status === "planning" && remaining > 0 && !item.awaiting;
   const cancelled = view.status === "cancelled";
+  // a run you cancelled or stopped did not fail: no red cross for it
+  const endedByYou = view.status === "cancelled" || view.status === "stopped";
 
   if (ended && !open)
     return (
-      <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setOpen(true)} aria-expanded="false" className={cx(panel, "flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-white/5")}>
-        <span className={cx("grid size-5 place-items-center rounded-full", failed || cancelled ? "bg-red-500/20 text-red-200" : "bg-emerald-500/20 text-emerald-200")}>{failed || cancelled ? <X className="size-3" /> : <Check className="size-3" />}</span>
+      <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setOpen(true)} aria-expanded="false" className={cx(panelGlass, "flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-white/5")}>
+        <span className={cx("grid size-5 place-items-center rounded-full", endedByYou ? "bg-white/10 text-neutral-300" : failed ? "bg-red-500/20 text-red-200" : "bg-emerald-500/20 text-emerald-200")}>
+          {endedByYou ? <Square className="size-2.5 fill-current" /> : failed ? <X className="size-3" /> : <Check className="size-3" />}
+        </span>
         <span className="text-[14px] font-bold tabular-nums">
+          {endedByYou ? `${cancelled ? "Cancelled" : "Stopped"} · ` : ""}
           {done} of {total} steps · {fmtSecs(elapsedMs)}
         </span>
         {item.edited && <span className="rounded bg-[var(--rb-accent)]/20 px-1.5 py-px text-[11px] font-extrabold text-[var(--rb-accent)]">edited plan</span>}

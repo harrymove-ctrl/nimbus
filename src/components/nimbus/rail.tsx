@@ -32,7 +32,7 @@ export function Rail({
   onArchive?: (id: string, archived: boolean) => void;
   /** rail menu: set the schedule; resolves to an error message, or null when it was saved */
   onSchedule?: (id: string, schedule: { cron: string | null; label: string | null }) => Promise<string | null>;
-  budget?: { todayUsd: number; dayCapUsd: number };
+  budget?: { todayUsd: number; dayCapUsd: number; mock?: boolean };
   /** GET /api/workstreams is still in flight: a sweep skeleton instead of an empty column */
   loading?: boolean;
   className?: string;
@@ -122,14 +122,22 @@ export function Rail({
             ))}
         </div>
       )}
-      {budget && (
-        <p className="border-t border-white/10 px-4 pt-3 text-[12px] font-bold tabular-nums text-neutral-300" title="Daily spend across all runs (NIMBUS_DAY_CAP_USD)">
-          Today ${budget.todayUsd.toFixed(2)} of ${budget.dayCapUsd.toFixed(2)}
+      {budget && budget.mock === false ? (
+        <p className="border-t border-white/10 p-4 pt-3 text-[12px]/[18px] font-bold tabular-nums text-neutral-300" title="Daily spend across all runs (NIMBUS_DAY_CAP_USD)">
+          Runs use Nemotron 3 on Nebius Token Factory · today ${budget.todayUsd.toFixed(2)} of ${budget.dayCapUsd.toFixed(2)}
         </p>
+      ) : (
+        <>
+          {budget && (
+            <p className="border-t border-white/10 px-4 pt-3 text-[12px] font-bold tabular-nums text-neutral-300" title="Daily spend across all runs (NIMBUS_DAY_CAP_USD)">
+              Today ${budget.todayUsd.toFixed(2)} of ${budget.dayCapUsd.toFixed(2)}
+            </p>
+          )}
+          <p className="p-4 pt-1.5 text-[12px]/[18px] text-neutral-500">
+            Runs use the scripted mock model (no keys, $0) until NEBIUS_API_KEY is set.
+          </p>
+        </>
       )}
-      <p className="p-4 pt-1.5 text-[12px]/[18px] text-neutral-500">
-        Runs use the scripted mock model (no keys, $0) until NEBIUS_API_KEY is set.
-      </p>
     </nav>
   );
 }

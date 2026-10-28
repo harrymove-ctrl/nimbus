@@ -23,6 +23,8 @@ export const buttonMd =
 export const iconButtonSm = "size-8 rounded-[calc(var(--rb-r-full,999px))]";
 export const panel =
   "relative flex min-w-0 flex-col overflow-hidden rounded-[calc(var(--rb-r-6xl,26px))] border border-transparent bg-[var(--rb-n-100,oklch(97.7%_0.0055_80))] dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 shadow-[inset_0_0_0_1px_rgb(84_62_32/0.05)] dark:shadow-[inset_0_0_0_1px_rgb(255_255_255/0.05)]";
+/** The panel over the dithered background: neutral-900 at 85 % with a blur, so the dither shows through (like the composer). */
+export const panelGlass = panel.replace("border-transparent", "border-white/10").replace("dark:bg-neutral-900", "dark:bg-neutral-900/85 backdrop-blur-md");
 export const panelHead =
   "flex min-h-12 min-w-0 shrink-0 items-center gap-2 px-4 has-[button]:pe-2.5";
 export const panelBody =
