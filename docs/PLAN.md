@@ -17,15 +17,15 @@ What is real, what is mock, and what is left. "Real" means run on Nemotron 3 thr
 | 1 Headless run | Done | Real: Morning brief run one $0.0258–0.0276, 70–75K tokens (checks 5, 6, take 7) |
 | 1b Cost router | Done | Real: 22–27 % under the all-ceiling baseline on the same mornings |
 | 2 Timeline + composer UI | Done, live | Real on Railway (mock:false, $1 day cap); fixes of Oct 29: footer names the real model, long-run axis, cancelled state, translucent card, New workstream |
-| 3 Memory, skills, schedules | Done | Real: Learner on Nano saves memories (8) and rewrites SKILL.md after the fix (thinking off, required tool call); the always-allow rule sends run two's reply with no card (check 5). Not yet shown on real: run two cheaper than run one after the Learner fix (the take's run two stopped on a recorder bug, fixed in 1dc4a05) |
+| 3 Memory, skills, schedules | Done | Real, on camera (take 1915): the Learner on Nano saves memories (16 after two runs) and rewrites SKILL.md; the always-allow rule sends run two's reply with no card; run two is 3 % cheaper than run one ($0.0209 vs $0.0216) |
 | 3b Evals + CI gate | Done | Mock: 19/19 goldens, 27/27 cases, chat 62/62; the GitHub Actions eval workflow ran green on the first push (after a pnpm version fix) |
 | 4 Chat apps | Built | Mock-tested; the real curl exchange against the live /v1 is queued (about $0.03); a real OpenClaw or Hermes client is the user's step (docs/openclaw.md "Against the live demo"); Telegram send-only path unverified |
 | 4 Deploy | Done on Railway | Real: https://nimbus-production-6f7b.up.railway.app, volume at /data, bearer on /v1, day cap $1. Nebius Serverless Endpoint: not deployed (encouraged, not required by the rules; the feedback says so) |
-| 5 Video | Locked rev 6 | Footage: the role-named mock take 1258; numbers on screen: measured on the real headless runs; music: the user's Suno track. Masters rendered: 1080p full and X, 4K full, five gallery stills. One last full real take is in progress (user: "One more take"); if it lands, the video swaps to real footage |
+| 5 Video | Rev 6, re-rendering on the real take | The recorded real take 1915 (Oct 29 02:15) covers the Overview, the whole Morning brief run one and run two and Memory & skill on the real models; radar/pill and watch stay on the role-named mock take 1258 (the real run never reached those beats); the chat scene replays the real Railway run. Numbers on screen: run one $0.0216 (24 % saved), run two $0.0209, 16 memories. Music: the user's Suno track |
 | 5 README, LICENSE, repo | README in the user's voice with the measured numbers; MIT at root | Pushed 2026-10-29 01:50 on the user's "Push now": https://github.com/harrymove-ctrl/nimbus, public, MIT detected; the eval workflow is green on push (mock model, $0) |
 | 5 Devpost, YouTube | Drafts ready in docs/SUBMISSION.md (description, story, form answers, feedback, thumbnail, gallery) | The user fills ratings and uploads on Oct 30 |
 
-Real spend to date: about $0.35 on the laptop runs plus about $0.01 on Railway, of a $0.50 cap. Keys are in `.env.local` and Railway only; both were pasted in chat once and must be rotated after the hackathon.
+Real spend to date: about $0.485 across the laptop runs and Railway, of a $0.50 cap. Keys are in `.env.local` and Railway only; both were pasted in chat once and must be rotated after the hackathon.
 
 Open items, in order: (1) the real chat run on Railway, (2) the last full take, (3) the video swap and re-render if the take lands, (4) the user's Hermes/OpenClaw run, (5) Oct 30: push, YouTube, Devpost, submit, rotate keys.
 

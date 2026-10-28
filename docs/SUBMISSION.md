@@ -106,7 +106,7 @@ run: sharper than Playwright's frame capture, still zero spend.
 
 ## Devpost form answers (draft, 2026-10-28)
 
-The "Additional info" page asks the questions below. Draft answers, in the voice we use everywhere: plain, specific, no adjectives a number can replace. `[real]` is filled from the Oct 29 real-model run (the same run the video is cut from); `[fill]` is the user's own choice. Everything stated here must be true of the shipped repo on Oct 30; strike any line whose feature did not ship.
+The "Additional info" page asks the questions below. Draft answers, in the voice we use everywhere: plain, specific, no adjectives a number can replace. Numbers are from the recorded Oct 29 real-model take (1915: run_724b8d9d and run_915dfc1d, the runs the video is cut from); `[fill]` is the user's own choice. Everything stated here must be true of the shipped repo on Oct 30; strike any line whose feature did not ship.
 
 | Field | Answer |
 |---|---|
@@ -127,7 +127,7 @@ Three Nemotron 3 tiers on Nebius Token Factory, routed by job (`src/lib/models.t
 - `nvidia/Nemotron-3-Ultra-550b-a55b` for the Orchestrator only: it plans the run, decides who does what, and writes the approval requests. One or two calls per run, where reasoning matters.
 - `nvidia/nemotron-3-super-120b-a12b` for the Researcher, Analyst and Writer: the many calls that read an inbox, run code and draft replies. 256K context fits a whole morning's inputs in one call.
 - `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` for the Checker and the Learner: verification and memory-writing run after every step and every run, so they have to be cheap. Nano costs 1/16 of Ultra per input token.
-A full Morning brief run costs $[real] ([real] calls, [real] tokens); routing every hop to Ultra would cost $[real], so the router saves [real] %.
+A full Morning brief run costs $0.0216 (58,950 tokens, recorded run run_724b8d9d on Oct 29); pinning every hop to its ceiling tier would cost $0.0283, so the router saves 24 %. The next morning cost $0.0209.
 
 **How would you rate Nemotron's output quality? (1–10)**
 [fill after the real run]. What worked: function calling on all three tiers (the whole crew is tool calls), instruction-following on the plan format, long context on Super. What fell short: [fill from the real run: e.g. the Checker's false rejects, the Writer's tone drift, anything the Learner got wrong].
@@ -161,7 +161,7 @@ A Nano fine-tuning path on Token Factory (for cheap, specialised checkers), and 
 
 ## Spoken-voice drafts (2026-10-28)
 
-The user's rule for everything public: "I don't want README github, description project so much AI. I want it to talk like this, even if not perfect: here I, me, you." First person, one builder, plain talk, no adjectives a number can replace, nothing that sounds generated. Keep the facts from the sections above; change only the voice. Numbers marked `[real]` come from the Oct 29 real run.
+The user's rule for everything public: "I don't want README github, description project so much AI. I want it to talk like this, even if not perfect: here I, me, you." First person, one builder, plain talk, no adjectives a number can replace, nothing that sounds generated. Keep the facts from the sections above; change only the voice. Numbers come from the recorded Oct 29 real-model take (1915).
 
 ### Token Factory Sandboxes Beta form · "Describe your case" (simple, neutral)
 
@@ -171,7 +171,7 @@ The user's rule for everything public: "I don't want README github, description 
 
 ### Devpost project description (launch-post structure, first person)
 
-Structure from the user's reference (lessons.sh #01): line 1 names the problem a stranger already has, line 2 names the tool, line 3 says how you use it in seven words; adjectives are replaced by numbers that can be checked; no "introducing", no stack list, no version numbers; the repo and the one command close it. `[real]` from the Oct 29 run.
+Structure from the user's reference (lessons.sh #01): line 1 names the problem a stranger already has, line 2 names the tool, line 3 says how you use it in seven words; adjectives are replaced by numbers that can be checked; no "introducing", no stack list, no version numbers; the repo and the one command close it. Numbers from the recorded Oct 29 take (1915).
 
 > Every morning I read my inbox, my calendar and GitHub before I've done any work, then write the same replies I wrote yesterday.
 >
@@ -180,9 +180,9 @@ Structure from the user's reference (lessons.sh #01): line 1 names the problem a
 > Give it the chore once; it runs it every morning at 8. What is different from an agent that just runs chores: it rewrites its own skill file after every run, every side effect waits for my yes and an approved one can become a rule I can revoke, and it routes each step across three Nemotron sizes while watching its own bill.
 >
 > What one morning costs, measured, not estimated:
-> - 1 plan, 3 drafted replies, 1 page of what needs me: **$[real]** and **[real] s** on NVIDIA Nemotron 3 via Nebius Token Factory
-> - the same morning with every step on the biggest model: **$[real]** — the router saves **[real] %**
-> - run two, after it learned from run one: **$[real]**, **[real]** fewer questions
+> - 1 plan, 3 drafted replies, 1 page of what needs me: **$0.0216** (58,950 tokens) on NVIDIA Nemotron 3 via Nebius Token Factory
+> - the same morning with every step on the biggest model: **$0.0283** — the router saves **24 %**
+> - run two, after it learned from run one: **$0.0209**, the reviewer's reply sent under a rule I approved once, no card
 > - replies sent without my OK: **0**
 >
 > How it works, in the order you see it in the video:
@@ -202,7 +202,7 @@ Structure from the user's reference (lessons.sh #01): line 1 names the problem a
 >
 > So I built a crew of Nemotron agents that does it at 8am and asks before anything is sent.
 >
-> One morning: $[real]. Replies sent without my OK: 0.
+> One morning: $0.0216. Replies sent without my OK: 0.
 >
 > [the 44 s clip]
 
