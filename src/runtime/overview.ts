@@ -69,7 +69,7 @@ export async function getOverview(): Promise<Overview> {
   const tokens = { ultra: 0, super: 0, nano: 0 };
   const cal = new Map<string, { value: number; costUsd: number }>();
   const byDay: Record<string, RunRef[]> = {};
-  let router = { costUsd: 0, atCeilingsUsd: 0, runs: 0 };
+  const router = { costUsd: 0, atCeilingsUsd: 0, runs: 0 };
   let manual = 0;
   let savedUsd = 0;
   const weekRunIds = new Set<string>();
