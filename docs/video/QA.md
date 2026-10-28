@@ -25,7 +25,7 @@ music: the Suno track fitted by `video/scripts/fit-music.py`; the bed about −1
 | Freeze and black | PASS | freeze only on the end card (full 166.5–, X 40.5–); black only on the designed dark motion openings |
 | Loudness | PASS | full −13.8 LUFS, −1.8 dBTP; X −13.7 LUFS, −1.8 dBTP |
 | No metronome | PASS | the Suno fit and the cue sheet only |
-| 4K master | PENDING | re-rendering on take 1915 at `--concurrency=4` (the first try lost its Chrome target at 03:08) |
+| 4K master | PASS | `out/nimbus-full-4k.mp4`: 3840 × 2160 h264, 176.1 s, 204.1 MB, −13.8 LUFS, −1.8 dBTP; frame at 76.1 s is take 1915 (the client's card, tick on Approve). Rendered at `--concurrency=4`, 04:52 to 05:19; the first try lost its Chrome target at 03:08 and was restarted |
 | Sound by ear | NOT VERIFIED | no listening in this environment |
 
 # History: the take-1258 render (locked 2026-10-28 23:35, the shipping cut before take 1915)

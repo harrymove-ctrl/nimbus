@@ -90,7 +90,7 @@ Script rev 6, board rev E, music rev D. Two compositions at 1920 × 1080, 30 fps
 | File | Duration | Size | Picture | Audio |
 |---|---|---|---|---|
 | `video/out/nimbus-full.mp4` | 2:56.1 | 89.1 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.8 LUFS, −1.8 dBTP |
-| `video/out/nimbus-full-4k.mp4` | 2:56.1 | (rendering) | 3840 × 2160, h264 crf 17 (`--scale=2`, footage upscaled 2×) | AAC 256k, (rendering) |
+| `video/out/nimbus-full-4k.mp4` | 2:56.1 | 204.1 MB | 3840 × 2160, h264 crf 17 (`--scale=2`, footage upscaled 2×) | AAC 256k, −13.8 LUFS, −1.8 dBTP |
 | `video/out/nimbus-x.mp4` | 0:44.1 | 16.4 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.7 LUFS, −1.8 dBTP |
 | `docs/demo/preview/nimbus-full-preview.mp4` | 2:56.1 | 21.4 MB | 1280 × 720 | −13.8 LUFS, −1.8 dBTP |
 | `docs/demo/preview/nimbus-x-preview.mp4` | 0:44.1 | 4.3 MB | 1280 × 720 | −13.7 LUFS, −1.8 dBTP |
