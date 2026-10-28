@@ -5,7 +5,7 @@
 import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame, useVideoConfig } from "remotion";
 import { PhoneStack } from "@/components/snap-cn/phone-stack";
 import { SnapCnUIProvider } from "@/lib/snap-cn-ui";
-import chat from "../../docs/video/chat-transcript.json";
+import chat from "../../docs/video/chat-transcript-real.json";
 import { type Cue, MusicBed, SfxTrack } from "./audio";
 import { MOMENTS, momentFrame } from "./beats";
 import { Callout, type CalloutSpec, Eyebrow } from "./components/Callout";
@@ -44,42 +44,22 @@ import { C, GROUND, MANROPE, SORBET } from "./theme";
 
 export { FULL_FRAMES, X_FRAMES } from "./shots";
 
-// ── The chat transcript (docs/video/chat-transcript.json, real /v1 replies, verbatim) ──────
-// Localhost link lines dropped; long replies cut to their first lines with " …". The
-// transcript was captured on the old fixtures; take 1258's fixtures send to role addresses
-// (data/video-rev6/outbox.log), so the three addresses are mapped to those until the
-// real-model run's transcript replaces the file. No other word is changed.
+// ── The chat transcript (docs/video/chat-transcript-real.json: the live Railway run
+// run_6b393ab6 on the real models, verbatim) ──────────────────────────────────────────────
+// Selection rules as before: link lines dropped; the brief in the last reply cut after its
+// first item with " …". No other word is changed.
 type Exchange = { role: "user" | "nimbus"; text: string };
-const ROLE_ADDRESS: [RegExp, string][] = [
-  [/dana@example\.com/g, "client@example.com"],
-  [/priya@nebius\.example/g, "teammate@example.com"],
-  [/sam@devshop\.example/g, "reviewer@example.com"],
-];
-const EX = (chat.exchanges as Exchange[]).map((e) => ({ ...e, text: ROLE_ADDRESS.reduce((t, [from, to]) => t.replace(from, to), e.text) }));
-const replyOf = (prompt: string) => EX[EX.findIndex((e) => e.role === "user" && e.text === prompt) + 1].text;
-const keepLines = (text: string, n?: number) =>
-  text
-    .split("\n")
-    .filter((l) => !/^https?:\/\//.test(l.trim()))
-    .slice(0, n);
-const firstClause = (line: string) => {
-  const m = line.match(/^(.*?);\s/);
-  return m ? `${m[1]}; …` : line;
+const keepLines = (text: string) => text.split("\n").filter((l) => !/^https?:\/\//.test(l.trim()));
+/** The last reply carries the brief: keep its first line, the brief's heading and its first item. */
+const cutBrief = (lines: string[]) => {
+  const at = lines.findIndex((l) => l.trim() === "Needs you today");
+  return at < 0 ? lines : [...lines.slice(0, at + 2).map((l, k, a) => (k === a.length - 1 ? `${l} …` : l))];
 };
-const exchange = (prompt: string, n?: number, last?: (l: string) => string): ChatMessage[] => {
-  const ls = keepLines(replyOf(prompt), n);
-  if (last) ls[ls.length - 1] = last(ls[ls.length - 1]);
-  return [
-    { role: "user", text: prompt },
-    { role: "assistant", text: ls.join("\n") },
-  ];
-};
-const TRANSCRIPT: ChatMessage[] = [
-  ...exchange("what needs me?"),
-  ...exchange("run morning brief", 4),
-  ...exchange("approve all", 1, firstClause),
-];
-
+const TRANSCRIPT: ChatMessage[] = (chat.exchanges as Exchange[]).map((e, k, all) => {
+  if (e.role === "user") return { role: "user", text: e.text };
+  const ls = keepLines(e.text);
+  return { role: "assistant", text: (k === all.length - 1 ? cutBrief(ls) : ls).join("\n") };
+});
 // ── Shared pieces ─────────────────────────────────────────────────────────────────────────
 /** A scene of one or more footage shots played back to back. */
 function Shots({ shots }: { shots: Shot[] }) {
@@ -152,10 +132,13 @@ function ChatStack({ messages, callout, every = beats(2) }: { messages: ChatMess
     </AbsoluteFill>
   );
 }
-/** The screens: the chat after each message (the full cut), or from "run morning brief" (X). */
-const prefixes = (from: number) => TRANSCRIPT.map((_, i) => TRANSCRIPT.slice(0, i + 1)).slice(from);
-const STACK_FULL = prefixes(0);
-const STACK_X = [TRANSCRIPT.slice(0, 4), TRANSCRIPT.slice(0, 5), TRANSCRIPT.slice(0, 6)];
+/** The screens, each the chat so far (a phone shows its newest three messages). Full cut: seven
+ *  phones two beats apart, from the first "Needs your OK" (message 4) to the last reply with the
+ *  brief (message 10); the opening "what needs me?" exchange shows at the top of the first.
+ *  X clip: three phones a bar apart: the first "Needs your OK", an "approve", the last reply. */
+const upTo = (n: number) => TRANSCRIPT.slice(0, n);
+const STACK_FULL = [4, 5, 6, 7, 8, 9, 10].map(upTo);
+const STACK_X = [4, 9, 10].map(upTo);
 /** Frames each phone lands on (Phone Stack's rise is 26 frames). */
 const stackArrivals = (n: number, every = beats(2)) => Array.from({ length: n }, (_, i) => STACK_FROM + i * every + 13);
 const X_STACK_EVERY = beats(4);
@@ -241,7 +224,8 @@ function fullCues(): Cue[] {
   // 16 chat: a tap per sent message, the reply's ready, success on "Approved"
   stackArrivals(STACK_FULL.length).forEach((f, i) => {
     const last = i === STACK_FULL.length - 1;
-    add(F.chat.from + f, last ? "success-strong" : TRANSCRIPT[i].role === "user" ? "tap" : "ready-subtle", last ? -18 : -24);
+    const newest = STACK_FULL[i][STACK_FULL[i].length - 1];
+    add(F.chat.from + f, last ? "success-strong" : newest.role === "user" ? "tap" : "ready-subtle", last ? -18 : -24);
   });
   // 17 web run (hard cut), 18 watch
   add(F.chatRun.from, "cut-dry", -20);
@@ -338,7 +322,8 @@ function xCues(): Cue[] {
   add(X.run2.from + 10, "ready-subtle", -22);
   stackArrivals(STACK_X.length, X_STACK_EVERY).forEach((f, i) => {
     const last = i === STACK_X.length - 1;
-    add(X.chat.from + f, last ? "success-strong" : i === 1 ? "tap" : "ready-subtle", last ? -18 : -24);
+    const newest = STACK_X[i][STACK_X[i].length - 1];
+    add(X.chat.from + f, last ? "success-strong" : newest.role === "user" ? "tap" : "ready-subtle", last ? -18 : -24);
   });
   // the X terminal runs at 3× (one bar): a key per 3 frames over each command, ready on the URL
   for (const [a, z] of TYPING) for (let f = Math.round(a / 3); f < z / 3; f += 3) add(X.terminal.from + f, "type", -32);

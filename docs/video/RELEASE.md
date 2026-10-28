@@ -125,3 +125,11 @@ No stock library, no metronome.
 ### Not verified
 
 The sound has not been checked by ear in the video session.
+
+### Staged for the final render (Oct 29)
+
+The Phone Stack (full scene 16, X scene 6) replays `docs/video/chat-transcript-real.json`: the live Railway run run_6b393ab6 on the real models, $0.0282, approvals resolved from the chat. The selection rules are unchanged: link lines dropped, and the last reply's brief cut after its first item with " …".
+- **Full cut:** seven phones two beats apart, from the first "Needs your OK" to the last reply.
+- **X clip:** three phones a bar apart: "Needs your OK", an "approve", and the last reply.
+
+Every message fits its phone; the longest, the last reply, is 7 lines. The locked masters above still carry the old-fixture transcript until that render.
