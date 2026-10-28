@@ -122,9 +122,29 @@ async function cardFor(page: Page, to: string): Promise<Locator> {
   const exact = card(page, to);
   return (await exact.count()) ? exact : pendingCards(page).first();
 }
+/** A real agent may stop to ask what the mock scripts never ask: answer in the composer so the take keeps moving. */
+async function answerQuestions(page: Page) {
+  const reply = page.locator("main button", { hasText: /^REPLY$/ });
+  if (!(await reply.count())) return;
+  answered++;
+  await page.locator("textarea").fill("Use what you have and go ahead.");
+  await page.locator("textarea").press("Enter");
+  await pause(800);
+}
+let answered = 0;
+/** Wait for a locator while answering any question a real agent asks on the way. */
+async function until(page: Page, loc: Locator, ms: number) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await loc.first().isVisible().catch(() => false)) return;
+    await answerQuestions(page);
+    await pause(500);
+  }
+  throw new Error(`timed out after ${ms / 1000}s waiting for ${loc}`);
+}
 /** Wait for the first pending card, then a little longer for the rest of a batch (replies are asked for together). */
 async function waitForCards(page: Page, n: number) {
-  await pendingCards(page).first().waitFor({ timeout: 180_000 });
+  await until(page, pendingCards(page), 240_000);
   for (let i = 0; i < 40 && (await pendingCards(page).count()) < n; i++) await pause(500);
 }
 /** Prefer the mock script's label; a real model's segments are labelled differently, so fall back by position. */
@@ -174,7 +194,7 @@ async function briefOne(page: Page) {
   // the lanes fill: the Analyst reads, three Writers draft at the same time
   await pause(1200);
   mark("brief1-timeline");
-  await page.locator('g[role="button"][aria-label^="Writer 3"]').or(pendingCards(page)).first().waitFor({ timeout: 180_000 });
+  await until(page, page.locator('g[role="button"][aria-label^="Writer 3"]').or(pendingCards(page)), 240_000);
   await pause(1800);
   await targets(page, { lanes: demo(page, "lanes"), "model-badge": demo(page, "model-badge"), "run-cost": demo(page, "run-cost") });
   // the board wants 13–30 s from Approve plan to the Agent I/O click: room for three callouts on the lanes
@@ -227,7 +247,7 @@ async function briefOne(page: Page) {
 
   // the summary counts up: cost, tokens, time, vs baseline, memories saved
   const summary = page.locator("p", { hasText: /^Run summary$/ });
-  await summary.waitFor({ timeout: 180_000 });
+  await until(page, summary, 300_000);
   await summary.scrollIntoViewIfNeeded();
   mark("brief1-summary");
   await pause(1800);
@@ -259,7 +279,7 @@ async function briefTwo(page: Page) {
     await pause(1300);
   }
   const summary = page.locator("p", { hasText: /^Run summary$/ });
-  await summary.waitFor({ timeout: 180_000 });
+  await until(page, summary, 300_000);
   await summary.scrollIntoViewIfNeeded();
   await pause(1400);
   await targets(page, { "summary-cost": demo(page, "summary-cost"), "run2-cost": demo(page, "run-cost") });
@@ -334,7 +354,7 @@ async function watch(page: Page) {
   await pause(1400);
   await approvePlan(page);
   const proposal = page.locator('[data-demo="approval-card"]').first();
-  await proposal.waitFor({ timeout: 180_000 });
+  await until(page, proposal, 300_000);
   await click(page, page.getByRole("tab", { name: "Artifact" }));
   const table = page.locator("aside table").first();
   await table.waitFor({ timeout: 30_000 }).catch(() => {});
@@ -430,6 +450,7 @@ async function main() {
     writeFileSync(path.join(raw, `chat-transcript-${stamp}.json`), JSON.stringify({ captured: new Date().toISOString().slice(0, 10), endpoint: "/v1/chat/completions", model: "nimbus", user: "demo-phone", mode: process.env.NIMBUS_MODEL || "unknown", placeholder: false, exchanges: chat }, null, 2) + "\n");
   console.log(`raw take and beats → docs/demo/raw/nimbus-demo-${stamp}.webm (${beats.length} beats, ${total}s)`);
   if (missing.length) console.log(`targets not found: ${missing.join(", ")}`);
+  if (answered) console.log(`answered ${answered} question(s) an agent asked on the way`);
   rmSync(TMP, { recursive: true, force: true });
   console.log(`recorded ${(Date.now() - started) / 1000}s of wall time → ${path.relative(process.cwd(), webm)}`);
 
