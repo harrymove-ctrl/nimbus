@@ -8,9 +8,25 @@
 
 There is no recorded real-model take yet. The video ships on the role-named mock take `docs/demo/raw/nimbus-demo-20261028-1258.webm`. Its numbers are fixture numbers (the scripted mock model) and must be labelled that way on screen. The real run is kept for a later day.
 
-Real spend: about **$0.38** on Nebius Token Factory (laptop runs, plus $0.035 on the Railway demo, the chat run included), from the runs' own cost logs. Tavily: 0 calls. The cleared budget was $0.50. Recording stopped after the last attempt on Oct 29 (see "Take attempts"). The video ships on mock take 1258.
+Real spend: about **$0.49** on Nebius Token Factory (laptop runs and the final take, plus $0.035 on the Railway demo, the chat run included). The cap was $0.50, from the runs' own cost logs. Tavily: 0 calls. The cleared budget was $0.50. Recording stopped after the last attempt on Oct 29 (see "Take attempts"). The video ships on mock take 1258.
 
 On screen, the numbers come from the mock take and are labelled as fixture numbers. The measured numbers below come from headless runs (no recording) and are labelled "measured in a headless run".
+
+## Measured on take 1915 (Oct 29, 02:15, the final real-model take)
+
+The file is `docs/demo/raw/nimbus-demo-20261028-1915.webm` (the name stamp is UTC): 885 s, 22 beats, `docs/demo/raw/beats-20261028-1915.json`. It was recorded on the laptop against `data/real-take-20261029b`, with every hop on its routed tier and the app's day cap at $0.12. The take cost $0.110.
+
+| | Cost | Tokens | Baseline (every hop at its role's ceiling) | Saving | Approvals |
+|---|---|---|---|---|---|
+| Run one `run_724b8d9d` | $0.0216 | 58,950 | $0.0283 | 24 % | client and teammate by you; the reviewer by you with Approve & always allow, which saved `allow: send_message to reviewer@example.com` |
+| Run two `run_915dfc1d` | $0.0209 | 57,015 | $0.0287 | 27 % | client and teammate by you; **the reviewer's reply went out under the rule, with no card** |
+
+Run two is cheaper than run one (−3 %). The workstream holds 16 memories after both runs. The recorder answered 7 questions agents asked along the way.
+
+What the take did not get:
+- **status-pill:** the radar run (`run_d633da5f`, $0.0033) did not reach its approval within 120 s; the take stopped it at the end.
+- **chat-run:** the run started from `/v1` (`run_72558f41`, trigger "chat", $0.0196) was approved once from chat. The real Writer then asked for the next reply, and the take ended before it. The full chat flow ran on the Railway demo instead (above).
+- **watch:** the real Watch crew (`run_0ff074bd`, $0.0449) asked for `./data/last_catalog.json` and `./data/usage_week.json`. `read_repo` may not read `data/`, so it proposed nothing. Its skill needs real sources, like the Morning brief's.
 
 ## Measured on the real check (Oct 28, 21:50, Token Factory, no take)
 
