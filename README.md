@@ -1,3 +1,5 @@
+<p align="center"><img src="public/brand/nimbus-window-paper.png" width="240" alt="Nimbus"></p>
+
 # Nimbus
 
 Every morning I read my inbox, my calendar and GitHub before I've done any work, then write the same replies I wrote
