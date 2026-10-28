@@ -186,7 +186,9 @@ async function briefOne(page: Page) {
   await pause(1600);
   await targets(page, { plan: demo(page, "plan"), estimate: demo(page, "estimate"), tools: demo(page, "tools") });
   await pause(1800);
-  await steps.nth(3).dragTo(steps.nth(1)); // "invoices and digests under can wait" right after the reading
+  // the mock: "invoices and digests under can wait" up to right after the reading; a real plan may have fewer steps
+  const n = await steps.count();
+  if (n >= 3) await steps.nth(n - 1).dragTo(steps.nth(1), { timeout: 10_000 }).catch(() => missing.push("brief1-plan-arrives:drag"));
   await pause(1600);
   await approvePlan(page, "brief1-approve-plan");
   const approvedAt = Date.now();
@@ -201,29 +203,34 @@ async function briefOne(page: Page) {
   await pause(Math.max(1800, 15_000 - (Date.now() - approvedAt)));
 
   // the Analyst's segment that read the client's email: Agent I/O shows what it read
-  const analystRead = await preferred(page.locator('g[role="button"][aria-label*="Reading the three that matter"]'), page.locator('g[role="button"][aria-label^="Analyst"]').nth(1));
-  await click(page, analystRead, "brief1-agent-io");
-  await pause(1200);
-  // the ring goes on the client's email itself: scroll the Inspector so its first lines sit near the top, then read the box
-  const email = demo(page, "agent-io").locator("pre", { hasText: "client@example.com" }).first();
-  await email.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "smooth" })).catch(() => {});
-  await pause(700);
-  await targets(page, { "agent-io": email });
-  await pause(2600);
+  // the mock Analyst's labelled segment; on the real models the Researcher does the reading (its 2nd segment reads mail)
+  await soft("brief1-agent-io", async () => {
+    const reader = page.locator('g[role="button"][aria-label*="Reading the three that matter"]').or(page.locator('g[role="button"][aria-label^="Researcher"]').nth(1)).or(page.locator('g[role="button"][aria-label^="Analyst"]').nth(1)).first();
+    await click(page, reader, "brief1-agent-io");
+    await pause(1200);
+    // the ring goes on the client's email itself: scroll the Inspector so its first lines sit near the top, then read the box
+    const email = demo(page, "agent-io").locator("pre", { hasText: "client@example.com" }).first();
+    await email.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "smooth" })).catch(() => {});
+    await pause(700);
+    await targets(page, { "agent-io": email });
+    await pause(2600);
+  });
 
   // the brief itself: Needs you today, ranked; Can wait
-  mark("brief1-doc");
-  await click(page, page.getByRole("tab", { name: "Artifact" }));
-  await click(page, await preferred(page.locator("main button", { hasText: /Morning brief ·/ }), page.locator("main button", { hasText: /doc · open/ }).first()));
-  await section(page, /Needs you today/).waitFor({ timeout: 30_000 }).catch(() => {});
-  await pause(1200);
-  await targets(page, { "brief-doc": demo(page, "brief-doc") });
-  await sectionBox(page, "needs-you", /Needs you today/);
-  await pause(1800);
-  await section(page, /Can wait/).scrollIntoViewIfNeeded().catch(() => {});
-  await pause(900);
-  await sectionBox(page, "can-wait", /Can wait/);
-  await pause(1800);
+  await soft("brief1-doc", async () => {
+    mark("brief1-doc");
+    await click(page, page.getByRole("tab", { name: "Artifact" }));
+    await click(page, await preferred(page.locator("main button", { hasText: /Morning brief ·/ }), page.locator("main button", { hasText: /doc · open/ }).first()));
+    await section(page, /Needs you today/).waitFor({ timeout: 30_000 }).catch(() => {});
+    await pause(1200);
+    await targets(page, { "brief-doc": demo(page, "brief-doc") });
+    await sectionBox(page, "needs-you", /Needs you today/);
+    await pause(1800);
+    await section(page, /Can wait/).scrollIntoViewIfNeeded().catch(() => {});
+    await pause(900);
+    await sectionBox(page, "can-wait", /Can wait/);
+    await pause(1800);
+  });
 
   // the gate: Approve the client's reply, Approve the teammate's, Approve & always allow on the reviewer's
   mark("brief1-approvals");
@@ -367,6 +374,17 @@ async function watch(page: Page) {
   await pause(1600);
 }
 
+/** A late beat that depends on how a real model behaves: if it fails, say so and keep the rest of the take. */
+async function soft(beat: string, fn: () => Promise<unknown>) {
+  try {
+    await fn();
+  } catch (e) {
+    missing.push(`${beat} (beat failed: ${e instanceof Error ? e.message.split("\n")[0] : e})`);
+    await page0?.keyboard.press("Escape").catch(() => {});
+  }
+}
+let page0: Page | undefined;
+
 async function main() {
   rmSync(TMP, { recursive: true, force: true });
   mkdirSync(TMP, { recursive: true });
@@ -377,6 +395,7 @@ async function main() {
   await ctx.addInitScript(CURSOR);
   t0 = Date.now();
   const page = await ctx.newPage();
+  page0 = page;
   const started = Date.now();
 
   // the Overview: stat cards count up, the charts draw in, the workstream list with its schedules
@@ -393,6 +412,9 @@ async function main() {
   await pause(3000);
 
   await briefOne(page);
+  // run two only makes sense if run one learned something: stop here rather than spend on a run two with nothing learned
+  const learnedOne = (await (await page.request.get(`${BASE}/api/workstreams/${BRIEF.id}/learning`)).json()) as { memories: unknown[] };
+  if (!learnedOne.memories.length) throw new Error("the Learner saved nothing in run one: stopping before run two");
 
   mark("memory-skill");
   await click(page, page.getByRole("tab", { name: "Memory & skill" }));
@@ -418,11 +440,11 @@ async function main() {
   await pause(4200);
   await click(page, railItem(page, "Morning brief"));
   await pause(1000);
-  await radarInThePill(page);
+  await soft("status-pill", () => radarInThePill(page));
 
-  if (!(await chatRun(page))) missing.push("chat-run (beat)");
+  if (!(await chatRun(page).catch((e) => (console.log(`chat-run failed: ${e instanceof Error ? e.message : e}`), false)))) missing.push("chat-run (beat)");
 
-  await watch(page);
+  await soft("watch", () => watch(page));
 
   // back on the Overview: today's numbers moved, the router gauge shows the approved rule
   mark("overview-after");
