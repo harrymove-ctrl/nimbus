@@ -4,14 +4,15 @@
 //     rm -rf data/video && NIMBUS_DATA_DIR=./data/video pnpm dev -p 3232   # one terminal
 //     NIMBUS_DATA_DIR=./data/video NIMBUS_URL=http://localhost:3232 pnpm demo:video
 // Beats: overview → Morning brief run one (goal typed, plan draft with one step dragged, Approve plan, the lanes, the
-// Analyst's segment opens Dana's email in Agent I/O, the brief, Approve · Approve · Approve & always allow on Sam's reply,
-// the summary) → Memory & skill → run two (✦ learned, Sam's reply goes out under the rule, cheaper) → Hackathon radar from
+// Analyst's segment opens the client's email in Agent I/O, the brief, Approve · Approve · Approve & always allow on the
+// reviewer's reply,
+// the summary) → Memory & skill → run two (✦ learned, the reviewer's reply goes out under the rule, cheaper) → Hackathon radar from
 // its unread dot → the status pill (a radar run waits while Morning brief is open; approved from the pill) → a run started
 // from the chat endpoint (/v1, trigger "chat") → Token Factory watch (the routing proposal, approved) → the Overview again.
 // Output: docs/demo/nimbus-demo.webm, plus nimbus-demo.mp4 (libx264, slow, crf 17, 30 fps) when ffmpeg is installed; for the
 // video session, docs/demo/raw/nimbus-demo-<stamp>.webm and docs/demo/raw/beats.json: [{ beat, tStart, tEnd, targets }],
 // seconds from the start of the recording, and per beat the callout targets' boxes { x, y, w, h } in recording pixels
-// (docs/video/board.md "From the new take"). Sub-beats such as approve-dana start at the frame of their click.
+// (docs/video/board.md "From the new take"). Sub-beats such as approve-1 start at the frame of their click and carry that card's approval-card and approve-buttons boxes.
 // Dev tooling only: nothing in src/ imports this, so it never reaches the production bundle.
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -116,6 +117,16 @@ const railItem = (page: Page, title: string) => page.locator("nav button", { has
 const approveIn = (card: Locator, name: string | RegExp) => card.getByRole("button", { name, exact: typeof name === "string" });
 const card = (page: Page, to: string) => page.locator('[data-demo="approval-card"]', { hasText: to }).first();
 
+/** An approval click as its own sub-beat: the pointer arrives, the beat starts, that card's boxes are read, then the click. */
+async function approveAt(page: Page, approval: Locator, name: string | RegExp, beat: string) {
+  await approval.scrollIntoViewIfNeeded().catch(() => {});
+  const button = approveIn(approval, name);
+  await glide(page, button);
+  mark(beat);
+  await targets(page, { "approval-card": approval, "approve-buttons": approval.locator('[data-demo="approve-buttons"]') });
+  await button.click({ delay: 90, force: true });
+}
+
 async function approvePlan(page: Page, beat?: string) {
   await click(page, page.getByRole("button", { name: "Approve plan", exact: true }), beat);
 }
@@ -153,11 +164,11 @@ async function briefOne(page: Page) {
   // the board wants 13–30 s from Approve plan to the Agent I/O click: room for three callouts on the lanes
   await pause(Math.max(1800, 15_000 - (Date.now() - approvedAt)));
 
-  // the Analyst's segment that read Dana's email: Agent I/O shows what it read
+  // the Analyst's segment that read the client's email: Agent I/O shows what it read
   await click(page, page.locator('g[role="button"][aria-label*="Reading the three that matter"]').first(), "brief1-agent-io");
   await pause(1200);
-  // the ring goes on Dana's email itself: scroll the Inspector so its first lines sit near the top, then read the box
-  const email = demo(page, "agent-io").locator("pre", { hasText: "dana@example.com" }).first();
+  // the ring goes on the client's email itself: scroll the Inspector so its first lines sit near the top, then read the box
+  const email = demo(page, "agent-io").locator("pre", { hasText: "client@example.com" }).first();
   await email.evaluate((el) => el.scrollIntoView({ block: "start", behavior: "smooth" })).catch(() => {});
   await pause(700);
   await targets(page, { "agent-io": email });
@@ -177,21 +188,21 @@ async function briefOne(page: Page) {
   await sectionBox(page, "can-wait", /Can wait/);
   await pause(1800);
 
-  // the gate: Approve Dana, Approve Priya, Approve & always allow on Sam's
+  // the gate: Approve the client's reply, Approve the teammate's, Approve & always allow on the reviewer's
   mark("brief1-approvals");
-  const dana = card(page, "dana@example.com");
-  await dana.waitFor({ timeout: 120_000 });
-  await card(page, "sam@devshop.example").waitFor({ timeout: 120_000 });
-  await dana.scrollIntoViewIfNeeded().catch(() => {});
+  const client = card(page, "client@example.com");
+  await client.waitFor({ timeout: 120_000 });
+  await card(page, "reviewer@example.com").waitFor({ timeout: 120_000 });
+  await client.scrollIntoViewIfNeeded().catch(() => {});
   await pause(1600);
-  await targets(page, { "approval-card": dana, "approve-buttons": dana.locator('[data-demo="approve-buttons"]'), tray: demo(page, "tray") });
+  await targets(page, { "approval-card": client, "approve-buttons": client.locator('[data-demo="approve-buttons"]'), tray: demo(page, "tray") });
   await pause(2400);
-  // about 2 s between the clicks: the music's drop lands on approve-dana
-  await click(page, approveIn(dana, "Approve"), "approve-dana");
+  // about 2 s between the clicks: the music's drop lands on approve-1
+  await approveAt(page, client, "Approve", "approve-1");
   await pause(2000);
-  await click(page, approveIn(card(page, "priya@"), "Approve"), "approve-priya");
+  await approveAt(page, card(page, "teammate@example.com"), "Approve", "approve-2");
   await pause(2000);
-  await click(page, approveIn(card(page, "sam@devshop.example"), /Approve & always allow/), "always-allow");
+  await approveAt(page, card(page, "reviewer@example.com"), /Approve & always allow/, "always-allow");
   await demo(page, "rule-line").waitFor({ timeout: 20_000 });
   await demo(page, "rule-line").scrollIntoViewIfNeeded().catch(() => {});
   await pause(1200);
@@ -208,7 +219,7 @@ async function briefOne(page: Page) {
   await pause(3200);
 }
 
-/** The next morning: the plan carries what it learned, Sam's reply goes out under the rule, the run costs less. */
+/** The next morning: the plan carries what it learned, the reviewer's reply goes out under the rule, the run costs less. */
 async function briefTwo(page: Page) {
   mark("brief2-plan");
   await click(page, page.getByRole("tab", { name: "Artifact" }));
@@ -222,11 +233,11 @@ async function briefTwo(page: Page) {
   await approvePlan(page);
 
   mark("brief2-run");
-  // Dana and Priya still ask; Sam's goes out under the rule with no card
-  await card(page, "priya@").waitFor({ timeout: 120_000 });
+  // the client and the teammate still ask; the reviewer's reply goes out under the rule with no card
+  await card(page, "teammate@example.com").waitFor({ timeout: 120_000 });
   await pause(2400);
   await targets(page, { "run2-cost": demo(page, "run-cost"), "learned-chip": demo(page, "learned-chip") });
-  for (const to of ["dana@example.com", "priya@"]) {
+  for (const to of ["client@example.com", "teammate@example.com"]) {
     await click(page, approveIn(card(page, to), "Approve"));
     await pause(1300);
   }
