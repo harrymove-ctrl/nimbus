@@ -1,4 +1,4 @@
-status: Gate 3 · rev D motion layer previews (temp music) for review · 2026-10-28
+status: locked · 2026-10-28 · "Lock them" · rev D, commit 6d4cffd
 unlocked for rev D by the user (via the planner): "các animation đâu ui ux show như [Text Highlight, Punch Lines, Focus Pull, Lockup Reveal, Metric Morph, Orbit Flow, Scatter Bloom, Screen Wall] … kết hợp để transition và chọn font cũng như ui ux như bản web đang dùng"
 cuts: NimbusFull 2:54 (87 bars) · NimbusX 0:44 (22 bars) · script rev 5 · board rev C + rev D motion layer · music map rev C (unchanged) · sfx rev D
 take: docs/demo/raw/nimbus-demo-20261027-1633.webm (209.6 s) cut by its beats.json
