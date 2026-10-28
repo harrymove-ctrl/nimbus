@@ -56,16 +56,15 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em}
 .flow pre.mermaid{margin:0;background:transparent;font-size:13px;min-width:0}
 .flow-grid{display:grid;grid-template-columns:1fr;gap:20px}
 .flow.wide{grid-column:1/-1}
-/* Mermaid renders inside the viewer; keep the diagrams at natural size on cream paper, one ink */
-.flow .m svg{max-width:none!important;width:auto!important;height:auto;font-size:14px}
-.flow svg .node rect,.flow svg .node polygon,.flow svg .node circle,.flow svg .node path,.flow svg .cluster rect,
-.flow svg g.statediagram-state rect,.flow svg .state-group rect,.flow svg rect.basic,.flow svg .statediagram-state .label-container{fill:#f3eddc!important;stroke:#100f0f!important;stroke-width:1.2px!important}
-.flow svg .nodeLabel,.flow svg .edgeLabel,.flow svg .label,.flow svg text,.flow svg tspan,.flow svg foreignObject div,.flow svg foreignObject span,.flow svg foreignObject p,.flow svg .stateLabel{color:#100f0f!important;fill:#100f0f!important;font-family:var(--font-ui)!important;font-size:14px!important;line-height:1.3}
-.flow svg .edgePath path,.flow svg path.transition,.flow svg .flowchart-link{stroke:#100f0f!important;fill:none!important;stroke-width:1.4px!important}
-.flow svg marker path{fill:#100f0f!important;stroke:#100f0f!important}
-.flow svg .edgeLabel rect,.flow svg .labelBkg{fill:#fffcf0!important}
-.flow svg .edgeLabel,.flow svg .edgeLabel p{background:#fffcf0!important}
-.flow svg .start-state circle,.flow svg .end-state circle,.flow svg .state-start,.flow svg .state-end{fill:#100f0f!important}
+/* Flows are drawn by the page itself (grid renderer at the end of the file): natural size, scroll sideways when narrow */
+.flow .m svg{display:block;height:auto;max-width:none}
+.fn{font-family:var(--font-ui);font-size:12.5px;font-weight:600;fill:#100f0f}
+.fn2{font-weight:400;font-size:11.5px;fill:#3f3b30}
+.fl{font-family:var(--font-ui);font-size:11.5px;fill:#100f0f;paint-order:stroke;stroke:#fffcf0;stroke-width:4px;stroke-linejoin:round}
+.key{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:.8rem;color:var(--fg-2);align-items:center}
+.key span{display:inline-flex;align-items:center;gap:6px}
+.key i{display:inline-block;width:26px;height:14px;border:1.3px solid #100f0f;background:#fffcf0}
+.key i.u{border-radius:7px;background:#f3eddc}.key i.m{background:#e6dcbd;border-radius:2px}.key i.d{transform:rotate(45deg);width:12px;height:12px;margin:0 7px}.key i.ev{border:0;border-top:1.4px dashed #100f0f;height:0;background:none}
 
 /* Sheets */
 /* Sheets are paper in both themes, like a drawing on a dark desk */
@@ -99,8 +98,8 @@ table.states th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;c
   <div class="tb-row">
     <div class="tb-cell tb-title"><div class="v">Nimbus</div><div class="s">UI reference · screens, states and flows · for the Phase 2 build</div></div>
     <div class="tb-cell"><div class="l">DWG NO.</div><div class="v">NB-UI-001</div></div>
-    <div class="tb-cell"><div class="l">REV</div><div class="v">B · 2026-10-27</div></div>
-    <div class="tb-cell"><div class="l">Sheets</div><div class="v">8 + 10 flows</div></div>
+    <div class="tb-cell"><div class="l">REV</div><div class="v">F · 2026-10-27</div></div>
+    <div class="tb-cell"><div class="l">Sheets</div><div class="v">13 + 14 flows</div></div>
     <div class="tb-cell"><div class="l">Units</div><div class="v">CSS px</div></div>
     <div class="tb-cell"><div class="l">Scale</div><div class="v">As noted</div></div>
     <div class="tb-cell"><div class="l">Source</div><div class="v">docs/SPEC.md §6–10, §12</div></div>
@@ -145,217 +144,153 @@ table.states th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;c
 <section>
   <div class="eyebrow">Part 1 · Flows</div>
   <h2>What the person does, what the cloud does</h2>
-  <p class="muted">Ten flows cover the whole product. Rounded nodes are things the person sees; rectangles are things the system does; diamonds are decisions. Each flow names the agents and the model tier that runs them.</p>
+  <p class="muted">Ten flows cover the product; the composer gets its own section after them. Each flow names the agents and the model tier that runs them.</p>
+  <div class="key"><span><i class="u"></i> what the person sees</span><span><i></i> system step</span><span><i class="m"></i> model call, tier named</span><span><i class="d"></i> decision</span><span><i class="ev"></i> event from the run</span></div>
 </section>
 
-<div class="flow-grid">
-
-<div class="flow wide">
-  <h3>F1 · Boot and first run</h3>
-  <div class="k">Preloader → workstream list → first workstream. The cloud is blue the whole way.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","secondaryColor":"#fffcf0","tertiaryColor":"#fffcf0","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart LR
-  A([Open app]) --> B[Boot screen: Glow Cloud, blue, 320px]
-  B --> C[GET /api/workstreams]
-  C --> D{Any workstreams?}
-  D -- no --> E([Empty state: 3 seeded templates + New workstream])
-  D -- yes --> F([Shell: rail · composer · timeline dock])
-  E --> G[Create workstream: title, goal, tools, schedule]
-  G --> F
-  F --> H([Select a workstream → last run shown, or Run button])
-  </pre></div>
+<div class="flow-grid" id="flows">
+<div class="flow wide"><h3>F1 · Boot and first run</h3><div class="k">Preloader → run view. On a fresh install the first goal typed into the composer becomes the first workstream.</div><div class="m" data-flow="f1"></div></div>
+<div class="flow wide"><h3>F2 · Start a run</h3><div class="k">Ultra plans once and the plan card shows before anything else spends. Super and Nano do the work concurrently.</div><div class="m" data-flow="f2"></div></div>
+<div class="flow wide"><h3>F3 · Approval gate</h3><div class="k">The only time the cloud turns orange on purpose. Nothing is sent, written or run outside the sandbox until a decision.</div><div class="m" data-flow="f3"></div></div>
+<div class="flow wide"><h3>F4 · Artifact versions</h3><div class="k">Writer output lands in the Inspector's Artifact tab; a change request in the composer bumps the version.</div><div class="m" data-flow="f4"></div></div>
+<div class="flow wide"><h3>F5 · Learning loop</h3><div class="k">Run two knows what run one learned. Nano does all of it after run.end.</div><div class="m" data-flow="f5"></div></div>
+<div class="flow wide"><h3>F6 · Inside chat apps via OpenClaw</h3><div class="k">Nimbus is the model; OpenClaw is the messenger. Approvals never happen in chat, only a link to the web composer.</div><div class="m" data-flow="f6"></div></div>
+<div class="flow wide"><h3>F7 · Always on</h3><div class="k">Two schedulers, one run table. Headless runs auto-approve only low-risk actions.</div><div class="m" data-flow="f7"></div></div>
+<div class="flow wide"><h3>F8 · Router and fallback</h3><div class="k">Per hop. The role tier is a ceiling; the router never falls up.</div><div class="m" data-flow="f8"></div></div>
+<div class="flow wide"><h3>F9 · Eval gate</h3><div class="k">Grades every hop, not just the final answer. A red check blocks the PR.</div><div class="m" data-flow="f9"></div></div>
+<div class="flow wide"><h3>F10 · Run status</h3><div class="k">What the header pill, the cloud and the rail show at each run state.</div><div class="m" data-flow="f10"></div></div>
 </div>
 
-<div class="flow">
-  <h3>F2 · Start a run</h3>
-  <div class="k">Ultra plans once, Super/Nano do the work concurrently.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart TD
-  A([Press Run, or send a message in the composer]) --> B[POST /api/runs → run.start]
-  B --> C[Cloud 160px in timeline header until first agent.start]
-  B --> D[Orchestrator · Ultra: plan, spawn_agents]
-  D --> E[agent.spawn ×N → connectors drawn]
-  E --> F[Researcher · Super]
-  E --> G[Analyst · Super]
-  E --> H[Checker · Nano]
-  F & G & H --> I[Reports back → orchestrator segment.wait ends]
-  I --> J{Handoff needed?}
-  J -- yes --> K[Writer · Super → artifact v1] --> L
-  J -- no --> L([Run summary, cost line, skill diff])
-  </pre></div>
-</div>
+<section>
+  <div class="eyebrow">Part 1b · Composer states, in full</div>
+  <h2>One box, six states, fourteen transitions</h2>
+  <p class="muted">The composer never changes shape. Only the placeholder, the primary button, the secondary button and what Enter does change with state, so the person can always predict what pressing Enter will do. The diagram shows the states; the two tables under it are the contract the build follows.</p>
+</section>
 
-<div class="flow">
-  <h3>F3 · Approval gate</h3>
-  <div class="k">The only time the cloud turns orange on purpose.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart TD
-  A[Agent calls request_approval action] --> B[approval.request event · run.status = waiting_approval]
-  B --> C([Cloud → orange · rail badge · approval card in composer])
-  C --> D{Person decides}
-  D -- Approve --> E[approval.resolve approved]
-  D -- Reject --> F[approval.resolve rejected → orchestrator told, picks alternative or finishes]
-  D -- Edit then approve --> G[Edited action payload → approved]
-  E & G --> H[Action runs inside the tool · segment.tool]
-  H --> I([Card shows resolved state · cloud → blue])
-  F --> I
-  C -. from chat apps .-> J([Text line with link to the web composer])
-  </pre></div>
-</div>
+<div class="flow wide"><h3>F11 · Composer state machine</h3><div class="k">Solid arrows are the person's actions. Dashed arrows are events from the run. Numbers match the transitions table.</div><div class="m" data-flow="f11"></div></div>
 
-<div class="flow">
-  <h3>F4 · Artifact versions</h3>
-  <div class="k">Writer output lands in the side panel; edits bump the version.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart LR
-  A[Writer · Super calls write_artifact] --> B[artifact.version v1]
-  B --> C([Panel opens on v1 · doc or code tab])
-  C --> D([Person asks for a change in the composer])
-  D --> E[Orchestrator → handoff to Writer with the request]
-  E --> F[artifact.version v2]
-  F --> G([Version tabs v1 · v2 · latest selected])
-  G --> H([Copy · Download later · Open in run summary])
-  </pre></div>
-</div>
+<div class="tbl"><table class="states">
+  <thead><tr><th>State</th><th>Placeholder</th><th>Primary button</th><th>Secondary</th><th>Enter does</th><th>Esc does</th><th>Elsewhere on screen</th></tr></thead>
+  <tbody>
+    <tr><td><b>idle</b></td><td>Give the crew a goal…</td><td>RUN (disabled until text or a file)</td><td>—</td><td>Nothing while empty</td><td>Nothing</td><td>Cloud blue. Timeline shows the last run, frozen.</td></tr>
+    <tr><td><b>drafting</b></td><td>(the draft)</td><td>RUN</td><td>—</td><td>Starts a run → planning</td><td>Clears the draft (two presses within 2 s; first press selects all)</td><td>Cost pill appears 400 ms after typing stops: "≈ $0.06 · Ultra ×1 · Super ×3 · Nano ×4". Chips for files and @mentions sit in the textarea row.</td></tr>
+    <tr><td><b>slash</b></td><td>(the draft, starts with / or @)</td><td>RUN</td><td>—</td><td>Picks the highlighted menu item</td><td>Closes the menu → drafting</td><td>Menu above the textarea, 6 rows, ↑↓ moves, typing filters.</td></tr>
+    <tr><td><b>planning</b></td><td>Planning… (read-only)</td><td>CANCEL · 3 s countdown</td><td>—</td><td>Nothing</td><td>Cancel → idle (draft restored)</td><td>Plan card appears in the transcript: agents + tiers, tools, estimate. Cloud Z6 in the timeline header.</td></tr>
+    <tr><td><b>running</b></td><td>Steer the crew…</td><td>STEER</td><td>STOP</td><td>Queues a steering note for the orchestrator's next turn; shows as a message row with a "queued" chip until picked up</td><td>Clears the draft</td><td>Timeline lanes fill. Legend shows tokens and cost per lane. Inspector follows the selected segment.</td></tr>
+    <tr><td><b>asked</b></td><td>Answer the crew…</td><td>REPLY</td><td>STOP</td><td>Sends the answer; the asking agent's lane resumes</td><td>Clears the draft</td><td>Question card in the transcript with option chips when the agent offered options; clicking a chip sends it.</td></tr>
+    <tr><td><b>waiting</b></td><td>Steer the crew… (still usable)</td><td>STEER</td><td>STOP</td><td>Queues a steering note, same as running</td><td>Clears the draft</td><td>Approval tray above the composer: count, first summary, APPROVE · REJECT · APPROVE ALL LOW-RISK. Cloud orange. Rail badge.</td></tr>
+  </tbody>
+</table></div>
 
-<div class="flow">
-  <h3>F5 · Learning loop</h3>
-  <div class="k">Run two knows what run one learned. Nano does all of it.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart TD
-  A[run.end] --> B[Learner · Nano reads transcript summary]
-  B --> C[Extract ≤ 8 memories → embed → memories table]
-  B --> D[Rewrite SKILL.md: what worked, sources, pitfalls]
-  C & D --> E([Run summary: memories list + skill diff])
-  E --> F([Next run of the same workstream])
-  F --> G[Orchestrator prompt = role prefix + SKILL.md + top-k memories + goal]
-  G --> H([Timeline shows a 'learned' chip on the orchestrator lane])
-  </pre></div>
-</div>
+<div class="tbl"><table class="states">
+  <thead><tr><th>#</th><th>From → to</th><th>Trigger</th><th>Guard or timing</th><th>What the person sees</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>idle → drafting</td><td>Typing, pasting, or attaching a file</td><td>—</td><td>RUN becomes enabled.</td></tr>
+    <tr><td>2</td><td>drafting → drafting</td><td>Typing stops</td><td>400 ms debounce; draft ≥ 12 chars; result cached by draft hash</td><td>Cost pill updates. Never blocks typing.</td></tr>
+    <tr><td>3</td><td>drafting → slash</td><td>Draft starts with / or the caret is right after @</td><td>—</td><td>Menu opens above the textarea.</td></tr>
+    <tr><td>4</td><td>slash → drafting</td><td>Enter on an item, click, or Esc</td><td>/run and /stop act immediately; the others fill the draft</td><td>Menu closes; the chosen command text is in the box.</td></tr>
+    <tr><td>5</td><td>drafting → planning</td><td>Enter or RUN</td><td>Draft not empty; Mode and Tier read from the chips; ⌘Enter forces Tier = Max</td><td>Box goes read-only, button says CANCEL with a countdown; plan card appears within ~2 s.</td></tr>
+    <tr><td>6</td><td>planning → idle</td><td>CANCEL or Esc</td><td>Within 3 s of the plan card</td><td>Run cancelled, draft restored, plan card marked "cancelled".</td></tr>
+    <tr><td>7</td><td>planning → running</td><td>3 s pass without Cancel</td><td>Orchestrator calls spawn_agents only after this</td><td>Lanes appear; placeholder flips to "Steer the crew…"; STOP appears.</td></tr>
+    <tr><td>8</td><td>running → running</td><td>Enter with a steering note</td><td>Note is delivered at the orchestrator's next turn boundary, never mid-tool</td><td>Message row with a "queued" chip; chip disappears when the orchestrator acknowledges it.</td></tr>
+    <tr><td>9</td><td>running → asked</td><td>Event question from ask_user</td><td>Run status stays running; only the asking lane pauses</td><td>Question card with option chips; placeholder "Answer the crew…"; REPLY.</td></tr>
+    <tr><td>10</td><td>asked → running</td><td>Enter, REPLY, or an option chip</td><td>—</td><td>Answer appears as a message; the lane resumes.</td></tr>
+    <tr><td>11</td><td>running → waiting</td><td>Event approval.request</td><td>Any action the Mode does not auto-allow</td><td>Tray slides in above the composer (160 ms); cloud orange; rail badge.</td></tr>
+    <tr><td>12</td><td>waiting → running</td><td>APPROVE, APPROVE &amp; ALWAYS ALLOW, REJECT WITH A NOTE, or APPROVE ALL LOW-RISK</td><td>Tray leaves when the pending count reaches 0</td><td>Card in the transcript shows the stamp row; cloud back to blue.</td></tr>
+    <tr><td>13</td><td>running · asked · waiting → idle</td><td>Event run.end, or STOP</td><td>STOP asks once ("Stop the run? Pending approvals are rejected.")</td><td>Run summary card: cost line, memories, SKILL.md diff. Placeholder back to "Give the crew a goal…".</td></tr>
+    <tr><td>14</td><td>idle → planning</td><td>/run from the slash menu, or a rail item's RUN</td><td>Uses the workstream's saved goal</td><td>Same as 5 without a draft.</td></tr>
+  </tbody>
+</table></div>
 
-<div class="flow">
-  <h3>F6 · Inside chat apps via OpenClaw</h3>
-  <div class="k">Nimbus is the model; OpenClaw is the messenger.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart LR
-  A([Telegram / WhatsApp message]) --> B[OpenClaw gateway · provider = nimbus]
-  B --> C[POST /v1/chat/completions · model = nimbus/inbox-triage]
-  C --> D[Run with trigger = chat]
-  D --> E{Approval needed?}
-  E -- no --> F[Writer text streamed as SSE chunks] --> G([Reply in the chat app])
-  E -- yes --> H[Line: ⚠ Needs your approval → web composer link] --> G
-  G -.-> I([Same run visible in the web timeline])
-  </pre></div>
-</div>
+<section>
+  <h3>A run, step by step, as the person sees it</h3>
+  <div class="tbl"><table class="states">
+    <thead><tr><th>Step</th><th>Person</th><th>Composer</th><th>Transcript · timeline · inspector</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Drops data.csv on the box, types "why did checkout conversion drop on Oct 14?"</td><td>drafting · chip "CSV · data.csv" · pill "≈ $0.06"</td><td>—</td></tr>
+      <tr><td>2</td><td>Presses Enter</td><td>planning · CANCEL 3 s</td><td>Plan card: Researcher · Super, Analyst · Super, Checker · Nano, Writer · Super; tools Web, Code; Send asks. Cloud Z6 in the timeline header.</td></tr>
+      <tr><td>3</td><td>Waits</td><td>running · "Steer the crew…" · STEER · STOP</td><td>Orchestrator lane solid then hatched; three spawn dots; three lanes start. Legend shows cost ticking per lane.</td></tr>
+      <tr><td>4</td><td>Clicks the Analyst segment</td><td>unchanged</td><td>Inspector → Agent I/O: the Analyst's brief, the run_code call on data.csv, the result, 2.1k tokens, Super, route badge ↓ (routed below ceiling).</td></tr>
+      <tr><td>5</td><td>Types "ignore refunds, only completed orders" and presses Enter</td><td>running · message queued</td><td>Message row with "queued" chip; chip clears when the orchestrator's next turn starts; Analyst gets a handoff with the note.</td></tr>
+      <tr><td>6</td><td>Waits</td><td>asked · "Answer the crew…" · REPLY</td><td>Question card from the Researcher: "Compare against Oct 7 or the 30-day average?" with two chips.</td></tr>
+      <tr><td>7</td><td>Clicks "30-day average"</td><td>running</td><td>Answer row; Researcher lane resumes.</td></tr>
+      <tr><td>8</td><td>Waits</td><td>waiting · tray "1 waiting · Send summary to #growth"</td><td>Cloud orange. Approval card in the transcript shows the exact payload preview.</td></tr>
+      <tr><td>9</td><td>Clicks APPROVE &amp; ALWAYS ALLOW</td><td>running</td><td>Stamp row on the card; a policy event: "allow send_message to #growth for this workstream". Cloud blue.</td></tr>
+      <tr><td>10</td><td>Waits</td><td>running</td><td>Writer lane; artifact.version v1; Inspector switches to Artifact, LATEST selected.</td></tr>
+      <tr><td>11</td><td>Types "shorter, lead with the number" · Enter</td><td>running · queued</td><td>Handoff to Writer; artifact v2; version tabs V1 · V2 · LATEST.</td></tr>
+      <tr><td>12</td><td>Waits</td><td>idle · "Give the crew a goal…"</td><td>Run summary: $0.07 · 38k tokens · 54 s · −46 % vs baseline · 2 routed hops; 5 memories; SKILL.md diff with the new policy line.</td></tr>
+    </tbody>
+  </table></div>
+</section>
 
-<div class="flow">
-  <h3>F7 · Always on</h3>
-  <div class="k">Two schedulers, one run table.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart LR
-  A[node-cron in the app] -- trigger = cron --> C[New run]
-  B[Nebius Serverless Job · pnpm run:job] -- trigger = job --> C
-  C --> D{Low-risk only?}
-  D -- yes --> E[Auto-approved, completes headless]
-  D -- no --> F[Left waiting_approval]
-  E & F --> G([Rail: unread dot on the workstream · count badge on the cloud])
-  G --> H([Person opens it later: timeline rebuilt from stored events])
-  </pre></div>
-</div>
+<section>
+  <div class="eyebrow">Part 1c · Interaction map</div>
+  <h2>What the person can do on each surface</h2>
+  <p class="muted">Every surface, every input. Hover reveals, click selects, keys do what the buttons do. Nothing is hidden behind a settings page except the API keys.</p>
+</section>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Surface</th><th>Hover</th><th>Click / tap</th><th>Drag</th><th>Keys</th><th>Reveals</th></tr></thead>
+  <tbody>
+    <tr><td><b>Rail item</b></td><td>Last run time and cost in the meta line</td><td>Selects the workstream; shows its last run frozen or the idle composer</td><td>—</td><td>↑↓ move · Enter open · ⌘R run now</td><td>Unread dot, clock glyph with next-run tooltip; right-click: Run now · Edit schedule · Archive</td></tr>
+    <tr><td><b>Run header</b></td><td>"−X % vs baseline" explains the baseline</td><td>Title renames inline</td><td>—</td><td>—</td><td>Status pill, elapsed · tokens · cost in tabular digits</td></tr>
+    <tr><td><b>Timeline segment</b></td><td>Tooltip: label + duration; matching transcript row highlights</td><td>Selects the hop → Inspector Agent I/O, transcript scrolls, legend row bold</td><td>—</td><td>←→ along the lane · ↑↓ change lane · Esc clear</td><td>Route badge tooltip: chosen tier, ceiling, reason, cached</td></tr>
+    <tr><td><b>Spawn dot</b></td><td>"Spawned Researcher, Analyst, Checker at 2.3 s"</td><td>Selects the orchestrator turn</td><td>—</td><td>—</td><td>Connector highlights to the children</td></tr>
+    <tr><td><b>Timeline strip edge</b></td><td>Resize cursor</td><td>Collapsed bar: click expands</td><td>Resize 56 ↔ 480</td><td>—</td><td>Collapsed: one sparkline per lane with the playhead</td></tr>
+    <tr><td><b>Plan card</b></td><td>—</td><td>CANCEL (3 s) · Save as workstream</td><td>—</td><td>Esc cancels within 3 s</td><td>Agents + tiers, tools allowed, estimate</td></tr>
+    <tr><td><b>Message row</b></td><td>Timestamp and hop cost</td><td>Agent chip selects the lane; route badge opens Agent I/O</td><td>—</td><td>—</td><td>Handoff rows show the handoff context on hover</td></tr>
+    <tr><td><b>Question card</b></td><td>—</td><td>Option chip answers immediately</td><td>—</td><td>1–4 pick a chip · Enter sends the typed answer</td><td>The asking lane paused, others continue</td></tr>
+    <tr><td><b>Approval card</b></td><td>Risk chip explains the level</td><td>Approve · Approve &amp; always allow · Reject with a note; payload expands</td><td>—</td><td>A · ⇧A · R on the focused card</td><td>Exact payload preview (3 lines → full); resolved: stamp row</td></tr>
+    <tr><td><b>Approval tray</b></td><td>—</td><td>Summary expands the list; Approve all low-risk</td><td>—</td><td>A first · R first · ⇧A all low-risk</td><td>Count, first summary</td></tr>
+    <tr><td><b>Composer</b></td><td>Chips show their full value</td><td>Chips toggle menus; primary button by state; STOP asks once</td><td>Drop files → attachment chips</td><td>⏎ send · ⇧⏎ newline · ⌘⏎ Max tier · Esc clear/close · / commands · @ lanes</td><td>Cost pill 400 ms after typing stops; slash menu; mention list</td></tr>
+    <tr><td><b>Inspector · Artifact</b></td><td>—</td><td>Version tabs; DOC · CODE toggle; Copy</td><td>—</td><td>[ ] previous/next version</td><td>Latest selected on arrival</td></tr>
+    <tr><td><b>Inspector · Agent I/O</b></td><td>—</td><td>Expand prompt prefix; expand each tool call</td><td>—</td><td>—</td><td>Brief, tool calls in/out, result, tokens, tier, route reason, cost</td></tr>
+    <tr><td><b>Inspector · Memory</b></td><td>—</td><td>"Forget" per memory; "Revert skill change" after a run</td><td>—</td><td>—</td><td>SKILL.md with the policy section highlighted</td></tr>
+    <tr><td><b>Glow Cloud</b></td><td>Eyes follow the pointer</td><td>Squish and wink; never an action</td><td>—</td><td>—</td><td>Blue: fine · Orange: needs you; count badge when &gt; 1 waiting</td></tr>
+    <tr><td><b>Phone</b></td><td>—</td><td>Tap selects; long-press shows the tooltip</td><td>Lanes scroll sideways</td><td>—</td><td>RUN tab badge while approvals wait; tray at the top of CHAT</td></tr>
+  </tbody>
+</table></div>
 
-<div class="flow">
-  <h3>F8 · Router and fallback</h3>
-  <div class="k">Per hop. Role tier is the ceiling; never falls up.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart TD
-  A[Hop: role, brief, tools, risk] --> B{Deterministic rule hits?}
-  B -- yes --> D[Tier chosen]
-  B -- no --> C[Nano classifier 0–2, cached] --> D
-  D --> E{Cache hit?}
-  E -- yes --> F[Reuse response · usage.cached = true]
-  E -- no --> G[Call Token Factory]
-  G --> H{429 / 5xx / timeout?}
-  H -- no --> I[route event · badge if chosen ≠ ceiling]
-  H -- yes --> J[Retry once] --> K{Still failing?}
-  K -- yes --> L[Fall one tier down · route.fallback = true] --> G
-  K -- no --> I
-  F --> I
-  </pre></div>
-</div>
+<section>
+  <div class="eyebrow">Part 1d · What makes it distinctive</div>
+  <h2>Seven things a judge will not have seen in the other submissions</h2>
+</section>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Distinctive</th><th>Why it lands</th><th>Deliberately not doing</th></tr></thead>
+  <tbody>
+    <tr><td>The timeline is the primary surface of a multi-agent run</td><td>Shows time, concurrency, model tier and money, not a chat log</td><td>Agents "talking to each other" theatre</td></tr>
+    <tr><td>Approval gate with policy learning</td><td>"Approve &amp; always allow" writes a line into SKILL.md you can read next run</td><td>An "autonomous mode" toggle that hides what ran</td></tr>
+    <tr><td>Cost-aware router with a live baseline delta</td><td>Unit economics on screen, run after run</td><td>Token counters with nothing to compare to</td></tr>
+    <tr><td>Composer whose primary button follows state</td><td>Enter is always predictable; steering a live crew feels safe</td><td>A free-text-only chat box</td></tr>
+    <tr><td>The cloud is an instrument</td><td>Blue means fine, orange means you are needed, across the whole app</td><td>A mascot that only decorates</td></tr>
+    <tr><td>OpenAI-compatible endpoint</td><td>OpenClaw, Hermes and NemoClaw use Nimbus as their model with a ten-line config</td><td>A bespoke chat bot as the headline integration</td></tr>
+    <tr><td>Evals that grade every hop</td><td>"Measure what actually breaks"; the CI gate is real</td><td>One final-answer score</td></tr>
+  </tbody>
+</table></div>
 
-<div class="flow">
-  <h3>F9 · Eval gate</h3>
-  <div class="k">Grades every hop; blocks the PR.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-flowchart LR
-  A([Pull request]) --> B[GitHub Actions: pnpm eval --cheap]
-  B --> C[Replay goldens with mocked tools]
-  C --> D[Deterministic asserts per hop]
-  C --> E[Nano judge 0–2 per hop]
-  D & E --> F{Pass rate ≥ 90% and all finals pass?}
-  F -- yes --> G([Check green · merge])
-  F -- no --> H([Check red · table in the job log])
-  </pre></div>
-</div>
+<section>
+  <div class="eyebrow">Part 1e · How it connects</div>
+  <h2>Every connection, and where it shows on screen</h2>
+</section>
+<div class="flow wide"><h3>F12 · System map</h3><div class="k">Solid arrows are requests; the app is the only thing that talks to models. Mock mode replaces Token Factory and Tavily with fixtures for zero-spend development.</div><div class="m" data-flow="f12"></div></div>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Connection</th><th>What flows</th><th>Where it shows in the UI</th></tr></thead>
+  <tbody>
+    <tr><td>Nebius Token Factory</td><td>Every agent call: Nemotron 3 Ultra · Super · Nano, OpenAI-compatible chat API with function calling; embeddings for memory</td><td>Model badge and cost per lane, route badge, cached chip</td></tr>
+    <tr><td>Tavily</td><td>Web search with sources for the Researcher</td><td>Source list in Agent I/O; citations in the artifact</td></tr>
+    <tr><td>SQLite on a volume</td><td>Workstreams, runs, events, artifacts, approvals, memories, skills, llm_cache</td><td>Timeline rebuilds after refresh; Memory tab</td></tr>
+    <tr><td>Nebius Serverless Endpoint</td><td>The hosted app</td><td>The demo URL</td></tr>
+    <tr><td>Nebius Serverless Job</td><td>Headless scheduled runs writing to the same volume</td><td>Runs with trigger "job" and an unread dot in the rail</td></tr>
+    <tr><td>OpenClaw · Hermes · NemoClaw</td><td>A chat message becomes a run through <code>/v1/chat/completions</code>; text streams back; approvals come back as a link</td><td>The same run in the web timeline, trigger "chat"</td></tr>
+    <tr><td>GitHub Actions</td><td><code>pnpm eval --cheap</code> on recorded runs</td><td>Check on the PR; eval table in the README</td></tr>
+    <tr><td>Mock mode</td><td>Scripted model, hash embeddings, fixture search</td><td>Identical UI, zero spend</td></tr>
+  </tbody>
+</table></div>
 
-<div class="flow wide">
-  <h3>F10 · Run status</h3>
-  <div class="k">What the header pill, the cloud and the rail show at each state.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-stateDiagram-v2
-  direction LR
-  [*] --> queued: POST /api/runs
-  queued --> running: run.start · cloud blue, header 'Running'
-  running --> waiting_approval: approval.request · cloud orange, pill 'Needs you'
-  waiting_approval --> running: approval.resolve
-  running --> done: run.end · pill 'Done · cost · −X% vs baseline'
-  running --> failed: run.error · cloud orange, lane outlined, ✕
-  waiting_approval --> failed: timeout 24h
-  done --> [*]
-  failed --> [*]
-  </pre></div>
-</div>
-
-<div class="flow wide">
-  <h3>F11 · Composer states</h3>
-  <div class="k">One box in every state. Only the placeholder, the primary button and what Enter does change, so Enter is always predictable.</div>
-  <div class="m"><pre class="mermaid">
-%%{init:{"theme":"base","themeVariables":{"primaryColor":"#f3eddc","primaryTextColor":"#100f0f","primaryBorderColor":"#100f0f","lineColor":"#100f0f","fontFamily":"Manrope, sans-serif","fontSize":"13px"}}}%%
-stateDiagram-v2
-  direction LR
-  [*] --> idle: 'Give the crew a goal…' · RUN
-  idle --> drafting: typing or attaching a file
-  drafting --> drafting: Nano estimate 400 ms after typing stops · cost pill
-  drafting --> slash: text starts with / or @ · menu above the box
-  slash --> drafting: pick an item or Esc
-  drafting --> planning: Enter or RUN · plan card in the transcript
-  planning --> idle: Cancel within 3 s
-  planning --> running: 'Steer the crew…' · STEER + STOP
-  running --> running: Enter queues a steering note for the orchestrator's next turn
-  running --> asked: crew asks a question · 'Answer the crew…' · REPLY
-  asked --> running: Enter sends the answer
-  running --> waiting: approval.request · tray above the composer, cloud orange
-  waiting --> running: Approve · Approve and always allow · Reject with a note
-  running --> idle: run.end or STOP · run summary in the transcript
-  </pre></div>
-</div>
-
-</div>
 
 <section>
   <div class="eyebrow">Part 2 · Dimensional sheets</div>
   <h2>How each surface is built</h2>
-  <p class="muted">Eight sheets in the dimensional-drawing style: grays only, variables instead of numbers, slots instead of copy. Each sheet has notes, a plan view, details and a variable table. Scroll sideways on a phone.</p>
+  <p class="muted">Thirteen sheets in the dimensional-drawing style: grays only, variables instead of numbers, slots instead of copy. Each sheet has notes, a plan view, details and a variable table; sheet 9 is the motion timing chart. Scroll sideways on a phone.</p>
 </section>
 
 <div id="sheets" style="display:grid;gap:28px"></div>
@@ -411,6 +346,97 @@ stateDiagram-v2
   </table></div>
 </section>
 
+<section>
+  <div class="eyebrow">Part 4 · Rev D checklist</div>
+  <h2>Built, verified, still open</h2>
+  <p class="muted">The same list the builder works from, in docs/UX-CHECKLIST.md. ✅ built and verified on screen or by a quoted test · 🟡 built, not verified or partial · ⬜ not built.</p>
+</section>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Surface</th><th>Item</th><th>Status</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td>Boot · sheet 2</td><td>Glow Cloud, title, fade</td><td>✅</td><td>in the demo video</td></tr>
+    <tr><td>Rail · sheet 6</td><td>List, unread dot, clock glyph, select vs run</td><td>✅</td><td>right-click menu ⬜</td></tr>
+    <tr><td>Run header · sheet 1</td><td>Rev C: no clipping, pills always visible</td><td>✅</td><td>measured at 1024</td></tr>
+    <tr><td>Timeline · sheet 3</td><td>Lanes, badges, wait hatch, ✕, connectors, playhead, adaptive axis, full-name badge</td><td>✅</td><td>keyboard ⬜ · drag resize 🟡</td></tr>
+    <tr><td>Plan card · sheet 4</td><td>Agents, tools, estimate, 3 s Cancel</td><td>✅</td><td>Save as workstream ⬜</td></tr>
+    <tr><td>Question · approval · tray · sheet 4</td><td>Chips, payload preview, Approve & always allow, Reject with a note, tray</td><td>✅</td><td>Approve all low-risk 🟡</td></tr>
+    <tr><td>Composer · sheet 4</td><td>Card, chips, cost pill, RUN / CANCEL / STEER + STOP / REPLY</td><td>✅</td><td>slash menu 🟡 · attach chips 🟡 · RUN under overlay ⬜</td></tr>
+    <tr><td>Run summary · sheet 6</td><td>Tiles, memories, diff, Revert</td><td>✅</td><td>arrives ~8 s after Done</td></tr>
+    <tr><td>Inspector · Artifact · Agent I/O · sheet 5</td><td>Versions, DOC · CODE, hop detail</td><td>✅</td><td></td></tr>
+    <tr><td>Inspector · Memory & skill · sheet 10</td><td>Rev D: counts, rule cards, skill cards, all memories, Forget · Revoke · Revert</td><td>⬜</td><td>today: raw monospace</td></tr>
+    <tr><td>Cloud moods · sheet 7</td><td>Blue · orange · count badge · learned chip</td><td>✅</td><td></td></tr>
+    <tr><td>Dither</td><td>Skeletons, ambient dither-glow</td><td>⬜</td><td>dithercn queued</td></tr>
+    <tr><td>Spend guards · record / replay</td><td>Caps, meter, record real, replay</td><td>🟡</td><td>built; exit tests not quoted</td></tr>
+    <tr><td>Phone · sheet 8</td><td>Tabs, badge, tray on CHAT</td><td>⬜</td><td></td></tr>
+  </tbody>
+</table></div>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Flow</th><th>Status</th><th>Flow</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td>F1 Boot and first run</td><td>🟡 Save as workstream ⬜</td><td>F7 Always on</td><td>🟡 cron ✅ · job on Nebius ⬜</td></tr>
+    <tr><td>F2 Start a run</td><td>✅</td><td>F8 Router and fallback</td><td>✅ 44.8 % (mock)</td></tr>
+    <tr><td>F3 Approval gate</td><td>✅</td><td>F9 Eval gate</td><td>🟡 15 goldens ✅ · CI run ⬜</td></tr>
+    <tr><td>F4 Artifact versions</td><td>✅</td><td>F10 Run status</td><td>✅</td></tr>
+    <tr><td>F5 Learning loop</td><td>🟡 Forget · Revoke ⬜</td><td>F11 Composer states</td><td>✅</td></tr>
+    <tr><td>F6 Inside chat apps</td><td>🟡 /v1 ✅ · OpenClaw ⬜</td><td>F12 System map</td><td>🟡 real models · deploy ⬜</td></tr>
+  </tbody>
+</table></div>
+
+
+<section>
+  <div class="eyebrow">Part 5 · Demo cases (rev E)</div>
+  <h2>Six workstreams, one hero: the crew ships Nimbus itself</h2>
+  <p class="muted">"Checkout conversion" was a generic analytics example. These cases have stakes, run real tools, hit the gate where it matters, and leave something the next run reuses. Full beats in docs/CASES.md; the video script v2 is in docs/SUBMISSION.md.</p>
+</section>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Workstream</th><th>Goal</th><th>Schedule</th><th>Tools</th><th>The gate</th><th>What run two reuses</th></tr></thead>
+  <tbody>
+    <tr><td><b>Ship Nimbus</b> · hero</td><td>Run the evals, find what fails, fix it, open a PR for review</td><td>on demand · nightly</td><td>run_code (real pnpm eval) · read_repo · write_artifact (diff) · open_pr</td><td>Open PR fix/* → Approve &amp; always allow writes <code>allow: open_pr fix/*</code></td><td>The rule, "run --only first", the ceiling-check memory</td></tr>
+    <tr><td>Hackathon radar</td><td>What changed on the hackathon pages and who else builds a personal agent</td><td>daily 09:00</td><td>web_search (Tavily) · fetch_url · write_artifact</td><td>send_message with the digest</td><td>Where submissions are listed; yesterday's doc to diff against</td></tr>
+    <tr><td>Morning brief</td><td>Inbox, calendar, GitHub notifications → one page and three draft replies</td><td>weekdays 08:00</td><td>read_files · fetch_url · write_artifact</td><td>Each reply is a send_message; tray with a count</td><td>Who can wait; the invites rule</td></tr>
+    <tr><td>Token Factory cost audit</td><td>Five most expensive hops, proposed router rules, saving proven by evals</td><td>Mondays 10:00</td><td>read_files · run_code (pnpm eval:ab) · write_artifact</td><td>write_file to router-rules.json</td><td>The baseline pill moves after approval</td></tr>
+    <tr><td>Release watch</td><td>Next.js, AI SDK and libsql releases: what breaks us; upgrade PR when safe</td><td>on release</td><td>fetch_url · read_repo · run_code (typecheck) · open_pr</td><td>The PR; reuses the fix/* rule if extended to chore/*</td><td>Which release notes matter</td></tr>
+    <tr><td>Checkout conversion drop</td><td>Why conversion fell on one day, from a CSV</td><td>on demand</td><td>run_code · web_search · write_artifact · send_message</td><td>Send summary to #growth</td><td>Template and eval data case only</td></tr>
+  </tbody>
+</table></div>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Video v2 · 2:40</th><th>What moves on screen</th></tr></thead>
+  <tbody>
+    <tr><td>0:00 Boot → shell</td><td>Cloud blinks and follows the cursor; dither glow drifts behind six workstreams, one unread</td></tr>
+    <tr><td>0:08 Ship Nimbus</td><td>Cost pill before Enter; plan card with the countdown ring</td></tr>
+    <tr><td>0:20 Crew at work</td><td>Analyst fails ✕ and retries on real <code>pnpm eval</code>; Agent I/O shows the output; route badges; −X % ticking</td></tr>
+    <tr><td>0:45 Question</td><td>Router or golden? Click Router; one lane waits</td></tr>
+    <tr><td>0:55 The gate</td><td>Diff artifact; cloud orange; "Open PR" card; Approve &amp; always allow; policy line</td></tr>
+    <tr><td>1:15 Learned</td><td>Stat tiles count up; skill diff; Memory &amp; skill tab v2</td></tr>
+    <tr><td>1:30 Always on</td><td>Radar ran at 09:00: unread dot, frozen timeline, approve from the tray</td></tr>
+    <tr><td>1:50 Run two</td><td>Learned chip; no approval; lower cost on real models</td></tr>
+    <tr><td>2:10 Chat apps + Nebius</td><td>curl to /v1 on the Serverless Endpoint; the run appears with trigger "chat"</td></tr>
+    <tr><td>2:25 Close</td><td>README model and eval tables; end card</td></tr>
+  </tbody>
+</table></div>
+
+<section>
+  <div class="eyebrow">Part 6 · Rev F surfaces</div>
+  <h2>Not a chat: an ops room</h2>
+  <p class="muted">Four surfaces beyond the composer, three timeline upgrades, one background per surface, and an impact line. Spec in docs/SPEC.md §17; sheets 11–13; flows F13–F14. Built from dithercn charts and backgrounds, and Arc's agent components (Pro) or the same contract hand-built.</p>
+</section>
+<div class="tbl"><table class="states">
+  <thead><tr><th>Surface</th><th>What it shows</th><th>Components</th><th>Background</th><th>Sheet</th></tr></thead>
+  <tbody>
+    <tr><td><b>Overview</b></td><td>Today's spend vs cap, runs, approvals waiting, memories; spend by tier (7 d), tokens by tier, runs calendar, scheduled health, router saving, impact</td><td>StatCard · AreaChart · DonutChart · Heatmap · UptimeBar · Gauge</td><td>contours</td><td>11</td></tr>
+    <tr><td><b>Plan v2</b></td><td>The crew's plan as an editable draft, then a live checklist</td><td>Arc agent-plan</td><td>—</td><td>12</td></tr>
+    <tr><td><b>Status pill</b></td><td>Background and scheduled runs at a glance; approve inline</td><td>Arc agent-status</td><td>—</td><td>12</td></tr>
+    <tr><td><b>Loop view</b></td><td>One hop as Gather → Act → Verify with retries; replay with speed</td><td>Arc agent-loop</td><td>—</td><td>13</td></tr>
+    <tr><td><b>Timeline</b></td><td>Trace a handoff path on click; scrub finished runs</td><td>Arc agent-timeline behaviors</td><td>dither-glow</td><td>3 · 13</td></tr>
+    <tr><td>Empty state</td><td>Dithered cloud, three goal chips</td><td>EmptyState</td><td>aurora</td><td>1</td></tr>
+    <tr><td>Approval waiting</td><td>Tray + card</td><td>—</td><td>ripples, one source, only while waiting</td><td>4</td></tr>
+    <tr><td>Memory &amp; skill</td><td>Rules, skill cards, memories</td><td>—</td><td>noise-field, text-clearing mask</td><td>10</td></tr>
+  </tbody>
+</table></div>
+<div class="flow wide"><h3>F13 · Plan draft → approve → live checklist</h3><div class="k">Manual runs stop at the plan; scheduled and chat runs keep the 3 s countdown.</div><div class="m" data-flow="f13"></div></div>
+<div class="flow wide"><h3>F14 · A background run through the status pill</h3><div class="k">Check on a scheduled run, and approve its one action, without leaving the screen you are on.</div><div class="m" data-flow="f14"></div></div>
+
+
 </div>
 
 <script>
@@ -423,7 +449,7 @@ class Sheet{
   constructor(no,name,arch,w,h){
     this.no=no;this.w=w||1700;this.h=h||1060;
     const wrap=document.createElement("div");wrap.className="sheet";
-    wrap.innerHTML=`<div class="sheet-head"><span><b>SHEET ${no}</b> · ${name}</span><span>${arch}</span></div><div class="frame"></div><div class="foot"><span>2026-10-27 · UI component reference · Nimbus</span><span>${name} · ${arch} · sheet ${no} of 8</span></div>`;
+    wrap.innerHTML=`<div class="sheet-head"><span><b>SHEET ${no}</b> · ${name}</span><span>${arch}</span></div><div class="frame"></div><div class="foot"><span>2026-10-27 · UI component reference · Nimbus</span><span>${name} · ${arch} · sheet ${no} of 13</span></div>`;
     document.getElementById("sheets").appendChild(wrap);
     const svg=el("svg",{viewBox:`0 0 ${this.w} ${this.h}`,role:"img","aria-label":`Dimensional drawing sheet ${no}: ${name}`},wrap.querySelector(".frame"));
     this.svg=svg;
@@ -440,7 +466,8 @@ class Sheet{
   hug(x,y,w,h,r){return this.rect(x,y,w,h,{r,fill:"var(--hug)",sw:1});}
   inset(x,y,w,h,r){return this.rect(x,y,w,h,{r,fill:"var(--inset)",sw:.8});}
   hatch(x,y,w,h,r){return el("rect",{x,y,width:w,height:h,rx:r||0,fill:this.ht,stroke:"currentColor","stroke-width":".8"},this.svg);}
-  slot(x,y,w,h,label,o){o=o||{};this.rect(x,y,w,h,{r:o.r||0,dash:"4 3",sw:.9});if(label)txt(this.svg,x+w/2,y+h/2+3,label,"lab");}
+  slot(x,y,w,h,label,o){o=o||{};this.rect(x,y,w,h,{r:o.r||0,dash:"4 3",sw:.9});
+    if(label){const t=txt(this.svg,x+w/2,y+h/2+3.5,label,"lab");const est=label.length*7.6;if(est>w-8){const fs=Math.max(6.5,10*(w-8)/est);t.setAttribute("style",`font-size:${fs.toFixed(1)}px;letter-spacing:.04em`);}}}
   line(x1,y1,x2,y2,o){o=o||{};return el("line",{x1,y1,x2,y2,stroke:"currentColor","stroke-width":o.sw||.7,"stroke-dasharray":o.dash,"marker-start":o.ms,"marker-end":o.me},this.svg);}
   ext(x1,y1,x2,y2){return this.line(x1,y1,x2,y2,{sw:.55});}
   dimH(x1,x2,y,label,o){o=o||{};const ya=o.from!==undefined?o.from:y;const off=ya<y?3:-3,ov=ya<y?5:-5;
@@ -453,7 +480,7 @@ class Sheet{
     const inside=(y2-y1)>=28;
     if(inside)this.line(x,y1,x,y2,{ms:this.ar,me:this.ar});else{this.line(x,y1-18,x,y1,{me:this.ar});this.line(x,y2,x,y2+18,{ms:this.ar});}
     const side=o.side||"right";
-    if(side==="rot"){txt(this.svg,x-4,(y1+y2)/2,label,"dim","middle",{transform:`rotate(-90 ${x-4} ${(y1+y2)/2})`});}
+    if(side==="rot"){txt(this.svg,x-12,(y1+y2)/2,label,"dim","middle",{transform:`rotate(-90 ${x-12} ${(y1+y2)/2})`});}
     else txt(this.svg,x+(side==="right"?6:-6)+(o.dx||0),(y1+y2)/2+4+(o.dy||0),label,"dim",side==="right"?"start":"end");}
   callout(x,y,tx,ty,label){el("circle",{cx:x,cy:y,r:2.2,fill:"currentColor"},this.svg);const sx=tx+(tx>x?-10:10);this.line(x,y,sx,ty,{sw:.7});this.line(sx,ty,tx,ty,{sw:.7});txt(this.svg,tx+(tx>x?3:-3),ty+3.5,label,"dim",tx>x?"start":"end");}
   nb(x,y,n){this.rect(x-7,y-7,14,14,{sw:.8});txt(this.svg,x,y+3.5,String(n),"dim");}
@@ -484,13 +511,13 @@ const k=.52, ox=330, oy=100, W=1440*k, H=900*k;
 s.title(ox,44,"PLAN VIEW · DESKTOP","SCALE 0.52:1 · VIEWPORT 1440 × 900");
 s.rect(ox,oy,W,H,{sw:1.6});
 const H0=48*k,W1=280*k,W3=420*k,H6=320*k,S1=16*k;
-s.inset(ox,oy,W,H0);s.slot(ox+S1,oy+6,180*k,H0-12,"TITLE · HUG");s.slot(ox+W-S1-300*k,oy+8,160*k,H0-16,"STATUS PILL · HUG");s.slot(ox+W-S1-Z(40),oy+4,Z(40),Z(40),"Z7");
+s.inset(ox,oy,W,H0);s.slot(ox+S1,oy+6,180*k,H0-12,"TITLE");s.slot(ox+W-S1-300*k,oy+8,160*k,H0-16,"SEARCH");s.slot(ox+W-S1-Z(40),oy+4,Z(40),Z(40),"Z7");
 function Z(v){return v*k}
-s.hug(ox,oy+H0,W1,H-H0);s.slot(ox+S1,oy+H0+S1,W1-2*S1,Z(44),"NEW WORKSTREAM · FILL");
+s.hug(ox,oy+H0,W1,H-H0);s.slot(ox+S1,oy+H0+S1,W1-2*S1,Z(44),"NEW · FILL");
 for(let i=0;i<5;i++)s.slot(ox+S1,oy+H0+S1+Z(56)+i*Z(60),W1-2*S1,Z(52),i===0?"ITEM · SELECTED":"ITEM");
 const cx=ox+W1, cw=W-W1-W3, H1=56*k, H6b=240*k, HC=100*k, HT=44*k;
-s.inset(cx,oy+H0,cw,H1);s.slot(cx+S1,oy+H0+6,cw-2*S1,H1-12,"RUN HEADER · TITLE · STATUS · TIME · TOKENS · COST · −X %");
-s.inset(cx,oy+H0+H1,cw,H6b);s.slot(cx+S1,oy+H0+H1+S1,cw-2*S1,H6b-2*S1,"TIMELINE STRIP · SEE SHEET 3 · COLLAPSES TO 56");
+s.inset(cx,oy+H0,cw,H1);s.slot(cx+S1,oy+H0+6,cw-2*S1,H1-12,"RUN HEADER · TITLE · STATUS · COST");
+s.inset(cx,oy+H0+H1,cw,H6b);s.slot(cx+S1,oy+H0+H1+S1,cw-2*S1,H6b-2*S1,"TIMELINE STRIP · SHEET 3 · MIN 56");
 const ty0=oy+H0+H1+H6b;
 s.rect(cx,ty0,cw,H-H0-H1-H6b,{sw:.8});
 const mx=cx+(cw-720*k)/2;
@@ -512,8 +539,8 @@ const b=.22;
 let tx=330,ty=690;s.rect(tx,ty,1024*b,768*b,{sw:1.2});s.inset(tx,ty,1024*b,48*b);s.hug(tx,ty+48*b,64*b,768*b-48*b);s.slot(tx+64*b+6,ty+48*b+6,1024*b-64*b-12,300*b,"COMPOSER");s.slot(tx+64*b+6,ty+360*b,1024*b-64*b-12,220*b,"TIMELINE");s.slot(tx+64*b+6,ty+590*b,1024*b-64*b-12,160*b,"PANEL · SHEET");
 txt(s.svg,tx,ty-6,"TABLET 1024 × 768 · RAIL → ICONS Z7 · PANEL → BOTTOM SHEET","lab","start");
 // phone
-tx=700;s.rect(tx,ty,390*b,844*b,{sw:1.2});s.inset(tx,ty,390*b,48*b);s.slot(tx+4,ty+48*b+4,390*b-8,540*b,"ONE VIEW AT A TIME");s.inset(tx,ty+844*b-56*b,390*b,56*b);
-for(let i=0;i<4;i++)s.slot(tx+4+i*(390*b/4),ty+844*b-56*b+4,390*b/4-8,56*b-8,["WORK","CHAT","RUN","DOC"][i]);
+tx=780;s.rect(tx,ty,390*b,844*b,{sw:1.2});s.inset(tx,ty,390*b,48*b);s.slot(tx+4,ty+48*b+4,390*b-8,540*b,"ONE VIEW");s.inset(tx,ty+844*b-56*b,390*b,56*b);
+for(let i=0;i<4;i++)s.slot(tx+4+i*(390*b/4),ty+844*b-56*b+4,390*b/4-8,56*b-8,"");
 txt(s.svg,tx,ty-6,"PHONE 390 × 844 · SEE SHEET 8","lab","start");
 s.dimV(tx+390*b+16,ty+844*b-56*b,ty+844*b,"H10 = 56",{from:tx+390*b});
 // tables
@@ -548,7 +575,7 @@ s.title(330,600,"EXPLODED VIEW · CLOUD LAYERS","BOTTOM → TOP · FROM glow-clo
 const layers=["SKY (background gradient)","SHADOW (ellipse, blur 5)","HALO (shape, blur 9)","EDGE (shape, blur 1.6)","RIM GRADIENT (masked)","BODY (radial, scale .9 × .87, blur 7)","SHINE (ellipse, .32)","EYES ×2 (pills, blink, wink)"];
 const g=el("g",{transform:"translate(400 920) matrix(.94 .17 -.34 .47 0 0)"},s.svg);
 layers.forEach((l,i)=>{const z=i*38;const r=el("rect",{x:0,y:-z*2.1,width:300,height:200,rx:16,fill:i===0?"var(--inset)":i===5?"var(--hug)":"var(--sheet)",stroke:"currentColor","stroke-width":i===7?1.6:1,"stroke-dasharray":i===2||i===3?"4 3":undefined,style:"vector-effect:non-scaling-stroke"},g);});
-layers.forEach((l,i)=>{txt(s.svg,780,640+i*22,`${i+1}  ${l}`,"nt","start");s.nb(768,636+i*22,i+1);});
+layers.forEach((l,i)=>{txt(s.svg,880,640+i*22,`${i+1}  ${l}`,"nt","start");s.nb(868,636+i*22,i+1);});
 let y=s.table(1360,80,"SIZE",[["Z1","cloud, boot","320"],["Z6","cloud, run header","160"],["Z7","cloud, top bar","40"],["H","title line","36"],["H","subtitle line","20"]]);
 y=s.table(1360,y+10,"MOTION",[["F","float amplitude","5 · 1.1 rad/s"],["B","breathe","±1.2 %"],["BL","blink","160 ms, 25 % double"],["WK","wink on click","340 ms"],["SQ","squish","0.9 → spring 220/9"],["FD","fade out","400 ms ease-out"]]);
 y=s.table(1360,y+10,"STATE",[["C1","color, idle","blue"],["C2","color, needs you","orange"],["RM","reduced motion","still + 1.2 s on click"]]);
@@ -557,13 +584,13 @@ y=s.table(1360,y+10,"STATE",[["C1","color, idle","blue"],["C2","color, needs you
 /* ---------- SHEET 3: TIMELINE ---------- */
 (function(){
 const s=new Sheet(3,"RUN TIMELINE","LANES · CONNECTORS · PLAYHEAD");
-s.notes(40,52,[[1,"Header H1: title (HUG), status pill, time · tokens · cost (tabular), route delta."],[2,"Legend column W2: dot Z5, agent name, model badge with provider glyph."],[3,"Lane pitch P1 = 66; segment height H3 = 26; pill radius R4 = 13."],[4,"Hatched segment = orchestrator waiting on children (segment.wait)."],[5,"Failed = outlined segment with ✕ glyph centered; lane keeps its color."],[6,"Spawn: dot Z5 on the parent lane at t, dashed drop 2 2 to the child's first segment."],[7,"Playhead: 1 px line full lane height; dot Z4 on the axis row; moves while running."],[8,"Axis: tick every AX = 5 s; scale grows in 5 s steps so the playhead sits at ≈ 80 % width."],[0,"Hover: tooltip label + duration. Click: scroll composer to the event."]]);
+s.notes(40,52,[[1,"Header H1: title (HUG), status pill, time · tokens · cost (tabular), route delta."],[2,"Legend column W2: dot Z5, agent name, model badge with provider glyph."],[3,"Lane pitch P1 = 66; segment height H3 = 26; pill radius R4 = 13."],[4,"Hatched segment = orchestrator waiting on children (segment.wait)."],[5,"Failed = outlined segment with ✕ glyph centered; lane keeps its color."],[6,"Spawn: dot Z5 on the parent lane at t, dashed drop 2 2 to the child's first segment."],[7,"Playhead: 1 px line full lane height; dot Z4 on the axis row; moves while running."],[8,"Axis (rev C): major tick step is the smallest of 1·2·5·10·15·30·60·120·300 s with ≥ 80 px between ticks; labels 0s · 5s · 45s, then 1:00 · 1:30; minor ticks at step ÷ 5 when the step is ≥ 10 s; running: playhead at ≈ 80 %, done: fit the run."],[9,"Segment label starts after the 14 px cap + 8; drawn only when the segment is ≥ label + 30 px wide; the route badge sits at the cap. Waiting label only when ≥ 160 px."],[10,"Legend: full model name in one badge, ↓ or ↻ glyph inside it when routed or fell back (hover: ceiling and reason); tokens · cost below, 3 decimals, — when 0."],[0,"Hover: tooltip label + duration. Click: scroll composer to the event."]]);
 const ox=330,oy=130,W=980,H1=56,W2=240,P1=66,H3=26,H7=32,lanes=5;
 s.title(ox,78,"PLAN VIEW · STRIP AT H6 = 240 (SHOWN EXPANDED)","SCALE 1:1 · 5 LANES SHOWN · LEGEND ADDS TOKENS · COST PER LANE");
 const H=H1+lanes*P1+H7;
 s.rect(ox,oy,W,H,{sw:1.6,r:10});
 s.inset(ox,oy,W,H1,10);
-s.slot(ox+16,oy+10,260,20,"RUN TITLE · HUG");s.slot(ox+16,oy+32,80,16,"STATUS");s.slot(ox+104,oy+32,160,16,"TIME · TOKENS · COST");s.slot(ox+272,oy+32,96,16,"−X % VS BASELINE");
+s.slot(ox+16,oy+10,260,20,"RUN TITLE · HUG");s.slot(ox+16,oy+32,80,16,"STATUS");s.slot(ox+104,oy+32,176,16,"TIME · TOKENS · COST");s.slot(ox+288,oy+32,150,16,"−X % VS BASELINE");
 s.slot(ox+W-16-64,oy+8,64,40,"Z6 → HIDES");
 // legend + lanes
 const lx=ox, gx=ox+W2, gw=W-W2;
@@ -571,7 +598,7 @@ const names=["ORCHESTRATOR","CHECKER","RESEARCHER","ANALYST","WRITER"];
 for(let i=0;i<lanes;i++){const y=oy+H1+i*P1;
   if(i%2===1)s.inset(gx,y,gw,P1);
   el("circle",{cx:lx+20,cy:y+24,r:4,fill:"currentColor"},s.svg);
-  s.slot(lx+32,y+14,120,18,names[i]);s.slot(lx+32,y+36,150,14,"MODEL BADGE · NEMOTRON");
+  s.slot(lx+32,y+14,120,18,names[i]);s.slot(lx+32,y+36,196,14,"MODEL BADGE · NEMOTRON");
 }
 // grid ticks
 const t0=gx+16, px=(gw-32)/25;
@@ -600,24 +627,24 @@ s.dimH(t0,t0+5*px,oy+H+22,"AX = 5 S",{from:oy+H});s.dimH(gx,t0,oy+H+22,"S1",{fro
 s.nb(ox+W/2,oy+H1/2+2,1);s.nb(lx+200,oy+H1+10,2);s.nb(gx+60,y0-12,3);s.nb(t0+4*px,y0+H3/2+1,4);s.nb(t0+4.7*px,fy-12,5);s.nb(t0+1.2*px,y0+H3+22,6);s.nb(phx+14,oy+H-H7-12,7);s.nb(t0+12.5*px,oy+H-8-14,8);
 // details row
 s.title(330,600,"DETAIL A · SEGMENT + ROUTE BADGE","SCALE 2.4:1");
-let dx=330,dy=630;s.hug(dx,dy,260,62,31);el("circle",{cx:dx,cy:dy,r:17,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1.2},s.svg);txt(s.svg,dx,dy+6,"↓","dim");
+let dx=330,dy=680;s.hug(dx,dy,260,62,31);el("circle",{cx:dx,cy:dy,r:17,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1.2},s.svg);txt(s.svg,dx,dy+6,"↓","dim");
 s.rad(dx,dy,31,"tl","R4 = H3 ÷ 2 = 13");s.dimV(dx+290,dy,dy+62,"H3 = 26",{from:dx+260});s.dimH(dx-17,dx+17,dy-44,"Z8 = 14",{from:dy-17});
 txt(s.svg,dx+130,dy+40,"↓ ROUTED BELOW CEILING · ↻ FALLBACK","lab");
 s.title(700,600,"DETAIL B · SPAWN CONNECTOR","SCALE 2.4:1");
-dx=700;dy=630;s.hug(dx,dy,200,62,31);el("circle",{cx:dx+120,cy:dy+62+14,r:10,fill:"currentColor"},s.svg);s.line(dx+120,dy+62+24,dx+120,dy+62+120,{sw:2,dash:"5 5"});s.hug(dx+120,dy+62+120,160,62,31);
+dx=700;dy=680;s.hug(dx,dy,200,62,31);el("circle",{cx:dx+120,cy:dy+62+14,r:10,fill:"currentColor"},s.svg);s.line(dx+120,dy+62+24,dx+120,dy+62+120,{sw:2,dash:"5 5"});s.hug(dx+120,dy+62+120,160,62,31);
 s.dimH(dx+110,dx+130,dy+62+40,"Z5 = 8",{from:dy+62+24});s.dimV(dx+300,dy+62,dy+62+120,"TO CHILD'S FIRST SEGMENT",{from:dx+200,side:"rot"});
 s.title(1060,600,"DETAIL C · PLAYHEAD ON AXIS","SCALE 2.4:1");
-dx=1060;dy=630;s.line(dx+60,dy,dx+60,dy+100,{sw:2.4});el("circle",{cx:dx+60,cy:dy+112,r:12,fill:"var(--sheet)",stroke:"currentColor","stroke-width":2.4},s.svg);s.line(dx,dy+112,dx+180,dy+112,{sw:.8});
-s.dimH(dx+48,dx+72,dy+140,"Z4 = 10",{from:dy+124});s.dimH(dx+60,dx+180,dy+165,"≈ 20 % HEADROOM",{from:dy+124});
+dx=1060;dy=680;s.line(dx+60,dy,dx+60,dy+100,{sw:2.4});el("circle",{cx:dx+60,cy:dy+112,r:12,fill:"var(--sheet)",stroke:"currentColor","stroke-width":2.4},s.svg);s.line(dx,dy+112,dx+180,dy+112,{sw:.8});
+s.dimH(dx+48,dx+72,dy+140,"Z4 = 10",{from:dy+124});s.dimH(dx+60,dx+180,dy+180,"≈ 20 % HEADROOM",{from:dy+150});
 // hatch legend
-s.title(330,810,"LINE KEY");
-s.hug(330,830,60,20,10);txt(s.svg,400,844,"ACTIVE · segment.think / segment.tool","nt","start");
-s.hatch(330,860,60,20,10);txt(s.svg,400,874,"WAITING · segment.wait (parent on children)","nt","start");
-s.rect(330,890,60,20,{r:10,sw:1.2});txt(s.svg,360,904,"✕","dim");txt(s.svg,400,904,"FAILED · agent.error","nt","start");
-s.line(330,930,390,930,{sw:.9,dash:"2 2"});txt(s.svg,400,934,"SPAWN · agent.spawn connector","nt","start");
+s.title(330,884,"LINE KEY");
+s.hug(330,902,60,20,10);txt(s.svg,400,916,"ACTIVE · segment.think / segment.tool","nt","start");
+s.hatch(330,932,60,20,10);txt(s.svg,400,946,"WAITING · segment.wait (parent on children)","nt","start");
+s.rect(330,962,60,20,{r:10,sw:1.2});txt(s.svg,360,976,"✕","dim");txt(s.svg,400,976,"FAILED · agent.error","nt","start");
+s.line(330,1002,390,1002,{sw:.9,dash:"2 2"});txt(s.svg,400,1006,"SPAWN · agent.spawn connector","nt","start");
 let y=s.table(1436,80,"SIZE",[["H1","header","56"],["W2","legend","240"],["P1","lane pitch","66"],["H3","segment","26"],["H7","axis row","32"],["Z4","playhead dot","10"],["Z5","spawn dot","8"],["Z8","route badge","14"]]);
 y=s.table(1436,y+10,"RADIUS",[["R1","dock","10"],["R4","segment pill","H3 ÷ 2 = 13"]]);
-y=s.table(1436,y+10,"TIME",[["AX","tick","5 s"],["SC","scale step","+5 s when playhead > 80 %"],["RF","redraw","requestAnimationFrame"],["RM","reduced motion","no playhead animation"]]);
+y=s.table(1436,y+10,"TIME",[["AX","tick step","1·2·5·10·15·30·60·120·300 s"],["TG","min tick gap","80 px"],["SC","scale","elapsed × 1.25 while running"],["FT","done","fit · elapsed × 1.04"],["RF","redraw","requestAnimationFrame"],["RM","reduced motion","no playhead animation"]]);
 y=s.table(1436,y+10,"ORDER",[["L0","orchestrator","always first"],["Ln","children","by first agent.spawn"],["L+","learner","appended after run.end"]]);
 })();
 
@@ -645,21 +672,20 @@ s.dimV(ox+MW+22,y,y+44,"H12 = 44",{from:ox+MW});s.nb(ox+MW/2-30,y+22,5);
 y=oy+262;const TA=44,TB=40,CH=8+TA+8+TB+8;
 s.rect(ox,y,MW,CH,{r:10,sw:1.6});
 s.hug(ox+16,y+16,118,28,14);txt(s.svg,ox+75,y+34,"CSV · DATA.CSV ✕","lab");s.hug(ox+142,y+16,96,28,14);txt(s.svg,ox+190,y+34,"@RESEARCHER","lab");
-s.slot(ox+246,y+12,MW-262,TA-4,"TEXTAREA · PLACEHOLDER BY STATE");
+s.slot(ox+246,y+12,MW-290,TA-4,"TEXTAREA · PLACEHOLDER BY STATE");
 s.line(ox+12,y+8+TA+8,ox+MW-12,y+8+TA+8,{sw:.6,dash:"2 3"});
 const ty=y+8+TA+8+6;
 [["+ ATTACH",84],["TOOLS ▾",78],["MODE ▾ ASK EACH",130],["TIER ▾ AUTO",104]].reduce((x,[l,w])=>{s.rect(x,ty,w,28,{r:14,sw:.9});txt(s.svg,x+w/2,ty+18,l,"lab");return x+w+8;},ox+16);
 s.hug(ox+MW-16-96-8-80,ty,80,28,14);txt(s.svg,ox+MW-16-96-8-40,ty+18,"≈ $0.06","lab");
 s.rect(ox+MW-16-96,ty-4,96,36,{r:6,sw:1.6,fill:"var(--hug)"});txt(s.svg,ox+MW-16-48,ty+18,"RUN ⏎","lab");
-s.dimV(ox+MW+22,y,y+CH,"HC = 100 (1 LINE)",{from:ox+MW});s.dimV(ox+MW+64,y+8,y+8+TA,"TA ≥ 44",{from:ox+MW});s.dimV(ox+MW+64,ty-6,ty+34,"H11 = 40",{from:ox+MW});
-s.dimH(ox,ox+16,y+CH+16,"S1",{from:y+CH});s.dimH(ox+MW-16-96,ox+MW-16,y+CH+16,"≥ 96",{from:y+CH});s.dimH(ox+16,ox+134,y-12,"CHIP · HUG · 28",{from:y+16});
-s.rad(ox,y,10,"tl","R1 = 10");
-s.nb(ox+MW/2+60,y+30,1);s.nb(ox+16+84+8+78+8+130+8+104+26,ty+14,2);s.nb(ox+MW-16-96-8-80-26,ty+14,3);s.nb(ox+MW-16-48,ty+46,4);s.nb(ox+190,y-10,8);
+s.dimV(ox+MW+22,y,y+CH,"HC = 100",{from:ox+MW});s.dimV(ox+MW+100,y+8,y+8+TA,"TA ≥ 44",{from:ox+MW});s.dimV(ox+MW+100,ty-6,ty+34,"H11 = 40",{from:ox+MW});
+s.dimH(ox,ox+16,y+CH+16,"S1",{from:y+CH});s.dimH(ox+MW-16-96,ox+MW-16,y+CH+36,"≥ 96",{from:y+CH});
+s.nb(ox+MW-28,y+30,1);s.nb(ox+16+84+8+78+8+130+8+104+26,ty+14,2);s.nb(ox+MW-16-96-8-80-26,ty+14,3);s.nb(ox+MW-16-48,ty+44,4);s.nb(ox+190,y-10,8);
 // details row 1: states
-s.title(360,460,"DETAIL A · COMPOSER STATES","SCALE 0.6:1 · SAME BOX, DIFFERENT PLACEHOLDER AND BUTTON");
+s.title(360,490,"DETAIL A · COMPOSER STATES","SCALE 0.6:1 · SAME BOX, DIFFERENT PLACEHOLDER AND BUTTON");
 const k=.6,sw=720*k,sh=100*k;
 [["IDLE","GIVE THE CREW A GOAL…","RUN",null],["DRAFTING","WHY DID CHECKOUT CONVERSION DROP ON OCT 14?","RUN","≈ $0.06"],["RUNNING","STEER THE CREW…","STEER","STOP"],["ASKED","ANSWER THE CREW…","REPLY",null]].forEach(([st,ph,btn,extra],i)=>{
-  const x=360+(i%2)*(sw+40), yy=490+Math.floor(i/2)*(sh+44);
+  const x=360+(i%2)*(sw+40), yy=522+Math.floor(i/2)*(sh+44);
   s.rect(x,yy,sw,sh,{r:6,sw:1.2});s.slot(x+10,yy+8,sw-20,26,ph);s.line(x+8,yy+40,x+sw-8,yy+40,{sw:.5,dash:"2 3"});
   s.rect(x+10,yy+46,50,16,{r:8,sw:.7});s.rect(x+66,yy+46,46,16,{r:8,sw:.7});s.rect(x+118,yy+46,70,16,{r:8,sw:.7});s.rect(x+194,yy+46,60,16,{r:8,sw:.7});
   let bx=x+sw-10-58;s.rect(bx,yy+44,58,22,{r:4,sw:1.2,fill:"var(--hug)"});txt(s.svg,bx+29,yy+58,btn,"lab");
@@ -690,7 +716,7 @@ tyy=s.table(1360,tyy+10,"MODES",[["M1","Ask each action","default"],["M2","Auto 
 const s=new Sheet(5,"INSPECTOR · ARTIFACT TAB","SIDE PANEL · TABS · VERSIONS · DOC/CODE");
 s.notes(40,52,[[1,"Inspector W3 = 420, full height under the top bar; slides in 240 ms when a run starts. Tabs: ARTIFACT · AGENT I/O · MEMORY."],[2,"Tab row H8 = 40: the three inspector tabs; close glyph right. DOC · CODE is a toggle on the version strip."],[3,"Version strip: tabs H9 = 28, pill R4; latest is selected on arrival; max 6 visible then scroll."],[4,"Body: doc renders markdown at 15/1.6 inside S1; code renders mono 13/1.5 with line numbers gutter G1 = 40."],[5,"Toolbar at the bottom: copy, open in run summary; HUG; end-aligned."],[0,"Tablet: becomes a bottom sheet at 60 % height. Phone: the DOC tab (sheet 8)."]]);
 const ox=360,oy=90,W=420,H=680,H8=40,H9=28;
-s.title(ox,78,"PLAN VIEW","SCALE 1:1 · HEIGHT 900 − H0 CROPPED");
+s.title(ox,44,"PLAN VIEW","SCALE 1:1 · HEIGHT 900 − H0 CROPPED");
 s.rect(ox,oy,W,H,{sw:1.6});
 s.inset(ox,oy,W,H8);s.slot(ox+12,oy+10,80,20,"ARTIFACT");s.slot(ox+100,oy+10,90,20,"AGENT I/O");s.slot(ox+198,oy+10,80,20,"MEMORY");s.slot(ox+W-12-24,oy+8,24,24,"✕");
 const vy=oy+H8+8;[["V1",48],["V2",48],["LATEST",72]].reduce((x,[l,w])=>{s.rect(x,vy,w,H9,{r:14,sw:l==="LATEST"?1.6:.8,fill:l==="LATEST"?"var(--hug)":"none"});txt(s.svg,x+w/2,vy+18,l,"lab");return x+w+8;},ox+12);
@@ -699,10 +725,10 @@ s.slot(ox+12,vy+H9+12,W-24,H-H8-H9-20-12-56,"BODY · DOC OR CODE · SCROLL-Y");
 s.line(ox+12+40,vy+H9+12,ox+12+40,oy+H-68,{sw:.6,dash:"2 3"});txt(s.svg,ox+32,vy+H9+30,"G1","lab");
 s.inset(ox,oy+H-48,W,48);s.slot(ox+W-12-96,oy+H-38,96,28,"COPY · OPEN");
 s.dimH(ox,ox+W,oy-18,"W3 = 420",{from:oy});s.dimV(ox+W+22,oy,oy+H8,"H8 = 40",{from:ox+W});s.dimV(ox+W+22,vy,vy+H9,"H9 = 28",{from:ox+W});s.dimV(ox+W+22,oy+H-48,oy+H,"48",{from:ox+W});
-s.dimH(ox,ox+12,oy+H+16,"S2",{from:oy+H});s.dimH(ox+12,ox+52,oy+H+16,"G1 = 40",{from:oy+H});
+s.dimH(ox,ox+12,oy+H+16,"S2",{from:oy+H});s.dimH(ox+12,ox+52,oy+H+38,"G1 = 40",{from:oy+H});
 s.nb(ox+W/2,oy+H8/2+2,2);s.nb(ox+230,vy+14,3);s.nb(ox+W/2,oy+H/2,4);s.nb(ox+60,oy+H-24,5);
-s.title(860,78,"DETAIL A · VERSION TAB","SCALE 2.4:1");
-let dx=860,dy=110;s.hug(dx,dy,172,67,33);txt(s.svg,dx+86,dy+40,"LATEST","lab");s.rad(dx,dy,33,"tl","R4 = H9 ÷ 2 = 14");s.dimV(dx+200,dy,dy+67,"H9 = 28",{from:dx+172});s.dimH(dx,dx+172,dy+90,"HUG · PAD S2",{from:dy+67});
+s.title(900,78,"DETAIL A · VERSION TAB","SCALE 2.4:1");
+let dx=900,dy=130;s.hug(dx,dy,172,67,33);txt(s.svg,dx+86,dy+40,"LATEST","lab");s.rad(dx+172,dy,33,"tr","R4 = H9 ÷ 2 = 14");s.dimV(dx-24,dy,dy+67,"H9 = 28",{from:dx,side:"left"});s.dimH(dx,dx+172,dy+90,"HUG · PAD S2",{from:dy+67});
 s.title(860,240,"DETAIL B · SLIDE-IN","SCALE 0.3:1");
 dx=860;dy=270;s.rect(dx,dy,1440*.3,900*.3,{sw:1});s.rect(dx+1440*.3-420*.3,dy+48*.3,420*.3,900*.3-48*.3,{dash:"4 3",sw:.9});s.line(dx+1440*.3+10,dy+120,dx+1440*.3-420*.3+10,dy+120,{me:s.ar,sw:1});txt(s.svg,dx+1440*.3-60,dy+112,"240 MS · EASE-OUT · TRANSLATE-X W3 → 0","lab","end");
 s.title(860,580,"DETAIL C · TABLET BOTTOM SHEET","SCALE 0.3:1");
@@ -720,21 +746,20 @@ const ox=360,oy=90;
 s.title(ox,44,"PLAN VIEW · RAIL ITEM","SCALE 1:1 · W1 − 2·S1 = 248");
 [["ITEM · DEFAULT",false],["ITEM · SELECTED",true],["ITEM · UNREAD + SCHEDULED",false]].forEach(([l,sel],i)=>{const y=oy+i*62;if(sel)s.inset(ox,y,248,52,8);else s.rect(ox,y,248,52,{r:8,sw:.8});
   if(i===2)el("circle",{cx:ox+16,cy:y+26,r:3,fill:"currentColor"},s.svg);
-  s.slot(ox+(i===2?26:12),y+10,140,14,"TITLE · FLEX");s.slot(ox+12,y+30,160,12,"LAST RUN · STATUS");if(i===2)s.slot(ox+248-12-20,y+16,20,20,"◷");txt(s.svg,ox+260,y+30,l,"lab","start");});
+  s.slot(ox+(i===2?26:12),y+10,i===2?160:174,14,"TITLE · FLEX");s.slot(ox+12,y+30,190,12,"LAST RUN · STATUS");if(i===2)s.slot(ox+248-12-20,y+16,20,20,"◷");txt(s.svg,ox+260,y+30,l,"lab","start");});
 s.dimH(ox,ox+248,oy-16,"248",{from:oy});s.dimV(ox-20,oy,oy+52,"52",{from:ox,side:"left"});s.dimH(ox,ox+12,oy+62*3,"S2",{from:oy+62*2+52});s.dimH(ox+13,ox+19,oy+62*3+22,"Z9",{from:oy+62*2+52});
-s.nb(ox+120,oy+62*2+26,1);s.nb(ox+200,oy+62+26,2);
+s.nb(ox+200,oy+62*2+40,1);s.nb(ox+200,oy+62+26,2);
 // run summary
 s.title(ox,320,"PLAN VIEW · RUN SUMMARY CARD","SCALE 0.8:1 · WIDTH MW");
 const k=.8,W=720*k,y0=350,H=400*k;s.rect(ox,y0,W,H,{r:10*k,sw:1.6});
 s.slot(ox+12,y0+12,200,16,"RUN DONE · TITLE");s.slot(ox+W-12-220,y0+12,220,16,"COST · TOKENS · TIME · −X %");
-for(let i=0;i<3;i++)s.inset(ox+12+i*((W-24-16)/3+8),y0+40,(W-24-16)/3,56,8);
-txt(s.svg,ox+W/2,y0+72,"STAT TILES · AGENTS · APPROVALS · ROUTED HOPS","lab");
+[["AGENTS · 4"],["APPROVALS · 1"],["ROUTED HOPS · 2"]].forEach(([l],i)=>{const tw=(W-24-16)/3,tx0=ox+12+i*(tw+8);s.inset(tx0,y0+40,tw,56,8);txt(s.svg,tx0+tw/2,y0+62,l,"lab");txt(s.svg,tx0+tw/2,y0+82,"STAT TILE · TABULAR","lab");});
 const cy=y0+112,ch=H-112-12,cw=(W-24-16)/2;
 s.rect(ox+12,cy,cw,ch,{r:8,sw:.8});s.slot(ox+20,cy+8,120,14,"MEMORIES · N");for(let i=0;i<5;i++){el("circle",{cx:ox+26,cy:cy+36+i*26,r:2.5,fill:"currentColor"},s.svg);s.slot(ox+36,cy+28+i*26,cw-44,16,"");}
 s.rect(ox+12+cw+16,cy,cw,ch,{r:8,sw:.8});s.slot(ox+20+cw+16,cy+8,120,14,"SKILL.MD · DIFF");
 for(let i=0;i<6;i++){const ly=cy+28+i*22;if(i===1||i===3)s.inset(ox+20+cw+16,ly,cw-16,18);s.slot(ox+20+cw+16,ly,cw-16,18,i===4?"− REMOVED LINE":i===1||i===3?"+ ADDED LINE":"");if(i===4)s.line(ox+28+cw+16,ly+9,ox+cw+cw-20,ly+9,{sw:1});}
-s.dimH(ox+12,ox+12+cw,y0+H+16,"(MW − 2·S2 − S1) ÷ 2",{from:y0+H});s.dimV(ox+W+22,cy+28,cy+28+22,"22 · DIFF ROW",{from:ox+W});s.dimV(ox+W+64,cy+28,cy+54,"26 · MEMORY ROW",{from:ox+W});
-s.nb(ox+W/2,y0+20,3);s.nb(ox+12+cw/2,cy+ch-14,4);s.nb(ox+12+cw+16+cw/2,cy+ch-14,5);s.nb(ox+W-12-110,y0+32,6);
+s.dimH(ox+12,ox+12+cw,y0+H+16,"(MW − 2·S2 − S1) ÷ 2",{from:y0+H});s.dimV(ox+W+22,cy+28,cy+28+22,"22 · DIFF ROW",{from:ox+W});s.dimV(ox-20,cy+28,cy+54,"26 · MEMORY ROW",{from:ox,side:"left"});
+s.nb(ox+W/2,y0+20,3);s.nb(ox+12+cw/2,cy+ch-14,4);s.nb(ox+12+cw+16+cw/2,cy+ch-14,5);s.nb(ox+W-12-220-16,y0+20,6);
 s.title(1000,320,"DETAIL A · LIST ROW SELECTED","SCALE 2:1");
 let dx=1000,dy=350;s.inset(dx,dy,300,104,16);s.rad(dx,dy,16,"tl","R2 = 8");s.dimV(dx+320,dy,dy+104,"52",{from:dx+300});s.dimH(dx,dx+24,dy+120,"S2 = 12",{from:dy+104});s.slot(dx+24,dy+20,160,28,"TITLE");s.slot(dx+24,dy+60,200,24,"META");
 s.rect(dx,dy-6,300,116,{dash:"4 3",sw:.8});s.dimV(dx-20,dy-6,dy+110,"T1 ≥ 44 ✓",{from:dx,side:"rot"});
@@ -758,19 +783,19 @@ s.title(ox,80,"PLAN VIEW · SIZES","SCALE 1:1");
 s.center(ox-10,oy+320,ox+700,oy+320);
 s.nb(ox+320+30+80,oy+120,1);
 // placements
-s.title(ox,420,"PLAN VIEW · PLACEMENTS","SCALE 0.4:1");
-const k=.4,W=1440*k,H=900*k,py=450;s.rect(ox,py,W,H,{sw:1.2});s.inset(ox,py,W,48*k);s.rect(ox+W-16*k-40*k,py+4*k,40*k,40*k,{dash:"4 3",sw:.9});txt(s.svg,ox+W-16*k-20*k,py+30*k,"Z7","lab");
+s.title(ox,480,"PLAN VIEW · PLACEMENTS","SCALE 0.4:1");
+const k=.4,W=1440*k,H=900*k,py=510;s.rect(ox,py,W,H,{sw:1.2});s.inset(ox,py,W,48*k);s.rect(ox+W-16*k-40*k,py+4*k,40*k,40*k,{dash:"4 3",sw:.9});txt(s.svg,ox+W-16*k-20*k,py+30*k,"Z7","lab");
 s.hug(ox,py+48*k,280*k,H-48*k);s.inset(ox+280*k,py+H-320*k,W-280*k-420*k,320*k);s.rect(ox+280*k+16*k,py+H-320*k+8*k,160*k,160*k,{dash:"4 3",sw:.9});txt(s.svg,ox+280*k+16*k+80*k,py+H-320*k+88*k,"Z6","lab");
 s.hug(ox+W-420*k,py+48*k,420*k,H-48*k);
 el("circle",{cx:ox+W-16*k-4*k,cy:py+6*k,r:5,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1},s.svg);txt(s.svg,ox+W-16*k-4*k,py+6*k+3,"2","dim");
 s.callout(ox+W-16*k-4*k,py+6*k-5,ox+W+40,py-10,"COUNT BADGE · 16 · WHEN > 1 WAITING");
 s.nb(ox+W-16*k-20*k-30,py+30*k,3);s.nb(ox+280*k+16*k+80*k+100,py+H-320*k+88*k,4);
 // state matrix
-s.title(1000,480,"STATE MATRIX");
+s.title(1000,580,"STATE MATRIX");
 const rows=[["RUN STATUS","Z1","Z6","Z7"],["boot","blue · sky","—","—"],["idle","—","—","blue"],["running","—","blue until agent.start","blue"],["waiting_approval","—","—","orange + badge"],["done","—","—","blue"],["failed","—","—","orange"]];
-let ry=510;rows.forEach((r,i)=>{r.forEach((c,j)=>txt(s.svg,1000+[0,120,180,320][j],ry,c,i===0?"th":"tt","start"));if(i===0)s.line(1000,ry+5,1420,ry+5,{sw:.8});ry+=18;});
-s.title(1000,680,"DETAIL A · EYES","SCALE 1:1 OF THE 240 VIEWBOX");
-let dx=1000,dy=710;[96.5,127.5].forEach(x=>s.rect(dx+x,dy+106,18,31,{r:9,sw:1.2}));s.dimH(dx+96.5,dx+114.5,dy+100,"18",{from:dy+106});s.dimH(dx+114.5,dx+127.5,dy+100,"13",{from:dy+106,dy:-12});s.dimV(dx+150,dy+106,dy+137,"31",{from:dx+145.5});s.rad(dx+96.5,dy+106,9,"tl","R = 9");
+let ry=610;rows.forEach((r,i)=>{r.forEach((c,j)=>txt(s.svg,1000+[0,120,180,320][j],ry,c,i===0?"th":"tt","start"));if(i===0)s.line(1000,ry+5,1420,ry+5,{sw:.8});ry+=18;});
+s.title(1000,760,"DETAIL A · EYES","SCALE 1:1 OF THE 240 VIEWBOX");
+let dx=1000,dy=790;[96.5,127.5].forEach(x=>s.rect(dx+x,dy+106,18,31,{r:9,sw:1.2}));s.dimH(dx+96.5,dx+114.5,dy+100,"18",{from:dy+106});s.dimH(dx+114.5,dx+127.5,dy+100,"13",{from:dy+106,dy:-12});s.dimV(dx+150,dy+106,dy+137,"31",{from:dx+145.5});s.rad(dx+96.5,dy+106,9,"tl","R = 9");
 txt(s.svg,dx+120,dy+160,"BLINK: scaleY 1 → .1 → 1 · 160 MS · WINK: RIGHT EYE 340 MS","lab");
 let ty=s.table(1360,80,"SIZE",[["Z1","boot","320"],["Z6","run header","160"],["Z7","top bar","40"],["ZB","count badge","16"]]);
 ty=s.table(1360,ty+10,"COLOR",[["C1","blue","idle · running · done"],["C2","orange","waiting · failed"]]);
@@ -799,7 +824,7 @@ s.title(820,78,"PLAN VIEW · CHAT TAB","SCALE 0.8:1");
 const bx=820,by=110,bk=.8;s.rect(bx,by,W*bk,H*bk,{sw:1.2,r:20});s.inset(bx,by,W*bk,82*bk);
 s.slot(bx+16*bk,by+100*bk,W*bk-32*bk,60*bk,"MESSAGE ROW");s.rect(bx+16*bk,by+180*bk,W*bk-32*bk,230*bk,{r:10*bk,sw:1.2});el("rect",{x:bx+16*bk,y:by+180*bk,width:3,height:230*bk,fill:"currentColor"},s.svg);
 s.slot(bx+28*bk,by+192*bk,200*bk,16*bk,"NEEDS APPROVAL");s.slot(bx+28*bk,by+216*bk,W*bk-56*bk,40*bk,"SUMMARY");s.inset(bx+28*bk,by+264*bk,W*bk-56*bk,60*bk,8);
-const byy=by+180*bk+230*bk-12*bk-36*bk;s.rect(bx+28*bk,byy-44*bk,W*bk-56*bk,36*bk,{r:6,sw:.9});txt(s.svg,bx+W*bk/2,byy-22*bk,"REJECT · EDIT","lab");s.hug(bx+28*bk,byy,W*bk-56*bk,36*bk,6);txt(s.svg,bx+W*bk/2,byy+22*bk,"APPROVE · FILL",   "lab");
+const byy=by+180*bk+230*bk-12*bk-36*bk;s.rect(bx+28*bk,byy-44*bk,W*bk-56*bk,36*bk,{r:6,sw:.9});txt(s.svg,bx+W*bk/2,byy-22*bk,"REJECT · ALWAYS ALLOW","lab");s.hug(bx+28*bk,byy,W*bk-56*bk,36*bk,6);txt(s.svg,bx+W*bk/2,byy+22*bk,"APPROVE · FILL",   "lab");
 s.rect(bx+16*bk,by+H*bk-90*bk-52*bk-8*bk,W*bk-32*bk,52*bk,{r:26*bk,sw:1.2});s.inset(bx,by+H*bk-90*bk,W*bk,90*bk,20);
 s.dimH(bx+16*bk,bx+W*bk-16*bk,by+180*bk+230*bk+18,"FILL − 2·V1",{from:by+180*bk+230*bk});s.nb(bx+W*bk/2+60,by+300*bk,4);s.nb(bx+W*bk/2+80,by+H*bk-90*bk-34*bk,5);
 s.title(820,800,"DETAIL A · TAB ITEM","SCALE 2:1");
@@ -808,10 +833,469 @@ let ty=s.table(1360,80,"VIEWPORT",[["V1","side gutter","max(16, inset)"],["ST","
 ty=s.table(1360,ty+10,"SIZE",[["H0","top bar","48 + ST"],["GL","lane gutter","32"],["H5","input","52"],["T1","touch min","44"]]);
 ty=s.table(1360,ty+10,"RULES",[["NX","page scroll-x","never"],["SX","lanes scroll-x","own container"],["WR","buttons wrap","< 360"],["TR","title","truncate 1 line"]]);
 })();
+
+/* ---------- SHEET 9: MOTION ---------- */
+(function(){
+const s=new Sheet(9,"MOTION","TIMING · EASING · REDUCED MOTION");
+s.notes(40,52,[[1,"Motion reports state; it never decorates. Segments grow in real time and the playhead follows the clock: nothing is eased to look faster than it is."],[2,"One easing for enters: cubic-bezier(.2,.8,.2,1), 160–240 ms. One spring for pops: overshoot ≈ 1.05, 160 ms. Linear only for the 3 s countdown and the hatch drift."],[3,"Durations are CSS variables: --m-fast 120 · --m-base 160 · --m-slow 240 · --m-ease."],[4,"Reduced motion: every transition is a cut, the playhead jumps once per second, the cloud is still, the hatch does not drift."],[5,"Bars are drawn at 1 px = 1 ms up to 400 ms; longer moments are broken and labeled."],[0,"Full table with triggers in docs/EXPERIENCE.md §5."]]);
+const rows=[
+ ["Boot title fade in","app load","enter",400,"ease-out","cut"],
+ ["Boot exit fade","workstreams loaded","enter",400,"ease-out","cut"],
+ ["Rail items stagger","after boot","enter",160,"ease-out · 30 ms stagger","cut"],
+ ["Cloud Z6 scales in","POST /api/runs","pop",240,"spring","cut"],
+ ["Plan card enters","plan event","enter",200,"ease-out","cut"],
+ ["Cancel countdown ring","plan event","linear",3000,"linear","text countdown"],
+ ["Cloud Z6 collapses","first agent.start","exit",200,"ease-in","cut"],
+ ["Lane row enters","agent.spawn","enter",180,"ease-out","cut"],
+ ["Spawn dot pops","agent.spawn","pop",160,"spring","cut"],
+ ["Connector draws","agent.spawn","linear",220,"linear · dashoffset","cut"],
+ ["Segment grows","segment.*","real time",0,"none · bound to tMs","1 s steps"],
+ ["Hatch drifts","segment.wait","loop",1200,"linear loop","still"],
+ ["Failed flash · ✕","agent.error","pulse",300,"ease · then 120 fade","cut"],
+ ["Route badge pops","route event","pop",160,"spring","cut"],
+ ["Axis rescale","playhead > 80 %","move",300,"ease-in-out","cut"],
+ ["Tray slides in","approval.request","enter",160,"ease-out","cut"],
+ ["Cloud mood swap","approval.request / resolve","swap",0,"next frame","same"],
+ ["Card resolved","approval.resolve","fade",200,"120 out · 200 in","cut"],
+ ["Button label swap","composer state","crossfade",120,"ease","cut"],
+ ["Cost pill count-up","estimate returns","count",300,"ease-out · tabular","final value"],
+ ["Slash menu","/ or @","enter",120,"ease-out · scale .98 → 1","cut"],
+ ["Inspector slides in","first run · click","enter",240,"ease-out","cut"],
+ ["Version tab pops","artifact.version","pop",160,"spring · 120 crossfade","cut"],
+ ["Run summary enters","run.end","enter",240,"ease-out","cut"],
+ ["Stat tiles count up","run.end","count",600,"ease-out","final value"],
+ ["Learned chip pops","next run start","pop",160,"spring","cut"]
+];
+const x0=330,xt=540,xb=760,bw=400,xe=1190,xr=1450,y0=96,rp=27;
+s.title(x0,80,"TIMING CHART","1 PX = 1 MS UP TO 400 MS");
+txt(s.svg,x0,y0+12,"MOMENT","th","start");txt(s.svg,xt,y0+12,"TRIGGER","th","start");txt(s.svg,xb,y0+12,"DURATION","th","start");txt(s.svg,xe,y0+12,"EASING","th","start");txt(s.svg,xr,y0+12,"REDUCED MOTION","th","start");
+s.line(x0,y0+18,xr+200,y0+18,{sw:.8});
+[0,100,200,300,400].forEach(ms=>{const x=xb+ms;s.line(x,y0+22,x,y0+22+rows.length*rp,{sw:.5,dash:"2 3"});txt(s.svg,x,y0+22+rows.length*rp+14,`${ms}`,"lab");});
+rows.forEach((r,i)=>{const y=y0+22+i*rp+18;
+  txt(s.svg,x0,y,r[0],"tt","start");txt(s.svg,xt,y,r[1],"tt","start");
+  const d=r[3];
+  if(d===0){s.line(xb,y-5,xb+bw,y-5,{sw:.6,dash:"6 4"});txt(s.svg,xb+bw/2,y-9,r[2].toUpperCase(),"lab");}
+  else if(d<=bw){const h=12;if(r[2]==="pop"||r[2]==="pulse")s.hug(xb,y-14,d,h,6);else if(r[2]==="linear"||r[2]==="loop")s.hatch(xb,y-14,d,h,2);else s.inset(xb,y-14,d,h,2);txt(s.svg,xb+d+6,y-4,`${d}`,"dim","start");}
+  else{const h=12;s.hatch(xb,y-14,bw-40,h,2);s.line(xb+bw-40,y-14,xb+bw-28,y+2,{sw:1});s.line(xb+bw-32,y-14,xb+bw-20,y+2,{sw:1});txt(s.svg,xb+bw-70,y-17,`${d>=1000?(d/1000)+" s":d+" ms"}`,"dim","start");}
+  txt(s.svg,xe,y,r[4],"tt","start");txt(s.svg,xr,y,r[5],"tt","start");
+  if(i%2===1)el("rect",{x:x0-6,y:y-16,width:xr+200-x0+6,height:rp,fill:"var(--inset)",opacity:.5},s.svg).parentNode.insertBefore(s.svg.lastChild,s.svg.children[6]);
+});
+// easing key
+const ky=y0+22+rows.length*rp+50;
+s.title(x0,ky,"EASING KEY","X = TIME · Y = PROGRESS · 120 × 80");
+[["EASE-OUT · cubic-bezier(.2,.8,.2,1)","M0 80 C24 16 24 0 120 0"],["SPRING · overshoot 1.05","M0 80 C20 -10 40 -14 60 -4 C80 6 96 2 120 0"],["LINEAR","M0 80 L120 0"],["EASE-IN · exits","M0 80 C96 80 96 64 120 0"]].forEach(([l,d],i)=>{const gx=x0+i*300,gy=ky+22;s.rect(gx,gy,120,80,{sw:.6});el("path",{d,transform:`translate(${gx} ${gy})`,fill:"none",stroke:"currentColor","stroke-width":1.6},s.svg);txt(s.svg,gx+130,gy+44,l,"nt","start");});
+})();
+
+/* ---------- SHEET 10: MEMORY & SKILL TAB ---------- */
+(function(){
+const s=new Sheet(10,"INSPECTOR · MEMORY & SKILL","RULES · SKILL CARDS · MEMORIES · REV D");
+s.notes(40,52,[[1,"Header strip 56: 'Next run uses' with tabular counts (memories · rules) and 'last learned · run N · time'; ✦ when either count > 0."],[2,"Rules: one card per allow: line. Plain-words rule, meta line (from run · date · used ×), REVOKE ghost on the right; asks once."],[3,"Skill: a toolbar (last rewrite · +a −b · SHOW DIFF · VIEW RAW · REVERT) then one card per ## heading, body 14/21. No monospace except identifiers and the raw view."],[4,"Memories: every memory of the workstream, newest first; text 14/20, meta 12; FORGET on hover and focus; NEW chip for this run's; filter input above 8 rows."],[5,"Contrast: text ≥ neutral-300 on neutral-950; cards bg-white/4 with border-white/10, radius R2; section gap S4 = 24; eyebrow 11 caps with 16 above and 8 below."],[0,"Motion: rows enter 160 ms; revoke/forget collapse 160 ms; REVERT crossfades the skill cards 120 ms."]]);
+const ox=360,oy=70,W=420,H8=40,S1=16;
+s.title(ox,56,"PLAN VIEW · MEMORY & SKILL TAB","SCALE 1:1 · W3 = 420 · SCROLL-Y");
+let y=oy;const H=950-oy;
+s.rect(ox,y,W,H,{sw:1.6});
+s.inset(ox,y,W,H8);s.slot(ox+12,y+10,80,20,"ARTIFACT");s.slot(ox+100,y+10,90,20,"AGENT I/O");s.hug(ox+198,y+6,96,28,6);txt(s.svg,ox+246,y+24,"MEMORY","lab");
+y+=H8;
+// header strip
+s.inset(ox,y,W,56);s.slot(ox+S1,y+10,100,16,"NEXT RUN USES");s.slot(ox+S1,y+30,200,18,"5 MEMORIES · 1 RULE · ✦");s.slot(ox+W-S1-120,y+30,120,18,"RUN 3 · 2 MIN AGO");
+s.dimV(ox+W+22,y,y+56,"56",{from:ox+W});s.nb(ox+W-S1-140,y+18,1);
+y+=56+S1;
+// rules
+s.slot(ox+S1,y,60,12,"RULES");y+=20;
+s.rect(ox+S1,y,W-2*S1,64,{r:8,sw:.9,fill:"var(--inset)"});s.slot(ox+S1+12,y+12,230,16,"ALLOW SEND_MESSAGE → #GROWTH");s.slot(ox+S1+12,y+36,200,14,"FROM RUN 3 · OCT 27 · USED 1×");s.rect(ox+W-S1-12-72,y+18,72,28,{r:6,sw:.9});txt(s.svg,ox+W-S1-12-36,y+36,"REVOKE","lab");
+s.dimV(ox+W+22,y,y+64,"64",{from:ox+W});s.nb(ox+S1+260,y+20,2);
+y+=64+24;
+// skill
+s.slot(ox+S1,y,60,12,"SKILL");y+=20;
+s.slot(ox+S1,y,150,16,"LAST REWRITE · RUN 3 · +2 −1");[["SHOW DIFF",80],["VIEW RAW",76],["REVERT",66]].reduce((x,[l,w])=>{const bx=x-w;s.rect(bx,y-6,w,28,{r:6,sw:.9});txt(s.svg,bx+w/2,y+12,l,"lab");return bx-6;},ox+W-S1);
+y+=34;
+[["STEPS",3],["SOURCES",2],["PITFALLS",2]].forEach(([h,n])=>{const ch=28+n*21+12;s.rect(ox+S1,y,W-2*S1,ch,{r:8,sw:.9,fill:"var(--inset)"});s.slot(ox+S1+12,y+10,90,14,h);for(let i=0;i<n;i++)s.slot(ox+S1+12,y+30+i*21,W-2*S1-24-(i%2)*60,16,"");if(h==="STEPS"){s.dimV(ox+W+22,y,y+ch,"HUG · 14/21",{from:ox+W});s.nb(ox+S1+120,y+17,3);}y+=ch+8;});
+y+=16;
+// memories
+s.slot(ox+S1,y,80,12,"MEMORIES · 5");s.slot(ox+W-S1-120,y-2,120,18,"FILTER · WHEN > 8");y+=22;
+for(let i=0;i<4;i++){const ry=y+i*52;if(i===0)s.hug(ox+S1,ry,W-2*S1,52,8);else s.rect(ox+S1,ry,W-2*S1,52,{r:8,sw:.7});s.slot(ox+S1+12,ry+9,W-2*S1-24-(i===0?110:60),16,"");s.slot(ox+S1+12,ry+31,160,12,"RUN 3 · OCT 27 · USED 2×");if(i===0)s.slot(ox+W-S1-12-44,ry+8,44,16,"NEW");s.rect(ox+W-S1-12-62,ry+26,62,20,{r:6,sw:.7,dash:i?"3 3":undefined});txt(s.svg,ox+W-S1-12-31,ry+40,"FORGET","lab");}
+s.dimV(ox+W+22,y,y+52,"52",{from:ox+W});s.nb(ox+S1+200,y+26,4);
+// left dims
+s.dimH(ox,ox+S1,oy+H+16,"S1",{from:oy+H});s.dimH(ox,ox+W,oy+H+38,"W3 = 420",{from:oy+H});
+// details (1.1:1 so they stay clear of the tables)
+s.title(880,78,"DETAIL A · MEMORY ROW","SCALE 1.1:1");
+let dx=880,dy=110;s.rect(dx,dy,430,57,{r:9,sw:1.2,fill:"var(--inset)"});s.slot(dx+13,dy+10,286,18,"TEXT · 14/20 · NEUTRAL-100 · 2 LINES MAX");s.slot(dx+13,dy+34,176,13,"META 12/16 · RUN · DATE · USED");s.slot(dx+430-13-48,dy+9,48,18,"NEW");s.rect(dx+430-13-68,dy+30,68,22,{r:6,sw:.9});txt(s.svg,dx+430-13-34,dy+45,"FORGET","lab");
+s.dimV(dx+452,dy,dy+57,"52",{from:dx+430});s.dimH(dx,dx+13,dy+74,"S2",{from:dy+57});s.rad(dx,dy,9,"tl","R2 = 8");
+s.title(880,230,"DETAIL B · RULE CARD","SCALE 1.1:1");
+dx=880;dy=262;s.rect(dx,dy,430,70,{r:9,sw:1.2,fill:"var(--inset)"});s.slot(dx+13,dy+13,253,18,"ALLOW  SEND_MESSAGE  →  #GROWTH");s.slot(dx+13,dy+40,220,15,"FROM RUN 3 · OCT 27 · USED 1×");s.rect(dx+430-13-100,dy+20,100,31,{r:7,sw:.9});txt(s.svg,dx+430-13-50,dy+39,"REVOKE · ASKS","lab");
+s.dimV(dx+452,dy,dy+70,"64",{from:dx+430});
+s.title(880,390,"DETAIL C · SKILL TOOLBAR + DIFF OPEN","SCALE 1:1");
+dx=880;dy=420;s.slot(dx,dy,150,16,"LAST REWRITE · RUN 3 · +2 −1");[["SHOW DIFF ▴",80],["VIEW RAW",76],["REVERT",66]].reduce((x,[l,w])=>{const bx=x-w;s.rect(bx,dy-6,w,28,{r:6,sw:l.startsWith("SHOW")?1.6:.9,fill:l.startsWith("SHOW")?"var(--hug)":"none"});txt(s.svg,bx+w/2,dy+12,l,"lab");return bx-6;},dx+430);
+for(let i=0;i<5;i++){const ly=dy+40+i*22;if(i===1||i===3)s.inset(dx,ly,430,18);s.slot(dx,ly,430,18,i===1||i===3?"+ ADDED LINE":i===4?"− REMOVED LINE":"");if(i===4)s.line(dx+10,ly+9,dx+420,ly+9,{sw:1});}
+let ty=s.table(1360,80,"SIZE",[["W3","panel","420"],["H8","tab row","40"],["H9","version tab","28"],["G1","line-no gutter","40"],["HT","toolbar","48"]]);
+ty=s.table(1360,ty+10,"TYPE",[["TD","doc body","15 / 1.6"],["TC","code body","13 / 1.5 mono"],["TL","tab label","12 caps"]]);
+ty=s.table(1360,ty+10,"MOTION",[["IN","slide in","240 ms"],["SW","version switch","120 ms fade"],["RM","reduced motion","cut"]]);
+})();
+
+/* ---------- SHEET 11: OVERVIEW ---------- */
+(function(){
+const s=new Sheet(11,"OVERVIEW","STAT ROW · CHARTS · IMPACT · REV F");
+s.notes(40,52,[[1,"First screen after boot. Stat row: 4 StatCards with sparklines; click lands in the matching surface."],[2,"Spend by tier, 7 days: AreaChart stacked Ultra · Super · Nano; crosshair scrub; click a day → that day's runs."],[3,"Tokens by tier: DonutChart; click a slice filters the last run's legend."],[4,"Runs calendar: Heatmap, 8 weeks; UptimeBar per scheduled workstream, 30 days; Gauge = spend with router ÷ at ceilings."],[5,"Impact row: PRs opened · messages sent · docs · $ saved · ≈ person-time saved (per-case estimate, labeled)."],[6,"Background: contours, cell 3, ≤ 6 % ink, still under reduced motion. Nothing else animates on this screen."],[0,"Charts animate in once (line draws, fill steps through dither levels); reduced motion shows the finished chart."]]);
+const k=.52,ox=330,oy=86,W=1440*k,H=900*k,S1=16*k,H0=48*k,W1=280*k;
+s.title(ox,70,"PLAN VIEW · OVERVIEW","SCALE 0.52:1 · 1440 × 900");
+s.rect(ox,oy,W,H,{sw:1.6});s.inset(ox,oy,W,H0);s.slot(ox+S1,oy+6,120,H0-12,"TITLE");s.slot(ox+W-S1-240,oy+6,240,H0-12,"STATUS PILL · WHEN A RUN IS LIVE");
+s.hug(ox,oy+H0,W1,H-H0);s.inset(ox+S1,oy+H0+S1,W1-2*S1,36,8);txt(s.svg,ox+W1/2,oy+H0+S1+22,"OVERVIEW · SELECTED","lab");for(let i=0;i<5;i++)s.slot(ox+S1,oy+H0+S1+48+i*30,W1-2*S1,24,"ITEM · SPARKLINE");
+const cx=ox+W1+S1,cw=W-W1-2*S1;let y=oy+H0+S1;
+for(let i=0;i<4;i++){const w=(cw-3*8)/4;s.rect(cx+i*(w+8),y,w,64,{r:8,sw:.9,fill:"var(--inset)"});s.slot(cx+i*(w+8)+8,y+8,w-16,12,["TODAY $ · CAP","RUNS TODAY","APPROVALS WAITING","MEMORIES · WEEK"][i]);s.slot(cx+i*(w+8)+8,y+26,60,22,"NUMBER");s.slot(cx+i*(w+8)+w-8-70,y+22,70,30,"SPARKLINE");}
+s.nb(cx+cw-10,y-8,1);
+y+=64+12;const ch=140;
+s.rect(cx,y,cw*.62,ch,{r:8,sw:.9});s.slot(cx+8,y+8,160,12,"SPEND BY TIER · 7 DAYS");s.slot(cx+8,y+28,cw*.62-16,ch-36,"AREACHART · STACKED · CROSSHAIR");s.nb(cx+cw*.62-14,y+14,2);
+s.rect(cx+cw*.62+8,y,cw*.38-8,ch,{r:8,sw:.9});s.slot(cx+cw*.62+16,y+8,120,12,"TOKENS BY TIER");el("circle",{cx:cx+cw*.62+8+(cw*.38-8)/2,cy:y+28+(ch-36)/2,r:44,fill:"none",stroke:"currentColor","stroke-width":14,"stroke-dasharray":"60 10 120 10 70 10"},s.svg);s.nb(cx+cw-14,y+14,3);
+y+=ch+12;const rh=120;
+s.rect(cx,y,cw*.42,rh,{r:8,sw:.9});s.slot(cx+8,y+8,120,12,"RUNS · 8 WEEKS");for(let r=0;r<7;r++)for(let c=0;c<16;c++)el("rect",{x:cx+10+c*((cw*.42-20)/16),y:y+28+r*12,width:(cw*.42-20)/16-2,height:10,fill:(r*7+c)%5?"var(--inset)":"var(--hug)",stroke:"currentColor","stroke-width":.3},s.svg);
+s.rect(cx+cw*.42+8,y,cw*.36-8,rh,{r:8,sw:.9});s.slot(cx+cw*.42+16,y+8,160,12,"SCHEDULED HEALTH · 30 D");for(let r=0;r<3;r++){s.slot(cx+cw*.42+16,y+30+r*28,70,10,"RADAR");for(let c=0;c<30;c++)el("rect",{x:cx+cw*.42+92+c*((cw*.36-100)/30),y:y+28+r*28,width:(cw*.36-100)/30-1.5,height:14,fill:c%9===4?"var(--hug)":"var(--inset)",stroke:"currentColor","stroke-width":.3},s.svg);}
+s.rect(cx+cw*.78+8,y,cw*.22-8,rh,{r:8,sw:.9});s.slot(cx+cw*.78+16,y+8,90,12,"ROUTER");el("path",{d:`M${cx+cw*.78+24} ${y+rh-20} A${(cw*.22-40)/2} ${(cw*.22-40)/2} 0 0 1 ${cx+cw-24} ${y+rh-20}`,fill:"none",stroke:"currentColor","stroke-width":8,"stroke-dasharray":"110 40"},s.svg);txt(s.svg,cx+cw*.89,y+rh-26,"−42 %","dim");s.nb(cx+cw*.42-14,y+14,4);
+y+=rh+12;s.inset(cx,y,cw,28,6);txt(s.svg,cx+cw/2,y+18,"IMPACT · 3 PRS · 2 MESSAGES · 5 DOCS · $0.61 SAVED · ≈ 3 H 40 MIN OF YOUR TIME (ESTIMATE)","lab");s.nb(cx+cw-14,y+14,5);
+s.dimV(ox+W+22,oy+H0+S1,oy+H0+S1+64,"64",{from:ox+W});s.dimV(ox+W+22,oy+H0+S1+76,oy+H0+S1+76+ch,"140",{from:ox+W});s.dimV(ox+W+22,oy+H0+S1+76+ch+12,oy+H0+S1+76+ch+12+rh,"120",{from:ox+W});
+s.nb(ox+W1+40,oy+H-30,6);
+s.title(ox,620,"DETAIL A · STAT CARD","SCALE 1.6:1");
+let dx=ox,dy=650;s.rect(dx,dy,280,102,{r:13,sw:1.2,fill:"var(--inset)"});s.slot(dx+13,dy+13,120,16,"TODAY · OF $5.00");s.slot(dx+13,dy+40,100,36,"$0.84");s.slot(dx+280-13-112,dy+36,112,48,"SPARKLINE · 7 D");s.slot(dx+13,dy+82,160,12,"▲ 12 % VS YESTERDAY");
+s.dimV(dx+300,dy,dy+102,"64",{from:dx+280});
+s.title(ox+340,620,"DETAIL B · CLICK TARGETS","SCALE —");
+[["Stat: spend","→ area chart"],["Stat: approvals","→ tray list"],["Area: a day","→ runs of that day"],["Donut: a tier","→ legend filter on last run"],["Heatmap: a day","→ rail filtered"],["Uptime: a day","→ that run"],["Gauge","→ Token Factory watch"]].forEach(([a,b],i)=>{txt(s.svg,ox+340,654+i*18,a,"tt","start");txt(s.svg,ox+480,654+i*18,b,"tt","start");});
+let ty=s.table(1360,80,"SIZE",[["HS","stat card","64"],["HA","area chart","140"],["HR","row 2","120"],["HI","impact row","28"],["G","gap","8 · 12"]]);
+ty=s.table(1360,ty+10,"CHARTS",[["SC","StatCard ×4","dithercn"],["AC","AreaChart","stacked · 3 series"],["DC","DonutChart","3 slices"],["HM","Heatmap","8 × 7 weeks"],["UB","UptimeBar","30 days ×3"],["GA","Gauge","0–60 %"]]);
+ty=s.table(1360,ty+10,"MOTION",[["IN","chart enters","draw · dither steps · once"],["BG","contours","cell 3 · ≤ 6 %"],["RM","reduced motion","finished frame"]]);
+})();
+
+/* ---------- SHEET 12: AGENT PLAN v2 + STATUS PILL ---------- */
+(function(){
+const s=new Sheet(12,"AGENT PLAN v2 · STATUS PILL","DRAFT → CHECKLIST · BACKGROUND RUNS · REV F");
+s.notes(40,52,[[1,"Plan card is a draft for manual runs: drag handle, editable step, agent chip + tier, remove; Add step at the end."],[2,"Footer: KEEP PLANNING sends the edits back for a second plan turn; APPROVE PLAN starts the crew."],[3,"After approval the card is a live checklist: tick on hop end, elapsed on the current step, ✕ on a failed one; collapses to one line after run.end."],[4,"Scheduled and chat runs keep the 3 s countdown; no one is there to edit."],[5,"Status pill 36 high in the top bar whenever a run is live elsewhere: ring in the workstream color, activity text, elapsed; count when several."],[6,"Panel 320: model, Step N of M segmented, last 3 steps with durations, PAUSE · STOP · OPEN RUN; APPROVE · DENY inline when waiting."],[0,"Blocks: Arc agent-plan and agent-status (Pro) or the same contract hand-built."]]);
+const ox=360,oy=70,MW=720;
+s.title(ox,56,"PLAN VIEW · PLAN CARD · DRAFT","SCALE 1:1 · WIDTH MW = 720");
+let y=oy;const rows=6,rh=36,ch=52+rows*rh+40+52;
+s.rect(ox,y,MW,ch,{r:10,sw:1.6});s.slot(ox+16,y+14,220,16,"PLAN · 6 STEPS · ULTRA");s.slot(ox+MW-16-120,y+14,120,16,"≈ $0.09 · ESTIMATE");s.slot(ox+16,y+34,400,14,"GOAL · ONE LINE");
+for(let i=0;i<rows;i++){const ry=y+52+i*rh;s.rect(ox+16,ry+6,10,24,{dash:"2 2",sw:.6});s.slot(ox+34,ry+8,MW-34-16-180,20,i===0?"MAP THE PUBLIC ROUTES · EDITABLE":"");s.slot(ox+MW-16-170,ry+8,120,20,"AGENT · TIER");s.slot(ox+MW-16-40,ry+8,24,20,"✕");}
+s.slot(ox+34,y+52+rows*rh+8,120,20,"+ ADD STEP");
+const fy=y+ch-16-36;s.rect(ox+MW-16-120,fy,120,36,{r:6,sw:1.6,fill:"var(--hug)"});txt(s.svg,ox+MW-16-60,fy+22,"APPROVE PLAN","lab");s.rect(ox+MW-16-120-8-120,fy,120,36,{r:6,sw:.9});txt(s.svg,ox+MW-16-120-8-60,fy+22,"KEEP PLANNING","lab");
+s.dimV(ox+MW+22,y+52,y+52+rh,"36 · ROW",{from:ox+MW});s.dimV(ox+MW+22,fy,fy+36,"H4 = 36",{from:ox+MW});s.nb(ox+MW/2,y+52+rh/2,1);s.nb(ox+MW/2,fy+18,2);
+// live checklist
+y+=ch+28;s.title(ox,y-8,"PLAN VIEW · SAME CARD · LIVE CHECKLIST","SCALE 1:1");
+const lh=52+rows*30+16;s.rect(ox,y,MW,lh,{r:10,sw:1.6});s.slot(ox+16,y+14,260,16,"PLAN · 3 OF 6 · 0:21");s.inset(ox+MW-16-200,y+16,200,8,4);s.hug(ox+MW-16-200,y+16,100,8,4);
+for(let i=0;i<rows;i++){const ry=y+52+i*30;const st=i<2?"✓":i===2?"◔":i===4?"✕":"○";txt(s.svg,ox+24,ry+14,st,"dim");s.slot(ox+40,ry+4,MW-40-16-100,20,"");s.slot(ox+MW-16-80,ry+4,80,20,i<2?"1.9 S":i===2?"0:04":"");}
+s.nb(ox+MW/2,y+52+2*30+10,3);
+// status pill + panel
+s.title(1120,56,"PLAN VIEW · STATUS PILL + PANEL","SCALE 1:1 · TOP BAR");
+let px=1120,py=70;s.inset(px,py,240,36,18);el("circle",{cx:px+18,cy:py+18,r:9,fill:"none",stroke:"currentColor","stroke-width":2,"stroke-dasharray":"40 10"},s.svg);s.slot(px+34,py+10,130,16,"ANALYST · RUN_CODE");s.slot(px+240-10-40,py+10,40,16,"0:12");
+s.dimV(px+262,py,py+36,"36",{from:px+240});s.nb(px+120,py+50,5);
+py+=70;s.rect(px,py,320,236,{r:10,sw:1.4});s.slot(px+12,py+12,160,14,"SHIP NIMBUS · NEMOTRON 3 SUPER");s.slot(px+320-12-80,py+12,80,14,"STEP 3 OF 6");for(let i=0;i<6;i++)el("rect",{x:px+12+i*50,y:py+34,width:44,height:4,rx:2,fill:i<3?"currentColor":"var(--hug)"},s.svg);
+for(let i=0;i<3;i++){s.slot(px+12,py+50+i*26,200,18,["READ 12 FILES","FOUND THE GOLDEN","EDITING ROUTER.TS"][i]);s.slot(px+320-12-50,py+50+i*26,50,18,["1.9 S","1.5 S","0 S"][i]);}
+s.inset(px+12,py+136,296,44,6);s.slot(px+20,py+142,180,14,"WAITING · OPEN PR FIX/…");s.rect(px+320-20-56,py+144,56,28,{r:6,sw:1.4,fill:"var(--hug)"});txt(s.svg,px+320-20-28,py+162,"APPROVE","lab");s.rect(px+320-20-56-8-48,py+144,48,28,{r:6,sw:.9});txt(s.svg,px+320-20-56-8-24,py+162,"DENY","lab");
+[["PAUSE",64],["STOP",56]].reduce((x,[l,w])=>{s.rect(x,py+194,w,28,{r:6,sw:.9});txt(s.svg,x+w/2,py+212,l,"lab");return x+w+8;},px+12);s.slot(px+320-12-90,py+198,90,20,"OPEN RUN ↗");
+s.dimH(px,px+320,py+236+16,"320",{from:py+236});s.nb(px+160,py+100,6);
+let ty=s.table(1360,420,"SIZE",[["MW","plan card","720"],["RS","draft row","36"],["RL","checklist row","30"],["HP","pill","36"],["WP","panel","320"],["H4","button","36"]]);
+ty=s.table(1360,ty+10,"EVENTS",[["pl","plan.steps[]","draft"],["ap","POST plan approve","start"],["kp","POST plan edits","re-plan"],["st","step tick","hop end"]]);
+ty=s.table(1360,ty+10,"MOTION",[["TK","tick","160 ms spring"],["CL","collapse after done","200 ms"],["RG","pill ring","1.2 s loop · still RM"],["PN","panel open","160 ms"]]);
+})();
+
+/* ---------- SHEET 13: LOOP VIEW + TIMELINE UPGRADES ---------- */
+(function(){
+const s=new Sheet(13,"LOOP VIEW · TIMELINE TRACE & SCRUB","AGENT I/O MODE 2 · REV F");
+s.notes(40,52,[[1,"Loop view: for the selected hop, a circle with Gather context → Take action → Verify, the model in the center and the loop count."],[2,"The active station is filled; under it the station card: a tool call with its result, or Retry with the reason."],[3,"The Analyst's failed run_code shows as loop 1 Verify → Retry, loop 2 Take action ✓."],[4,"Transport: PAUSE · STEP · REPLAY; speed 0.5 · 1 · 2×. Context column lists what the hop was given with token counts."],[5,"Timeline trace: click a segment and its handoff path upstream and downstream highlights; the rest dims to 35 %."],[6,"Scrub: on a finished run the playhead is draggable; transcript and Inspector follow; speed control shared with the loop view."],[0,"Blocks: Arc agent-loop and agent-timeline behaviors, or hand-built to this contract."]]);
+const ox=360,oy=80,W=420;
+s.title(ox,64,"PLAN VIEW · INSPECTOR · AGENT I/O · LOOP","SCALE 1:1 · W3 = 420");
+s.rect(ox,oy,W,560,{sw:1.6});s.inset(ox,oy,W,40);s.slot(ox+12,oy+10,80,20,"ARTIFACT");s.hug(ox+100,oy+6,96,28,6);txt(s.svg,ox+148,oy+24,"AGENT I/O","lab");s.slot(ox+204,oy+10,80,20,"MEMORY");
+s.slot(ox+16,oy+52,120,20,"TRANSCRIPT · LOOP");s.slot(ox+W-16-100,oy+52,100,20,"LOOP 2 · 0:07");
+const cxm=ox+W/2,cy=oy+230,r=90;el("circle",{cx:cxm,cy:cy,r:r,fill:"none",stroke:"currentColor","stroke-width":1.4},s.svg);
+[[0,-1,"GATHER CONTEXT"],[.87,.5,"TAKE ACTION"],[-.87,.5,"VERIFY"]].forEach(([dx,dy,l],i)=>{el("circle",{cx:cxm+dx*r,cy:cy+dy*r,r:7,fill:i===1?"currentColor":"var(--sheet)",stroke:"currentColor","stroke-width":1.4},s.svg);txt(s.svg,cxm+dx*(r+40),cy+dy*(r+26)+4,l,"lab");});
+s.slot(cxm-60,cy-14,120,16,"NEMOTRON 3 SUPER");s.slot(cxm-30,cy+8,60,12,"LOOP 2");
+s.line(cxm+.87*r,cy+.5*r+7,cxm+.87*r,cy+r+60,{sw:.8});s.rect(cxm+20,cy+r+60,170,56,{r:8,sw:1.2,fill:"var(--inset)"});s.slot(cxm+30,cy+r+70,120,14,"RUN_CODE ✓");s.slot(cxm+30,cy+r+90,150,14,"PNPM EVAL --ONLY … · 3 OF 3");
+s.line(cxm-.87*r,cy+.5*r+7,cxm-.87*r,cy+r+60,{sw:.8,dash:"3 3"});s.rect(ox+16,cy+r+60,150,56,{r:8,sw:.9});s.slot(ox+26,cy+r+70,100,14,"RETRY · LOOP 1");s.slot(ox+26,cy+r+90,130,14,"WRONG FLAG · --ONLY");
+s.nb(cxm,cy-r-24,1);s.nb(cxm+105,cy+r+48,2);s.nb(ox+90,cy+r+48,3);
+const ty0=oy+560-16-36;[["PAUSE",56],["STEP",52],["REPLAY",64]].reduce((x,[l,w])=>{s.rect(x,ty0,w,36,{r:6,sw:.9});txt(s.svg,x+w/2,ty0+22,l,"lab");return x+w+6;},ox+16);s.slot(ox+W-16-110,ty0+6,110,24,"0.5× · 1× · 2×");s.nb(ox+W/2,ty0-14,4);
+s.dimH(ox,ox+W,oy+560+18,"W3 = 420",{from:oy+560});
+// timeline trace
+s.title(860,64,"PLAN VIEW · TIMELINE · TRACE ON CLICK","SCALE 0.8:1");
+let tx=860,ty=80;const k=.8,TW=620,lanes=4,P1=66*k,H3=26*k;
+s.rect(tx,ty,TW,lanes*P1+30,{r:8,sw:1.2});
+const names=["ORCHESTRATOR","RESEARCHER","ANALYST","WRITER"];for(let i=0;i<lanes;i++){const y=ty+i*P1;s.slot(tx+8,y+P1/2-7,100,14,names[i]);}
+const gx=tx+130,px=(TW-150)/25;
+s.hug(gx,ty+(P1-H3)/2,3*px,H3,H3/2);s.hatch(gx+3*px,ty+(P1-H3)/2,8*px,H3,H3/2);
+el("rect",{x:gx+3.2*px,y:ty+P1+(P1-H3)/2,width:4*px,height:H3,rx:H3/2,fill:"var(--inset)",stroke:"currentColor","stroke-width":.6,opacity:.35},s.svg);
+s.hug(gx+3.6*px,ty+2*P1+(P1-H3)/2,5*px,H3,H3/2);s.hug(gx+11*px,ty+3*P1+(P1-H3)/2,4*px,H3,H3/2);
+el("circle",{cx:gx+3.6*px,cy:ty+(P1+H3)/2+6,r:4,fill:"currentColor"},s.svg);s.line(gx+3.6*px,ty+(P1+H3)/2+10,gx+3.6*px,ty+2*P1+(P1-H3)/2,{sw:1.4,dash:"2 2"});
+s.line(gx+8.6*px,ty+2*P1+P1/2,gx+11*px,ty+3*P1+P1/2,{sw:1.4,me:s.ar});
+el("rect",{x:gx+3.6*px-4,y:ty+2*P1+(P1-H3)/2-4,width:5*px+8,height:H3+8,rx:H3/2+4,fill:"none",stroke:"currentColor","stroke-width":1.6,"stroke-dasharray":"3 2"},s.svg);
+txt(s.svg,gx+6*px,ty+2*P1+P1-2,"SELECTED · PATH HIGHLIGHTED · OTHERS 35 %","lab");
+s.nb(gx+3.6*px-18,ty+(P1+H3)/2+6,5);
+// scrub
+ty+=lanes*P1+60;s.title(860,ty-8,"PLAN VIEW · SCRUB A FINISHED RUN","SCALE 0.8:1");
+s.rect(tx,ty,TW,70,{r:8,sw:1.2});s.line(gx,ty+50,gx+25*px,ty+50,{sw:.8});for(let t=0;t<=25;t+=5)txt(s.svg,gx+t*px,ty+64,`${t}S`,"lab");
+s.line(gx+14*px,ty+8,gx+14*px,ty+56,{sw:1.4});el("circle",{cx:gx+14*px,cy:ty+50,r:7,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1.6},s.svg);s.line(gx+14*px+12,ty+30,gx+19*px,ty+30,{sw:.8,me:s.ar});txt(s.svg,gx+19*px+6,ty+34,"DRAG · 0.5 · 1 · 2×","dim","start");
+s.nb(gx+14*px-20,ty+16,6);
+let tt=s.table(1360,520,"SIZE",[["CR","loop radius","90"],["SC","station card","170 × 56"],["TB","transport row","36"],["DIM","others on trace","35 %"]]);
+tt=s.table(1360,tt+10,"MOTION",[["ST","station switch","160 ms"],["RP","replay","real time × speed"],["TR","trace highlight","150 ms"],["SB","scrub","immediate"]]);
+})();
+
+/* ---------- SHEET 6: RAIL ITEM + RUN SUMMARY ---------- */
+(function(){
+const s=new Sheet(6,"RAIL ITEM · RUN SUMMARY","LIST ROW · MEMORIES · SKILL DIFF");
+s.notes(40,52,[[1,"Rail item: height 52, pad S2, title FLEX, schedule glyph HUG, unread dot Z9 = 6 before the title."],[2,"Selected item: inset fill, R2; hover: hug fill."],[3,"Run summary card appears in the composer after run.end: header, three stats, two columns."],[4,"Memories column: list rows 32 high with a dot and one line each (≤ 8)."],[5,"Skill diff column: unified diff, mono 12/1.5, added lines on inset, removed lines struck."],[6,"Cost line: cost · tokens · time · −X % vs baseline · route count. Tabular numerals."],[0,"Both columns stack under BP1."]]);
+const ox=360,oy=90;
+s.title(ox,44,"PLAN VIEW · RAIL ITEM","SCALE 1:1 · W1 − 2·S1 = 248");
+[["ITEM · DEFAULT",false],["ITEM · SELECTED",true],["ITEM · UNREAD + SCHEDULED",false]].forEach(([l,sel],i)=>{const y=oy+i*62;if(sel)s.inset(ox,y,248,52,8);else s.rect(ox,y,248,52,{r:8,sw:.8});
+  if(i===2)el("circle",{cx:ox+16,cy:y+26,r:3,fill:"currentColor"},s.svg);
+  s.slot(ox+(i===2?26:12),y+10,i===2?160:174,14,"TITLE · FLEX");s.slot(ox+12,y+30,190,12,"LAST RUN · STATUS");if(i===2)s.slot(ox+248-12-20,y+16,20,20,"◷");txt(s.svg,ox+260,y+30,l,"lab","start");});
+s.dimH(ox,ox+248,oy-16,"248",{from:oy});s.dimV(ox-20,oy,oy+52,"52",{from:ox,side:"left"});s.dimH(ox,ox+12,oy+62*3,"S2",{from:oy+62*2+52});s.dimH(ox+13,ox+19,oy+62*3+22,"Z9",{from:oy+62*2+52});
+s.nb(ox+200,oy+62*2+40,1);s.nb(ox+200,oy+62+26,2);
+// run summary
+s.title(ox,320,"PLAN VIEW · RUN SUMMARY CARD","SCALE 0.8:1 · WIDTH MW");
+const k=.8,W=720*k,y0=350,H=400*k;s.rect(ox,y0,W,H,{r:10*k,sw:1.6});
+s.slot(ox+12,y0+12,200,16,"RUN DONE · TITLE");s.slot(ox+W-12-220,y0+12,220,16,"COST · TOKENS · TIME · −X %");
+[["AGENTS · 4"],["APPROVALS · 1"],["ROUTED HOPS · 2"]].forEach(([l],i)=>{const tw=(W-24-16)/3,tx0=ox+12+i*(tw+8);s.inset(tx0,y0+40,tw,56,8);txt(s.svg,tx0+tw/2,y0+62,l,"lab");txt(s.svg,tx0+tw/2,y0+82,"STAT TILE · TABULAR","lab");});
+const cy=y0+112,ch=H-112-12,cw=(W-24-16)/2;
+s.rect(ox+12,cy,cw,ch,{r:8,sw:.8});s.slot(ox+20,cy+8,120,14,"MEMORIES · N");for(let i=0;i<5;i++){el("circle",{cx:ox+26,cy:cy+36+i*26,r:2.5,fill:"currentColor"},s.svg);s.slot(ox+36,cy+28+i*26,cw-44,16,"");}
+s.rect(ox+12+cw+16,cy,cw,ch,{r:8,sw:.8});s.slot(ox+20+cw+16,cy+8,120,14,"SKILL.MD · DIFF");
+for(let i=0;i<6;i++){const ly=cy+28+i*22;if(i===1||i===3)s.inset(ox+20+cw+16,ly,cw-16,18);s.slot(ox+20+cw+16,ly,cw-16,18,i===4?"− REMOVED LINE":i===1||i===3?"+ ADDED LINE":"");if(i===4)s.line(ox+28+cw+16,ly+9,ox+cw+cw-20,ly+9,{sw:1});}
+s.dimH(ox+12,ox+12+cw,y0+H+16,"(MW − 2·S2 − S1) ÷ 2",{from:y0+H});s.dimV(ox+W+22,cy+28,cy+28+22,"22 · DIFF ROW",{from:ox+W});s.dimV(ox-20,cy+28,cy+54,"26 · MEMORY ROW",{from:ox,side:"left"});
+s.nb(ox+W/2,y0+20,3);s.nb(ox+12+cw/2,cy+ch-14,4);s.nb(ox+12+cw+16+cw/2,cy+ch-14,5);s.nb(ox+W-12-220-16,y0+20,6);
+s.title(1000,320,"DETAIL A · LIST ROW SELECTED","SCALE 2:1");
+let dx=1000,dy=350;s.inset(dx,dy,300,104,16);s.rad(dx,dy,16,"tl","R2 = 8");s.dimV(dx+320,dy,dy+104,"52",{from:dx+300});s.dimH(dx,dx+24,dy+120,"S2 = 12",{from:dy+104});s.slot(dx+24,dy+20,160,28,"TITLE");s.slot(dx+24,dy+60,200,24,"META");
+s.rect(dx,dy-6,300,116,{dash:"4 3",sw:.8});s.dimV(dx-20,dy-6,dy+110,"T1 ≥ 44 ✓",{from:dx,side:"rot"});
+let ty=s.table(1360,80,"SIZE",[["HR","rail row","52"],["Z9","unread dot","6"],["HS","stat tile","56"],["HM","memory row","26"],["HD","diff row","22"]]);
+ty=s.table(1360,ty+10,"TYPE",[["TT","row title","14 / 600"],["TM","row meta","12 · fg-2"],["TD","diff","12 / 1.5 mono"],["TN","numbers","tabular-nums"]]);
+ty=s.table(1360,ty+10,"RADIUS",[["R1","summary card","10"],["R2","row, columns","8"]]);
+})();
+
+/* ---------- SHEET 7: CLOUD STATES ---------- */
+(function(){
+const s=new Sheet(7,"GLOW CLOUD · STATES","MASCOT · SIZES · PLACEMENTS");
+s.notes(40,52,[[1,"Three sizes only: Z1 boot 320, Z6 run header 160, Z7 top bar 40. Always square (aspect-ratio 1)."],[2,"background = true only on the boot screen. Elsewhere the sky is off and the halo is white at .35."],[3,"Z7 in the top bar is the global mood: orange while any run waits for approval or failed; count badge when > 1."],[4,"Z6 sits in the timeline header from run.start until the first agent.start, then collapses (160 → 0 over 200 ms)."],[5,"The cloud is a pointer target: role=img, aria-label; click = wink only, never an action."],[0,"Color never changes mid-animation; swap happens on the next frame after the status change."]]);
+const ox=360,oy=100;
+s.title(ox,80,"PLAN VIEW · SIZES","SCALE 1:1");
+[["Z1 = 320 · BOOT",320],["Z6 = 160 · RUN HEADER",160],["Z7 = 40 · TOP BAR",40]].reduce((x,[l,z])=>{s.rect(x,oy+320-z,z,z,{dash:"4 3",sw:1});
+  // simple cloud silhouette: circles
+  const c=x+z/2,cy=oy+320-z/2,r=z/2;[[0,-.2,.36],[.2,-.05,.33],[.15,.3,.26],[-.1,.3,.3],[-.4,.05,.28]].forEach(([dx,dy,rr])=>el("circle",{cx:c+dx*r,cy:cy+dy*r,r:rr*r,fill:"var(--hug)",stroke:"currentColor","stroke-width":1},s.svg));
+  el("rect",{x:c-.35*r,y:cy-.15*r,width:.7*r,height:.5*r,fill:"var(--hug)"},s.svg);
+  if(z>=160){[-.2,.06].forEach(e=>el("rect",{x:c+e*r,y:cy-.1*r,width:.15*r,height:.26*r,rx:.075*r,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1},s.svg));}
+  s.dimH(x,x+z,oy+340,l,{from:oy+320});return x+z+60;},ox);
+s.center(ox-10,oy+320,ox+700,oy+320);
+s.nb(ox+320+30+80,oy+120,1);
+// placements
+s.title(ox,480,"PLAN VIEW · PLACEMENTS","SCALE 0.4:1");
+const k=.4,W=1440*k,H=900*k,py=510;s.rect(ox,py,W,H,{sw:1.2});s.inset(ox,py,W,48*k);s.rect(ox+W-16*k-40*k,py+4*k,40*k,40*k,{dash:"4 3",sw:.9});txt(s.svg,ox+W-16*k-20*k,py+30*k,"Z7","lab");
+s.hug(ox,py+48*k,280*k,H-48*k);s.inset(ox+280*k,py+H-320*k,W-280*k-420*k,320*k);s.rect(ox+280*k+16*k,py+H-320*k+8*k,160*k,160*k,{dash:"4 3",sw:.9});txt(s.svg,ox+280*k+16*k+80*k,py+H-320*k+88*k,"Z6","lab");
+s.hug(ox+W-420*k,py+48*k,420*k,H-48*k);
+el("circle",{cx:ox+W-16*k-4*k,cy:py+6*k,r:5,fill:"var(--sheet)",stroke:"currentColor","stroke-width":1},s.svg);txt(s.svg,ox+W-16*k-4*k,py+6*k+3,"2","dim");
+s.callout(ox+W-16*k-4*k,py+6*k-5,ox+W+40,py-10,"COUNT BADGE · 16 · WHEN > 1 WAITING");
+s.nb(ox+W-16*k-20*k-30,py+30*k,3);s.nb(ox+280*k+16*k+80*k+100,py+H-320*k+88*k,4);
+// state matrix
+s.title(1000,580,"STATE MATRIX");
+const rows=[["RUN STATUS","Z1","Z6","Z7"],["boot","blue · sky","—","—"],["idle","—","—","blue"],["running","—","blue until agent.start","blue"],["waiting_approval","—","—","orange + badge"],["done","—","—","blue"],["failed","—","—","orange"]];
+let ry=610;rows.forEach((r,i)=>{r.forEach((c,j)=>txt(s.svg,1000+[0,120,180,320][j],ry,c,i===0?"th":"tt","start"));if(i===0)s.line(1000,ry+5,1420,ry+5,{sw:.8});ry+=18;});
+s.title(1000,760,"DETAIL A · EYES","SCALE 1:1 OF THE 240 VIEWBOX");
+let dx=1000,dy=790;[96.5,127.5].forEach(x=>s.rect(dx+x,dy+106,18,31,{r:9,sw:1.2}));s.dimH(dx+96.5,dx+114.5,dy+100,"18",{from:dy+106});s.dimH(dx+114.5,dx+127.5,dy+100,"13",{from:dy+106,dy:-12});s.dimV(dx+150,dy+106,dy+137,"31",{from:dx+145.5});s.rad(dx+96.5,dy+106,9,"tl","R = 9");
+txt(s.svg,dx+120,dy+160,"BLINK: scaleY 1 → .1 → 1 · 160 MS · WINK: RIGHT EYE 340 MS","lab");
+let ty=s.table(1360,80,"SIZE",[["Z1","boot","320"],["Z6","run header","160"],["Z7","top bar","40"],["ZB","count badge","16"]]);
+ty=s.table(1360,ty+10,"COLOR",[["C1","blue","idle · running · done"],["C2","orange","waiting · failed"]]);
+ty=s.table(1360,ty+10,"MOTION",[["CL","collapse Z6","200 ms"],["SW","color swap","next frame"],["RM","reduced motion","still"]]);
+})();
+
+/* ---------- SHEET 8: PHONE ---------- */
+(function(){
+const s=new Sheet(8,"PHONE LAYOUT","390 × 844 · TABS · SAFE AREAS");
+s.notes(40,52,[[1,"Four tabs: WORK (rail list), CHAT (composer), RUN (timeline), DOC (artifact). Tab bar H10 = 56 + safe-area-inset-bottom."],[2,"Top bar H0 = 48 + safe-area-inset-top; title truncates; Z7 cloud right."],[3,"RUN tab: legend collapses to dots Z5 in a 32 gutter; lanes scroll horizontally; header stacks to two lines."],[4,"Approval card fills the width minus 2·V1; buttons wrap to two rows under 360."],[5,"Input bar sits above the tab bar; grows to 3 lines."],[0,"Side gutter V1 = 16 or the safe-area inset, whichever is larger. No horizontal page scroll."]]);
+const k=1,ox=360,oy=90,W=390,H=844;
+s.title(ox,78,"PLAN VIEW · RUN TAB","SCALE 1:1");
+s.rect(ox,oy,W,H,{sw:1.6,r:24});s.inset(ox,oy,W,48+34);s.slot(ox+16,oy+34+14,220,20,"RUN TITLE · TRUNCATE");s.rect(ox+W-16-40,oy+34+4,40,40,{dash:"4 3",sw:.9});
+s.slot(ox+16,oy+90,W-32,36,"STATUS · TIME · TOKENS · COST · 2 LINES");
+const ty0=oy+140;s.rect(ox+16,ty0,W-32,66*5+32,{r:10,sw:1});
+for(let i=0;i<5;i++){const y=ty0+i*66;el("circle",{cx:ox+16+16,cy:y+33,r:4,fill:"currentColor"},s.svg);if(i%2===1)s.inset(ox+16+32,y,W-32-32,66);}
+s.slot(ox+16+32,ty0,W-32-32,66*5,"LANES · SCROLL-X");
+s.dimH(ox+16,ox+16+32,ty0-10,"32",{from:ty0});
+s.inset(ox,oy+H-56-34,W,56+34,24);for(let i=0;i<4;i++)s.slot(ox+8+i*((W-16)/4),oy+H-56-34+8,(W-16)/4-8,48,["WORK","CHAT","RUN","DOC"][i]);
+s.hatch(ox,oy,W,34);s.hatch(ox,oy+H-34,W,34);
+s.dimV(ox+W+22,oy,oy+34,"SAFE TOP",{from:ox+W});s.dimV(ox+W+22,oy+34,oy+82,"H0 = 48",{from:ox+W});s.dimV(ox+W+22,oy+H-90,oy+H-34,"H10 = 56",{from:ox+W});s.dimV(ox+W+22,oy+H-34,oy+H,"SAFE BOTTOM",{from:ox+W});
+s.dimH(ox,ox+16,oy+H+18,"V1 = 16",{from:oy+H});s.dimH(ox,ox+W,oy-18,"390",{from:oy});
+s.nb(ox+W/2,oy+H-62,1);s.nb(ox+W-70,oy+34+24,2);s.nb(ox+W/2+40,ty0+66*2+33,3);
+// chat tab
+s.title(820,78,"PLAN VIEW · CHAT TAB","SCALE 0.8:1");
+const bx=820,by=110,bk=.8;s.rect(bx,by,W*bk,H*bk,{sw:1.2,r:20});s.inset(bx,by,W*bk,82*bk);
+s.slot(bx+16*bk,by+100*bk,W*bk-32*bk,60*bk,"MESSAGE ROW");s.rect(bx+16*bk,by+180*bk,W*bk-32*bk,230*bk,{r:10*bk,sw:1.2});el("rect",{x:bx+16*bk,y:by+180*bk,width:3,height:230*bk,fill:"currentColor"},s.svg);
+s.slot(bx+28*bk,by+192*bk,200*bk,16*bk,"NEEDS APPROVAL");s.slot(bx+28*bk,by+216*bk,W*bk-56*bk,40*bk,"SUMMARY");s.inset(bx+28*bk,by+264*bk,W*bk-56*bk,60*bk,8);
+const byy=by+180*bk+230*bk-12*bk-36*bk;s.rect(bx+28*bk,byy-44*bk,W*bk-56*bk,36*bk,{r:6,sw:.9});txt(s.svg,bx+W*bk/2,byy-22*bk,"REJECT · ALWAYS ALLOW","lab");s.hug(bx+28*bk,byy,W*bk-56*bk,36*bk,6);txt(s.svg,bx+W*bk/2,byy+22*bk,"APPROVE · FILL",   "lab");
+s.rect(bx+16*bk,by+H*bk-90*bk-52*bk-8*bk,W*bk-32*bk,52*bk,{r:26*bk,sw:1.2});s.inset(bx,by+H*bk-90*bk,W*bk,90*bk,20);
+s.dimH(bx+16*bk,bx+W*bk-16*bk,by+180*bk+230*bk+18,"FILL − 2·V1",{from:by+180*bk+230*bk});s.nb(bx+W*bk/2+60,by+300*bk,4);s.nb(bx+W*bk/2+80,by+H*bk-90*bk-34*bk,5);
+s.title(820,800,"DETAIL A · TAB ITEM","SCALE 2:1");
+let dx=820,dy=830;s.rect(dx,dy,180,96,{r:12,sw:.9});el("circle",{cx:dx+90,cy:dy+34,r:14,fill:"none",stroke:"currentColor","stroke-width":1.2},s.svg);s.slot(dx+50,dy+62,80,18,"LABEL · 11");s.dimV(dx+200,dy,dy+96,"48",{from:dx+180});s.dimH(dx,dx+180,dy+112,"(W − 16) ÷ 4",{from:dy+96});
+let ty=s.table(1360,80,"VIEWPORT",[["V1","side gutter","max(16, inset)"],["ST","safe top","env()"],["SB","safe bottom","env()"],["H10","tab bar","56 + SB"]]);
+ty=s.table(1360,ty+10,"SIZE",[["H0","top bar","48 + ST"],["GL","lane gutter","32"],["H5","input","52"],["T1","touch min","44"]]);
+ty=s.table(1360,ty+10,"RULES",[["NX","page scroll-x","never"],["SX","lanes scroll-x","own container"],["WR","buttons wrap","< 360"],["TR","title","truncate 1 line"]]);
+})();
+
+/* ---------- SHEET 9: MOTION ---------- */
+(function(){
+const s=new Sheet(9,"MOTION","TIMING · EASING · REDUCED MOTION");
+s.notes(40,52,[[1,"Motion reports state; it never decorates. Segments grow in real time and the playhead follows the clock: nothing is eased to look faster than it is."],[2,"One easing for enters: cubic-bezier(.2,.8,.2,1), 160–240 ms. One spring for pops: overshoot ≈ 1.05, 160 ms. Linear only for the 3 s countdown and the hatch drift."],[3,"Durations are CSS variables: --m-fast 120 · --m-base 160 · --m-slow 240 · --m-ease."],[4,"Reduced motion: every transition is a cut, the playhead jumps once per second, the cloud is still, the hatch does not drift."],[5,"Bars are drawn at 1 px = 1 ms up to 400 ms; longer moments are broken and labeled."],[0,"Full table with triggers in docs/EXPERIENCE.md §5."]]);
+const rows=[
+ ["Boot title fade in","app load","enter",400,"ease-out","cut"],
+ ["Boot exit fade","workstreams loaded","enter",400,"ease-out","cut"],
+ ["Rail items stagger","after boot","enter",160,"ease-out · 30 ms stagger","cut"],
+ ["Cloud Z6 scales in","POST /api/runs","pop",240,"spring","cut"],
+ ["Plan card enters","plan event","enter",200,"ease-out","cut"],
+ ["Cancel countdown ring","plan event","linear",3000,"linear","text countdown"],
+ ["Cloud Z6 collapses","first agent.start","exit",200,"ease-in","cut"],
+ ["Lane row enters","agent.spawn","enter",180,"ease-out","cut"],
+ ["Spawn dot pops","agent.spawn","pop",160,"spring","cut"],
+ ["Connector draws","agent.spawn","linear",220,"linear · dashoffset","cut"],
+ ["Segment grows","segment.*","real time",0,"none · bound to tMs","1 s steps"],
+ ["Hatch drifts","segment.wait","loop",1200,"linear loop","still"],
+ ["Failed flash · ✕","agent.error","pulse",300,"ease · then 120 fade","cut"],
+ ["Route badge pops","route event","pop",160,"spring","cut"],
+ ["Axis rescale","playhead > 80 %","move",300,"ease-in-out","cut"],
+ ["Tray slides in","approval.request","enter",160,"ease-out","cut"],
+ ["Cloud mood swap","approval.request / resolve","swap",0,"next frame","same"],
+ ["Card resolved","approval.resolve","fade",200,"120 out · 200 in","cut"],
+ ["Button label swap","composer state","crossfade",120,"ease","cut"],
+ ["Cost pill count-up","estimate returns","count",300,"ease-out · tabular","final value"],
+ ["Slash menu","/ or @","enter",120,"ease-out · scale .98 → 1","cut"],
+ ["Inspector slides in","first run · click","enter",240,"ease-out","cut"],
+ ["Version tab pops","artifact.version","pop",160,"spring · 120 crossfade","cut"],
+ ["Run summary enters","run.end","enter",240,"ease-out","cut"],
+ ["Stat tiles count up","run.end","count",600,"ease-out","final value"],
+ ["Learned chip pops","next run start","pop",160,"spring","cut"]
+];
+const x0=330,xt=540,xb=760,bw=400,xe=1190,xr=1450,y0=96,rp=27;
+s.title(x0,80,"TIMING CHART","1 PX = 1 MS UP TO 400 MS");
+txt(s.svg,x0,y0+12,"MOMENT","th","start");txt(s.svg,xt,y0+12,"TRIGGER","th","start");txt(s.svg,xb,y0+12,"DURATION","th","start");txt(s.svg,xe,y0+12,"EASING","th","start");txt(s.svg,xr,y0+12,"REDUCED MOTION","th","start");
+s.line(x0,y0+18,xr+200,y0+18,{sw:.8});
+[0,100,200,300,400].forEach(ms=>{const x=xb+ms;s.line(x,y0+22,x,y0+22+rows.length*rp,{sw:.5,dash:"2 3"});txt(s.svg,x,y0+22+rows.length*rp+14,`${ms}`,"lab");});
+rows.forEach((r,i)=>{const y=y0+22+i*rp+18;
+  txt(s.svg,x0,y,r[0],"tt","start");txt(s.svg,xt,y,r[1],"tt","start");
+  const d=r[3];
+  if(d===0){s.line(xb,y-5,xb+bw,y-5,{sw:.6,dash:"6 4"});txt(s.svg,xb+bw/2,y-9,r[2].toUpperCase(),"lab");}
+  else if(d<=bw){const h=12;if(r[2]==="pop"||r[2]==="pulse")s.hug(xb,y-14,d,h,6);else if(r[2]==="linear"||r[2]==="loop")s.hatch(xb,y-14,d,h,2);else s.inset(xb,y-14,d,h,2);txt(s.svg,xb+d+6,y-4,`${d}`,"dim","start");}
+  else{const h=12;s.hatch(xb,y-14,bw-40,h,2);s.line(xb+bw-40,y-14,xb+bw-28,y+2,{sw:1});s.line(xb+bw-32,y-14,xb+bw-20,y+2,{sw:1});txt(s.svg,xb+bw-70,y-17,`${d>=1000?(d/1000)+" s":d+" ms"}`,"dim","start");}
+  txt(s.svg,xe,y,r[4],"tt","start");txt(s.svg,xr,y,r[5],"tt","start");
+  if(i%2===1)el("rect",{x:x0-6,y:y-16,width:xr+200-x0+6,height:rp,fill:"var(--inset)",opacity:.5},s.svg).parentNode.insertBefore(s.svg.lastChild,s.svg.children[6]);
+});
+// easing key
+const ky=y0+22+rows.length*rp+50;
+s.title(x0,ky,"EASING KEY","X = TIME · Y = PROGRESS · 120 × 80");
+[["EASE-OUT · cubic-bezier(.2,.8,.2,1)","M0 80 C24 16 24 0 120 0"],["SPRING · overshoot 1.05","M0 80 C20 -10 40 -14 60 -4 C80 6 96 2 120 0"],["LINEAR","M0 80 L120 0"],["EASE-IN · exits","M0 80 C96 80 96 64 120 0"]].forEach(([l,d],i)=>{const gx=x0+i*300,gy=ky+22;s.rect(gx,gy,120,80,{sw:.6});el("path",{d,transform:`translate(${gx} ${gy})`,fill:"none",stroke:"currentColor","stroke-width":1.6},s.svg);txt(s.svg,gx+130,gy+44,l,"nt","start");});
+})();
+
+/* ---------- SHEET 10: MEMORY & SKILL TAB ---------- */
+(function(){
+const s=new Sheet(10,"INSPECTOR · MEMORY & SKILL","RULES · SKILL CARDS · MEMORIES · REV D");
+s.notes(40,52,[[1,"Header strip 56: 'Next run uses' with tabular counts (memories · rules) and 'last learned · run N · time'; ✦ when either count > 0."],[2,"Rules: one card per allow: line. Plain-words rule, meta line (from run · date · used ×), REVOKE ghost on the right; asks once."],[3,"Skill: a toolbar (last rewrite · +a −b · SHOW DIFF · VIEW RAW · REVERT) then one card per ## heading, body 14/21. No monospace except identifiers and the raw view."],[4,"Memories: every memory of the workstream, newest first; text 14/20, meta 12; FORGET on hover and focus; NEW chip for this run's; filter input above 8 rows."],[5,"Contrast: text ≥ neutral-300 on neutral-950; cards bg-white/4 with border-white/10, radius R2; section gap S4 = 24; eyebrow 11 caps with 16 above and 8 below."],[0,"Motion: rows enter 160 ms; revoke/forget collapse 160 ms; REVERT crossfades the skill cards 120 ms."]]);
+const ox=360,oy=70,W=420,H8=40,S1=16;
+s.title(ox,56,"PLAN VIEW · MEMORY & SKILL TAB","SCALE 1:1 · W3 = 420 · SCROLL-Y");
+let y=oy;const H=950-oy;
+s.rect(ox,y,W,H,{sw:1.6});
+s.inset(ox,y,W,H8);s.slot(ox+12,y+10,80,20,"ARTIFACT");s.slot(ox+100,y+10,90,20,"AGENT I/O");s.hug(ox+198,y+6,96,28,6);txt(s.svg,ox+246,y+24,"MEMORY","lab");
+y+=H8;
+// header strip
+s.inset(ox,y,W,56);s.slot(ox+S1,y+10,100,16,"NEXT RUN USES");s.slot(ox+S1,y+30,200,18,"5 MEMORIES · 1 RULE · ✦");s.slot(ox+W-S1-120,y+30,120,18,"RUN 3 · 2 MIN AGO");
+s.dimV(ox+W+22,y,y+56,"56",{from:ox+W});s.nb(ox+W-S1-140,y+18,1);
+y+=56+S1;
+// rules
+s.slot(ox+S1,y,60,12,"RULES");y+=20;
+s.rect(ox+S1,y,W-2*S1,64,{r:8,sw:.9,fill:"var(--inset)"});s.slot(ox+S1+12,y+12,230,16,"ALLOW SEND_MESSAGE → #GROWTH");s.slot(ox+S1+12,y+36,200,14,"FROM RUN 3 · OCT 27 · USED 1×");s.rect(ox+W-S1-12-72,y+18,72,28,{r:6,sw:.9});txt(s.svg,ox+W-S1-12-36,y+36,"REVOKE","lab");
+s.dimV(ox+W+22,y,y+64,"64",{from:ox+W});s.nb(ox+S1+260,y+20,2);
+y+=64+24;
+// skill
+s.slot(ox+S1,y,60,12,"SKILL");y+=20;
+s.slot(ox+S1,y,150,16,"LAST REWRITE · RUN 3 · +2 −1");[["SHOW DIFF",80],["VIEW RAW",76],["REVERT",66]].reduce((x,[l,w])=>{const bx=x-w;s.rect(bx,y-6,w,28,{r:6,sw:.9});txt(s.svg,bx+w/2,y+12,l,"lab");return bx-6;},ox+W-S1);
+y+=34;
+[["STEPS",3],["SOURCES",2],["PITFALLS",2]].forEach(([h,n])=>{const ch=28+n*21+12;s.rect(ox+S1,y,W-2*S1,ch,{r:8,sw:.9,fill:"var(--inset)"});s.slot(ox+S1+12,y+10,90,14,h);for(let i=0;i<n;i++)s.slot(ox+S1+12,y+30+i*21,W-2*S1-24-(i%2)*60,16,"");if(h==="STEPS"){s.dimV(ox+W+22,y,y+ch,"HUG · 14/21",{from:ox+W});s.nb(ox+S1+120,y+17,3);}y+=ch+8;});
+y+=16;
+// memories
+s.slot(ox+S1,y,80,12,"MEMORIES · 5");s.slot(ox+W-S1-120,y-2,120,18,"FILTER · WHEN > 8");y+=22;
+for(let i=0;i<4;i++){const ry=y+i*52;if(i===0)s.hug(ox+S1,ry,W-2*S1,52,8);else s.rect(ox+S1,ry,W-2*S1,52,{r:8,sw:.7});s.slot(ox+S1+12,ry+9,W-2*S1-24-(i===0?110:60),16,"");s.slot(ox+S1+12,ry+31,160,12,"RUN 3 · OCT 27 · USED 2×");if(i===0)s.slot(ox+W-S1-12-44,ry+8,44,16,"NEW");s.rect(ox+W-S1-12-62,ry+26,62,20,{r:6,sw:.7,dash:i?"3 3":undefined});txt(s.svg,ox+W-S1-12-31,ry+40,"FORGET","lab");}
+s.dimV(ox+W+22,y,y+52,"52",{from:ox+W});s.nb(ox+S1+200,y+26,4);
+// left dims
+s.dimH(ox,ox+S1,oy+H+16,"S1",{from:oy+H});s.dimH(ox,ox+W,oy+H+38,"W3 = 420",{from:oy+H});
+// details
+s.title(880,78,"DETAIL A · MEMORY ROW","SCALE 2:1");
+let dx=880,dy=110;s.rect(dx,dy,776,104,{r:16,sw:1.2,fill:"var(--inset)"});s.slot(dx+24,dy+18,520,32,"MEMORY TEXT · 14/20 · NEUTRAL-100 · WRAPS TO 2 LINES");s.slot(dx+24,dy+62,320,24,"META 12/16 · NEUTRAL-400 · RUN · DATE · USED");s.slot(dx+776-24-88,dy+16,88,32,"NEW");s.rect(dx+776-24-124,dy+52,124,40,{r:12,sw:.9});txt(s.svg,dx+776-24-62,dy+76,"FORGET","lab");
+s.dimV(dx+800,dy,dy+104,"52",{from:dx+776});s.dimH(dx,dx+24,dy+124,"S2 = 12",{from:dy+104});s.rad(dx,dy,16,"tl","R2 = 8");
+s.title(880,280,"DETAIL B · RULE CARD","SCALE 2:1");
+dx=880;dy=312;s.rect(dx,dy,776,128,{r:16,sw:1.2,fill:"var(--inset)"});s.slot(dx+24,dy+24,460,32,"ALLOW  SEND_MESSAGE  →  #GROWTH");s.slot(dx+24,dy+72,400,28,"FROM RUN 3 · OCT 27 · USED 1×");s.rect(dx+776-24-144,dy+36,144,56,{r:12,sw:.9});txt(s.svg,dx+776-24-72,dy+70,"REVOKE · ASKS ONCE","lab");
+s.dimV(dx+800,dy,dy+128,"64",{from:dx+776});
+s.title(880,500,"DETAIL C · SKILL TOOLBAR + DIFF OPEN","SCALE 1.6:1");
+dx=880;dy=530;s.slot(dx,dy,272,26,"LAST REWRITE · RUN 3 · +2 −1");[["SHOW DIFF ▴",128],["VIEW RAW",122],["REVERT",106]].reduce((x,[l,w])=>{const bx=x-w;s.rect(bx,dy-8,w,45,{r:10,sw:l.startsWith("SHOW")?1.6:.9,fill:l.startsWith("SHOW")?"var(--hug)":"none"});txt(s.svg,bx+w/2,dy+20,l,"lab");return bx-10;},dx+776);
+for(let i=0;i<5;i++){const ly=dy+60+i*30;if(i===1||i===3)s.inset(dx,ly,776,26);s.slot(dx,ly,776,26,i===1||i===3?"+ ADDED LINE":i===4?"− REMOVED LINE":"");if(i===4)s.line(dx+12,ly+13,dx+764,ly+13,{sw:1});}
+let ty=s.table(1360,80,"SIZE",[["W3","panel","420"],["HS","header strip","56"],["HR","rule card","64"],["HM","memory row","52"],["HT","toolbar","28"],["S1","pad","16"],["S4","section gap","24"]]);
+ty=s.table(1360,ty+10,"TYPE",[["TB","body","14 / 21 · n-100"],["TM","meta","12 / 16 · n-400"],["TE","eyebrow","11 caps · n-400"],["TH","card heading","13 / 600"],["TR","raw view","12 mono"]]);
+ty=s.table(1360,ty+10,"ACTIONS",[["RV","revoke rule","DELETE policies/[i]"],["FG","forget memory","DELETE memories/[id]"],["RT","revert skill","existing route"],["SD","show diff","inline toggle"],["VR","view raw","inline toggle"]]);
+ty=s.table(1360,ty+10,"MOTION",[["IN","row enters","160 ms ease-out"],["OUT","collapse","160 ms"],["RV","revert crossfade","120 ms"],["RM","reduced motion","cut"]]);
+})();
 })();
 </script>
 <script type="module">
   import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs";
   mermaid.initialize({ startOnLoad: false, securityLevel: "loose" });
   await mermaid.run({ querySelector: "pre.mermaid" });
+</script>
+<script>
+/* Grid flow renderer: nodes on (col,row), orthogonal edges, labels with a paper knockout. No library. */
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const E=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)if(a[k]!==undefined)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const NW=176,NH=56,CP=256,RP=112,PADX=28,PADB=28;
+const INK="#100f0f",PAPER="#fffcf0",SEE="#f3eddc",MODEL="#e6dcbd";
+function render(host,def){
+  const cols=Math.max(...def.n.map(n=>n[1]))+1, rows=Math.max(...def.n.map(n=>n[2]))+1;
+  const top=def.top||28;
+  const W=PADX*2+cols*CP-(CP-NW), H=top+PADB+rows*RP-(RP-NH)+(def.bottom||0);
+  const svg=E("svg",{viewBox:`0 0 ${W} ${H}`,role:"img","aria-label":def.label||""},host);
+  svg.style.width=W+"px";
+  const d=E("defs",{},svg);const m=E("marker",{id:"fa-"+def.id,viewBox:"0 0 10 10",refX:"9",refY:"5",markerWidth:"8",markerHeight:"8",orient:"auto-start-reverse"},d);E("path",{d:"M0 0L10 5L0 10z",fill:INK},m);
+  const pos={};def.n.forEach(([id,c,r])=>pos[id]={x:PADX+c*CP+NW/2,y:top+r*RP+NH/2});
+  const pair=new Set(def.e.map(e=>e[0]+">"+e[1]));
+  def.e.forEach(([a,b,label,o])=>{o=o||{};const A=pos[a],B=pos[b];let path,lx,ly,anchor="middle";const dx=o.dx||0,sdx=o.sdx||0;
+    if(a===b){path=`M${A.x+NW/2} ${A.y-14} C${A.x+NW/2+48} ${A.y-36} ${A.x+NW/2+48} ${A.y+36} ${A.x+NW/2} ${A.y+14}`;lx=A.x+NW/2+54;ly=A.y+4;anchor="start";}
+    else if(o.via==="top"){const yy=top-( (o.lvl||0)*22 )-12;path=`M${A.x+sdx} ${A.y-NH/2} V${yy} H${B.x+dx} V${B.y-NH/2}`;lx=(A.x+B.x)/2;ly=yy-5;}
+    else if(A.y===B.y){ if(B.x>A.x){path=`M${A.x+NW/2} ${A.y} L${B.x-NW/2} ${B.y}`;lx=(A.x+B.x)/2;ly=A.y-NH/2-7;} else {const yy=A.y+NH/2+(RP-NH)/2;path=`M${A.x+sdx} ${A.y+NH/2} V${yy} H${B.x+dx} V${B.y+NH/2}`;lx=(A.x+B.x)/2;ly=yy-5;} }
+    else if(A.x===B.x){ const both=pair.has(b+">"+a); const off=both?24:0; if(B.y>A.y){path=`M${A.x-off+dx} ${A.y+NH/2} V${B.y-NH/2}`;lx=A.x-off+dx-8;ly=(A.y+B.y)/2+4;anchor="end";} else {path=`M${A.x+off+dx} ${A.y-NH/2} V${B.y+NH/2}`;lx=A.x+off+dx+8;ly=(A.y+B.y)/2+4;anchor="start";} }
+    else if(B.y>A.y){ const yy=A.y+NH/2+(RP-NH)/2; path=`M${A.x+sdx} ${A.y+NH/2} V${yy} H${B.x+dx} V${B.y-NH/2}`; lx=(A.x+B.x)/2;ly=yy-5; }
+    else { const yy=A.y-NH/2-(RP-NH)/2; path=`M${A.x+sdx} ${A.y-NH/2} V${yy} H${B.x+dx} V${B.y+NH/2}`; lx=(A.x+B.x)/2;ly=yy-5; }
+    E("path",{d:path,fill:"none",stroke:INK,"stroke-width":1.4,"stroke-dasharray":o.ev?"5 4":undefined,"marker-end":`url(#fa-${def.id})`},svg);
+    if(label){const t=E("text",{x:lx,y:ly,"text-anchor":anchor,class:"fl"},svg);t.textContent=label;}
+  });
+  def.n.forEach(([id,c,r,kind,text])=>{const P=pos[id];const g=E("g",{},svg);
+    if(kind==="d")E("path",{d:`M${P.x} ${P.y-NH/2-8} L${P.x+NW/2+10} ${P.y} L${P.x} ${P.y+NH/2+8} L${P.x-NW/2-10} ${P.y} Z`,fill:PAPER,stroke:INK,"stroke-width":1.4},g);
+    else E("rect",{x:P.x-NW/2,y:P.y-NH/2,width:NW,height:NH,rx:kind==="u"?NH/2:kind==="m"?6:10,fill:kind==="u"?SEE:kind==="m"?MODEL:PAPER,stroke:INK,"stroke-width":kind==="u"?1.6:1.2},g);
+    const lines=text.split("|");lines.forEach((l,i)=>{const t=E("text",{x:P.x,y:P.y+4.5+(i-(lines.length-1)/2)*15,"text-anchor":"middle",class:i===0?"fn":"fn fn2"},g);t.textContent=l;});
+  });
+}
+const F={
+f1:{label:"Boot and first run",n:[["a",0,0,"u","Open the app"],["b",1,0,"p","Boot screen|Glow Cloud 320, blue"],["c",2,0,"p","GET /api/workstreams"],["d",3,0,"d","Any workstreams?"],["e",4,0,"u","Run view|rail · run · inspector"],["f",3,1,"u","Empty state|3 template chips + composer"],["g",4,1,"p","First goal → plan card|SAVE AS WORKSTREAM"]],
+ e:[["a","b"],["b","c"],["c","d"],["d","e","yes"],["d","f","no"],["f","g"],["g","e","creates it"]]},
+f2:{label:"Start a run",n:[["a",0,0,"u","Press RUN|or Enter in the composer"],["b",1,0,"p","POST /api/runs|run.start"],["c",2,0,"m","Orchestrator · Ultra|plan()"],["d",3,0,"u","Plan card|CANCEL for 3 s"],["e",4,0,"p","spawn_agents|agent.spawn ×3"],["z",1,1,"u","Cloud Z6 in the header|until the first agent.start"],["r",3,1,"m","Researcher · Super|web_search · fetch_url"],["n",4,1,"m","Analyst · Super|run_code on the CSV"],["k",5,1,"m","Checker · Nano|verify claims"],["w",4,2,"p","Reports back|orchestrator wait ends"],["h",5,2,"d","Handoff needed?"],["x",6,2,"m","Writer · Super|artifact v1"],["s",6,1,"u","Run summary|cost · memories · skill diff"]],
+ e:[["a","b"],["b","c"],["c","d"],["d","e","3 s pass"],["b","z","",{ev:true}],["e","r"],["e","n"],["e","k"],["r","w"],["n","w"],["k","w"],["w","h"],["h","x","yes"],["x","s"],["h","s","no"]]},
+f3:{label:"Approval gate",n:[["a",0,0,"m","Agent calls|request_approval(action)"],["b",1,0,"p","approval.request|status = waiting_approval"],["c",2,0,"u","Tray + card|cloud orange · rail badge"],["d",3,0,"d","Person decides"],["q",1,1,"u","From a chat app:|text line + web link"],["p",2,1,"u","APPROVE"],["l",3,1,"u","APPROVE & ALWAYS ALLOW|+ policy line in SKILL.md"],["r",4,1,"u","REJECT WITH A NOTE|note → orchestrator"],["t",2,2,"p","Action runs in the tool|segment.tool"],["s",3,2,"u","Card shows the stamp row|cloud blue"],["o",4,2,"m","Orchestrator picks|an alternative or finishes"]],
+ e:[["a","b"],["b","c"],["c","d"],["b","q","",{ev:true}],["d","p"],["d","l"],["d","r"],["p","t"],["l","t"],["t","s"],["r","o"],["o","s"]]},
+f4:{label:"Artifact versions",n:[["a",0,0,"m","Writer · Super|write_artifact"],["b",1,0,"p","artifact.version v1"],["c",2,0,"u","Inspector → Artifact|LATEST selected"],["d",3,0,"u","Person asks for a change|in the composer (STEER)"],["e",4,0,"p","Orchestrator handoff|to the Writer"],["f",5,0,"p","artifact.version v2"],["g",6,0,"u","Version tabs|V1 · V2 · LATEST"]],
+ e:[["a","b"],["b","c"],["c","d"],["d","e"],["e","f"],["f","g"]]},
+f5:{label:"Learning loop",n:[["a",0,0,"p","run.end"],["b",1,0,"m","Learner · Nano|reads the transcript summary"],["c",2,0,"p","≤ 8 memories|embed → memories table"],["d",2,1,"p","Rewrite SKILL.md|what worked · sources · policy"],["e",3,0,"u","Run summary|memories + skill diff"],["f",4,0,"u","Next run|of the same workstream"],["g",5,0,"m","Orchestrator prompt =|prefix + SKILL.md + memories"],["h",6,0,"u","'Learned' chip|on the orchestrator lane"],["t",3,1,"u","Memory & skill tab|rules · skill cards · memories"],["x",4,1,"u","Forget · Revoke · Revert|undo what it learned"]],
+ e:[["a","b"],["b","c"],["b","d"],["c","e"],["d","e"],["e","f"],["f","g"],["g","h"],["e","t","open the tab"],["t","x"],["x","g","changes the next prompt"]]},
+f6:{label:"Inside chat apps via OpenClaw",n:[["a",0,0,"u","Telegram / WhatsApp|message"],["b",1,0,"p","OpenClaw gateway|provider = nimbus"],["c",2,0,"p","POST /v1/chat/completions|model = nimbus/<workstream>"],["d",3,0,"p","Run · trigger = chat"],["e",4,0,"d","Approval needed?"],["f",5,0,"p","Writer text streamed|as SSE chunks"],["g",6,0,"u","Reply in the chat app"],["h",5,1,"u","⚠ Needs your approval|→ link to the web composer"],["w",3,1,"u","Same run visible|in the web timeline"]],
+ e:[["a","b"],["b","c"],["c","d"],["d","e"],["e","f","no"],["e","h","yes"],["f","g"],["h","g"],["d","w","",{ev:true}]]},
+f7:{label:"Always on",n:[["a",0,0,"p","node-cron in the app|trigger = cron"],["b",0,1,"p","Nebius Serverless Job|pnpm run:job · trigger = job"],["c",1,0,"p","New run"],["d",2,0,"d","Low-risk only?"],["e",3,0,"p","Auto-approved|completes headless"],["f",3,1,"p","Left waiting_approval"],["g",4,0,"u","Rail: unread dot|cloud badge if waiting"],["h",5,0,"u","Opened later:|timeline rebuilt from events"]],
+ e:[["a","c"],["b","c"],["c","d"],["d","e","yes"],["d","f","no"],["e","g"],["f","g"],["g","h"]]},
+f8:{label:"Router and fallback",n:[["a",0,0,"p","Hop|role · brief · tools · risk"],["b",1,0,"d","Deterministic|rule hits?"],["c",1,1,"m","Nano classifier 0–2|cached"],["d",2,0,"p","Tier chosen|≤ ceiling"],["e",3,0,"d","Cache hit?"],["f",3,1,"p","Reuse response|usage.cached = true"],["g",4,0,"m","Call Token Factory"],["h",5,0,"d","429 · 5xx · timeout?"],["i",6,0,"p","route event|badge if chosen ≠ ceiling"],["j",5,1,"p","Retry once|backoff"],["k",5,2,"d","Still failing?"],["l",4,2,"p","Fall one tier down|route.fallback = true"]],
+ e:[["a","b"],["b","d","yes"],["b","c","no"],["c","d"],["d","e"],["e","g","no"],["e","f","yes"],["f","i"],["g","h"],["h","i","no"],["h","j","yes"],["j","k"],["k","l","yes"],["l","g"],["k","i","no"]]},
+f9:{label:"Eval gate",n:[["a",0,0,"u","Pull request"],["b",1,0,"p","GitHub Actions|pnpm eval --cheap"],["c",2,0,"p","Replay goldens|mocked tools"],["d",3,0,"p","Deterministic asserts|per hop"],["e",3,1,"m","Nano judge 0–2|per hop"],["f",4,0,"d","≥ 90 % of hops|and all finals?"],["g",5,0,"u","Check green · merge"],["h",5,1,"u","Check red|table in the job log"]],
+ e:[["a","b"],["b","c"],["c","d"],["c","e"],["d","f"],["e","f"],["f","g","yes"],["f","h","no"]]},
+f10:{label:"Run status",n:[["q",0,0,"p","queued|POST /api/runs"],["r",1,0,"p","running|cloud blue · 'Running'"],["d",2,0,"p","done|'Done · cost · −X % vs baseline'"],["w",2,1,"p","waiting_approval|cloud orange · 'Needs you'"],["f",3,1,"p","failed|cloud orange · lane ✕"]],
+ e:[["q","r","run.start",{ev:true}],["r","d","run.end",{ev:true}],["r","w","approval.request",{ev:true,sdx:30}],["w","r","approval.resolve",{ev:true,dx:-30}],["r","f","run.error",{ev:true,sdx:60}],["w","f","24 h timeout",{ev:true}]]},
+f12:{label:"System map",n:[["ep",1,0,"p","Nebius Serverless Endpoint|hosts the app · demo URL"],["job",2,0,"p","Nebius Serverless Job|pnpm run:job · nightly"],["gh",3,0,"p","GitHub Actions|pnpm eval --cheap"],["br",0,1,"u","Browser|run view"],["app",1,1,"p","Next.js app|routes · runtime · router"],["tf",2,1,"m","Nebius Token Factory|Nemotron Ultra · Super · Nano"],["oc",0,2,"u","OpenClaw · Hermes · NemoClaw|chat apps"],["db",1,2,"p","SQLite on a volume|events · memories · cache"],["mock",2,2,"p","Mock mode|fixtures · $0"],["tav",3,2,"p","Tavily|Researcher search"]],
+ e:[["ep","app","hosts"],["job","app","headless runs"],["gh","app","eval gate on PRs"],["br","app","SSE · POST"],["app","tf","agent calls · function calling"],["app","tav","search"],["app","db","reads · writes",{dx:-30}],["app","mock","NIMBUS_MODEL=mock"],["oc","app","POST /v1 · streams back",{dx:30}]]},
+f13:{label:"Plan draft to live checklist",n:[["a",0,0,"u","RUN · manual"],["b",1,0,"m","Orchestrator · Ultra|plan with steps[]"],["c",2,0,"u","Plan card · DRAFT|edit · reorder · add"],["d",3,0,"d","Approve plan?"],["e",4,0,"p","spawn_agents|status = running"],["f",5,0,"u","Live checklist|tick per hop · elapsed"],["g",6,0,"u","Collapsed line|6 of 6 · 35 s"],["k",3,1,"m","Keep planning|second plan turn"],["s",0,1,"p","cron · chat trigger"],["t",2,1,"u","3 s countdown|no edit"]],
+ e:[["a","b"],["b","c"],["c","d"],["d","e","approve"],["d","k","keep planning"],["k","c","new draft"],["e","f"],["f","g","run.end",{ev:true}],["s","t","non-manual"],["t","e","3 s pass"]]},
+f14:{label:"A background run through the status pill",n:[["a",0,0,"p","09:00 cron starts Ship Nimbus|you are on Hackathon radar"],["b",1,0,"u","Status pill appears|ring · Analyst · run_code · 0:12"],["c",2,0,"u","Click → panel|step 3 of 6 · last steps"],["d",3,0,"d","Waiting on an approval?"],["e",4,0,"u","APPROVE · DENY|inline, with the summary"],["f",5,0,"p","approval.resolve|run continues"],["g",6,0,"u","Pill → Done · unread dot|open the run later"],["h",4,1,"u","PAUSE · STOP · OPEN RUN"]],
+ e:[["a","b","pill",{ev:true}],["b","c"],["c","d"],["d","e","yes"],["d","h","no"],["e","f"],["f","g"],["h","g"]]},
+f11:{label:"Composer state machine",top:96,n:[["i",0,0,"u","idle|'Give the crew a goal…' · RUN"],["d",1,0,"u","drafting|RUN enabled · cost pill"],["p",2,0,"u","planning|CANCEL · 3 s"],["r",3,0,"u","running|'Steer the crew…' · STEER · STOP"],["w",4,0,"u","waiting|tray above · cloud orange"],["s",1,1,"u","slash|menu above the box"],["a",3,1,"u","asked|'Answer the crew…' · REPLY"]],
+ e:[["i","d","1 typing · attach"],["d","d","2 estimate 400 ms"],["d","s","3  / or @"],["s","d","4 pick · Esc"],["d","p","5 Enter · RUN"],["p","i","6 CANCEL within 3 s",{via:"top",lvl:1,sdx:-30,dx:-30}],["p","r","7 3 s pass"],["r","r","8 Enter → note queued"],["r","a","9 question",{ev:true}],["a","r","10 Enter · REPLY · chip"],["r","w","11 approval.request",{ev:true}],["w","r","12 decision made",{dx:60}],["r","i","13 run.end · STOP",{via:"top",lvl:2,sdx:-50,dx:30}],["i","p","14 /run · rail RUN",{via:"top",lvl:0,sdx:0,dx:40}]]}
+};
+document.querySelectorAll("[data-flow]").forEach(h=>{const k=h.getAttribute("data-flow");if(F[k]){F[k].id=k;render(h,F[k]);}});
+})();
 </script>

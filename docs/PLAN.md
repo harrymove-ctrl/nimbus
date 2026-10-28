@@ -7,6 +7,28 @@ Written 2026-10-27 by Fable for Sonnet to execute. Facts below were checked
 against the sources listed at the end; anything marked **(verify)** was not
 confirmed from a primary page and must be checked at the moment it is used.
 
+## Status · 2026-10-29 01:50 ICT (about 46 h to the deadline)
+
+What is real, what is mock, and what is left. "Real" means run on Nemotron 3 through Nebius Token Factory with the user's key; every number is from the app's own cost log.
+
+| Phase | State | Real or mock |
+|---|---|---|
+| 0 Scaffold, smoke | Done | Real: `pnpm smoke` passes on Ultra, Super, Nano plus a tool call ($0.0003) |
+| 1 Headless run | Done | Real: Morning brief run one $0.0258–0.0276, 70–75K tokens (checks 5, 6, take 7) |
+| 1b Cost router | Done | Real: 22–27 % under the all-ceiling baseline on the same mornings |
+| 2 Timeline + composer UI | Done, live | Real on Railway (mock:false, $1 day cap); fixes of Oct 29: footer names the real model, long-run axis, cancelled state, translucent card, New workstream |
+| 3 Memory, skills, schedules | Done | Real: Learner on Nano saves memories (8) and rewrites SKILL.md after the fix (thinking off, required tool call); the always-allow rule sends run two's reply with no card (check 5). Not yet shown on real: run two cheaper than run one after the Learner fix (the take's run two stopped on a recorder bug, fixed in 1dc4a05) |
+| 3b Evals + CI gate | Done | Mock: 19/19 goldens, 27/27 cases, chat 62/62; the GitHub Actions workflow has never run (nothing pushed yet) |
+| 4 Chat apps | Built | Mock-tested; the real curl exchange against the live /v1 is queued (about $0.03); a real OpenClaw or Hermes client is the user's step (docs/openclaw.md "Against the live demo"); Telegram send-only path unverified |
+| 4 Deploy | Done on Railway | Real: https://nimbus-production-6f7b.up.railway.app, volume at /data, bearer on /v1, day cap $1. Nebius Serverless Endpoint: not deployed (encouraged, not required by the rules; the feedback says so) |
+| 5 Video | Locked rev 6 | Footage: the role-named mock take 1258; numbers on screen: measured on the real headless runs; music: the user's Suno track. Masters rendered: 1080p full and X, 4K full, five gallery stills. One last full real take is in progress (user: "One more take"); if it lands, the video swaps to real footage |
+| 5 README, LICENSE, repo | README in the user's voice with the measured numbers; MIT at root | Not pushed; the push needs the user's go and `gh auth status` = harrymove-ctrl |
+| 5 Devpost, YouTube | Drafts ready in docs/SUBMISSION.md (description, story, form answers, feedback, thumbnail, gallery) | The user fills ratings and uploads on Oct 30 |
+
+Real spend to date: about $0.35 on the laptop runs plus about $0.01 on Railway, of a $0.50 cap. Keys are in `.env.local` and Railway only; both were pasted in chat once and must be rotated after the hackathon.
+
+Open items, in order: (1) the real chat run on Railway, (2) the last full take, (3) the video swap and re-render if the take lands, (4) the user's Hermes/OpenClaw run, (5) Oct 30: push, YouTube, Devpost, submit, rotate keys.
+
 ## 0. The clock and the approach check
 
 **Deadline: Oct 30, 2026, 10:00 PDT = 17:00 UTC = 00:00 Oct 31 ICT.**
@@ -248,3 +270,52 @@ PR on the public repo shows the eval check green.
 - Video script (SUBMISSION.md) 2:40–3:00: show the cost delta line and the
   eval table instead of only the routing table.
 - Decision log: 2026-10-27 — router + evals added; 100+ goldens is post-hackathon.
+
+## 7. Reorder on 2026-10-27 afternoon: Phase 2a before Phase 1
+
+Phase 0 passed (boot screen with the Glow Cloud at localhost:3218). Phase 1's
+exit test needs `NEBIUS_API_KEY` and `TAVILY_API_KEY`, which were not yet in
+`.env.local`. Rather than idle, the build moves to **Phase 2a**: the full rev B
+run view driven by a recorded run (`fixtures/demo-run.events.json`) replayed
+over the same SSE and API routes the live runtime will use. Phase 1 then plugs
+in behind those routes with no UI change.
+
+**Phase 2a exit test:** open `/`, pick the demo workstream, press RUN; lanes
+fill from the fixture, the plan card shows its 3 s cancel, a question card is
+answered by a chip, an approval is approved from the tray, the artifact goes
+v1 → v2 in the Inspector, the run summary appears, and the composer cycles
+idle → planning → running → asked → waiting → idle with the right button labels.
+
+Decision log: 2026-10-27 — Phase 2a (fixture-driven UI) before Phase 1
+because the keys were missing and the UI is the demo's hero; the replay
+source doubles as the eval harness's mocked-run path later.
+
+## 8. Zero-spend rule (2026-10-27): mock model mode for every phase
+
+The user does not add API keys or spend credits during development. Every
+phase runs and passes its exit test with no keys behind one switch:
+
+- `NIMBUS_MODEL=mock` (default whenever `NEBIUS_API_KEY` is empty): a scripted
+  model behind the same interface as Token Factory, reading
+  `fixtures/mock-model/<role>.json` by role and turn, returning deterministic
+  text and tool calls with fake usage, delayed 300–900 ms so the timeline moves.
+  Embeddings are hash vectors; Tavily returns `fixtures/search/*.json`.
+- `NIMBUS_MODEL=nebius`: real Nemotron via Token Factory. Used only on the
+  final day for `pnpm smoke`, the eval baseline numbers, and the demo recording.
+
+Order of work from here: Phase 2a (UI on the recorded run) → Phase 1 runtime in
+mock mode → Phase 3 (memory, skills, schedules) → Phase 4 endpoint, all in mock
+mode → Phase 3b evals in mock mode → final day: keys in, smoke, real-run
+numbers, deploy, video. Expected real spend: under $5 of the free credit.
+
+## 9. Rev E (2026-10-27 night): better cases, better video
+
+The user rejected "checkout conversion" as the demo: generic and not
+impressive. `docs/CASES.md` defines six workstreams with a hero, **Ship
+Nimbus**, where the crew runs the evals on its own repository, fixes the
+failing golden, and opens a pull request only after approval. `SUBMISSION.md`
+has video script v2 (2:40) built on it, with the dither background and
+numbers from `DITHER.md`. New runtime pieces: `read_repo` and `open_pr`
+tools (approval-gated; mock logs the PR), case fixtures, a seed with six
+workstreams, and `pnpm demo:video` updated to the v2 beats. Checkout stays as
+a template and the eval data case.

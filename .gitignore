@@ -22,3 +22,7 @@ docs/demo/*
 # demo video (Remotion project in video/)
 video/node_modules
 video/out
+
+# Suno music (the user's own generation; not redistributed in the public repo)
+video/public/audio/music-full.mp3
+video/public/audio/music-x.mp3

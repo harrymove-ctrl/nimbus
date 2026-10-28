@@ -340,3 +340,196 @@ New event types: `plan` (payload: agents, tools, estimate), `question`
 (payload: text, options?), and `policy` (payload: rule) emitted when Always
 allow is used. New composer-related API: `POST /api/runs/[id]/messages`
 (steer or answer), `POST /api/estimate` (Nano cost estimate for a draft).
+
+## 15. Rev C (2026-10-27 night): timeline axis, segment labels, legend, header
+
+Found in the built app at a 145 s run: tick labels every 5 s piled up, segment
+labels started under the round cap, the legend's routed pill truncated the
+model name, and the header clipped the baseline pill. Rules:
+
+**Axis**
+- `pxPerSec = (plotWidth − 24) / max(25, elapsed × 1.25)` while running,
+  recomputed when the playhead passes 80 % of the plot, eased 300 ms; when the
+  run is done, fit the whole run (`elapsed × 1.04`).
+- Major tick step = the smallest of `[1, 2, 5, 10, 15, 30, 60, 120, 300]` s
+  with `step × pxPerSec ≥ 80 px`. Grid lines and labels at major ticks only.
+- Minor ticks (unlabeled, 40 % opacity, 4 px tall) at `step ÷ 5` when the
+  major step is ≥ 10 s.
+- Label format: `0s`, `5s`, `45s`; from 60 s: `1:00`, `1:30`, `2:25`. Always
+  label 0. Drop the last label if its text would cross the plot's right edge.
+- Labels use `font-variant-numeric: tabular-nums`, 11 px, centered on the tick.
+
+**Segment labels**
+- A segment is a pill with a 14 px cap. The label starts at `x + 14 + 8`,
+  is drawn only when `segmentWidth ≥ labelWidth + 30`, and never overlaps the
+  route badge (badge at the cap, label after it).
+- Hatched waiting segments show "Waiting for you" centered only when the
+  segment is ≥ 160 px wide; otherwise no label. The tooltip always has the full label.
+- Failed segments: ✕ centered; label in the tooltip only.
+
+**Legend (W2 = 240)**
+- Row 1: color dot, agent name (truncates), live status dot.
+- Row 2: one model badge with the full model name, never truncated:
+  `N  Nemotron 3 Nano`. When routed below ceiling, a `↓` glyph precedes the
+  name inside the badge; `↻` for a fallback. Hover: "Routed below ceiling:
+  Super → Nano · <reason>". The separate "routed (…)" pill is removed.
+- Row 3: `tokens · cost` in tabular digits; cost with 3 decimals; `—` when 0.
+
+**Run header**
+- Title shrinks and truncates (`min-width: 0`); pills and metrics are
+  `flex-shrink: 0`. Under 900 px of header width drop tokens first, then
+  elapsed; the status pill and the baseline pill are always visible.
+
+## 16. Rev D (2026-10-27 late): Memory & skill tab v2
+
+Reviewed in the built app: the tab dumps SKILL.md as 12 px monospace in a
+420 px column, shows memories only for the current run, and has no actions.
+It is the surface that proves "it learns", so it gets the same care as the timeline.
+
+**Header strip** (56): "Next run uses" with two counts in tabular digits,
+"5 memories · 1 rule", and "last learned · run 3 · 2 min ago". A ✦ glyph when
+either count is above 0. Empty: "Nothing learned yet. Run once."
+
+**Section 1 · Rules** (policy lines): one card per `allow:` line.
+Line 1: the rule in plain words, "Allow send_message to #growth" (monospace
+only for the identifier). Line 2 meta: "from run 3 · Oct 27 · used 1×".
+Right: REVOKE (ghost, asks once). Empty state: "No rules. Approve & always
+allow adds one." API: `DELETE /api/workstreams/[id]/policies/[index]`.
+
+**Section 2 · Skill**: rendered as a document, not raw text. Each `## Heading`
+of SKILL.md becomes a card: heading 13 px bold, body 14/21 in neutral-100,
+lists as lists. A toolbar row above: "Last rewrite · run 3 · +2 −1", SHOW DIFF
+(toggles the inline SkillDiff under the toolbar), VIEW RAW (monospace, for the
+curious), REVERT (ghost; disabled when nothing to revert; the existing route).
+The `## Policy` section is not repeated here; it is Section 1.
+
+**Section 3 · Memories**: all memories of the workstream, newest first, not
+only the current run. Row: text 14/20 neutral-100; meta 12 neutral-400
+"run 3 · Oct 27 · used 2×"; FORGET (ghost) on hover and on focus; a NEW chip
+on memories from the run on screen. A filter input appears above 8 rows.
+API: `GET /api/workstreams/[id]/memories` (id, text, runId, createdAt,
+usedCount), `DELETE /api/workstreams/[id]/memories/[mid]`. `usedCount`
+increments each time a memory is included in a prompt.
+
+**Type and contrast**: body 14/21, meta 12/16, eyebrows 11 caps with 16 px
+above and 8 px below; text never below neutral-300 on neutral-950; cards
+`bg-white/4` with `border-white/10`, radius R2. Section gap S4 = 24. No
+monospace except identifiers and the raw view.
+
+**Motion**: a new memory row enters 160 ms ease-out; a revoked rule or
+forgotten memory collapses 160 ms; REVERT crossfades the skill cards 120 ms.
+
+**Exit test**: after two runs of Checkout, the tab shows 1 rule with its
+source run, the skill as cards with SHOW DIFF working, all memories with
+NEW on the latest, FORGET removes one and run 3's prompt no longer includes
+it, REVOKE removes the rule and run 3 asks for approval again.
+
+## 17. Rev F (2026-10-27 night): surfaces beyond the composer
+
+Review verdict: the app is a composer with a timeline. A judge sees a chat
+UI with one chart. Nimbus is an ops room; it needs the surfaces of one.
+Rev F adds four surfaces and three interaction upgrades, all built from two
+libraries: **dithercn** (charts and backgrounds, free, shadcn registry at
+`https://dithercn.dev/r/<name>.json`) and **Arc** (`uiarc.dev`; the agent
+components are Arc Pro: `@uiarc-pro/agent-plan`, `agent-status`, `agent-loop`,
+`agent-timeline`, `tool-call`, `context-window`, blocks `agent-run`,
+`agent-approvals`, `agent-memory`, `agent-orchestrator`). If an `ARC_PRO_TOKEN`
+is available, install them; if not, build each to the contract below, which
+is what Arc's docs recommend instead of rebuilding Pro source.
+
+### 17.1 Overview (new route `/`, the rail's first item: "Overview")
+The first screen after boot. Answers "what did the crew do, what did it
+cost, what needs me" in one look. All numbers are from SQLite; charts are
+dithercn and are interactive: a click filters or opens.
+
+| Region | Component | Data | Interaction |
+|---|---|---|---|
+| Stat row (4) | `StatCard` with sparkline | Today spend vs day cap · runs today · approvals waiting · memories learned this week | Click: spend → area chart; approvals → tray list; memories → Memory tab of the last run |
+| Spend by tier, 7 days | `AreaChart` stacked, series Ultra · Super · Nano | usage per day per tier | Scrub crosshair; click a day → run list for that day |
+| Tokens by tier | `DonutChart` | tokens per tier this week | Click a slice → timeline legend filter on the last run |
+| Runs calendar | `Heatmap` calendar, 8 weeks | runs per day, color by cost | Hover: runs; click: that day in the rail |
+| Scheduled health | `UptimeBar` per scheduled workstream, 30 days | succeeded · waited for approval · failed | Click a day → open that run |
+| Router saving | `Gauge` | spend with router ÷ at ceilings, this week | Hover: formula; click → Token Factory watch workstream |
+| Impact | text row | PRs opened · messages sent · docs produced · $ saved · estimated person-time saved (per-case estimate, labeled) | — |
+
+Empty state (no runs): the dithered `EmptyState` with the cloud and "Run
+Ship Nimbus to see your first numbers".
+
+### 17.2 Agent plan v2 (replaces the 3 s countdown for manual runs)
+Arc "Agent plan" contract: the orchestrator's plan is a **draft** the person
+can edit before the crew acts. Card header: "Plan · N steps · Ultra" and the
+estimate pill. Rows: drag handle, step text (editable inline), agent chip and
+tier, remove; "Add step" at the end. Footer: **Keep planning** (sends the
+edits back to the orchestrator for a second plan turn) and **Approve plan**.
+On approve the card becomes a **live checklist**: each step gets a tick when
+its hop ends, a running elapsed on the current one, and a ✕ on a failed one;
+the card collapses to one line "6 of 6 steps · 35 s" after run.end.
+Scheduled and chat-triggered runs keep the 3 s countdown (no one is there
+to edit). API: `plan` event gains `steps[]`; `POST /api/runs/[id]/plan` with
+`{ steps }` and `{ approve: true }`; the runtime waits in `planning` until
+approved or 3 s for non-manual runs.
+
+### 17.3 Agent status pill (top bar, for runs you are not looking at)
+Arc "Agent status" contract: a 36 px pill in the top bar whenever any run is
+running or waiting while another workstream is selected: live ring in the
+workstream's color, current activity text ("Analyst · run_code"), elapsed.
+Click opens a 320 px panel: model, "Step 3 of 6" segmented progress, the last
+three steps with durations, **Pause** · **Stop** · **Open run**, and when
+the run waits on an approval, **Approve** · **Deny** inline with the summary.
+Several runs: the pill shows a count and the panel lists them. This is how
+scheduled runs are checked on without leaving the current screen.
+
+### 17.4 Loop view (Inspector · Agent I/O, second mode)
+Arc "Agent loop" contract: for the selected hop, a circle with three stations
+Gather context → Take action → Verify, the model in the center, the loop
+count; the active station highlighted, and under it the card for that
+station: a tool call with its result, or "Retry · reason". The Analyst's
+failed-then-retried `run_code` in Ship Nimbus shows as loop 1 Verify → Retry,
+loop 2 Take action ✓. Transport: Pause · Step · Replay with speed 0.5× · 1× · 2×.
+Context column on the right lists what the hop was given with token counts.
+
+### 17.5 Timeline upgrades (Arc "Agent timeline" behaviors)
+- Click a segment: besides selecting, **trace** its handoff path: the
+  connectors and segments upstream and downstream highlight, the rest dim.
+- **Scrub**: drag the playhead on a finished run to replay; the transcript
+  and Inspector follow; speed control 0.5 · 1 · 2×.
+- Tool-call ticks inside segments on hover show the tool name.
+
+### 17.6 Backgrounds, one per surface (dithercn backgrounds)
+| Surface | Background | Settings |
+|---|---|---|
+| Boot | none; the cloud sky | — |
+| Overview | `contours` (a map of your work) | cell 3 · ≤ 6 % ink · still under reduced motion |
+| Run view | `dither-glow` (existing) | cell 3 · ≤ 8 % · pauses at ≥ 4 running lanes |
+| Empty state | `aurora` | cell 4 · low · still under reduced motion |
+| Approval waiting | `ripples`, one source at the tray's edge | only while waiting; stops on resolve |
+| Memory & skill tab | `noise-field` | cell 2 · ≤ 4 % · text-clearing mask on |
+| Rail, Inspector, composer, cards, cloud, status pill | none | — |
+Rule: never two animated backgrounds visible at once in the same column; tone under text ≤ 0.2; `[dither-core]` console must stay clean.
+
+### 17.7 Impact line and simple prompts
+- Every run summary ends with **Impact**: counts from events (PRs opened,
+  messages sent, docs produced), $ saved vs baseline, and "≈ 45 min of your
+  time" from a per-case estimate in the workstream (`estimatedManualMinutes`),
+  labeled as an estimate. The overview shows the week's totals.
+- Composer templates: three chips above the box on an empty workstream,
+  "Fix what's failing", "Watch …", "Brief me every morning"; each fills a
+  plain goal; the plan card does the rest.
+
+### 17.8 New case: Token Factory watch
+Goal: "Watch the Token Factory catalog and our usage: tell me when a price or
+model changes for one of our roles, propose router rule changes, and show
+the saving." Tools: `fetch_url` on the catalog (fixture in mock), `read_files`
+on the usage export, `write_artifact` (proposal with a before/after table),
+approval: `write_file` to `src/runtime/router-rules.json`. Payoff: the
+overview gauge and the "if applied: −X %" stat move after approval.
+
+### 17.9 Exit tests
+Overview renders from the seed with all seven regions and every click lands
+where the table says; a manual Ship Nimbus run shows the draft plan, a step
+reordered and one added survive Approve plan, and the checklist ticks in
+order; with Hackathon radar selected and Ship Nimbus running, the pill shows
+the activity and the panel approves the PR inline; the Analyst's retry shows
+as two loops; clicking the Writer segment traces back to the orchestrator;
+scrubbing a finished run moves the transcript; each surface shows exactly
+its background and reduced motion stills all of them.

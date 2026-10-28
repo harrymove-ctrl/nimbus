@@ -29,10 +29,19 @@
     }
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next-build-check/types/**/*.ts",
+    ".next-build/types/**/*.ts",
+    ".next-chat/types/**/*.ts",
+    ".next-main/types/**/*.ts",
+    ".next-ov/types/**/*.ts",
+    ".next-ov2/types/**/*.ts",
+    ".next-restart/types/**/*.ts",
+    ".next-video/types/**/*.ts",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    ".next-ui/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

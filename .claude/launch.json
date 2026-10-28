@@ -25,6 +25,12 @@
         "3250"
       ],
       "port": 3250
+    },
+    {
+      "name": "nimbus-docs",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8767", "--directory", "docs"],
+      "port": 8767
     }
   ]
 }
