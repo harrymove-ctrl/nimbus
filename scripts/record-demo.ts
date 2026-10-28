@@ -163,6 +163,27 @@ async function approveAt(page: Page, approval: Locator, name: string | RegExp, b
   await button.click({ delay: 90, force: true });
 }
 
+/**
+ * The three replies: plain Approve on two, Approve & always allow on the reviewer's (by its address). The mock asks for
+ * all three at once; a real Writer asks one at a time, the next only after the last is approved. So take each card as
+ * it comes, the reviewer's last when others are waiting too, about 2 s apart (the music's drop lands on approve-1).
+ */
+export async function approveBrief(page: Page, gapMs = 2000, timeoutMs = 360_000) {
+  const end = Date.now() + timeoutMs;
+  let plain = 0;
+  let ruled = false;
+  while ((plain < 2 || !ruled) && Date.now() < end) {
+    await until(page, pendingCards(page), Math.max(1000, end - Date.now()));
+    await pause(600); // cards asked for together land within a moment of each other
+    const reviewer = card(page, "reviewer@example.com");
+    const others = pendingCards(page).filter({ hasNotText: "reviewer@example.com" });
+    if (plain < 2 && (await others.count())) await approveAt(page, others.first(), "Approve", `approve-${++plain}`);
+    else if (!ruled && (await reviewer.count())) (await approveAt(page, reviewer, /Approve & always allow/, "always-allow"), (ruled = true));
+    else await approveAt(page, pendingCards(page).first(), "Approve", `approve-${++plain}`); // a fourth send
+    await pause(gapMs);
+  }
+}
+
 async function approvePlan(page: Page, beat?: string) {
   await click(page, page.getByRole("button", { name: "Approve plan", exact: true }), beat);
 }
@@ -234,18 +255,13 @@ async function briefOne(page: Page) {
 
   // the gate: Approve the client's reply, Approve the teammate's, Approve & always allow on the reviewer's
   mark("brief1-approvals");
-  await waitForCards(page, 3);
-  const client = await cardFor(page, "client@example.com");
-  await client.scrollIntoViewIfNeeded().catch(() => {});
+  await until(page, pendingCards(page), 240_000);
+  const first = pendingCards(page).first();
+  await first.scrollIntoViewIfNeeded().catch(() => {});
   await pause(1600);
-  await targets(page, { "approval-card": client, "approve-buttons": client.locator('[data-demo="approve-buttons"]'), tray: demo(page, "tray") });
+  await targets(page, { "approval-card": first, "approve-buttons": first.locator('[data-demo="approve-buttons"]'), tray: demo(page, "tray") });
   await pause(2400);
-  // about 2 s between the clicks: the music's drop lands on approve-1
-  await approveAt(page, client, "Approve", "approve-1");
-  await pause(2000);
-  await approveAt(page, await cardFor(page, "teammate@example.com"), "Approve", "approve-2");
-  await pause(2000);
-  await approveAt(page, await cardFor(page, "reviewer@example.com"), /Approve & always allow/, "always-allow");
+  await approveBrief(page);
   await demo(page, "rule-line").waitFor({ timeout: 20_000 }).catch(() => {});
   await demo(page, "rule-line").scrollIntoViewIfNeeded().catch(() => {});
   await pause(1200);
@@ -486,7 +502,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch((e) => {
+if (process.argv[1]?.endsWith("record-demo.ts")) main().catch((e) => {
   console.error(e);
   process.exit(1);
 });
