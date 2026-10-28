@@ -10,6 +10,7 @@ import { ProgressBar } from "@/components/dithercn/progress-bar";
 import type { PlanStep } from "@/lib/events";
 import { ROLE_LABEL, ROLE_COLOR, TIER_SHORT, fmtSecs, type PlanItem, type RunView } from "@/lib/run-view";
 import { cue } from "./sound";
+import { Why } from "./why";
 import { buttonSm, cx, panel, panelGlass, panelBody, panelFoot, panelHead, primaryButton, secondaryButton } from "./ui";
 
 const ENDED = new Set(["done", "failed", "cancelled", "stopped"]);
@@ -34,7 +35,9 @@ function Header({ item, n, children }: { item: PlanItem; n: number; children?: R
         {item.edited && <span className="ms-2 rounded bg-[var(--rb-accent)]/20 px-1.5 py-px text-[11px] font-extrabold text-[var(--rb-accent)]">edited</span>}
       </p>
       {children}
-      <span data-demo="estimate" className="ms-auto rounded-full bg-white/10 px-2.5 py-0.5 text-[12px] font-bold tabular-nums text-neutral-100">{item.estimate.label}</span>
+      <Why what="The price, first" why="Measured from the plan, before anything runs" className="ms-auto">
+        <span data-demo="estimate" className="rounded-full bg-white/10 px-2.5 py-0.5 text-[12px] font-bold tabular-nums text-neutral-100">{item.estimate.label}</span>
+      </Why>
     </div>
   );
 }
@@ -165,7 +168,7 @@ function LivePlan({ item, view, now, onCancel, ended }: Props & { ended: boolean
 
   if (ended && !open)
     return (
-      <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setOpen(true)} aria-expanded="false" className={cx(panelGlass, "flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-white/5")}>
+      <button type="button" data-demo="plan" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setOpen(true)} aria-expanded="false" className={cx(panelGlass, "flex w-full items-center gap-2 px-3 py-2.5 text-left hover:bg-white/5")}>
         <span className={cx("grid size-5 place-items-center rounded-full", endedByYou ? "bg-white/10 text-neutral-300" : failed ? "bg-red-500/20 text-red-200" : "bg-emerald-500/20 text-emerald-200")}>
           {endedByYou ? <Square className="size-2.5 fill-current" /> : failed ? <X className="size-3" /> : <Check className="size-3" />}
         </span>
@@ -179,7 +182,7 @@ function LivePlan({ item, view, now, onCancel, ended }: Props & { ended: boolean
     );
 
   return (
-    <div className={panel}>
+    <div data-demo="plan" className={panel}>
       <Header item={item} n={total} />
       <div className={cx(panelBody, "gap-2 p-3")}>
         <ProgressBar value={done} max={Math.max(total, 1)} label="Plan progress" valueText={`${done} of ${total} steps`} hideLabel size="sm" color={failed ? "red" : "green"} segments={total > 1 ? total : undefined} />

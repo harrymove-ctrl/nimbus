@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PanelLeft, PanelRight, Brain, FileText, GanttChart, MessageSquare } from "lucide-react";
+import { PanelLeft, PanelRight, Brain, Compass, FileText, GanttChart, MessageSquare } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
 import { useNow, useReducedMotion, useRunEvents } from "@/hooks/use-run";
 import { buildView, type ApprovalItem, type QuestionItem, type Seg } from "@/lib/run-view";
@@ -19,6 +19,7 @@ import { Composer, type Mode, type TierChoice } from "./composer";
 import { Inspector, type InspectorTab } from "./inspector";
 import { LEARNING_CHANGED } from "./learning";
 import { NewWorkstream } from "./new-workstream";
+import { Tour, TOUR_SEEN } from "./tour";
 import { Rail } from "./rail";
 import { RunHeader } from "./run-header";
 import { cue, SoundToggle, useRunCues, useSound } from "./sound";
@@ -28,7 +29,7 @@ import { cx } from "./ui";
 
 const post = (url: string, body: unknown) => fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
-export function AppShell({ initialBudget }: { initialBudget?: { todayUsd: number; dayCapUsd: number; runCapUsd: number; mock: boolean } } = {}) {
+export function AppShell({ initialBudget, demo = false }: { initialBudget?: { todayUsd: number; dayCapUsd: number; runCapUsd: number; mock: boolean }; demo?: boolean } = {}) {
   const reduced = useReducedMotion();
   const [workstreams, setWorkstreams] = useState<Workstream[]>([]);
   const [boot, setBoot] = useState<"boot" | "fading" | "gone">("boot");
@@ -43,6 +44,24 @@ export function AppShell({ initialBudget }: { initialBudget?: { todayUsd: number
   const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
   const [creating, setCreating] = useState(false);
+  const [touring, setTouring] = useState(false);
+  // the one-time "New here?" chip: never in a demo recording, never again once the tour was seen or dismissed
+  const [nudge, setNudge] = useState(false);
+  useEffect(() => {
+    try {
+      setNudge(!demo && !window.localStorage.getItem(TOUR_SEEN));
+    } catch {
+      /* no storage: no nudge */
+    }
+  }, [demo]);
+  const dismissNudge = () => {
+    setNudge(false);
+    try {
+      window.localStorage.setItem(TOUR_SEEN, "1");
+    } catch {
+      /* not remembered */
+    }
+  };
 
   const [draft, setDraft] = useState("");
   const [files, setFiles] = useState<string[]>([]);
@@ -344,6 +363,21 @@ export function AppShell({ initialBudget }: { initialBudget?: { todayUsd: number
         </span>
         <span className="flex-1" />
         <StatusPill runs={active.runs} fetchedAt={active.fetchedAt} reload={active.reload} currentRunId={runId} onOpenRun={(wsId, rid) => openRun(wsId, rid)} />
+        <div className="relative">
+          <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-bold text-neutral-300 hover:bg-white/10 hover:text-neutral-100">
+            <Compass className="size-4" aria-hidden="true" /> <span className="hidden sm:inline">Take the tour</span>
+          </button>
+          {nudge && !touring && (
+            <div className="nb-rise-fast absolute right-0 top-full z-40 mt-2 flex items-center gap-1 whitespace-nowrap rounded-full border border-white/10 bg-neutral-900/92 py-1 ps-3 pe-1 text-[12px] font-bold text-neutral-200 shadow-lg backdrop-blur-md">
+              <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="hover:text-white">
+                New here? 60-second tour
+              </button>
+              <button type="button" aria-label="Dismiss the tour hint" onClick={dismissNudge} className="grid size-6 place-items-center rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
+                ×
+              </button>
+            </div>
+          )}
+        </div>
         <SoundToggle enabled={sound.enabled} onToggle={sound.toggle} />
         <button type="button" aria-label="Inspector" data-cuelume-open={drawer === "inspector" ? undefined : ""} data-cuelume-close={drawer === "inspector" ? "" : undefined} onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden", ws && isPhone ? "hidden" : "grid")}>
           <PanelRight className="size-4" />
@@ -462,6 +496,19 @@ export function AppShell({ initialBudget }: { initialBudget?: { todayUsd: number
               </>
               )}
             </>
+          )}
+          {touring && (
+            <Tour
+              tab={tab === "memory" ? "memory" : tab === "agent" ? "agent" : "artifact"}
+              setTab={(t) => setTab(t)}
+              reducedMotion={reduced}
+              hasRun={!!ws && !!runId}
+              onClose={() => setTouring(false)}
+              onOpenRun={() => {
+                // the Overview path: open the latest Morning brief run (read-only) and take the tour from there
+                void openWorkstream("ws-brief").then(() => setTimeout(() => setTouring(true), 900));
+              }}
+            />
           )}
           {creating && (
             <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/50 p-4" onClick={(e) => e.target === e.currentTarget && setCreating(false)}>

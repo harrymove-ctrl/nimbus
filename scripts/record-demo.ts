@@ -414,6 +414,8 @@ async function main() {
   const browser = await chromium.launch({ channel: "chrome", headless: true });
   const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 }, colorScheme: "dark", recordVideo: { dir: TMP, size: { width: 1920, height: 1080 } } });
   await ctx.addInitScript(CURSOR);
+  // the tour never shows in the footage: mark it seen before the first page loads
+  await ctx.addInitScript(() => { try { localStorage.setItem("nimbus.tour.seen", "1"); } catch {} });
   t0 = Date.now();
   const page = await ctx.newPage();
   page0 = page;

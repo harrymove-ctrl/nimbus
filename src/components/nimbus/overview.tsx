@@ -12,6 +12,7 @@ import { Heatmap } from "@/components/dithercn/heatmap";
 import { StatCard } from "@/components/dithercn/stat-card";
 import { UptimeBar } from "@/components/dithercn/uptime-bar";
 import type { Overview as Data, RunRef } from "@/runtime/overview";
+import { Why } from "./why";
 import { cx } from "./ui";
 
 type Drill = { title: string; runs: RunRef[]; note?: string } | null;
@@ -195,7 +196,9 @@ export function Overview({
           </section>
 
           <section className={card} aria-label="Router saving" data-demo="router-gauge">
-            <h2 className={eyebrow}>Router saving · this week</h2>
+            <Why what="Cost router" why="The cheapest Nemotron that can do each step">
+              <h2 className={eyebrow}>Router saving · this week</h2>
+            </Why>
             <div className="grid place-items-center">
               <Gauge value={saved} label="saved vs every hop at its ceiling" unit="%" size={210} color="green" />
             </div>

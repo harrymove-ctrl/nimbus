@@ -20,6 +20,7 @@ import { DitherNumber } from "@/components/dithercn/dither-number";
 import { Divider } from "@/components/dithercn/divider";
 import { PlanSkeleton } from "./loading";
 import { PlanCard } from "./plan-card";
+import { Why } from "./why";
 import { buttonSm, cx, ghostButton, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton, toolOutput, toolWell, userBubble } from "./ui";
 import type { AgentRole } from "@/lib/models";
 
@@ -273,9 +274,11 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
               <button type="button" data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setRejecting(true)} className={cx(ghostButton, buttonSm)}>
                 Reject with a note
               </button>
-              <button type="button" onClick={() => onDecide(item, "approve_always")} className={cx(secondaryButton, buttonSm)}>
-                Approve &amp; always allow
-              </button>
+              <Why what="Allow it from now on" why="Saves one rule, by recipient, that you can revoke">
+                <button type="button" onClick={() => onDecide(item, "approve_always")} className={cx(secondaryButton, buttonSm)}>
+                  Approve &amp; always allow
+                </button>
+              </Why>
               <button type="button" onClick={() => onDecide(item, "approve")} className={cx(primaryButton, buttonSm)}>
                 Approve
               </button>
@@ -366,18 +369,20 @@ function SummaryCard({ item, view, onRevert, manualMinutes }: { item: Extract<TI
           <p className="mb-1 flex items-center text-[12px] font-bold uppercase tracking-wide text-neutral-400">
             SKILL.md diff
             {onRevert && (
-              <button
-                type="button"
-                data-cuelume-tap=""
-                disabled={reverted === "busy" || reverted === "yes"}
-                onClick={async () => {
-                  setReverted("busy");
-                  setReverted((await onRevert()) ? "yes" : "none");
-                }}
-                className="ms-auto rounded-md px-2 py-1 text-[11px] font-extrabold normal-case tracking-normal text-neutral-200 hover:bg-white/10 disabled:opacity-60"
-              >
-                {reverted === "yes" ? "Reverted" : reverted === "none" ? "Nothing to revert" : reverted === "busy" ? "Reverting…" : "Revert skill change"}
-              </button>
+              <Why what="Its own how-to, rewritten" why="Revert if it learned the wrong thing" className="ms-auto">
+                <button
+                  type="button"
+                  data-cuelume-tap=""
+                  disabled={reverted === "busy" || reverted === "yes"}
+                  onClick={async () => {
+                    setReverted("busy");
+                    setReverted((await onRevert()) ? "yes" : "none");
+                  }}
+                  className="rounded-md px-2 py-1 text-[11px] font-extrabold normal-case tracking-normal text-neutral-200 hover:bg-white/10 disabled:opacity-60"
+                >
+                  {reverted === "yes" ? "Reverted" : reverted === "none" ? "Nothing to revert" : reverted === "busy" ? "Reverting…" : "Revert skill change"}
+                </button>
+              </Why>
             )}
           </p>
           <SkillDiff rows={item.summary.skillDiff} />

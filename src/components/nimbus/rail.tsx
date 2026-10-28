@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Archive, Clock, LayoutDashboard, MoreHorizontal, Pencil, Play, RotateCcw, Plus } from "lucide-react";
 import type { Workstream } from "@/lib/workstreams";
 import { RailSkeleton } from "./loading";
+import { Why } from "./why";
 import { cx } from "./ui";
 
 export function Rail({
@@ -133,9 +134,13 @@ export function Rail({
         </div>
       )}
       {budget && budget.mock === false ? (
-        <p className="border-t border-white/10 p-4 pt-3 text-[12px]/[18px] font-bold tabular-nums text-neutral-300" title="Daily spend across all runs (NIMBUS_DAY_CAP_USD)">
-          Runs use Nemotron 3 on Nebius Token Factory · today ${budget.todayUsd.toFixed(2)} of ${budget.dayCapUsd.toFixed(2)}
-        </p>
+        <div className="border-t border-white/10 p-4 pt-3">
+          <Why what="Day cap" why="Runs stop here; raise it in settings" side="above">
+            <p className="pe-3 text-[12px]/[18px] font-bold tabular-nums text-neutral-300" title="Daily spend across all runs (NIMBUS_DAY_CAP_USD)">
+              Runs use Nemotron 3 on Nebius Token Factory · today ${budget.todayUsd.toFixed(2)} of ${budget.dayCapUsd.toFixed(2)}
+            </p>
+          </Why>
+        </div>
       ) : (
         <>
           {budget && (

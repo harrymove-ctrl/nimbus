@@ -9,5 +9,6 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const b = await checkDayBudget().catch(() => null);
   const budget = b ? { todayUsd: b.spentUsd, dayCapUsd: b.capUsd, runCapUsd: runCapUsd(), mock: modelMode() === "mock" } : undefined;
-  return <AppShell initialBudget={budget} />;
+  // NIMBUS_DEMO=1 (the recorder's server): no tour nudge in the footage
+  return <AppShell initialBudget={budget} demo={process.env.NIMBUS_DEMO === "1"} />;
 }
