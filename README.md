@@ -1,14 +1,17 @@
 # Nimbus
 
-A glowing cloud that runs your ongoing work with a crew of NVIDIA Nemotron agents,
-asks before it acts, and learns from every run.
+Every morning I read my inbox, my calendar and GitHub before I've done any work, then write the same replies I wrote
+yesterday. Nimbus does that part for me with a crew of NVIDIA Nemotron agents. It asks before it sends anything, and it
+learns from each run.
 
-Built for the Nebius x NVIDIA Global AI Hackathon (Personal AI track). Started 2026-10-27 as a new project.
+I built it alone in three days for the Nebius x NVIDIA Global AI Hackathon (Personal AI track), starting 2026-10-27.
 
-> **Status, stated plainly.** Everything below runs today with **no API keys** against a scripted
-> *mock model*. The real Nemotron / Token Factory path is written but has **not been run yet**:
-> `pnpm smoke` (the one command that needs `NEBIUS_API_KEY`) is scheduled for the final day.
-> Numbers below marked *(mock)* come from scripted token counts, not measured spend.
+> **Where it stands.** Everything below runs with **no API keys** against a scripted *mock model*; that is what
+> `pnpm dev` gives you. I have also run it for real on Nebius Token Factory (`pnpm smoke` passes on all three tiers,
+> and the Morning brief ran headless end to end). Those real runs found six bugs the mock never hit; they are fixed,
+> and the list is in [docs/video/RELEASE.md](docs/video/RELEASE.md). I don't have a recorded real-model take yet, so
+> the demo video uses the mock. Numbers marked *(mock)* are scripted token counts; numbers marked *(measured)* come
+> from the real runs.
 
 ## Run it in two minutes (no keys)
 
@@ -24,12 +27,15 @@ learned, spend by tier for 7 days, tokens by tier, an 8-week runs calendar, sche
 router's saving and an impact line. (The history behind it is seeded and labelled; the numbers for today are real.) The
 rail has seven workstreams, and **Hackathon radar** already has a finished run from 09:00 with an unread dot.
 
-Pick **Ship Nimbus**, type its goal (or a template chip), press **RUN**. The plan arrives as a **draft**: reword,
-reorder or add steps, then **Approve plan** (or Enter). The crew runs the evals on this repository for real
-(`pnpm eval --only`, `pnpm typecheck`), reproduces a failing demo golden, asks where to fix it (the answer changes what it
-does), writes a patch, checks it in a scratch copy, and waits for you before opening a pull request (in mock mode the PR
-body goes to `data/outbox.log`). Afterwards the Learner writes memories and rewrites the workstream's `SKILL.md`; run it
-again and it skips the question and the approval. Open another workstream while a run goes and the **status pill** in the
+Pick **Morning brief**, type the goal (or use a template chip) and press **RUN**. The plan arrives as a **draft**: you can
+reword, reorder or add steps, then **Approve plan** (or press Enter). The crew reads `fixtures/inbox/`,
+`fixtures/calendar.ics` and `fixtures/github-notifications.json`, and writes one page: what needs you today, the
+calendar, GitHub and what can wait. It also drafts replies to a client, a teammate and a reviewer. Each send waits for
+your OK as a card; on the reviewer's, **Approve & always allow** saves a rule. Afterwards the Learner writes memories
+and rewrites the workstream's `SKILL.md`. Run it again the next morning: it starts with what it learned, the reviewer's
+reply goes out under the rule with no card, and it costs less (*(mock)*: $0.024 → $0.016). In mock mode nothing is
+really sent; replies go to `data/outbox.log`. **Ship Nimbus** is the other deep case: the crew runs this repo's evals
+for real, fixes a failing golden, and waits for you before it opens a pull request. Open another workstream while a run goes and the **status pill** in the
 top bar follows it; its panel pauses, stops, opens it, or approves inline.
 
 ## What is in the app
@@ -126,7 +132,7 @@ rewrites `SKILL.md`. The diff is in the run summary, with a **Revert skill chang
 **Always on.** `node-cron` inside the app starts scheduled workstreams; `pnpm run:job` is the headless entrypoint for
 Serverless Jobs. **In chat apps:** model `nimbus` on `POST /v1/chat/completions` understands approve, deny, answer, status, ask and run, and can message you first on Telegram ([docs/openclaw.md](docs/openclaw.md); mock-tested with `pnpm check:chat`, not yet run against a real OpenClaw or Hermes).
 
-## How we use NVIDIA Nemotron and Nebius
+## How I used Nemotron and Token Factory
 
 | Tier | Token Factory id (checked against the live catalog 2026-10-27) | Used by | $/1M in/out |
 |---|---|---|---|
@@ -134,10 +140,22 @@ Serverless Jobs. **In chat apps:** model `nimbus` on `POST /v1/chat/completions`
 | Super | `nvidia/nemotron-3-super-120b-a12b` | Researcher, Analyst, Writer | 0.30 / 0.90 |
 | Nano | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Checker, Learner, router classifier, judge | 0.06 / 0.24 |
 
-- **Token Factory:** one OpenAI-compatible provider through the Vercel AI SDK; structure comes from tool calls
-  (zod schemas), not JSON mode; role prompts are a stable prefix so the cached-input price applies.
-  *Not yet run against the real API.*
-- **Tavily** for the Researcher's search (Tavily is a Nebius company). *Fixtures until a key is set.*
+- **Token Factory:** I use one OpenAI-compatible provider through the Vercel AI SDK (`src/lib/tokenfactory.ts`).
+  Structure comes from tool calls with zod schemas, not JSON mode. Role prompts are a stable prefix, so the cached-input
+  price applies. The router (`src/runtime/router.ts`) picks the cheapest tier that can do each step and falls back on a
+  429 or 5xx.
+- **What one real morning cost** *(measured, Oct 28, headless, every hop on its routed tier)*: run one of the Morning
+  brief was **$0.0276** for 75,291 tokens. The same run with every hop at its role's ceiling tier would have cost
+  $0.0356, so the router saved **22 %**. The Learner on Nano saved 8 memories and rewrote the skill file. An earlier
+  pair of runs, before the Learner fix, was $0.0225 then $0.0288 (27 % and 21 % saved).
+- **What the real models did that the mock never did**, with the fix for each: the Researcher didn't know where the
+  inbox was; a child agent used every turn on reads and reported nothing; the Orchestrator handed the Writer
+  "(include the report)" instead of the report; the Writer drafted replies and never sent them; and the Learner spent
+  its whole output budget thinking. The fixes are in `src/lib/workstreams.ts`, `src/runtime/agent.ts`,
+  `src/runtime/orchestrator.ts`, `src/runtime/router.ts` and `src/runtime/learner.ts`. The details and every run's cost
+  are in [docs/video/RELEASE.md](docs/video/RELEASE.md).
+- **Tavily** for the Researcher's web search (Tavily is a Nebius company). The key is set, but the Morning brief does
+  no searching, so the real runs made 0 Tavily calls; the radar's searches are fixtures until it runs for real.
 - **Serverless Endpoint and Jobs:** `Dockerfile` and [docs/deploy.md](docs/deploy.md) are written with the exact
   commands. *Not built or deployed yet* (no Docker daemon in the dev environment).
 
@@ -160,7 +178,8 @@ All of these use the scripted mock model: token counts are scripted, so they sho
 
 ## What is not verified yet
 
-Real Nemotron calls (`pnpm smoke`, the real classifier, real embeddings, real Tavily) · the real `open_pr` path (a
+A recorded real-model take (the headless runs above are real; the video is the mock) · real embeddings and real
+Tavily searches · run two on the real models after the Learner fix · the real `open_pr` path (a
 throwaway git worktree, push and `gh pr create` as harrymove-ctrl: written, never run; mock mode logs the PR) · the Docker
 image (the Dockerfile is written and `next build` passes locally in about 30 s, but no image was built: no Docker
 daemon in the dev environment) · the Nebius deployment · the GitHub Actions workflow (valid YAML, never run on GitHub) ·
