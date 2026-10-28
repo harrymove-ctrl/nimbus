@@ -16,7 +16,7 @@ const root = path.resolve(import.meta.dirname, "..");
 const SFX = path.join(root, "public/audio/sfx");
 const only = process.argv[2];
 
-// ── The cue sheet (docs/video/sfx.md rev C) ──────────────────────────────────────────
+// ── The cue sheet (docs/video/sfx.md rev E) ──────────────────────────────────────────
 // UI moments are the app's cuelume cues with the app's emphasis (theme default; the app's
 // setVolume(0.6) is a level, set in the mix). Transitions are designed in Tone.js.
 const cue = (c, extra = {}) => ({ type: "cue", spec: { cue: c, ...extra } });
@@ -61,6 +61,13 @@ const SOUNDS = {
   "orbit-suck": des("suck", 0.45, { f0: 800, f1: 5200 }),
   "wall-tunnel": des("whoosh", 1.4, { f0: 2400, f1: 300, peak: 0.35 }),
   "bloom-sparkle": des("bells", 2.2, { notes: "C6 E6 G6 B6 D7 E7", spacing: 0.09 }),
+  // rev E: the new motion scenes (sfx.md "Rev E changes")
+  "orb-burst": des("bells", 0.9, { notes: "B5 F#6", spacing: 0.035 }),
+  "block-flash": des("bells", 0.3, { notes: "E7", spacing: 0 }),
+  "lid-open": des("whoosh", 0.7, { f0: 220, f1: 1100, peak: 0.7 }),
+  "word-drop": des("thud", 0.32),
+  "slot-roll": des("whoosh", 0.26, { f0: 1400, f1: 3600, peak: 0.6 }),
+  "cut-dry": des("impact", 0.4, { f0: 190, f1: 90, decay: 0.25 }),
 };
 
 // ── The temp score's section maps: sound/music-map.json (mirrors docs/video/music.md) ──

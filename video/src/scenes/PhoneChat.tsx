@@ -87,6 +87,52 @@ function Screen({ transcript, charFrames, greyFrames }: { transcript: ChatMessag
   );
 }
 
+/** Messages a stacked phone shows: its visible top fits about three (the newest). */
+const SHOWN = 3;
+/** One phone screen of the chat at rest (Phone Stack, board rev E scene 16): every message
+ *  so far, the newest popping in over `pop` frames from `arrive`. Device px, 393 × 852. */
+export function ChatScreen({ messages, arrive = 0 }: { messages: ChatMessage[]; arrive?: number }) {
+  const frame = useCurrentFrame();
+  const p = interpolate(frame, [arrive, arrive + 8], [0, 1], clamp);
+  return (
+    <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "58px 16px 10px", borderBottom: `1px solid ${C.line}` }}>
+        <Avatar />
+        <div>
+          <div style={{ color: C.ink, fontSize: 17, fontWeight: 700 }}>Nimbus</div>
+          <div style={{ color: C.muted, fontSize: 12, fontWeight: 500 }}>via OpenClaw</div>
+        </div>
+      </div>
+      {/* top-aligned: the stack shows each phone's top 60 % (its foot fades into the page) */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 10, padding: "14px 12px", overflow: "hidden" }}>
+        {messages.slice(-SHOWN).map((m, i, shown) => {
+          const last = i === shown.length - 1;
+          const style = last ? { opacity: p, transform: `translateY(${(1 - p) * 16}px)` } : {};
+          return m.role === "user" ? (
+            <div key={i} style={{ alignSelf: "flex-end", background: C.mint, color: C.bg, fontSize: 18, fontWeight: 600, padding: "8px 14px", borderRadius: "16px 16px 4px 16px", ...style }}>
+              {m.text}
+            </div>
+          ) : (
+            <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-end", alignSelf: "flex-start", maxWidth: "94%", ...style }}>
+              <Avatar />
+              <div style={{ background: C.card, border: `1px solid ${C.line}`, color: C.ink, fontSize: 18, fontWeight: 600, lineHeight: 1.3, padding: "8px 12px", borderRadius: "16px 16px 16px 4px" }}>
+                {lines(m.text).map((l, li) => (
+                  <div key={li}>{l.join(" ")}</div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ padding: "8px 12px 30px", display: "flex", gap: 8 }}>
+        <div style={{ flex: 1, height: 40, borderRadius: 20, background: C.card, border: `1px solid ${C.line}`, display: "flex", alignItems: "center", padding: "0 14px", fontSize: 17, fontWeight: 600, color: C.dim }}>
+          Message
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+}
+
 export function PhoneChat({
   transcript,
   charFrames,

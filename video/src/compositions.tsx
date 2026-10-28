@@ -1,70 +1,72 @@
-// NimbusFull (87 bars) and NimbusX (22 bars): script rev 5 on board rev C with the rev D
-// motion layer (docs/video/), sound from sfx.md rev D and the music.md rev C map. A real app
-// walkthrough: every part shown gets a callout (what it is · why it helps you); designed
-// motion scenes open the title, each chapter, the summary, the chat, the proof and the end.
-import { AbsoluteFill, Sequence, Series } from "remotion";
+// NimbusFull (88 bars) and NimbusX (22 bars): script rev 6 on board rev E (docs/video/), sound
+// from sfx.md rev E on the music.md rev D map. The v3 opening, the name, a laptop dive into
+// the real app, a one-bar card at each chapter, the footage on a tilted camera that flattens
+// while a callout is open, Phone Stack for the chat, the proof, a terminal and the end card.
+import { AbsoluteFill, interpolate, Sequence, Series, useCurrentFrame, useVideoConfig } from "remotion";
+import { PhoneStack } from "@/components/snap-cn/phone-stack";
 import { SnapCnUIProvider } from "@/lib/snap-cn-ui";
 import chat from "../../docs/video/chat-transcript.json";
 import { type Cue, MusicBed, SfxTrack } from "./audio";
 import { MOMENTS, momentFrame } from "./beats";
-import { FontGate } from "./components/cards";
-
-export { FULL_FRAMES, X_FRAMES } from "./shots";
 import { Callout, type CalloutSpec, Eyebrow } from "./components/Callout";
+import { FontGate } from "./components/cards";
+import { Footage } from "./Footage";
+import { beats } from "./grid";
+import type { ChatMessage } from "./scenes/AgentChat";
+import { CHECK, ChapterCheck, ChapterGather, ChapterHighlight, HIGHLIGHT } from "./scenes/ChapterCards";
+import { LockupEnd } from "./scenes/Lockup";
+import { MetricMorph, MORPH } from "./scenes/MetricMorph";
+import { HOOK_FULL, HOOK_X, Hook, LAPTOP, LaptopDive, Name, NAME } from "./scenes/Opening";
+import { ORBIT, OrbitFlow } from "./scenes/OrbitFlow";
+import { ChatScreen } from "./scenes/PhoneChat";
+import { PROOF, Proof } from "./scenes/Proof";
+import { RunIt } from "./scenes/RunIt";
+import { ScatterBloom } from "./scenes/ScatterBloom";
 import {
+  after,
   b,
   CHAPTERS,
   F,
   FULL_MOTION,
   FULL_SCENE_SHOTS,
+  gate1,
+  gate2,
   gateAllow,
-  gateDana,
-  gatePriya,
+  LAPTOP_FRAMES,
   PHONE_CALLOUT,
   type Shot,
   timelineAgentIo,
   X,
-  X_MOTION,
   X_SCENE_SHOTS,
-  xDana,
-  cam,
-  CHAT_RUN,
+  xApprove,
 } from "./shots";
-import { Footage } from "./Footage";
-import { beats } from "./grid";
-import { type ChatMessage, chatCues, fitCharFrames } from "./scenes/AgentChat";
-import { ChapterHighlight, ChapterPunch, HIGHLIGHT } from "./scenes/ChapterCards";
-import { FocusPull } from "./scenes/FocusPull";
-import { LOCKUP, LockupEnd, LockupReveal } from "./scenes/Lockup";
-import { MetricMorph, MORPH } from "./scenes/MetricMorph";
-import { ORBIT, OrbitFlow } from "./scenes/OrbitFlow";
-import { PHONE_SCALE, PhoneChat } from "./scenes/PhoneChat";
-import { PROOF, Proof } from "./scenes/Proof";
-import { ScatterBloom } from "./scenes/ScatterBloom";
-import { ScreenWall, type WallScreen } from "./scenes/ScreenWall";
-import { C, MANROPE, SORBET } from "./theme";
+import { C, GROUND, MANROPE, SORBET } from "./theme";
+
+export { FULL_FRAMES, X_FRAMES } from "./shots";
 
 // ── The chat transcript (docs/video/chat-transcript.json, real /v1 replies, verbatim) ──────
-// The agreed selection: localhost link lines dropped; "approve all" shows "Approved: …", the
-// brief's two header lines and item 1 cut at its first sentence with " …".
+// Localhost link lines dropped; long replies cut to their first lines with " …". The
+// transcript was captured on the old fixtures; take 1258's fixtures send to role addresses
+// (data/video-rev6/outbox.log), so the three addresses are mapped to those until the
+// real-model run's transcript replaces the file. No other word is changed.
 type Exchange = { role: "user" | "nimbus"; text: string };
-const EX = chat.exchanges as Exchange[];
-const replyOf = (prompt: string) =>
-  EX[EX.findIndex((e) => e.role === "user" && e.text === prompt) + 1].text;
+const ROLE_ADDRESS: [RegExp, string][] = [
+  [/dana@example\.com/g, "client@example.com"],
+  [/priya@nebius\.example/g, "teammate@example.com"],
+  [/sam@devshop\.example/g, "reviewer@example.com"],
+];
+const EX = (chat.exchanges as Exchange[]).map((e) => ({ ...e, text: ROLE_ADDRESS.reduce((t, [from, to]) => t.replace(from, to), e.text) }));
+const replyOf = (prompt: string) => EX[EX.findIndex((e) => e.role === "user" && e.text === prompt) + 1].text;
 const keepLines = (text: string, n?: number) =>
   text
     .split("\n")
     .filter((l) => !/^https?:\/\//.test(l.trim()))
     .slice(0, n);
-const firstSentence = (line: string) => {
-  const m = line.match(/^(\d+\.\s.*?\.)\s/);
-  return m ? `${m[1]} …` : line;
+const firstClause = (line: string) => {
+  const m = line.match(/^(.*?);\s/);
+  return m ? `${m[1]}; …` : line;
 };
-const exchange = (
-  prompt: string,
-  n?: number,
-  last?: (l: string) => string,
-): ChatMessage[] => {
+const exchange = (prompt: string, n?: number, last?: (l: string) => string): ChatMessage[] => {
   const ls = keepLines(replyOf(prompt), n);
   if (last) ls[ls.length - 1] = last(ls[ls.length - 1]);
   return [
@@ -74,18 +76,8 @@ const exchange = (
 };
 const TRANSCRIPT: ChatMessage[] = [
   ...exchange("what needs me?"),
-  ...exchange("run morning brief"),
-  ...exchange("approve all", 4, firstSentence),
-];
-/** Rev D: the phone plays "run morning brief" → "approve all" → "Approved" (the first
- *  exchange is on the Screen Wall), in the full cut and the X clip alike. */
-const CHAT_PHONE = TRANSCRIPT.slice(2);
-/** Screen Wall: four real frames of the same chat, verbatim. */
-const WALL: WallScreen[] = [
-  { user: "what needs me?", reply: keepLines(replyOf("what needs me?")) },
-  { user: "run morning brief", reply: keepLines(replyOf("run morning brief"), 3) },
-  { user: "approve all", typing: true },
-  { reply: keepLines(replyOf("approve all"), 2) },
+  ...exchange("run morning brief", 4),
+  ...exchange("approve all", 1, firstClause),
 ];
 
 // ── Shared pieces ─────────────────────────────────────────────────────────────────────────
@@ -95,13 +87,7 @@ function Shots({ shots }: { shots: Shot[] }) {
     <Series>
       {shots.map((s, i) => (
         <Series.Sequence key={i} durationInFrames={s.frames}>
-          <Footage
-            shot={s.shot}
-            frames={s.frames}
-            camera={s.camera}
-            callouts={s.callouts}
-            rings={s.rings}
-          />
+          <Footage shot={s.shot} frames={s.frames} camera={s.camera} callouts={s.callouts} rings={s.rings} ticks={s.ticks} tilt={s.tilt} />
         </Series.Sequence>
       ))}
     </Series>
@@ -120,132 +106,154 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** A scene that opens on a motion scene of `motion` frames, then plays its footage shots. */
-function Opened({ motion, scene, shots }: { motion: number; scene: React.ReactNode; shots: Shot[] }) {
-  return (
-    <Series>
-      <Series.Sequence durationInFrames={motion}>{scene}</Series.Sequence>
-      <Series.Sequence durationInFrames={shots.reduce((n, s) => n + s.frames, 0)}>
-        <Shots shots={shots} />
-      </Series.Sequence>
-    </Series>
-  );
-}
-
-/** The phone part of scene 12, with its callout on the phone itself. */
-function Phone({
-  transcript,
-  frames,
-  callout,
-}: {
-  transcript: ChatMessage[];
-  frames: number;
-  callout?: CalloutSpec;
-}) {
-  const w = 320 * PHONE_SCALE;
-  const h = 656 * PHONE_SCALE;
-  const box = { x: 960 - w / 2, y: 540 - h / 2, w, h };
+/** Scene 3: the laptop dive over the Overview's first 75 frames, then the footage. */
+function Overview() {
   return (
     <AbsoluteFill>
-      <PhoneChat
-        transcript={transcript}
-        charFrames={fitCharFrames(transcript, frames, 30)}
-        backdrop={
-          <Footage
-            shot="phoneBg"
-            frames={frames}
-            camera={[
-              cam(0, 1.15, { u: 0.5, v: 0.5 }, 1),
-              cam(2, 1.3, { u: 0.5, v: 0.45 }, frames - 2),
-            ]}
-          />
-        }
-      />
-      {callout ? <Callout spec={callout} box={box} scope="phone" /> : null}
+      <Shots shots={FULL_SCENE_SHOTS.overview!} />
+      <Sequence durationInFrames={LAPTOP_FRAMES}>
+        <LaptopDive />
+      </Sequence>
     </AbsoluteFill>
   );
 }
 
-// ── NimbusFull ────────────────────────────────────────────────────────────────────────────
+/** Phone Stack: one screen per message, each the chat so far; a slow push under it so the
+ *  last phone's hold never reads as a freeze. The X clip's three phones land a bar apart. */
+const STACK_FROM = 6;
+function ChatStack({ messages, callout, every = beats(2) }: { messages: ChatMessage[][]; callout?: CalloutSpec; every?: number }) {
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const push = interpolate(frame, [0, durationInFrames], [1, 1.07], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  // the front phone: Phone Stack's screen (240 of 716 reference px, top 74) at 1920 wide
+  const u = 1920 / 716;
+  const w = 240 * u;
+  const top = (1080 - 398 * u) / 2 + 74 * u;
+  // the front phone through the push (scaled about 50 % 30 %)
+  const oy = 0.3 * 1080;
+  const box = { x: 960 - (w / 2) * push, y: oy + (top - oy) * push, w: w * push, h: (1080 - 60 - top) * push };
+  return (
+    <AbsoluteFill style={{ background: GROUND }}>
+      <AbsoluteFill style={{ transform: `scale(${push})`, transformOrigin: "50% 30%" }}>
+      <Sequence from={STACK_FROM} layout="none">
+        <PhoneStack
+          screens={messages.map((m, i) => (
+            <ChatScreen key={i} messages={m} arrive={i * every + 10} />
+          ))}
+          stagger={every}
+          background={C.bg}
+          glowColor="transparent"
+          statusColor={C.ink}
+          time="8:02"
+        />
+      </Sequence>
+      </AbsoluteFill>
+      {callout ? <Callout spec={callout} box={box} scope="phone" /> : null}
+    </AbsoluteFill>
+  );
+}
+/** The screens: the chat after each message (the full cut), or from "run morning brief" (X). */
+const prefixes = (from: number) => TRANSCRIPT.map((_, i) => TRANSCRIPT.slice(0, i + 1)).slice(from);
+const STACK_FULL = prefixes(0);
+const STACK_X = [TRANSCRIPT.slice(0, 4), TRANSCRIPT.slice(0, 5), TRANSCRIPT.slice(0, 6)];
+/** Frames each phone lands on (Phone Stack's rise is 26 frames). */
+const stackArrivals = (n: number, every = beats(2)) => Array.from({ length: n }, (_, i) => STACK_FROM + i * every + 13);
+const X_STACK_EVERY = beats(4);
+
+/** Scene 19: the call log blooms on the plane; the tiles land on it from bar 2. */
+function ProofScene() {
+  return (
+    <AbsoluteFill>
+      <ScatterBloom dimFrom={PROOF.tiles[0]} />
+      <Proof />
+    </AbsoluteFill>
+  );
+}
 
 // The music bed. Swap for "audio/music-full.mp3" / "audio/music-x.mp3" when the Suno tracks
 // land; the temp score (scripts/make-sound.mjs) follows the same map.
-const MUSIC = {
-  full: "audio/music-temp-full.mp3",
-  x: "audio/music-temp-x.mp3",
-};
-/** Footage spans for the music bed (the motion scenes count as cards). */
-const span = (ids: (keyof typeof F)[]) =>
-  ids.map((id) => [F[id].from + (FULL_MOTION[id] ?? 0), F[id].from + F[id].frames] as [number, number]);
-const after = (id: keyof typeof F) => F[id].from + (FULL_MOTION[id] ?? 0);
+const MUSIC = { full: "audio/music-temp-full.mp3", x: "audio/music-temp-x.mp3" };
+/** Footage spans for the music bed (motion scenes count as cards). */
+const span = (ids: (keyof typeof F)[]) => ids.map((id) => [after(id), F[id].from + F[id].frames] as [number, number]);
+
+/** Shared sound moments of the opening (the same scenes open both cuts). */
+function openingCues(add: (at: number, file: string, db: number, extra?: Partial<Cue>) => void, hook: { from: number; frames: number }, name: number) {
+  for (let i = 0; i < 4; i++) add(hook.from + 2 + (i * hook.frames) / 4, "orb-burst", -24, { tone: [1, 1.12, 1.26, 1.5][i] });
+  add(name + b(1), "riser-1bar", -20, { frames: b(1) });
+  // the six letter flashes (Block Wordmark: from about frame 73 of the scene, 4 frames apart at speed 1.2)
+  for (let i = 0; i < 6; i++) add(name + Math.round((70 + i * 4) / NAME.speed), "block-flash", -26, { tone: 1 + i * 0.06 });
+  add(name + NAME.cloudIn + 8, "ready-subtle", -24);
+}
 
 function fullCues(): Cue[] {
   const c: Cue[] = [];
-  const add = (
-    at: number,
-    file: string,
-    db: number,
-    extra: Partial<Cue> = {},
-  ) => c.push({ at: Math.round(at), file, db, ...extra });
-  add(8, "attention", -20);
-  add(F.title.from, "riser-1bar", -18, { frames: b(2) });
-  add(F.title.from + LOCKUP.sky, "lockup-chime", -18);
-  add(F.overview.from, "impact-soft", -16);
-  add(F.overview.from, "count-2s", -22);
-  add(F.plan.from - 4, "punch-whip", -18);
-  add(F.plan.from + 30, "punch-thud", -18);
-  const planShot = after("plan");
-  add(
-    planShot + momentFrame("plan", b(6), MOMENTS.planArrives),
-    "ready-subtle",
-    -22,
-  );
-  add(planShot + momentFrame("plan", b(6), MOMENTS.approvePlan), "tap", -22);
+  const add = (at: number, file: string, db: number, extra: Partial<Cue> = {}) => c.push({ at: Math.round(at), file, db, ...extra });
+  openingCues(add, F.hook, F.name.from);
+  // 3 Overview: lid, the notch notification, the dive, the cards counting
+  add(F.overview.from, "impact-soft", -18);
+  add(F.overview.from + 2, "lid-open", -22);
+  add(F.overview.from + LAPTOP.notch, "attention", -22);
+  add(F.overview.from + LAPTOP.dive, "whoosh-a", -22);
+  add(F.overview.from + LAPTOP_FRAMES, "count-2s", -24);
+  // 4 Ch 1: the words drop in
+  for (let i = 0; i < 5; i++) add(F.ch1.from + 18 + i * 5, "word-drop", -26);
+  // 5 goal → plan
+  for (let f = 14; f < 92; f += 6) add(F.plan.from + f, "type", -30);
+  add(F.plan.from + 100, "tap", -22);
+  const planShot = F.plan.from + b(2);
+  add(planShot + momentFrame("plan", b(4), MOMENTS.planArrives), "ready-subtle", -22);
+  add(planShot + momentFrame("plan", b(4), MOMENTS.approvePlan), "tap", -22);
+  add(planShot + momentFrame("plan", b(4), MOMENTS.approvePlan) + 4, "select", -24);
+  // 6 timeline, 7 brief
   add(F.timeline.from, "loading-subtle", -22);
   add(F.timeline.from + timelineAgentIo, "select", -24);
-  add(F.doc.from - 8, "whoosh-b", -20);
+  add(F.doc.from - 8, "whoosh-b", -22);
   add(F.doc.from, "ready", -20);
-  add(F.gate.from + HIGHLIGHT.start, "marker", -20);
-  add(F.gate.from + HIGHLIGHT.orange, "attention", -18);
-  add(after("gate") + gateDana, "success", -16);
-  add(after("gate") + gateDana, "sub-hit", -18);
-  add(after("gate") + gatePriya, "success", -20);
-  add(after("gate") + gateAllow, "success-strong", -16);
+  // 8 Ch 2: the marker, the cloud turns orange
+  add(F.ch2.from + HIGHLIGHT.start, "marker", -20);
+  add(F.ch2.from + HIGHLIGHT.orange, "attention", -18);
+  // 9 approvals: the drop lands on the first Approve (frame 2280)
+  add(F.gate.from + gate1, "success", -16);
+  add(F.gate.from + gate1, "sub-hit", -18);
+  add(F.gate.from + gate2, "success", -20);
+  add(F.gate.from + gateAllow, "success-strong", -16);
+  // 10 summary
   add(F.summary.from, "morph-suck", -20);
   add(F.summary.from + MORPH.slam, "morph-slam", -16);
   add(after("summary") + 8, "count-700", -22);
   add(after("summary") + 33, "ready", -20);
-  add(F.memory.from, "focus-shimmer", -20);
-  add(after("memory"), "select", -24);
-  add(after("memory") + beats(14), "open-subtle", -26);
+  // 11 Ch 3: four rolls, the tick
+  add(F.ch3.from, "success", -28);
+  for (let k = 0; k < 4; k++) add(F.ch3.from + Math.round(((0.0324 + k * 0.667) / CHECK.speed) * 30), "slot-roll", -26, { tone: 1 + k * 0.06 });
+  // 12 memory, 13 run two
+  add(F.memory.from, "select", -24);
+  add(F.memory.from + b(4), "open-subtle", -26);
   add(F.run2.from + 10, "ready-subtle", -22);
-  add(F.run2.from + b(5), "success", -20);
-  add(F.radar.from, "orbit-swell", -20);
-  add(F.radar.from + ORBIT.whip - 8, "orbit-suck", -18);
-  add(after("radar"), "navigate", -24);
-  add(after("radar") + beats(6) + 10, "attention", -20);
-  add(
-    after("radar") + beats(12) + momentFrame("pillApprove", b(1), MOMENTS.pillApprove),
-    "success",
-    -20,
-  );
-  add(F.chat.from, "wall-tunnel", -18);
-  const cc = chatCues(CHAT_PHONE, fitCharFrames(CHAT_PHONE, b(4), 30));
-  cc.sends.forEach((f) => add(after("chat") + f, "tap", -24));
-  cc.dots.forEach((f) => add(after("chat") + f, "ready-subtle", -24));
-  cc.chimes.forEach((f) => add(after("chat") + f, "success-strong", -18));
-  add(after("chat") + b(4) - 6, "whoosh-g", -22);
+  add(F.run2.from + b(3), "success", -20);
+  // 14 Ch 4, 15 radar + pill
+  add(F.ch4.from, "orbit-swell", -20);
+  add(F.ch4.from + ORBIT.whip - 8, "orbit-suck", -18);
+  add(F.radar.from, "navigate", -24);
+  add(F.radar.from + b(2) + 10, "attention", -20);
+  add(F.radar.from + b(4) + momentFrame("pillApprove", b(1), MOMENTS.pillApprove), "success", -20);
+  // 16 chat: a tap per sent message, the reply's ready, success on "Approved"
+  stackArrivals(STACK_FULL.length).forEach((f, i) => {
+    const last = i === STACK_FULL.length - 1;
+    add(F.chat.from + f, last ? "success-strong" : TRANSCRIPT[i].role === "user" ? "tap" : "ready-subtle", last ? -18 : -24);
+  });
+  // 17 web run (hard cut), 18 watch
+  add(F.chatRun.from, "cut-dry", -20);
   add(F.watch.from, "attention", -20);
-  add(
-    F.watch.from + momentFrame("watch", b(3), MOMENTS.watchApprove),
-    "success",
-    -20,
-  );
-  add(F.watch.from + b(3), "count-700", -22);
-  add(F.proof.from - b(2), "riser-2bar", -18);
+  add(F.watch.from + momentFrame("watch", b(2), MOMENTS.watchApprove), "success", -20);
+  add(F.watch.from + b(2), "count-700", -22);
+  // 19 proof
   add(F.proof.from + 4, "bloom-sparkle", -22);
   PROOF.tiles.forEach((f) => add(F.proof.from + f, "sub-hit", -16));
-  add(F.proof.from + PROOF.counts[0], "count-700", -22);
+  add(F.proof.from + PROOF.count, "count-700", -22);
+  // 20 terminal: a key every 3 frames while it types; ready on the URL line
+  for (let f = 8; f < 96; f += 3) add(F.terminal.from + f, "type", -32);
+  add(F.terminal.from + b(2) - 10, "ready", -20);
+  // 21 end
   add(F.end.from, "impact-deep", -14);
   return c;
 }
@@ -259,65 +267,45 @@ export function NimbusFull() {
   );
   return (
     <Shell>
-      {S("cold", <Shots shots={FULL_SCENE_SHOTS.cold!} />)}
-      {S("title", <LockupReveal />)}
-      {S("overview", <Shots shots={FULL_SCENE_SHOTS.overview!} />)}
-      {S("plan", <Opened motion={FULL_MOTION.plan!} scene={<ChapterPunch />} shots={FULL_SCENE_SHOTS.plan!} />)}
+      {S("hook", <Hook script={HOOK_FULL} frames={F.hook.frames} />)}
+      {S("name", <Name />)}
+      {S("overview", <Overview />)}
+      {S("ch1", <ChapterGather />)}
+      {S("plan", <Shots shots={FULL_SCENE_SHOTS.plan!} />)}
       {S("timeline", <Shots shots={FULL_SCENE_SHOTS.timeline!} />)}
       {S("doc", <Shots shots={FULL_SCENE_SHOTS.doc!} />)}
-      {S("gate", <Opened motion={FULL_MOTION.gate!} scene={<ChapterHighlight />} shots={FULL_SCENE_SHOTS.gate!} />)}
-      {S("summary", <Opened motion={FULL_MOTION.summary!} scene={<MetricMorph />} shots={FULL_SCENE_SHOTS.summary!} />)}
-      {S("memory", <Opened motion={FULL_MOTION.memory!} scene={<FocusPull />} shots={FULL_SCENE_SHOTS.memory!} />)}
-      {S("run2", <Shots shots={FULL_SCENE_SHOTS.run2!} />)}
-      {S("radar", <Opened motion={FULL_MOTION.radar!} scene={<OrbitFlow />} shots={FULL_SCENE_SHOTS.radar!} />)}
+      {S("ch2", <ChapterHighlight />)}
+      {S("gate", <Shots shots={FULL_SCENE_SHOTS.gate!} />)}
       {S(
-        "chat",
+        "summary",
         <Series>
-          <Series.Sequence durationInFrames={FULL_MOTION.chat!}>
-            <ScreenWall screens={WALL} back={70} lineAt={58} every={6} />
+          <Series.Sequence durationInFrames={FULL_MOTION.summary!}>
+            <MetricMorph />
           </Series.Sequence>
-          <Series.Sequence durationInFrames={b(4)}>
-            <Phone transcript={CHAT_PHONE} frames={b(4)} callout={PHONE_CALLOUT} />
-          </Series.Sequence>
-          <Series.Sequence durationInFrames={b(2)}>
-            <Shots shots={[CHAT_RUN]} />
+          <Series.Sequence durationInFrames={F.summary.frames - FULL_MOTION.summary!}>
+            <Shots shots={FULL_SCENE_SHOTS.summary!} />
           </Series.Sequence>
         </Series>,
       )}
+      {S("ch3", <ChapterCheck />)}
+      {S("memory", <Shots shots={FULL_SCENE_SHOTS.memory!} />)}
+      {S("run2", <Shots shots={FULL_SCENE_SHOTS.run2!} />)}
+      {S("ch4", <OrbitFlow />)}
+      {S("radar", <Shots shots={FULL_SCENE_SHOTS.radar!} />)}
+      {S("chat", <ChatStack messages={STACK_FULL} callout={PHONE_CALLOUT} />)}
+      {S("chatRun", <Shots shots={FULL_SCENE_SHOTS.chatRun!} />)}
       {S("watch", <Shots shots={FULL_SCENE_SHOTS.watch!} />)}
-      {S(
-        "proof",
-        <AbsoluteFill>
-          <ScatterBloom dimFrom={PROOF.tiles[0]} />
-          <Proof />
-        </AbsoluteFill>,
-      )}
+      {S("proof", <ProofScene />)}
+      {S("terminal", <RunIt />)}
       {S("end", <LockupEnd />)}
       {CHAPTERS.map((ch) => (
-        <Sequence
-          key={ch.from}
-          from={ch.from}
-          durationInFrames={ch.to - ch.from}
-          name={`chapter ${ch.n}`}
-        >
+        <Sequence key={ch.from} from={ch.from} durationInFrames={ch.to - ch.from} name={`chapter ${ch.n}`}>
           <Eyebrow n={ch.n} title={ch.title} />
         </Sequence>
       ))}
       <MusicBed
         src={MUSIC.full}
-        footage={span([
-          "cold",
-          "overview",
-          "plan",
-          "timeline",
-          "doc",
-          "gate",
-          "summary",
-          "memory",
-          "run2",
-          "radar",
-          "watch",
-        ])}
+        footage={span(["overview", "plan", "timeline", "doc", "gate", "summary", "memory", "run2", "radar", "chatRun", "watch"])}
       />
       <SfxTrack cues={FULL_CUES} />
     </Shell>
@@ -326,43 +314,26 @@ export function NimbusFull() {
 
 // ── NimbusX ───────────────────────────────────────────────────────────────────────────────
 
-const CHAT_X = CHAT_PHONE;
-
 function xCues(): Cue[] {
   const c: Cue[] = [];
-  const add = (
-    at: number,
-    file: string,
-    db: number,
-    extra: Partial<Cue> = {},
-  ) => c.push({ at: Math.round(at), file, db, ...extra });
-  add(8, "attention", -20);
-  add(X.title.from, "riser-1bar", -18, { frames: b(2) });
-  add(X.title.from + LOCKUP.sky, "lockup-chime", -18);
-  add(X.plan.from, "impact-soft", -16);
-  add(
-    X.plan.from + momentFrame("xPlan", b(3), MOMENTS.planArrives),
-    "ready-subtle",
-    -22,
-  );
-  add(
-    X.plan.from + momentFrame("xPlan", b(3), MOMENTS.approvePlan),
-    "tap",
-    -22,
-  );
-  add(X.gate.from, "loading-subtle", -22);
-  add(X.gate.from + b(2) - 8, "whoosh-c", -20);
-  add(X.gate.from + b(2), "attention", -18);
-  add(X.gate.from + b(2) + xDana, "success", -16);
-  add(X.gate.from + b(2) + xDana, "sub-hit", -18);
-  add(X.run2.from - 8, "whoosh-d", -20);
+  const add = (at: number, file: string, db: number, extra: Partial<Cue> = {}) => c.push({ at: Math.round(at), file, db, ...extra });
+  openingCues(add, X.hook, X.name.from);
+  add(X.plan.from, "impact-soft", -18);
+  add(X.plan.from + momentFrame("xPlan", b(3), MOMENTS.planArrives), "ready-subtle", -22);
+  add(X.plan.from + momentFrame("xPlan", b(3), MOMENTS.approvePlan), "tap", -22);
+  add(X.lanes.from, "loading-subtle", -22);
+  add(X.ch2.from + HIGHLIGHT.start, "marker", -20);
+  add(X.ch2.from + HIGHLIGHT.orange, "attention", -18);
+  // the drop lands on the Approve (frame 690)
+  add(X.gate.from + xApprove, "success", -16);
+  add(X.gate.from + xApprove, "sub-hit", -18);
+  add(X.run2.from - 8, "whoosh-d", -22);
   add(X.run2.from + 10, "ready-subtle", -22);
-  add(X.chat.from, "wall-tunnel", -18);
-  const phone = X.chat.from + X_MOTION.chat!;
-  const cc = chatCues(CHAT_X, fitCharFrames(CHAT_X, X.chat.frames - X_MOTION.chat!, 30));
-  cc.sends.forEach((f) => add(phone + f, "tap", -24));
-  cc.dots.forEach((f) => add(phone + f, "ready-subtle", -24));
-  cc.chimes.forEach((f) => add(phone + f, "success-strong", -18));
+  stackArrivals(STACK_X.length, X_STACK_EVERY).forEach((f, i) => {
+    const last = i === STACK_X.length - 1;
+    add(X.chat.from + f, last ? "success-strong" : i === 1 ? "tap" : "ready-subtle", last ? -18 : -24);
+  });
+  for (let f = 4; f < 40; f += 3) add(X.terminal.from + f, "type", -32);
   add(X.end.from, "impact-deep", -14);
   return c;
 }
@@ -376,28 +347,21 @@ export function NimbusX() {
   );
   return (
     <Shell>
-      {S("cold", <Shots shots={X_SCENE_SHOTS.cold!} />)}
-      {S("title", <LockupReveal />)}
+      {S("hook", <Hook script={HOOK_X} frames={X.hook.frames} />)}
+      {S("name", <Name />)}
       {S("plan", <Shots shots={X_SCENE_SHOTS.plan!} />)}
+      {S("lanes", <Shots shots={X_SCENE_SHOTS.lanes!} />)}
+      {S("ch2", <ChapterHighlight />)}
       {S("gate", <Shots shots={X_SCENE_SHOTS.gate!} />)}
       {S("run2", <Shots shots={X_SCENE_SHOTS.run2!} />)}
-      {S(
-        "chat",
-        <Series>
-          <Series.Sequence durationInFrames={X_MOTION.chat!}>
-            <ScreenWall screens={WALL} back={34} lineAt={26} every={4} />
-          </Series.Sequence>
-          <Series.Sequence durationInFrames={X.chat.frames - X_MOTION.chat!}>
-            <Phone transcript={CHAT_X} frames={X.chat.frames - X_MOTION.chat!} />
-          </Series.Sequence>
-        </Series>,
-      )}
+      {S("chat", <ChatStack messages={STACK_X} every={X_STACK_EVERY} />)}
+      {S("terminal", <RunIt speed={3} />)}
       {S("end", <LockupEnd />)}
       <MusicBed
         src={MUSIC.x}
         footage={[
-          [X.cold.from, X.cold.from + X.cold.frames],
-          [X.plan.from, X.run2.from + X.run2.frames],
+          [X.plan.from, X.ch2.from],
+          [X.gate.from, X.chat.from],
         ]}
       />
       <SfxTrack cues={X_CUES} />

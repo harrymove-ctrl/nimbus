@@ -16,6 +16,7 @@ import {
   useSnapCnTheme,
   withAlpha,
 } from "@/lib/snap-cn-ui";
+import { C as APP } from "../../palette";
 
 export type TerminalLineType = "command" | "log" | "success" | "error";
 
@@ -147,13 +148,15 @@ const CMD_SUBCOMMAND_COLOR = "#64789B";
 const CMD_ARG_COLOR = "#D7E4F8";
 
 /** Focus-terminal palette. */
-const TERM_ACCENT = "#2EA043";
-const TERM_CURSOR = "#1D5B36";
+// Nimbus: the terminal paints in the app's own tokens (src/palette.ts, generated from
+// globals.css) instead of the stock GitHub greens.
+const TERM_ACCENT = APP.mint;
+const TERM_CURSOR = APP.mintInk;
 const TERM_COLORS: Record<TerminalLineType, string> = {
-  command: "#F2F5F3",
-  log: "#6E7873",
-  success: "#1F8039",
-  error: "#F04438",
+  command: APP.ink,
+  log: APP.muted,
+  success: APP.mint,
+  error: APP.red,
 };
 
 /**

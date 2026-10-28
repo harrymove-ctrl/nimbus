@@ -1,5 +1,6 @@
 status: approved · 2026-10-27 · "Approve the rev 5 board, music brief and SFX sheet: build it." · rev C
 rev D (motion layer, board rev D, 2026-10-28): rows 46–56 added, the rows they replace or move are listed under "Rev D changes"; the rev C rows above stay as the record
+rev E (script rev 6, board rev E, music rev D, 2026-10-28): the cut is rebuilt, so the cue sheet that plays is "Rev E cue sheet" below (rows E1–E37 and X1–X12); rows 1–56 above it stay as the record of the rev C/D cuts. New designed files: `orb-burst`, `block-flash`, `lid-open`, `word-drop`, `slot-roll`, `cut-dry`. The terminal's keys are the app's own cuelume `type`.
 frames: absolute in NimbusFull at 30 fps (X clip rows at the end)
 levels: LUFS short-term at the hit, after mastering; SFX sit 3–6 dB above the bed at their moment; master −14 LUFS integrated, ≤ −1 dBTP
 sources:
@@ -94,6 +95,67 @@ Moved by the motion bars (same sounds): 18 attention → 2000 (the cloud turns o
 | 9 | 1185–1200 | One beat of silence | — | — | — |
 | 10 | 1200 | End card | impact, deep | designed | −14 |
 
+# Rev E cue sheet (plays in the rev E cuts)
+
+Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1 720, plan 780, timeline 1140, doc 1740, ch2 2100, gate 2160, summary 2700, ch3 3000, memory 3060, run2 3420, ch4 3720, radar 3780, chat 4080, web run 4320, watch 4440, proof 4620, terminal 4800, end 4980). Frames marked ≈ follow the take's sub-beats and move with the real-model take. The drop of the music lands on E17.
+
+| # | Frame | Scene | Moment | Sound | Source | Level | File |
+|---|---|---|---|---|---|---|---|
+| E1 | 2, 62, 122, 182 | 1 | An orb burst per line, a step higher each (×1, 1.12, 1.26, 1.5) | bells, two glassy notes | designed | −24 | `orb-burst.wav` **new** |
+| E2 | 300–360 | 2→3 | Into the laptop | riser, 1 bar, lands on E5 | designed | −20 | `riser-1bar.wav` |
+| E3 | 298–318 | 2 | The six block flashes, a step up each | bell tick | designed | −26 | `block-flash.wav` **new** |
+| E4 | 332 | 2 | The cloud lands beside the name | ready, subtle | cuelume | −24 | `ready-subtle.wav` |
+| E5 | 360 | 3 | Onto the laptop (the riser's landing) | impact, soft | designed | −18 | `impact-soft.wav` |
+| E6 | 362 | 3 | The lid opens | whoosh, low rising | designed | −22 | `lid-open.wav` **new** |
+| E7 | 409 | 3 | The notch: "Morning brief · ran 08:00" | attention | cuelume | −22 | `attention.wav` |
+| E8 | 417 | 3 | The dive into the screen | whoosh (a) | designed | −22 | `whoosh-a.wav` |
+| E9 | 435 | 3 | The stat cards count up | count 2 s | cuelume | −24 | `count-2s.wav` |
+| E10 | 738–758 | 4 | The five words drop in | soft thud ×5 | designed | −26 | `word-drop.wav` **new** |
+| E11 | 794–866 | 5 | The goal types into the composer (one key per 6 f) | type | cuelume | −30 | `type.wav` |
+| E12 | 880 | 5 | Send | tap | cuelume | −22 | `tap.wav` |
+| E13 | ≈ 907 / ≈ 1099 | 5 | The plan arrives · Approve plan (the drawn tick) | ready subtle · tap + select | cuelume | −22 / −24 | |
+| E14 | 1140 / ≈ 1620 | 6 | The lanes start · Agent I/O opens | loading subtle · select | cuelume | −22 / −24 | |
+| E15 | 1732 / 1740 | 7 | Into the brief | whoosh (b) · ready | designed · cuelume | −22 / −20 | |
+| E16 | 2108 / 2145 | 8 | The marker wipes "without you." · the cloud turns orange on beat 4 | scribble · attention | designed · cuelume | −20 / −18 | `marker.wav` |
+| E17 | **2280** | 9 | The first Approve (the drawn tick) = **music drop 2** | success + sub hit | cuelume + designed | −16 / −18 | |
+| E18 | ≈ 2417 / ≈ 2545 | 9 | The second Approve · Approve & always allow | success · success strong | cuelume | −20 / −16 | |
+| E19 | 2700 / 2734 | 10 | Metric Morph: the pill collapses · slams in as the tallest bar | suck · short impact | designed | −20 / −16 | |
+| E20 | 2768 / 2793 | 10 | The summary tiles count · settle | count 700 · ready | cuelume | −22 / −20 | |
+| E21 | 3000 | 11 | The ticked box | success, quiet | cuelume | −28 | `success.wav` |
+| E22 | 3000, 3011, 3021, 3031 | 11 | The four slot rolls, a step up each | short high whoosh | designed | −26 | `slot-roll.wav` **new** |
+| E23 | 3060 / 3300 | 12 | Memory opens · hover Forget | select · open subtle | cuelume | −24 / −26 | |
+| E24 | 3430 / 3600 | 13 | The learned plan · run two ends cheaper | ready subtle · success | cuelume | −22 / −20 | |
+| E25 | 3720 / ≈ 3826 | 14 | Orbit Flow draws in · winds up and whips into the radar | low swell · high suck | designed | −20 / −18 | |
+| E26 | 3780 / 3910 / ≈ 4040 | 15 | The rail · the pill needs you · approve from the pill | navigate · attention · success | cuelume | −24 / −20 / −20 | |
+| E27 | 4099, 4129, 4159, 4189, 4219 | 16 | A phone lands per message: tap for yours, ready for its replies | tap · ready subtle | cuelume | −24 | |
+| E28 | 4249 | 16 | The last phone: "Approved" | success strong | cuelume | −18 | |
+| E29 | 4320 | 17 | Hard cut to the web run | short dry impact | designed | −20 | `cut-dry.wav` **new** |
+| E30 | 4440 / ≈ 4515 / 4560 | 18 | The routing proposal · approved · the gauge counts | attention · success · count 700 | cuelume | −20 / −20 / −22 | |
+| E31 | 4624 | 19 | Scatter Bloom: the calls bloom | bells run | designed | −22 | `bloom-sparkle.wav` |
+| E32 | 4680, 4695, 4710 | 19 | A model tile lands per beat | sub hit | designed | −16 | `sub-hit.wav` |
+| E33 | 4744 | 19 | The call count and spend count up | count 700 | cuelume | −22 | `count-700.wav` |
+| E34 | 4808–4904 | 20 | The terminal types (one key per 3 f) | type | cuelume | −32 | `type.wav` |
+| E35 | 4910 | 20 | The URL line | ready | cuelume | −20 | `ready.wav` |
+| E36 | 4965–4980 | — | One beat of silence (the temp score's break) | — | — | — | |
+| E37 | 4980 | 21 | The end card | impact, deep | designed | −14 | `impact-deep.wav` |
+
+## X clip, rev E (frames absolute in NimbusX; scenes: hook 0, name 120, plan 240, lanes 420, ch2 540, gate 600, run2 720, chat 900, terminal 1140, end 1200)
+
+| # | Frame | Moment | Sound | Source | Level |
+|---|---|---|---|---|---|
+| X1 | 2, 32, 62, 92 | Orb bursts | bells | designed | −24 |
+| X2 | 180–240 | Into the plan | riser, 1 bar, lands on X4 | designed | −20 |
+| X3 | 178–198 / 212 | Block flashes · the cloud lands | bell tick · ready subtle | designed · cuelume | −26 / −24 |
+| X4 | 240 | Into the plan | impact, soft | designed | −18 |
+| X5 | ≈ 248 / ≈ 409 | Plan arrives · Approve plan | ready subtle · tap | cuelume | −22 |
+| X6 | 420 | Lanes start | loading subtle | cuelume | −22 |
+| X7 | 548 / 585 | Marker · the cloud turns orange | scribble · attention | designed · cuelume | −20 / −18 |
+| X8 | **690** | Approve (the drop) | success + sub hit | cuelume + designed | −16 / −18 |
+| X9 | 712 / 730 | Into run two · the learned plan | whoosh (d) · ready subtle | designed · cuelume | −22 / −22 |
+| X10 | 919 / 979 / 1039 | Three phones: the reply · "approve all" · "Approved" | ready subtle · tap · success strong | cuelume | −24 / −24 / −18 |
+| X11 | 1144–1180 | The terminal types | type | cuelume | −32 |
+| X12 | 1125–1140 / 1200 | One beat of silence · the end card | — · impact, deep | designed | — / −14 |
+
 # Files
 
-Under `video/public/audio/sfx/`, rendered by `video/scripts/make-sound.mjs` (names above). cuelume: `attention`, `tap`, `type`, `select`, `open-subtle`, `close-subtle`, `navigate`, `loading-subtle`, `ready`, `ready-subtle`, `success`, `success-strong`, `count-2s`, `count-700`. Designed: `whoosh-a` … `whoosh-g`, `riser-1bar`, `riser-2bar`, `impact-soft`, `impact-deep`, `sub-hit`. Frames marked ≈ or with a sub-beat name are placed from the new take's `beats.json` marks.
+Under `video/public/audio/sfx/`, rendered by `video/scripts/make-sound.mjs` (names above). cuelume: `attention`, `tap`, `type`, `select`, `open-subtle`, `close-subtle`, `navigate`, `loading-subtle`, `ready`, `ready-subtle`, `success`, `success-strong`, `count-2s`, `count-700`. Designed: `whoosh-a` … `whoosh-g`, `riser-1bar`, `riser-2bar`, `impact-soft`, `impact-deep`, `sub-hit`; rev D `lockup-chime`, `punch-whip`, `punch-thud`, `marker`, `morph-suck`, `morph-slam`, `focus-shimmer`, `orbit-swell`, `orbit-suck`, `wall-tunnel`, `bloom-sparkle`; rev E `orb-burst`, `block-flash`, `lid-open`, `word-drop`, `slot-roll`, `cut-dry`. Frames marked ≈ or with a sub-beat name are placed from the new take's `beats.json` marks.

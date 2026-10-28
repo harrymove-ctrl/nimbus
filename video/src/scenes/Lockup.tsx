@@ -125,7 +125,8 @@ export function LockupReveal() {
   );
 }
 
-/** Scene 15: the lockup reprise on the sky, held still, with the repo and the command. */
+/** The end card (rev E scene 21): the lockup reprise on the sky, held still, with the repo,
+ *  the command and the licence line. */
 export function LockupEnd() {
   const frame = useCurrentFrame();
   const settle = ramp(frame, 0, 12, 1.04, 1, out);
@@ -140,6 +141,7 @@ export function LockupEnd() {
         <div style={{ marginTop: 34, ...show(14) }}>
           <span style={{ display: "inline-block", fontSize: 42, fontWeight: 600, padding: "12px 30px", borderRadius: 16, background: "rgba(5, 40, 110, 0.35)", border: "1px solid rgba(255, 255, 255, 0.28)" }}>pnpm dev</span>
         </div>
+        <div style={{ marginTop: 44, fontSize: 30, fontWeight: 600, color: "rgba(255, 255, 255, 0.78)", ...show(26) }}>MIT · Nebius × NVIDIA Global AI Hackathon</div>
       </div>
     </AbsoluteFill>
   );

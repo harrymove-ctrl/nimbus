@@ -17,6 +17,13 @@ const beat = (name: string) => {
 export const at = (name: string) => beat(name).tStart;
 export const end = (name: string) => beat(name).tEnd;
 
+/** Board rev E renames the approval sub-beats (the real-model take has role-named contacts);
+ *  take 1633 still has the old names, so each new name falls back to its old one. */
+const RENAMED: Record<string, string> = { "approve-1": "approve-dana", "approve-2": "approve-priya" };
+const sub = (name: string) => (BEATS.some((x) => x.beat === name) ? name : (RENAMED[name] ?? name));
+/** The approval sub-beats under the take's own names. */
+export const SUB = { approve1: sub("approve-1"), approve2: sub("approve-2") };
+
 /** Targets measured by eye on the take where beats.json's box has scrolled away by the time
  *  the callout shows: the lanes panel scrolls while the run plays, so "model-badge" (y 6, the
  *  orchestrator's badge, already under the header) becomes the Writers' three "Nemotron 3
@@ -43,44 +50,43 @@ const landOn = (t: number, to: number, sceneS: number, atS: number): Cut => {
   return cut(t - atS * rate, to);
 };
 
-// Board rev C scenes → source windows. Comments say what each window shows.
+// Board rev E scenes → source windows. Comments say what each window shows.
 export const SHOTS = {
-  // 1 cold open: the brief open beside the approval cards, the tray, the cloud orange
-  cold: cut(at("brief1-approvals"), at("approve-dana")),
-  // 3 Overview: cards count up, the spend chart, the router gauge
+  // 3 Overview: cards count up, the spend chart, the router gauge (also inside the laptop)
   overview: cut(at("overview"), end("overview")),
-  // 4 the plan draft through Approve plan (rev D: Punch Lines' "You ask." stands for the goal)
-  plan: cut(at("brief1-plan-arrives") - 1, end("brief1-approve-plan")),
-  // 5 lanes fill, then Agent I/O on Dana's email
+  // 5 the goal typing into the composer and sent (the composer is empty for ~4.5 s; the plan
+  // wait after the send is cut), then the plan draft through Approve plan
+  goal: cut(at("brief1-goal") + 4.6, at("brief1-goal") + 10.6),
+  plan: cut(at("brief1-plan-arrives") - 0.24, end("brief1-approve-plan")),
+  // 6 lanes fill, then Agent I/O on the first email
   timeline: cut(at("brief1-timeline"), end("brief1-agent-io")),
-  // 6 the brief doc
-  doc: cut(at("brief1-doc") + 3, end("brief1-doc")), // the draft to Sam shows first; the brief opens ~3 s in
-  // 7 the cards, Approve ×2, Approve & always allow, the rule line. The shot is the 8 bars
-  // after the chapter's Text Highlight bar (rev D); it starts so Approve (Dana) plays 2 bars
-  // in, the scene's bar 3 = frame 2160, the music's drop 2
-  gate: landOn(at("approve-dana"), end("always-allow"), 16, 4),
-  // 8 the run summary
+  // 7 the brief doc (a drafted reply shows first; the brief opens ~3 s in)
+  doc: cut(at("brief1-doc") + 3, end("brief1-doc")),
+  // 9 the card, Approve ×2, Approve & always allow, the rule line. It starts so the first
+  // Approve plays 2 bars in: the scene's bar 3 = frame 2280, the music's drop 2
+  gate: landOn(at(sub("approve-1")), end("always-allow"), 18, 4),
+  // 10 the run summary
   summary: cut(at("brief1-summary"), end("brief1-summary")),
-  // 9 Memory & skill
-  memory: cut(at("memory-skill") + 1.5, end("memory-skill")), // the panel is still loading for ~1.5 s
-  // 10 the next morning: the plan with the learned chip, then the end of run two
+  // 12 Memory & skill (the panel is still loading for ~3.5 s)
+  memory: cut(at("memory-skill") + 3.5, end("memory-skill")),
+  // 13 the next morning: the plan with the learned chip, then the end of run two
   learned: cut(at("brief2-plan-arrives"), end("brief2-plan-arrives")),
-  run2End: cut(end("brief2-run") - 9, end("brief2-run")),
-  // 11 radar from the rail, the status pill, the approve from the pill (before the /v1 wait)
+  run2End: cut(end("brief2-run") - 6, end("brief2-run")),
+  // 15 radar from the rail, the status pill, the approve from the pill (before the /v1 wait)
   radar: cut(at("radar"), at("radar") + 4),
-  pill: cut(at("status-pill") + 1.5, end("status-pill")),
+  pill: cut(at("status-pill") + 1.5, at("status-pill") + 7.5),
   pillApprove: cut(at("pill-approve"), at("pill-approve") + 3),
-  // 12 behind the phone: the web app, blurred; then the same run in the web timeline, tagged chat
-  phoneBg: cut(at("chat-run"), end("chat-run")),
+  // 17 the same run in the web timeline, tagged chat
   chatRun: cut(end("chat-run") - 6, end("chat-run")),
-  // 13 Token Factory watch: the routing table and its approval, then the Overview after it
+  // 18 Token Factory watch: the routing table and its approval, then the Overview after it
   // (the router gauge is not on screen during `watch`)
-  watch: cut(at("watch-approve") - 8, at("watch-approve") + 1),
-  overviewAfter: cut(at("overview-after"), at("overview-after") + 6),
+  watch: cut(at("watch-approve") - 5, at("watch-approve") + 1),
+  overviewAfter: cut(at("overview-after"), at("overview-after") + 3),
   // X clip variants
-  xPlan: cut(at("brief1-plan-arrives") - 1.2, end("brief1-approve-plan")),
-  xLanes: cut(at("brief1-timeline"), at("brief1-timeline") + 6),
-  xGate: cut(at("approve-dana") - 3, at("approve-dana") + 3),
+  xPlan: cut(at("brief1-plan-arrives") - 0.4, end("brief1-approve-plan")),
+  xLanes: cut(at("brief1-timeline") + 4, at("brief1-timeline") + 10), // the lanes fill ~4 s in
+  // the X gate is 2 bars and its Approve lands 1.5 bars in (frame 690)
+  xGate: landOn(at(sub("approve-1")), at(sub("approve-1")) + 1.5, 4, 3),
 } satisfies Record<string, Cut>;
 export type ShotName = keyof typeof SHOTS;
 
@@ -89,8 +95,8 @@ export const MOMENTS = {
   planArrives: at("brief1-plan-arrives"),
   approvePlan: at("brief1-approve-plan"),
   agentIo: at("brief1-agent-io"),
-  approveDana: at("approve-dana"),
-  approvePriya: at("approve-priya"),
+  approve1: at(sub("approve-1")),
+  approve2: at(sub("approve-2")),
   alwaysAllow: at("always-allow"),
   learnedPlan: at("brief2-plan-arrives"),
   pillApprove: at("pill-approve") + 0.6,

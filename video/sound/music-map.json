@@ -1,38 +1,138 @@
 {
-  "note": "Section maps for the Tone.js temp score, in bars from 0 (120 BPM, 1 bar = 2 s). Mirrors docs/video/music.md rev C; edit both together. Section names: intro build silence swell groove drop verse breakdown calm playful lift outro.",
+  "note": "Section maps for the Tone.js temp score, in bars from 0 (120 BPM, 1 bar = 2 s). Mirrors docs/video/music.md rev D; edit both together. Section names: intro build silence swell groove drop verse breakdown calm playful lift outro.",
   "full": {
-    "seconds": 176,
+    "seconds": 178,
     "sections": [
-      ["intro", 0, 3],
-      ["build", 3, 5],
-      ["groove", 5, 11],
-      ["verse", 11, 18],
-      ["drop", 18, 28],
-      ["verse", 28, 33],
-      ["breakdown", 33, 36],
-      ["drop", 36, 42],
-      ["groove", 42, 47],
-      ["calm", 47, 54],
-      ["groove", 54, 60],
-      ["playful", 60, 74],
-      ["build", 74, 77],
-      ["lift", 77, 79],
-      ["drop", 79, 82.75],
-      ["silence", 82.75, 83],
-      ["outro", 83, 88]
+      [
+        "intro",
+        0,
+        4
+      ],
+      [
+        "build",
+        4,
+        6
+      ],
+      [
+        "groove",
+        6,
+        12
+      ],
+      [
+        "verse",
+        12,
+        19
+      ],
+      [
+        "drop",
+        19,
+        29
+      ],
+      [
+        "verse",
+        29,
+        35
+      ],
+      [
+        "breakdown",
+        35,
+        38
+      ],
+      [
+        "drop",
+        38,
+        45
+      ],
+      [
+        "groove",
+        45,
+        50
+      ],
+      [
+        "calm",
+        50,
+        57
+      ],
+      [
+        "groove",
+        57,
+        62
+      ],
+      [
+        "playful",
+        62,
+        74
+      ],
+      [
+        "build",
+        74,
+        77
+      ],
+      [
+        "lift",
+        77,
+        80
+      ],
+      [
+        "drop",
+        80,
+        82.75
+      ],
+      [
+        "silence",
+        82.75,
+        83
+      ],
+      [
+        "outro",
+        83,
+        89
+      ]
     ]
   },
   "x": {
     "seconds": 46,
     "sections": [
-      ["intro", 0, 3],
-      ["build", 3, 5],
-      ["verse", 5, 8],
-      ["groove", 8, 10],
-      ["breakdown", 10, 11.5],
-      ["drop", 11.5, 19.75],
-      ["silence", 19.75, 20],
-      ["outro", 20, 23]
+      [
+        "intro",
+        0,
+        3
+      ],
+      [
+        "build",
+        3,
+        5
+      ],
+      [
+        "verse",
+        5,
+        8
+      ],
+      [
+        "groove",
+        8,
+        10
+      ],
+      [
+        "breakdown",
+        10,
+        11.5
+      ],
+      [
+        "drop",
+        11.5,
+        18.75
+      ],
+      [
+        "silence",
+        18.75,
+        19
+      ],
+      [
+        "outro",
+        19,
+        23
+      ]
     ]
   }
 }

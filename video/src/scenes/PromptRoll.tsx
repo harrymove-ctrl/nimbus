@@ -13,7 +13,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { beats } from "../grid";
-import { C, DITHER_GLOW, MANROPE } from "../theme";
+import { C, GROUND, MANROPE } from "../theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -79,7 +79,7 @@ export function PromptRoll({
   const btnX = 960 + cardW / 2 + 120; // send button, right of the card
 
   return (
-    <AbsoluteFill style={{ background: C.bg, backgroundImage: DITHER_GLOW, fontFamily: MANROPE, overflow: "hidden" }}>
+    <AbsoluteFill style={{ background: GROUND, fontFamily: MANROPE, overflow: "hidden" }}>
       <AbsoluteFill
         style={{
           transform: `translateX(${panX}px) scale(${push})`,

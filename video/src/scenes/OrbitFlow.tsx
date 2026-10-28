@@ -4,10 +4,12 @@
 import { AbsoluteFill, Easing, useCurrentFrame } from "remotion";
 import { ramp } from "../components/CloudMark";
 import { beats } from "../grid";
-import { C, MANROPE, ROLE } from "../theme";
+import { C, GROUND, MANROPE, ROLE } from "../theme";
 
-const ORBITS = [520, 700, 880];
-const TILT = 0.34; // ry / rx: the orbits lie on a tilted plane
+// The inner orbit clears the title: wherever a pill (≈ 350 × 62) is level with the two lines
+// (≈ 835 × 211), it is at least 640 px from centre, past the text's 418 + the pill's 175.
+const ORBITS = [740, 920, 1100];
+const TILT = 0.4; // ry / rx: the orbits lie on a tilted plane
 const STOPS = [
   { label: "08:00 SCHEDULE", color: ROLE.researcher, at: 0 },
   { label: "CHAT APP", color: ROLE.writer, at: (2 * Math.PI) / 3 },
@@ -70,8 +72,8 @@ export function OrbitFlow() {
   const back = pills.filter((p) => p.depth < 0.5);
   const front = pills.filter((p) => p.depth >= 0.5);
   return (
-    <AbsoluteFill style={{ background: C.bg }}>
-      <AbsoluteFill style={{ transform: `translateX(${-whip * 700}px) scale(${ramp(frame, 0, ORBIT.whip, 0.94, 1.08)}) rotate(${ramp(frame, 0, ORBIT.whip, -3, 2)}deg)`, filter: whip > 0 ? `blur(${whip * 30}px)` : undefined }}>
+    <AbsoluteFill style={{ background: GROUND }}>
+      <AbsoluteFill style={{ transform: `translateX(${-whip * 700}px) scale(${ramp(frame, 0, ORBIT.whip, 0.94, 1.02)}) rotate(${ramp(frame, 0, ORBIT.whip, -3, 2)}deg)`, filter: whip > 0 ? `blur(${whip * 30}px)` : undefined }}>
         <svg width={1920} height={1080} style={{ position: "absolute", inset: 0 }}>
           {ORBITS.map((rx, i) => (
             <ellipse

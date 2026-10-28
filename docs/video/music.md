@@ -1,6 +1,6 @@
-status: approved · 2026-10-27 · "Approve the rev 5 board, music brief and SFX sheet: build it." · rev C
-bpm: 120 · 4/4 · key: pick by ear; keep the take whose second drop lands nearest 1:12
-length: full cut 2:54 (87 bars) + a 1-bar tail = 2:56; X clip 0:44 (22 bars) + tail
+status: approved · 2026-10-28 · "Approve rev 6" · rev D (for script rev 6; the rev C map for the built rev 5 cut is in git history: f54a32a)
+bpm: 120 · 4/4 · key: pick by ear; keep the take whose second drop lands nearest 1:16
+length: full cut 2:56 (88 bars) + a 1-bar tail = 2:58; X clip 0:44 (22 bars) + tail
 
 # How to use this in Suno
 
@@ -79,23 +79,23 @@ vocals, singing, voice, spoken word, choir, rap, humming, lyrics, vocal chops, v
 
 | Section | Time | Bars | Scenes it scores | Why |
 |---|---|---|---|---|
-| Intro | 0:00–0:06 | 0–3 | 1 cold open (the finished brief) | Calm: the work is already done |
-| Build-up | 0:06–0:10 | 3–5 | 2 title | A short riser into a soft hit on 0:10 |
-| Groove | 0:10–0:22 | 5–11 | 3 Overview | Curious, steady while the numbers count up |
-| Verse | 0:22–0:36 | 11–18 | 4 the goal and the plan | Light: you are deciding |
-| Drop | 0:36–0:56 | 18–28 | 5 the timeline fills | Energy while the crew works |
-| Verse | 0:56–1:06 | 28–33 | 6 the brief | Lighter: reading |
-| Breakdown | 1:06–1:12 | 33–36 | 7 the cloud turns orange | Tension: it is waiting for you |
-| **Drop 2** | **1:12**–1:24 | 36–42 | 7 the first Approve (Dana) and the rest | The release lands on the click |
-| Groove | 1:24–1:34 | 42–47 | 8 run summary | Satisfied |
-| **Calm** | 1:34–1:48 | 47–54 | 9 Memory & skill | Quiet, thoughtful: it is learning |
-| Groove | 1:48–2:00 | 54–60 | 10 the next morning | Friendly, back on its feet |
-| Playful | 2:00–2:28 | 60–74 | 11 radar, 12 chat app | Always on, conversational |
-| Build-up | 2:28–2:34 | 74–77 | 13 Token Factory watch | Rising: it pays attention to its own bill |
-| **Lift** | 2:34–2:38 | 77–79 | 13 → 14 | Riser into the proof tiles |
-| Finale | 2:38–2:45.5 | 79–82¾ | 14 proof tiles | Biggest |
+| Intro | 0:00–0:08 | 0–4 | 1 the orb sentence | Calm, curious: one line per bar |
+| Build-up | 0:08–0:12 | 4–6 | 2 the name | A short riser into a soft hit on 0:12 |
+| Groove | 0:12–0:24 | 6–12 | 3 Overview | Steady while the numbers count up |
+| Verse | 0:24–0:38 | 12–19 | 4–5 the goal and the plan | Light: you are deciding |
+| Drop | 0:38–0:58 | 19–29 | 6 the timeline fills | Energy while the crew works |
+| Verse | 0:58–1:10 | 29–35 | 7 the brief | Lighter: reading |
+| Breakdown | 1:10–1:16 | 35–38 | 8 "Nothing leaves without you", the cloud turns orange | Tension: it is waiting for you |
+| **Drop 2** | **1:16**–1:30 | 38–45 | 9 the first Approve and the rest | The release lands on the click |
+| Groove | 1:30–1:40 | 45–50 | 10 the summary | Satisfied |
+| **Calm** | 1:40–1:54 | 50–57 | 11–12 "It learns", Memory & skill | Quiet, thoughtful |
+| Groove | 1:54–2:04 | 57–62 | 13 run two | Friendly, back on its feet |
+| Playful | 2:04–2:28 | 62–74 | 14–17 always on, chat app | Conversational |
+| Build-up | 2:28–2:34 | 74–77 | 18 its own bill | Rising |
+| **Lift** | 2:34–2:40 | 77–80 | 19 the proof | Riser into the terminal |
+| Finale | 2:40–2:45.5 | 80–82¾ | 20 run it | Biggest |
 | Break | 2:45.5 | ¼ | — | One beat of silence before the end card |
-| Outro | 2:46–2:56 | 83–88 | 15 end card + 1-bar tail | One chord rings while the URL holds |
+| Outro | 2:46–2:58 | 83–89 | 21 end card + 1-bar tail | One chord rings while the URL holds |
 
 # Section map, X clip
 
@@ -106,11 +106,11 @@ vocals, singing, voice, spoken word, choir, rap, humming, lyrics, vocal chops, v
 | Verse | 0:10–0:16 | 5–8 | 3 the plan |
 | Groove | 0:16–0:20 | 8–10 | 4 lanes fill |
 | Breakdown | 0:20–0:23 | 10–11½ | 4 the cloud turns orange |
-| **Drop** | **0:23**–0:39.5 | 11½–19¾ | 4 Approve on Dana → 5 run two → 6 chat |
-| Break | 0:39.5 | ¼ | — |
-| Outro | 0:40–0:46 | 20–23 | 7 end card + tail |
+| **Drop** | **0:23**–0:37.5 | 11½–18¾ | 4 the first Approve → 5 run two → 6 chat |
+| Break | 0:37.5 | ¼ | — |
+| Outro | 0:38–0:46 | 19–23 | 7 terminal, end card + tail |
 
-The edit nudges each drop onto its click by at most half a beat. The click times come from the new take's sub-beats (`approve-dana`); see board.md "From the new take".
+The edit nudges each drop onto its click by at most half a beat. The click times come from the take's sub-beats (`approve-1`); see board.md "From the new take".
 
 # Until the Suno track exists
 

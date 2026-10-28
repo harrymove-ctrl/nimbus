@@ -2,11 +2,11 @@
 // scene 7 settles, its label dissolves, it collapses into a square that runs neutral-900 →
 // mint and slams in as the tallest bar of the run's cost chart; the chart rises around it as
 // one object. The bars are the take's run, hop by hop (src/datasets/run-hops.json, the $0.024
-// mock run on screen in scene 8), so the tallest bar is the real first hop (Ultra plans).
+// run on screen in scene 10), so the tallest bar is the real first hop (Ultra plans).
 import { AbsoluteFill, Easing, interpolateColors, useCurrentFrame } from "remotion";
 import { ramp } from "../components/CloudMark";
 import RUN from "../datasets/run-hops.json";
-import { C, MANROPE, TIER } from "../theme";
+import { C, GROUND, MANROPE, TIER } from "../theme";
 
 const out = Easing.out(Easing.cubic);
 const accel = Easing.in(Easing.cubic);
@@ -41,7 +41,7 @@ export function MetricMorph() {
   const radius = 999 * (1 - collapse) + 14 * collapse - 8 * slam;
   const push = ramp(frame, 0, 60, 1, 1.04);
   return (
-    <AbsoluteFill style={{ background: C.bg, fontFamily: MANROPE }}>
+    <AbsoluteFill style={{ background: GROUND, fontFamily: MANROPE }}>
       <AbsoluteFill style={{ transform: `scale(${push})` }}>
         {/* the chart rises around the slammed bar */}
         <div style={{ position: "absolute", left: LEFT - 30, width: N * (BAR.w + BAR.gap) + 44, top: BAR.base, height: 2, background: C.line, opacity: ramp(frame, MORPH.rise - 4, MORPH.rise + 4) }} />
@@ -74,7 +74,7 @@ export function MetricMorph() {
           <span style={{ fontSize: 40, fontWeight: 600, color: C.ink, whiteSpace: "nowrap", opacity: label, filter: `blur(${(1 - label) * 8}px)` }}>Approve &amp; always allow</span>
         </div>
         <div style={{ position: "absolute", left: 0, right: 0, top: BAR.base + 34, textAlign: "center", fontSize: 34, fontWeight: 600, color: C.muted, opacity: ramp(frame, MORPH.rise + 8, MORPH.rise + 16) }}>
-          <span style={{ color: C.ink }}>${RUN.total.toFixed(3)}</span> · {N} model calls · mock
+          <span style={{ color: C.ink }}>${RUN.total.toFixed(3)}</span> · {N} model calls
         </div>
       </AbsoluteFill>
     </AbsoluteFill>

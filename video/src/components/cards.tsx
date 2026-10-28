@@ -10,7 +10,7 @@ import {
 } from "remotion";
 import { TextHighlight, type TextHighlightPreset } from "@/components/snap-cn/text-highlight";
 import { NUMBERS } from "../numbers";
-import { C, DITHER_GLOW, MANROPE, manropeReady, SORBET } from "../theme";
+import { C, GROUND, MANROPE, manropeReady, SORBET } from "../theme";
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
@@ -65,7 +65,7 @@ export function Card({
   const fade = interpolate(frame, [0, 8], [0, 1], clamp);
   const lineH = size * 1.25;
   return (
-    <AbsoluteFill style={{ background: C.bg, backgroundImage: DITHER_GLOW, fontFamily: MANROPE }}>
+    <AbsoluteFill style={{ background: GROUND, fontFamily: MANROPE }}>
       <Drift to={1.1}>
         <AbsoluteFill style={{ opacity: fade, transform: `translateY(${rise}px)` }}>
           {chapter ? (

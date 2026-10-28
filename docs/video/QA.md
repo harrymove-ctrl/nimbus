@@ -1,3 +1,46 @@
+status: Gate 3 · rev E QA on the 2026-10-28 20:48 previews, fixes in code; renders on hold (the builder records the real-model take) · 2026-10-28
+approved: script rev 6, board rev E, music rev D · "Approve rev 6"
+cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · 1920 × 1080, 30 fps; the 4K master is the same composition at `--scale=2`
+take: `docs/demo/raw/nimbus-demo-20261028-1258.webm` (251.4 s, 1920 × 1080, role-named contacts) cut by its beats.json; the 4K master upscales it 2× (the real take will be checked for device scale 2 by `scripts/sync-take.mjs`)
+numbers on screen (fixture take, `data/video-rev6`): estimate ≈ $0.03 · run one $0.024 (21 hops, run_0ccb7cb0) · run two $0.016 (run_f34484ad) · proof 1,492 calls / $2.25 from `data/nimbus.db` (83 runs, all model "mock"); the real-model take replaces every one, then `export-calls.py` and `layout-callouts.py` run again
+chat transcript: `docs/video/chat-transcript.json` (old fixtures), with the three addresses mapped to take 1258's role addresses in `compositions.tsx`; the real run's transcript replaces it
+music: Tone.js temp score on the music.md rev D map (Suno tracks pending)
+previews (720p, mastered): `docs/demo/preview/nimbus-full-preview-temp-music.mp4` (19.3 MB, 2:56) · `docs/demo/preview/nimbus-x-preview-temp-music.mp4` (4.2 MB, 0:44) — rendered 20:48 / 20:51, before the fixes below
+evidence: `docs/demo/preview/callouts-middle-frames.png` (every callout's middle frame, both cuts) · `docs/demo/preview/motion-frames.png` (one still per motion scene, 12) — both from the 20:48 previews, so they still show the corner label and the old Orbit Flow radius
+
+# QA, rev E (checklist.md F and build-qa.md), on the 20:48 previews
+
+| Check | Result | Evidence |
+|---|---|---|
+| Duration | PASS · note | ffprobe: full 176.1 s, X 44.1 s. The full cut is 3.9 s under 3:00, not the ≥ 5 s spare build-qa.md asks; script rev 6 sets 2:56 and the user approved it |
+| Every scene on a downbeat | PASS | `shots.ts` lays both cuts out in whole bars and `onTheBeat` refuses to load an off-beat scene; the bundle loads |
+| Both cuts share the scene components; X is a re-timing | PASS | `compositions.tsx`: `Hook`, `Name`, `ChapterHighlight`, `ChatStack`, `RunIt`, `LockupEnd`, `Footage` shots in both |
+| First Approve on 2280 / 690 | PASS | Frame extract of the previews: the drawn tick is absent on 2279 and present on **2280** (full), absent on 689 and present on **690** (X); the take's cursor is on the Approve button on both |
+| Rings on their targets | PASS | `callouts-middle-frames.png`: all 33 rings sit on their targets (the plan, estimate, tools, lanes, badges, cost, I/O, doc parts, approval card and buttons, rule line, summary tiles, memory parts, chips, rail dot, pill, phone, chat run, routing table, gauge) |
+| Cards clear of UI text | PASS · 3 small | `layout-callouts.py` on take 1258: 29 of 32 spots cover no text cell; `timeline:run-cost` 7 cells, `chatRun:chat-run` 4, `xLanes:lanes` 1 (each the nearest corner of a busy frame) |
+| Chapter chips on empty space | PASS | The chip sits on its corner scrim in every chapter span on the sheet; it is off over the motion scenes |
+| Palette (ten frames, every hue traces to the app) | PASS | `qa-frames.py`: full and X, no foreign hue bin ≥ 2 %; saturated pixels at 205°/215° (cloud blue and the boot sky), 155–165° (mint) |
+| Frame density | FAIL → fixed in code | Full: 27 s and 29 s (the goal typing into the composer of the empty run page, framed tight). X: none. Fix: the goal shot is framed wider (1.3–1.5×, rail and the run panel's prompt in shot). Not re-rendered yet |
+| Freeze and black | PASS · note | Black ≥ 0.3 s only at the dark first beats of motion scenes (orb opening 0–0.6 s, hook → name 7.2–9.2 s, Word Gather's lone word 24–24.9 s, Metric Morph, Check Cycle, Orbit Flow, Phone Stack, Scatter Bloom, terminal). Freezes: full 141.9–143.5 s (the last phone held 1.6 s), 162.3–164.1 s (terminal before the URL pin, 1.8 s), the end card; X 32.9–38.0 s (**5.1 s**, the X phones) → fixed in code (phones a bar apart, a slow push under the stack) |
+| Loudness | PASS | After `master.sh`: full −14.2 LUFS, −1.0 dBTP, LRA 7.3; X −14.3 LUFS, −1.6 dBTP, LRA 5.2 |
+| No metronome | PASS | The temp score (`sound/page.ts` `score`) renders no click; no click file in `public/audio/sfx/`; every cue is a cuelume render or a Tone.js design (sfx.md rev E sheet) |
+| No "mock" tag, no names in our words | PASS | `grep -rn mock src/scenes src/shots.ts` finds none on screen; callout texts are script rev 6's; the 1258 take shows roles (client, teammate, reviewer) |
+| Nothing on the frame outside the story | FAIL → fixed in code | The 20:48 previews carry the "preview · fixture numbers · temp music" corner label; board rev E rule 7 (rewritten) removes it. `Watermark.tsx` deleted; take and numbers are stated here |
+| Sound by ear | NOT VERIFIED | No listening in this environment: levels and placement only |
+
+# Fixes after the QA (in code, 2026-10-28; renders on hold)
+
+1. **Watermark removed** everywhere (`src/components/Watermark.tsx` deleted, `Shell` no longer draws it, README updated).
+2. **Word Gather overlap** ("tgoal" at 0:25): the block's words slid in sideways from the reference's scatter offsets while the lead word was still travelling, so "the" and "goal." crossed. New `arrive="vertical"` mode in `snap-cn/word-gather.tsx`: each word drops straight onto its own place, only after the lead word is home (beat 29), so no two words ever share horizontal space; the last word lands at frame 58 of 60.
+3. **Orbit Flow overlap** (found checking the other chapter cards): the inner orbit (520 px) ran through the title, so the pills crossed "wherever you are". Inner orbit 740 px on a 0.4 tilt: wherever a pill is level with the two lines it is ≥ 640 px from centre, past the text's 418 + the pill's 175. Text Highlight (a static line) and Check Cycle (the slot's words move as one strip with a constant gap) cannot overlap.
+4. **Approve tick** read as a mint blob on the app's mint Approve button: now a dark disc (accent-fg) with a mint ring and check.
+5. **X phones** held 5.1 s: the three phones land a bar apart, and a slow push (1 → 1.07) runs under the stack in both cuts; the phone ring follows the push.
+6. **Phones show the newest three messages**, so "approve all" → "Approved" are on the visible top of each phone (they were below the fold).
+7. **Goal shot** framed wider (density).
+8. **4K**: `scripts/sync-take.mjs` reads the take's width and halves beats.json boxes when a device-scale-2 take has them in device pixels (`TAKE_SOURCE_W` in `take.ts`); the 4K master command is in the README and build-qa.md.
+
+# History: the rev D lock (superseded by rev E)
+
 status: locked · 2026-10-28 · "Lock them" · rev D, commit 6d4cffd
 unlocked for rev D by the user (via the planner): "các animation đâu ui ux show như [Text Highlight, Punch Lines, Focus Pull, Lockup Reveal, Metric Morph, Orbit Flow, Scatter Bloom, Screen Wall] … kết hợp để transition và chọn font cũng như ui ux như bản web đang dùng"
 cuts: NimbusFull 2:54 (87 bars) · NimbusX 0:44 (22 bars) · script rev 5 · board rev C + rev D motion layer · music map rev C (unchanged) · sfx rev D
