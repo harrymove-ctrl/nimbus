@@ -127,7 +127,7 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
       });
     }),
     request_approval: stepped(async (input: z.infer<typeof SCHEMAS.request_approval>) => {
-      const action = input.action as import("@/lib/events").ProposedAction;
+      const action = normalizeSend(input.action as import("@/lib/events").ProposedAction);
       const a = await ctx.requestApproval(action, ORCH);
       if (a.decision !== "approved") return { decision: "rejected", note: a.note ?? null, sent: false };
       if (action.kind === "send_message") return { decision: "approved", ...sendMessage(ctx, action.details as { channel: string; text: string }) };
@@ -163,4 +163,16 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
   } as Exec;
 
   return runAgent(ctx, ORCH, ctx.goal, exec);
+}
+
+/**
+ * A real Orchestrator raises its own send with { to | recipient, text | body | message } instead of the Writer's
+ * { channel, text }: name them the one way, so a saved rule ("allow: send_message to …") matches and the send has an address.
+ */
+function normalizeSend(action: import("@/lib/events").ProposedAction): import("@/lib/events").ProposedAction {
+  if (action.kind !== "send_message") return action;
+  const d = (action.details ?? {}) as Record<string, unknown>;
+  const channel = d.channel ?? d.to ?? d.recipient;
+  const text = d.text ?? d.body ?? d.message;
+  return { ...action, details: { ...d, ...(channel ? { channel } : {}), ...(text ? { text } : {}) } };
 }

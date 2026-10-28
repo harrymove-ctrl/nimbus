@@ -296,13 +296,18 @@ async function briefTwo(page: Page) {
   await waitForCards(page, 2);
   await pause(2400);
   await targets(page, { "run2-cost": demo(page, "run-cost"), "learned-chip": demo(page, "learned-chip") });
-  // whatever still asks (the mock: the client and the teammate); a ruled reply never shows a card
-  for (let k = 0; k < 4 && (await pendingCards(page).count()) > 0; k++) {
-    await click(page, approveIn(pendingCards(page).first(), "Approve"));
-    await pause(1300);
-  }
+  // whatever still asks (the mock: the client and the teammate, together; a real Writer or Orchestrator: one at a time),
+  // approved as each arrives until the summary shows; a ruled reply never shows a card
   const summary = page.locator("p", { hasText: /^Run summary$/ });
-  await until(page, summary, 300_000);
+  const end2 = Date.now() + 360_000;
+  while (!(await summary.isVisible().catch(() => false)) && Date.now() < end2) {
+    await answerQuestions(page);
+    if (await pendingCards(page).count()) {
+      await click(page, approveIn(pendingCards(page).first(), "Approve"));
+      await pause(1300);
+    } else await pause(500);
+  }
+  await until(page, summary, 30_000);
   await summary.scrollIntoViewIfNeeded();
   await pause(1400);
   await targets(page, { "summary-cost": demo(page, "summary-cost"), "run2-cost": demo(page, "run-cost") });
