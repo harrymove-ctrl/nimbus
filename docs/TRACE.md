@@ -143,3 +143,18 @@ the Lanes · Trace control switches views, the headline sentence names the longe
 timeline and Agent I/O, click opens the card with the numbers, ↑ ↓ Enter Esc C work, drag zooms and double-click
 resets, the live run grows, the filter chips count correctly, Copy as JSON yields valid JSON. Report every item with
 "seen" or "not verified" by name.
+
+## Addendum (01:40 ICT): tools shown like the reference's second screen
+
+- **One icon per tool** in the rows: web_search a globe, fetch_url a link, run_code the Nebius sandbox glyph when it
+  ran at Nebius and a terminal icon when local, write_artifact a document, send_message a message bubble (a send
+  icon when it went out via Telegram), read_repo the GitHub mark, open_pr the pull-request icon, save_learning a
+  sparkle, ask_user a question mark. Model rows carry the Nemotron badge and the tier name. Tool bars use the lane
+  timeline's tool green, model bars the model blue.
+- **Row labels** are human titles ("Search the web", "Run code · script.py", "Write doc · Checkout report", "Send to
+  #growth"); the card shows the raw tool id in mono on the right (`web_search`), as the reference shows "Search logs"
+  and `search_logs`.
+- **Tool card**: Started · Duration (plus Where and Exit code for run_code), an **Input · Output** toggle (Output
+  default) with the JSON pretty-printed and syntax highlighted (keys blue, numbers orange, strings plain, braces dim),
+  monospace 13 px, scrollable past 20 lines, Copy copies the shown tab. run_code's Output is the result object (ok,
+  exitCode, stdout, stderr).
