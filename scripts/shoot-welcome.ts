@@ -14,7 +14,17 @@ async function main() {
     await page.waitForTimeout(1200);
     const scrollW = await page.evaluate(() => document.documentElement.scrollWidth);
     await page.screenshot({ path: `${OUT}/landing-welcome-${w}.png`, fullPage: true });
-    console.log(`${w}px: load ${load} ms, scrollWidth ${scrollW}`);
+    // every loop plays once it is scrolled into view
+    const playing = await page.evaluate(async () => {
+      const out: boolean[] = [];
+      for (const v of document.querySelectorAll("video")) {
+        v.scrollIntoView({ block: "center" });
+        await new Promise((r) => setTimeout(r, 1500));
+        out.push(!v.paused && v.currentTime > 0);
+      }
+      return out;
+    });
+    console.log(`${w}px: load ${load} ms, scrollWidth ${scrollW}, loops playing in view ${playing.filter(Boolean).length}/${playing.length}`);
     await page.close();
   }
   // reduced motion: no loop autoplays, each shows its poster with the browser's play control
