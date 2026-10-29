@@ -128,7 +128,7 @@ Gallery frames (SUBMISSION.md "Devpost gallery"):
   - The proof line: "One morning: $0.0216 · 24 % saved by the router".
   - Scatter Bloom (scene 19) plots every real Token Factory call: the usage events of the runs with model `nebius` in the six real-take databases (`data/real-take-20261028`, `20261028b`, `20261028c`, `20261028d`, `20261029`, `20261029b`), 198 calls in 11 runs between 21:45 and 02:01 ICT, exported by `video/scripts/export-calls.py` to `video/src/datasets/calls.json` (`"models": ["nebius"]`, with the source list). Nothing from `data/nimbus.db`. Its x axis runs 21:00 to 03:00 and its caption reads "Every real model call · time of day × cost"; no count is shown.
 - **Known:**
-  - The real Writer's drafts end with a placeholder signature ("[Your Name]") on the approval cards. It is the last body line, directly above the buttons, so it stays in frame; a product fix is queued.
+  - The real Writer's drafts end with a placeholder signature ("[Your Name]") on the approval cards. It is the last body line, directly above the buttons, so it stays in frame. The prompt rule against it (33f49c7) did not hold on the real Writer: the live run run_0c6cdb23 still signed all three drafts "[Your Name]". Railway now sets `NIMBUS_USER_NAME=Harry`, so the Writer is told to sign "Harry"; no real run has confirmed that yet.
   - The 4K master upscales the 1080p takes 2×.
 
 ### Music
