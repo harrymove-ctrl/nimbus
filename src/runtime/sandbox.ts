@@ -144,7 +144,7 @@ async function importImage(tag: string): Promise<string> {
  * Networking is off: the crew's data is in the files it was given, and a sandbox cannot call out.
  */
 export async function sandboxRun(i: { language: "python" | "node"; file: string; code: string; files?: SandboxFile[]; timeoutS?: number }): Promise<SandboxResult> {
-  const image = IMAGES[i.language]();
+  const image = (IMAGES[i.language] ?? IMAGES.python)();
   const timeoutS = Math.min(Math.max(i.timeoutS ?? 60, 5), Number(process.env.NIMBUS_SANDBOX_MAX_S) || 300);
   const all: SandboxFile[] = [{ path: i.file, content: i.code }, ...(i.files ?? [])];
   const files: Record<string, { uuid: string; uid: number; gid: number; mode: string }> = {};
