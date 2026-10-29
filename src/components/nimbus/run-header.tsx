@@ -16,19 +16,30 @@ const PILL: Record<ViewStatus, { label: string; cls: string }> = {
   stopped: { label: "Stopped", cls: "bg-white/10 text-neutral-300" },
 };
 
-export function RunHeader({ view, now, fallbackTitle, runCapUsd }: { view: RunView; now: number; fallbackTitle: string; runCapUsd?: number }) {
+export type RunMode = "lanes" | "trace";
+
+export function RunHeader({ view, now, fallbackTitle, runCapUsd, mode, onMode }: { view: RunView; now: number; fallbackTitle: string; runCapUsd?: number; mode?: RunMode; onMode?: (m: RunMode) => void }) {
   const pill = view.capHit ? { label: "Cap hit", cls: "bg-red-500/15 text-red-300" } : PILL[view.status];
   const frac = runCapUsd ? Math.min(1, view.costUsd / runCapUsd) : 0;
   const elapsed = view.endedMs ?? (view.active ? now - view.startedAt : view.lastTMs);
   const hasRun = view.status !== "idle";
   return (
     // Container queries: under 900 px of header width drop tokens, under 640 px elapsed too; the status and baseline pills never go.
-    <header className="@container flex h-14 shrink-0 items-center gap-3 border-b border-white/10 px-4">
-      <h1 className="min-w-0 flex-1 truncate text-[16px] font-extrabold text-neutral-100">{view.title || fallbackTitle}</h1>
+    <header className="@container flex h-14 shrink-0 items-center gap-3 border-b border-white/10 px-4 max-sm:h-auto max-sm:flex-wrap max-sm:gap-y-1.5 max-sm:py-2">
+      <h1 className="min-w-0 flex-1 truncate text-[16px] font-extrabold text-neutral-100 max-sm:basis-full">{view.title || fallbackTitle}</h1>
       <span className={cx("inline-flex h-6 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[12px] font-bold", pill.cls)} role="status">
         {(view.status === "running" || view.status === "planning") && <span className="size-1.5 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" />}
         {pill.label}
       </span>
+      {hasRun && mode && onMode && (
+        <div role="group" aria-label="Run view" className="flex h-7 shrink-0 items-center rounded-full bg-white/8 p-0.5 text-[12px] font-bold">
+          {(["lanes", "trace"] as const).map((m) => (
+            <button key={m} type="button" data-cuelume-select="" aria-pressed={mode === m} onClick={() => mode !== m && onMode(m)} className={cx("h-6 rounded-full px-2.5 capitalize transition-colors", mode === m ? "bg-white text-neutral-950" : "text-neutral-300 hover:text-neutral-50")}>
+              {m}
+            </button>
+          ))}
+        </div>
+      )}
       {hasRun && (
         <p className="flex shrink-0 items-center gap-x-3 whitespace-nowrap text-[13px] font-semibold tabular-nums text-neutral-300">
           <span className="hidden @[640px]:inline">{fmtSecs(elapsed)}</span>

@@ -215,6 +215,7 @@ flowchart LR
 | **Overview** | Seven live SQLite regions (stat cards, 7-day stacked spend by tier, tokens by tier, 8-week runs calendar, scheduled health, router savings, impact line). |
 | **Plan Draft & Checklist** | The Orchestrator's plan is editable until you approve it, then becomes a live checklist that collapses when complete. |
 | **Multi-Agent Timeline** | One lane per agent with its Nemotron tier badge and cost; click any segment to trace handoffs or replay a finished run at `0.5×`, `1×`, or `2×`. |
+| **Trace view** | Every call of a run on one time axis (the **Trace** switch in the run header): first-token time, speed and the sandbox per call, the longest span named in one sentence, filters, drag to zoom, and the trace as OpenTelemetry JSON. See [docs/TRACE.md](docs/TRACE.md). |
 | **Agent I/O & Loop Inspector** | Inspects every hop as three stations (**Gather**, **Act**, **Verify**) including failed commands and retry loops. |
 | **Status Pill** | Tracks background runs in the top bar with inline **Pause**, **Stop**, **Open run**, **Approve**, and **Deny**. |
 | **Memory & Skill Inspector** | Displays active `allow:` rules (with one-click **Revoke**), the workstream's `SKILL.md` (with diff view and **Revert**), and learned memories (with **Forget**). |

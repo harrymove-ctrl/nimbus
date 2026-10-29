@@ -279,6 +279,7 @@ body {
 @keyframes nb-draw { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes nb-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes nb-flash { 0%, 100% { stroke-opacity: 1; } 40% { stroke-opacity: 0.2; } 70% { stroke-opacity: 1; } }
+@keyframes nb-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes nb-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
 
 .nb-rise { animation: nb-rise var(--m-slow) var(--m-ease) both; }
@@ -294,10 +295,12 @@ body {
 .nb-fade-late { animation: nb-fade var(--m-fast) ease-out 300ms both; }
 .nb-flash { animation: nb-flash 300ms ease-in-out 1; }
 .nb-countdown { animation: nb-countdown 3s linear both; transform-origin: left; }
+/* the Trace view's bars grow from their start, the same 160 ms as a row's rise */
+.nb-grow { animation: nb-grow var(--m-base) var(--m-ease) both; transform-origin: left center; }
 
 /* Reduced motion: every transition becomes a cut (the hatch drift stays, per the spec). */
 @media (prefers-reduced-motion: reduce) {
   .nb-rise, .nb-rise-fast, .nb-slide-in, .nb-drawer-right, .nb-drawer-left, .nb-pop, .nb-pop-slow,
   .nb-scale-in, .nb-draw, .nb-fade, .nb-fade-late, .nb-flash { animation: none !important; }
-  .nb-countdown { animation: none !important; }
+  .nb-countdown, .nb-grow { animation: none !important; }
 }

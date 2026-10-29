@@ -59,7 +59,8 @@ export interface PayloadMap {
     card?: "summary";
     summary?: RunSummary;
   };
-  usage: { tier: Tier; in: number; out: number; cached?: boolean };
+  /** `ms`: wall time of the model call; `ttftMs`: time to first token, only when the call streamed (it is left out otherwise, never 0) */
+  usage: { tier: Tier; in: number; out: number; cached?: boolean; ms?: number; ttftMs?: number };
   route: { hop: number; role: AgentRole; chosen: Tier; ceiling: Tier; reason: string; fallback?: boolean };
   plan: { agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string }; steps?: PlanStep[]; /** a person is reviewing the draft: the run waits for plan.approve */ awaiting?: boolean; revision?: number };
   /** the person approved the plan (possibly edited: reordered, added, removed or reworded steps) */
