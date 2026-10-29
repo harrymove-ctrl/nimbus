@@ -218,7 +218,7 @@ Same voice as the launch post. YouTube shows about 70 characters of the title in
 
 Shorter alternative (58): "Nimbus: my morning, run by Nemotron agents for $0.02"
 
-**Description:**
+**Description** (chapter times are for rev 7, the 2:40 cut with no scripted footage; confirm against the final master):
 
 > Every morning I read my inbox, my calendar and GitHub, then write the same replies I wrote yesterday. Nimbus does that for me, learns from each run, and asks before anything is sent.
 >
@@ -234,10 +234,9 @@ Shorter alternative (58): "Nimbus: my morning, run by Nemotron agents for $0.02"
 > 1:30 What the morning cost and what the router saved
 > 1:42 Memory and skill: what it learned, its own how-to rewritten after each run
 > 1:54 Run two, cheaper, and the ruled reply goes out with no card
-> 2:06 Always on: schedule, status pill, chat app through an OpenAI-compatible endpoint
-> 2:28 It watches its own Token Factory bill and proposes cheaper routing
-> 2:34 How I used Nebius: Nemotron 3 Ultra plans, Super reads and writes, Nano checks and learns, all on api.tokenfactory.nebius.com
-> 2:40 Run it yourself
+> 2:04 Always on: the same crew in my chat app through an OpenAI-compatible endpoint, one history
+> 2:18 How I used Nebius: Nemotron 3 Ultra plans, Super reads and writes, Nano checks and learns, every real call plotted, all on api.tokenfactory.nebius.com
+> 2:24 Run it yourself
 >
 > Repo (MIT): https://github.com/harrymove-ctrl/nimbus
 > Live demo: https://nimbus-production-6f7b.up.railway.app
@@ -245,7 +244,7 @@ Shorter alternative (58): "Nimbus: my morning, run by Nemotron agents for $0.02"
 >
 > Built alone in three days for the Nebius x NVIDIA Global AI Hackathon, Personal AI track. Models: Nemotron-3-Ultra-550b-a55b, nemotron-3-super-120b-a12b, NVIDIA-Nemotron-3-Nano-30B-A3B, every call through Nebius Token Factory. The numbers on screen come from one recorded take on the real models; the release notes in docs/video/RELEASE.md say where each was measured. One drafted reply in the video ends with a placeholder signature the model wrote; that is fixed in the app and left in the recording as it happened.
 >
-> Music: my own Suno generation. No voiceover.
+> Music: my own Suno generation. No voiceover. Every frame of the app in this video is from recorded runs on the real models.
 
 **Tags:** Nemotron, Nebius, Token Factory, AI agents, personal AI, NVIDIA, Next.js, open source, hackathon
 
