@@ -97,6 +97,8 @@ export function Composer(p: ComposerProps) {
   const [confirmStop, setConfirmStop] = useState(false);
   const [estimate, setEstimate] = useState<{ cost: number; rest: string } | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [lockNote, setLockNote] = useState(false);
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const lastEsc = useRef(0);
@@ -104,6 +106,12 @@ export function Composer(p: ComposerProps) {
 
   const state = deriveComposerState(view, p.draft, p.files, menuClosed);
   const live = state === "running" || state === "asked" || state === "waiting" || state === "plan";
+  const locked = live || state === "planning";
+  const onLocked = () => {
+    setLockNote(true);
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+    lockTimer.current = setTimeout(() => setLockNote(false), 2800);
+  };
   const hasText = p.draft.trim().length > 0;
   const remaining = view.plan ? Math.max(0, Math.ceil((view.plan.tMs + 3000 - (p.now - view.startedAt)) / 1000)) : 0;
 
@@ -324,18 +332,25 @@ export function Composer(p: ComposerProps) {
 
         <div className="flex min-h-11 shrink-0 flex-wrap items-center gap-x-1 gap-y-1 px-2 pb-1">
           <input ref={fileRef} type="file" multiple accept=".csv,.pdf,.png,.jpg,.jpeg,.txt,.md,.json" className="hidden" onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
-          <Chip label="Attach" icon={<Paperclip className="size-3.5" />} disabled={live || state === "planning"} onClick={() => fileRef.current?.click()} />
+          <Chip label="Attach" icon={<Paperclip className="size-3.5" />} disabled={locked} onLocked={onLocked} onClick={() => fileRef.current?.click()} />
           <ChipMenu
             label="Tools"
             icon={<Wrench className="size-3.5" />}
             value={`${p.tools.length}`}
-            disabled={live || state === "planning"}
+            disabled={locked}
+            onLocked={onLocked}
             multi
             items={Object.entries(TOOL_LABELS).map(([k, l]) => ({ key: k, label: l, checked: p.tools.includes(k) }))}
             onPick={(k) => p.setTools(p.tools.includes(k) ? p.tools.filter((t) => t !== k) : [...p.tools, k])}
           />
-          <ChipMenu label="Mode" icon={<ShieldCheck className="size-3.5" />} value={MODES.find((m) => m.key === p.mode)?.label} disabled={live || state === "planning"} items={MODES.map((m) => ({ key: m.key, label: m.label, checked: m.key === p.mode }))} onPick={(k) => p.setMode(k as Mode)} />
-          <ChipMenu label="Tier" icon={<Gauge className="size-3.5" />} value={TIERS.find((t) => t.key === p.tier)?.label.split(" ")[0]} disabled={live || state === "planning"} items={TIERS.map((t) => ({ key: t.key, label: t.label, checked: t.key === p.tier }))} onPick={(k) => p.setTier(k as TierChoice)} />
+          <ChipMenu label="Mode" icon={<ShieldCheck className="size-3.5" />} value={MODES.find((m) => m.key === p.mode)?.label} disabled={locked} onLocked={onLocked} items={MODES.map((m) => ({ key: m.key, label: m.label, checked: m.key === p.mode }))} onPick={(k) => p.setMode(k as Mode)} />
+          <ChipMenu label="Tier" icon={<Gauge className="size-3.5" />} value={TIERS.find((t) => t.key === p.tier)?.label.split(" ")[0]} disabled={locked} onLocked={onLocked} items={TIERS.map((t) => ({ key: t.key, label: t.label, checked: t.key === p.tier }))} onPick={(k) => p.setTier(k as TierChoice)} />
+
+          {lockNote && (
+            <span role="status" className="nb-rise-fast ms-1 text-[11.5px] font-semibold text-neutral-400">
+              Locked while the crew works. Change attachments, tools, mode and tier before the next run.
+            </span>
+          )}
 
           <div className="ms-auto flex flex-wrap items-center justify-end gap-2">
             {estimate && (state === "drafting" || state === "slash") && (
@@ -371,18 +386,20 @@ export function Composer(p: ComposerProps) {
   );
 }
 
-const chipCls = "inline-flex h-8 shrink-0 items-center whitespace-nowrap gap-1.5 rounded-lg px-2.5 text-[12px] font-bold text-neutral-300 transition-colors hover:bg-white/10 hover:text-neutral-100 disabled:opacity-40 disabled:hover:bg-transparent";
+const chipCls = "inline-flex h-8 shrink-0 items-center whitespace-nowrap gap-1.5 rounded-lg px-2.5 text-[12px] font-bold text-neutral-300 transition-colors hover:bg-white/10 hover:text-neutral-100 aria-disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:hover:bg-transparent";
+const LOCKED_TITLE = "Locked while the crew works. Change it before the next run.";
 
-function Chip({ label, icon, onClick, disabled }: { label: string; icon: ReactNode; onClick: () => void; disabled?: boolean }) {
+// A locked chip stays clickable so the click can say why it does nothing (a disabled button swallows the click silently).
+function Chip({ label, icon, onClick, disabled, onLocked }: { label: string; icon: ReactNode; onClick: () => void; disabled?: boolean; onLocked?: () => void }) {
   return (
-    <button type="button" data-cuelume-tap="" data-cuelume-emphasis="subtle" onClick={onClick} disabled={disabled} className={chipCls}>
+    <button type="button" data-cuelume-tap="" data-cuelume-emphasis="subtle" onClick={disabled ? onLocked : onClick} aria-disabled={disabled || undefined} title={disabled ? LOCKED_TITLE : undefined} className={chipCls}>
       {icon}
       <span className="hidden sm:inline">{label}</span>
     </button>
   );
 }
 
-function ChipMenu({ label, icon, value, items, onPick, disabled, multi }: { label: string; icon: ReactNode; value?: string; items: { key: string; label: string; checked: boolean }[]; onPick: (k: string) => void; disabled?: boolean; multi?: boolean }) {
+function ChipMenu({ label, icon, value, items, onPick, disabled, multi, onLocked }: { label: string; icon: ReactNode; value?: string; items: { key: string; label: string; checked: boolean }[]; onPick: (k: string) => void; disabled?: boolean; multi?: boolean; onLocked?: () => void }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -398,7 +415,7 @@ function ChipMenu({ label, icon, value, items, onPick, disabled, multi }: { labe
   }, [open]);
   return (
     <div ref={ref} className="relative">
-      <button type="button" disabled={disabled} aria-haspopup="menu" aria-expanded={open} {...{ [open ? "data-cuelume-close" : "data-cuelume-open"]: "" }} data-cuelume-emphasis="subtle" onClick={() => setOpen((o) => !o)} className={chipCls}>
+      <button type="button" aria-disabled={disabled || undefined} title={disabled ? LOCKED_TITLE : undefined} aria-haspopup="menu" aria-expanded={open} {...{ [open ? "data-cuelume-close" : "data-cuelume-open"]: "" }} data-cuelume-emphasis="subtle" onClick={() => (disabled ? onLocked?.() : setOpen((o) => !o))} className={chipCls}>
         {icon}
         <span className="hidden sm:inline">{label}</span>
         {value && <span className="hidden rounded bg-white/10 px-1.5 text-[11px] text-neutral-100 lg:inline">{value}</span>}
