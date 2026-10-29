@@ -118,10 +118,13 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
       })),
     handoff: stepped(async (input: z.infer<typeof SCHEMAS.handoff>) => {
       const instance = nextInstance(ctx, input.to);
-      ctx.emit("handoff", "orchestrator", ORCH.instance, { from: ORCH.instance, to: instance, context: input.context });
-      ctx.emit("agent.spawn", input.to, instance, { by: ORCH.instance, role: input.to, instance, brief: input.context });
+      // a placeholder ("[paste the report here]") or a bare one-liner gets the named agents' reports pasted in, and the
+      // stored event shows that context, so the timeline never displays the placeholder
+      const resolved = resolveHandoff(input.context, crewReports);
+      ctx.emit("handoff", "orchestrator", ORCH.instance, { from: ORCH.instance, to: instance, context: resolved });
+      ctx.emit("agent.spawn", input.to, instance, { by: ORCH.instance, role: input.to, instance, brief: resolved });
       return wait(`Waiting on ${input.to[0].toUpperCase()}${input.to.slice(1)}`, async () => {
-        const r = await runChild(ctx, { role: input.to, instance }, withReports(input.context), {});
+        const r = await runChild(ctx, { role: input.to, instance }, resolved === input.context ? withReports(input.context) : resolved, {});
         if (r.report) crewReports.push(r);
         return { report: r.report };
       });
@@ -175,4 +178,26 @@ function normalizeSend(action: import("@/lib/events").ProposedAction): import("@
   const channel = d.channel ?? d.to ?? d.recipient;
   const text = d.text ?? d.body ?? d.message;
   return { ...action, details: { ...d, ...(channel ? { channel } : {}), ...(text ? { text } : {}) } };
+}
+
+// "[paste the researcher report content here]", "[insert findings]", "(include the report)": a real Orchestrator's stand-in
+// for a report it did not paste. Words inside the brackets decide it, so "[Your Name]" or d[key] do not count.
+const HANDOFF_PLACEHOLDER = /\[[^\]\n]*\b(?:paste|insert|include|attach|here)\b[^\]\n]*\]|\([^)\n]*\b(?:paste|insert|include|attach)\b[^)\n]*\)/gi;
+
+/**
+ * The handoff context the receiving agent (and the stored event) gets. Unchanged unless it holds a placeholder, or is
+ * under 200 characters while a crew report exists: then the placeholders become a pointer and the latest report of each
+ * agent the context names (every agent's, when it names none) is appended.
+ */
+export function resolveHandoff(context: string, reports: { instance: string; report: string }[]): string {
+  const latest = new Map<string, string>();
+  for (const r of reports) if (r.report && !r.report.startsWith("FAILED:")) latest.set(r.instance, r.report);
+  if (!latest.size) return context;
+  const hasPlaceholder = new RegExp(HANDOFF_PLACEHOLDER.source, "i").test(context);
+  if (!hasPlaceholder && context.trim().length >= 200) return context;
+  const lower = context.toLowerCase();
+  const named = [...latest.keys()].filter((inst) => lower.includes(inst.toLowerCase()) || lower.includes(inst.replace(/-\d+$/, "")));
+  const pick = named.length ? named : [...latest.keys()];
+  const body = context.replace(HANDOFF_PLACEHOLDER, "(the report is below)").trim();
+  return `${body}\n\nReports from the crew:\n${pick.map((inst) => `[${inst}]\n${latest.get(inst)!.slice(0, 6000)}`).join("\n\n")}`;
 }
