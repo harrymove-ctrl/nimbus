@@ -28,7 +28,7 @@ Measured 2026-10-29 on the rev 7 renders (1080p masters and 720p previews; the 4
 | Loudness | PASS | full −13.8 LUFS, −1.6 dBTP (LRA 8.4); X −13.7 LUFS, −1.8 dBTP (LRA 7.1); previews the same |
 | Music fit | PASS (by design) · not measured | `fit-music.py` segments (32, +2) (58, +13) (134, +10) (162, +24): the entries before 2:04 keep their rev 6 offsets; the finale's track bar S96 sits on V72 (2:24, the terminal) and the track's ending on V80 (2:40); silence 149.5–150.0 s |
 | No metronome | PASS | the Suno fit and the cue sheet only |
-| 4K master | PENDING | rendering at `--concurrency=4` |
+| 4K master | PASS | `out/nimbus-full-4k.mp4`: 3840 × 2160 h264, 160.1 s, 181.6 MB, −13.8 LUFS, −1.6 dBTP; the frame at 142.7 s is the rev 7 proof (the real-call scatter, the three tiles). Rendered at `--concurrency=4`, 11:58 to 12:22 |
 | Sound by ear | NOT VERIFIED | no listening in this environment |
 
 # History: the rev 6 render on take 1915 (2026-10-29 03:03, 88 bars, scenes 15 and 18 on the mock take 1258)

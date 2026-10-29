@@ -92,7 +92,7 @@ Script rev 7 (the user: "Cut them, real scatter"), board rev F, music rev D refi
 | File | Duration | Size | Picture | Audio |
 |---|---|---|---|---|
 | `video/out/nimbus-full.mp4` | 2:40.1 | 79.7 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.8 LUFS, −1.6 dBTP |
-| `video/out/nimbus-full-4k.mp4` | (rendering) | (rendering) | 3840 × 2160, h264 crf 17 (`--scale=2`, footage upscaled 2×) | AAC 256k, (rendering) |
+| `video/out/nimbus-full-4k.mp4` | 2:40.1 | 181.6 MB | 3840 × 2160, h264 crf 17 (`--scale=2`, footage upscaled 2×) | AAC 256k, −13.8 LUFS, −1.6 dBTP |
 | `video/out/nimbus-x.mp4` | 0:44.1 | 16.4 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.7 LUFS, −1.8 dBTP |
 | `docs/demo/preview/nimbus-full-preview.mp4` | 2:40.1 | 18.8 MB | 1280 × 720 | −13.8 LUFS, −1.6 dBTP |
 | `docs/demo/preview/nimbus-x-preview.mp4` | 0:44.1 | 4.2 MB | 1280 × 720 | −13.7 LUFS, −1.8 dBTP |
