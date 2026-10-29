@@ -18,12 +18,20 @@ export const metadata: Metadata = {
 const REPO = "https://github.com/harrymove-ctrl/nimbus";
 const VIDEO: string | null = "https://www.youtube.com/watch?v=obMWKCewVTY"; // the 2:40 submission video
 
-// Every number here is from docs/video/RELEASE.md "Measured on take 1915".
+// Every number here is from docs/video/RELEASE.md "Measured on take 1915": two real runs of the Morning brief
+// (run_724b8d9d, then run_915dfc1d the next morning) on Nemotron 3 through Nebius Token Factory.
 const NUMBERS = [
-  { value: "$0.0216", label: "one morning" },
-  { value: "24 %", label: "saved by the router" },
+  { value: "$0.0216", label: "one morning, the first run" },
+  { value: "$0.0209", label: "the next morning, 3\u00a0% cheaper" },
+  { value: "24\u00a0%", label: "saved by the router, 27\u00a0% the next morning" },
+  { value: "58,950", label: "tokens across the crew in run one" },
+  { value: "23", label: "model calls in run one, with 21 tool calls" },
+  { value: "3", label: "sends you approved, each with a card" },
+  { value: "1", label: "rule you saved, used the next morning with no card" },
+  { value: "16", label: "memories after two mornings" },
   { value: "0", label: "replies sent without your OK" },
 ];
+const RELEASE = `${REPO}/blob/main/docs/video/RELEASE.md`;
 
 // In the video's callout voice: what it is · why it helps you. The source beats are in scripts/cut-landing-loops.sh.
 const LOOPS = [
@@ -101,7 +109,7 @@ export default function Welcome() {
             )}
             <CopyChip text="git clone github.com/harrymove-ctrl/nimbus && pnpm dev" />
           </div>
-          <dl className="mt-2 grid grid-cols-3 gap-3">
+          <dl className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {NUMBERS.map((n) => (
               <div key={n.label} className="flex flex-col gap-1 rounded-[calc(var(--rb-r-xl,12px))] border border-white/10 bg-neutral-900/70 px-4 py-3">
                 <dd className="order-first text-[22px]/[26px] font-extrabold tabular-nums tracking-tight text-neutral-50 sm:text-[26px]/[30px]">{n.value}</dd>
@@ -109,7 +117,13 @@ export default function Welcome() {
               </div>
             ))}
           </dl>
-          <p className="text-[12px] font-semibold text-neutral-500">Measured on the recorded take of Oct 29, one real run of the Morning brief.</p>
+          <p className="text-[12px]/[18px] font-semibold text-neutral-500">
+            Measured on the recorded take of Oct 29: two real runs of the Morning brief, the second one starting from what the first one learned. Every number is in the{" "}
+            <a href={RELEASE} className="underline decoration-white/25 underline-offset-2 hover:text-neutral-300">
+              release notes
+            </a>
+            .
+          </p>
         </header>
 
         <section className="flex flex-col gap-10" aria-label="What it looks like">

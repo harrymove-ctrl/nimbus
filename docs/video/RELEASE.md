@@ -21,7 +21,7 @@ The file is `docs/demo/raw/nimbus-demo-20261028-1915.webm` (the name stamp is UT
 | Run one `run_724b8d9d` | $0.0216 | 58,950 | $0.0283 | 24 % | client and teammate by you; the reviewer by you with Approve & always allow, which saved `allow: send_message to reviewer@example.com` |
 | Run two `run_915dfc1d` | $0.0209 | 57,015 | $0.0287 | 27 % | client and teammate by you; **the reviewer's reply went out under the rule, with no card** |
 
-Run two is cheaper than run one (−3 %). The workstream holds 16 memories after both runs. The recorder answered 7 questions agents asked along the way.
+Run two is cheaper than run one (−3 %). The workstream holds 16 memories after both runs. The recorder answered 7 questions agents asked along the way. Counted from the take's database (`run_events`): run one made 23 model calls and 21 tool calls, run two 20 and 18; each run recorded 3 send approvals, and in run two the reviewer's was resolved by the rule with no card.
 
 What the take did not get:
 - **status-pill:** the radar run (`run_d633da5f`, $0.0033) did not reach its approval within 120 s; the take stopped it at the end.
