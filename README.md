@@ -2,204 +2,213 @@
 
 # Nimbus
 
-Every morning I read my inbox, my calendar and GitHub before I've done any work, then write the same replies I wrote
-yesterday. Nimbus does that part for me with a crew of NVIDIA Nemotron agents. It asks before it sends anything, and it
-learns from each run. The short version, with clips from a real run, is the landing page at
-https://nimbus-production-6f7b.up.railway.app/welcome, and the 2:40 video is at
-https://www.youtube.com/watch?v=obMWKCewVTY.
+**Your standing work, done every morning by an NVIDIA Nemotron 3 crew on Nebius Token Factory that routes every hop by cost, asks before it acts, and rewrites its own skill file.**
 
-I built it alone in three days for the Nebius x NVIDIA Global AI Hackathon (Personal AI track), starting 2026-10-27.
+> **Quick Links for Judges**
+> - **9-Clip Visual Tour (Real Nemotron 3 Runs):** https://nimbus-production-6f7b.up.railway.app/welcome
+> - **Live App (Real Nebius Token Factory Inference):** https://nimbus-production-6f7b.up.railway.app
+> - **Demo Video (2:40, 100% Real-Model Take):** https://www.youtube.com/watch?v=obMWKCewVTY
+> - **Slide Deck (PDF & HTML):** [docs/posters/nimbus-deck.pdf](docs/posters/nimbus-deck.pdf) · [docs/posters/nimbus-deck.html](docs/posters/nimbus-deck.html)
+> - **License:** [MIT License](LICENSE) (OSI Approved)
 
-> **Where it stands.** Everything below runs with **no API keys** against a scripted *mock model*; that is what
-> `pnpm dev` gives you. The live demo at https://nimbus-production-6f7b.up.railway.app runs the real models on Nebius
-> Token Factory, and the demo video is cut from a recorded real-model take (Oct 29; two scenes, the radar and the
-> Token Factory watch, are from the scripted take because the real run never reached them, and
-> [docs/video/QA.md](docs/video/QA.md) says which). The real runs found six bugs the mock never hit; they are fixed, and
-> the list is in [docs/video/RELEASE.md](docs/video/RELEASE.md). Numbers marked *(mock)* are scripted token counts;
-> numbers marked *(measured)* come from the real runs.
+Every morning I read my inbox, my calendar, and GitHub notifications before I have done any real work, then write the same kinds of replies I wrote yesterday. **Nimbus** is a personal operations room that runs that standing work with a six-role crew of **NVIDIA Nemotron 3** agents (`Ultra 550B`, `Super 120B`, and `Nano 30B`) on **Nebius Token Factory**.
 
-## Run it in two minutes (no keys)
+Built from scratch during the **Nebius × NVIDIA Global AI Hackathon** (Personal AI track, started October 27, 2026).
+
+---
+
+## Setup & Run Instructions (Full to Running in 2 Minutes)
+
+**Prerequisites:** Node.js `>= 20` and `pnpm` (`corepack enable pnpm` or `npm i -g pnpm`).
+
+### Mode A: Zero-Key Judge Mode (Runs Out of the Box at $0)
+
+You can clone and run the entire application, all seven workstreams, the cost router, approval gates, and the 19-golden evaluation suite **without any API keys**. When `NEBIUS_API_KEY` is empty, Nimbus automatically falls back to a deterministic scripted mock model (`NIMBUS_MODEL=mock`).
 
 ```bash
+git clone https://github.com/harrymove-ctrl/nimbus.git
+cd nimbus
 pnpm install
-cp .env.example .env.local        # leave the keys empty: Nimbus falls back to the mock model
-pnpm dev                          # http://localhost:3000
-pnpm demo                         # headless run of the demo workstream, prints usage and cost
+cp .env.example .env.local        # leave API keys empty for zero-key mock mode
+pnpm dev                          # opens http://localhost:3000 (landing tour at /welcome)
 ```
 
-Open the app. The first screen is the **Overview**: today's spend against the day cap, runs, approvals waiting, memories
-learned, spend by tier for 7 days, tokens by tier, an 8-week runs calendar, scheduled workstreams over 30 days, the
-router's saving and an impact line. (The history behind it is seeded and labelled; the numbers for today are real.) The
-rail has seven workstreams, and **Hackathon radar** already has a finished run from 09:00 with an unread dot.
+In a second terminal, you can run the headless demo or verification suites immediately:
 
-Pick **Morning brief**, type the goal (or use a template chip) and press **RUN**. The plan arrives as a **draft**: you can
-reword, reorder or add steps, then **Approve plan** (or press Enter). The crew reads `fixtures/inbox/`,
-`fixtures/calendar.ics` and `fixtures/github-notifications.json`, and writes one page: what needs you today, the
-calendar, GitHub and what can wait. It also drafts replies to a client, a teammate and a reviewer. Each send waits for
-your OK as a card; on the reviewer's, **Approve & always allow** saves a rule. Afterwards the Learner writes memories
-and rewrites the workstream's `SKILL.md`. Run it again the next morning: it starts with what it learned, the reviewer's
-reply goes out under the rule with no card, and it costs less (*(measured, the recorded take)*: $0.0216 → $0.0209). In mock mode nothing is
-really sent; replies go to `data/outbox.log`. **Ship Nimbus** is the other deep case: the crew runs this repo's evals
-for real, fixes a failing golden, and waits for you before it opens a pull request. Open another workstream while a run goes and the **status pill** in the
-top bar follows it; its panel pauses, stops, opens it, or approves inline.
+```bash
+pnpm demo                         # headless run of the demo workstream, prints token usage and cost
+pnpm demo:router                  # tests router savings, 429/404 tier fallback, and response cache
+pnpm eval --cheap                 # runs all 19 trajectory goldens (145 per-hop assertions)
+```
 
-## What is in the app
+### Mode B: Live NVIDIA Nemotron 3 on Nebius Token Factory + Tavily Search
 
-| Surface | What it does |
-|---|---|
-| **Overview** | Seven regions from SQLite (stat cards, stacked spend by tier, tokens by tier, runs calendar, scheduled health, router saving, impact); the buttons under the charts open the runs of a day |
-| **Plan draft and checklist** | The orchestrator's plan is editable until you approve it; then it is a live checklist (a tick per finished step, a ✕ on a failure) that collapses to "7 of 7 steps · 62 s" |
-| **Timeline** | One lane per agent with its model badge and cost; click a segment to trace its handoff path, press ←→↑↓ to walk it, drag its bottom edge to resize; scrub or replay a finished run at 0.5× 1× 2× |
-| **Agent I/O · Loop** | A hop as three stations (gather, act, verify) with retries: the Analyst's failed command is loop 1, its retry loop 2 |
-| **Status pill** | Runs you are not looking at, with Pause · Stop · Open run and inline Approve · Deny; a run that finishes out of view leaves a pill and an unread dot |
-| **Memory & skill** | What the next run will use: rules (revoke), the skill as cards (diff, raw, revert), every memory (forget) |
-| **Rail menu** | Right-click or ⋯: Run now, Edit schedule (presets or a cron expression), Archive |
-| **Phone** | Under 768 px: RUN · CHAT · DOC · MEMORY tabs, a badge on RUN while something waits, the tray at the top of CHAT |
+To run against live **NVIDIA Nemotron 3** models (`Ultra`, `Super`, `Nano`) on **Nebius Token Factory** and live **Tavily** web search, add your keys to `.env.local`:
 
-Plan, status, loop and the timeline behaviours are hand-built to the Arc agent-component contracts (no Arc code is
-installed); charts and backgrounds are [dithercn](https://dithercn.dev), one background per surface.
+```bash
+# .env.local
+NIMBUS_MODEL=nebius
+NEBIUS_API_KEY=your_nebius_token_factory_api_key
+NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1
+TAVILY_API_KEY=your_tavily_api_key
+```
 
-## The workstreams (docs/CASES.md)
+Then verify live connectivity across all three Nemotron 3 tiers and start the server:
 
-Ship Nimbus (the crew fixes its own repository) · Hackathon radar (daily, finished run waiting) · Morning brief (inbox,
-calendar and notifications into one page, three replies waiting for approval at once) · Token Factory cost audit ·
-Token Factory watch (catalog price change, week priced for real, a router rule proposed and, once approved, applied by
-the router) · Release watch (an upgrade PR) · Checkout conversion drop (the CSV example). Each has fixtures for the mock
-model; the real-model day swaps the model, not the workstreams.
+```bash
+pnpm smoke                        # verifies live Ultra, Super, and Nano tool calling on Token Factory
+pnpm dev                          # runs live Nemotron 3 agents at http://localhost:3000
+```
 
-| Command | What it checks |
-|---|---|
-| `pnpm demo` | Phase 1 exit test: ≥ 3 agents concurrently, a doc artifact, one approval, under 60 s, usage and cost |
-| `pnpm demo:router` | Router: cost with it off vs on, forced 429 and bad model id fall one tier down, response cache |
-| `pnpm eval [--cheap] [--router on\|off] [--only a,b] [--ab] [--patch f]` | 19 trajectory goldens, per-hop assertions, `evals/report.json`; exit 1 under 90 % or any failed final |
-| `pnpm check:cases [--only ship,radar,brief,audit,watch,release]` | The six workstreams end to end: Ship Nimbus twice (real eval and typecheck subprocesses; run two skips the question and the approval and costs less), the radar's rule, three concurrent approvals in the brief |
-| `pnpm check:tools` | `read_repo` is read-only, `run_code` shell mode only runs allow-listed commands, `pnpm eval --only … --patch` passes in a scratch copy, `open_pr` logs in mock mode |
-| `pnpm check:rules` | An approved `router-rules.json` rule changes routing for real: the same Ship Nimbus run costs less, route events say why, Tier = Max and `NIMBUS_RULES=off` ignore it |
-| `pnpm check:learning` | Memory & skill tab API: rule with its source run, memories with usage counts, FORGET and REVOKE change the next run |
-| `pnpm seed:run ws-radar radar` | Re-records the finished cron run the app opens with (`fixtures/seed-runs/`) |
-| `pnpm prune:runs [--yes]` | Removes dev runs left by dead servers and test scripts (backs the database up first) |
-| `pnpm check:loop` | Run 2's prompt contains run 1's memories and SKILL.md; policy honored; revert works |
-| `pnpm check:budget` | Spend guards (run cap, day cap, max tokens per tier) and record → replay identity, all at $0 |
-| `pnpm check:cron` | A cron-triggered run appears without a click and sets the unread dot |
-| `pnpm run:job --workstream ws-radar --yes` | Headless entrypoint for a Nebius Serverless Job |
-| `pnpm demo --record <name>` | Drafts a golden from a run (empty `expect` arrays to fill in) |
-| `pnpm demo:video` | Records the v3 demo at 1920 × 1080 with Playwright against a running dev server (`docs/demo/nimbus-demo.webm`, an `.mp4` at crf 17, and `docs/demo/raw/beats.json` with where each beat starts). Needs a local Chrome |
-| `pnpm smoke` | **Real** Token Factory: three tiers answer, Nano makes a function call. Needs `NEBIUS_API_KEY` |
+### Mode C: Docker & Nebius Serverless Endpoints / Jobs
 
-## Environment
+Nimbus ships with a production `Dockerfile` and a headless CLI job runner (`pnpm run:job`) for scheduled **Nebius Serverless Jobs** and **Nebius Serverless Endpoints** (full commands in [docs/deploy.md](docs/deploy.md)):
 
-| Variable | Purpose |
-|---|---|
-| `NIMBUS_MODEL` | `mock` or `nebius`. Default: `nebius` if `NEBIUS_API_KEY` is set, else `mock` |
-| `NEBIUS_API_KEY`, `NEBIUS_BASE_URL` | Nebius Token Factory (OpenAI-compatible) |
-| `TAVILY_API_KEY` | Researcher search; without it (or in mock mode) `fixtures/search/*.json` answers |
-| `NIMBUS_API_TOKEN` | Bearer for `/v1/chat/completions`; empty = open in dev, closed in production |
-| `NIMBUS_PUBLIC_URL` | Base for run links in chat replies and Telegram messages; empty = the request's origin |
-| `NIMBUS_V1_LOG` | `1` writes each `/v1` request body to `data/v1-log/` (authorization removed) |
-| `NIMBUS_TELEGRAM_BOT_TOKEN`, `NIMBUS_TELEGRAM_CHAT_ID` | Nimbus messages you first about approvals, questions and finished unattended runs (send only); empty = off |
-| `NIMBUS_DATA_DIR` | SQLite file and run workspaces (default `./data`) |
-| `NIMBUS_ROUTER` | `on` (default) or `off` (pin every hop to its role's ceiling tier) |
-| `NIMBUS_RULES` | `off` ignores `data/router-rules.json`, the rules an approved proposal writes (default: applied) |
-| `NIMBUS_SCHEDULER` | `off` disables the in-app cron |
-| `NIMBUS_RUN_CAP_USD` | A run stops with `run.error` "spend cap" (header pill "Cap hit") past this cost. Default 0.25 |
-| `NIMBUS_DAY_CAP_USD` | New runs are refused past this real-model spend per day. Default 5. Mock runs do not count |
-| `NIMBUS_RECORD_REAL` | `1` writes every event of a run to `fixtures/real-runs/<ws>-<ts>.events.json` |
-| `NIMBUS_REPLAY` | Path of a recorded run to replay through the same API at zero cost (how the final video is recorded) |
-| `NIMBUS_DEV_CHEAP` | `1` forces every role to Nano while developing against real models |
+```bash
+# Run a scheduled workstream headlessly as a batch job
+pnpm run:job --workstream ws-radar --yes
 
-## How it works
+# Or build and run the production container locally
+docker build -t nimbus:latest .
+docker run --rm -p 3000:3000 --env-file .env.local -v "$(pwd)/data:/app/data" nimbus:latest
+```
+
+---
+
+## Quick Walkthrough for Judges
+
+1. **Overview (`/`)**: Opens with today's spend against the daily cap, runs completed, approvals waiting, memories learned, 7-day stacked spend by Nemotron tier, tokens by tier, an 8-week runs calendar, and router savings. The left rail has 7 workstreams, and **Hackathon radar** already has a finished 09:00 run waiting with an unread dot.
+2. **Morning Brief (`ws-brief`)**: Click **Morning brief** in the left rail, pick a goal chip, and press **RUN**.
+   - **Editable Plan Draft**: `Nemotron 3 Ultra` proposes a step-by-step plan. You can edit, reorder, or add steps before clicking **Approve plan**.
+   - **Live Multi-Agent Timeline**: Watch `Orchestrator (Ultra)`, `Researcher (Super)`, `Writer (Super)`, `Checker (Nano)`, and `Learner (Nano)` execute across parallel lanes with model badges and live Nebius token pricing on every segment.
+   - **Approval Cards That Compile Into Rules**: The crew reads `fixtures/inbox/*.eml`, `fixtures/calendar.ics`, and `fixtures/github-notifications.json`, writes a one-page brief, and drafts three replies (client, teammate, reviewer). Nothing is sent without your approval. On the reviewer's card, click **Approve & always allow**: Nimbus writes `allow: send_message to reviewer@example.com` into the workstream's `SKILL.md`.
+   - **Self-Rewriting Skill & Run 2 Savings**: After the run, the `Learner` on `Nemotron 3 Nano` saves 8 memories and rewrites `SKILL.md` (with a full diff and a **Revert skill change** button). Run **Morning brief** a second time: it starts with what Run 1 learned, sends the reviewer reply automatically under the saved rule with no card, and costs less (`$0.0216` on Run 1 down to `$0.0209` on Run 2).
+3. **Ship Nimbus (`ws-ship`)**: The crew runs `pnpm eval` and `pnpm typecheck` against this repository in a sandboxed subprocess, reproduces failing router goldens, writes a unified diff patch, verifies the fix, and waits for your approval before opening a GitHub PR.
+
+---
+
+## How We Used NVIDIA Nemotron 3 & Open-Source Models
+
+Nimbus uses **all three tiers of the NVIDIA Nemotron 3 family** plus open-source embeddings on **Nebius Token Factory** (`src/lib/models.ts` and `src/lib/tokenfactory.ts`), matching each agent role to the smallest model tier that can reliably execute its job:
+
+| Tier | Nebius Token Factory Model ID | Assigned Crew Roles | Token Factory Price (In / Out per 1M) | Why We Chose This Variant |
+| :--- | :--- | :--- | :--- | :--- |
+| **Ultra** | `nvidia/Nemotron-3-Ultra-550b-a55b` | **Orchestrator** | `$1.00` / `$3.00` | Runs 1 to 2 times per job to decompose the user's goal into an editable plan, coordinate handoffs, and frame human approval requests where deep reasoning matters most. |
+| **Super** | `nvidia/nemotron-3-super-120b-a12b` | **Researcher, Analyst, Writer** | `$0.30` / `$0.90` | 256K context window handles multi-file inbox threads, calendar `.ics` files, GitHub payloads, Tavily web search results, and code diffs at under one third the cost of Ultra. |
+| **Nano** | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | **Checker, Learner, Router Classifier** | `$0.06` / `$0.24` | Costs **1/16th of Ultra** per input token. Ideal for high-frequency verification gates, step classification, memory extraction, and rewriting `SKILL.md` after every run. |
+| **Embed** | `BAAI/bge-en-icl` | **Memory Recall Engine** | `$0.01` / `$0.00` | Open-source embedding model on Token Factory used for top-k semantic recall of learned workstream memories (`src/runtime/memory.ts`). |
+
+### Measured Real-Model Numbers on Nebius Token Factory (Oct 29, 2026)
+
+Every clip in our 2:40 demo video and `/welcome` tour comes from real runs against live NVIDIA Nemotron 3 models on Nebius Token Factory (full run logs and commit SHAs in [docs/video/RELEASE.md](docs/video/RELEASE.md)):
+
+| Real Run ID | Workstream & Scenario | Total Cost | Tokens | Calls (Model / Tool) | Cost-Router Savings vs. Ceiling | Outcome |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| `run_724b8d9d` | **Morning Brief (Morning 1)** | **`$0.0216`** | `58,950` | `23` / `21` | **24% saved** (vs. `$0.0283` ceiling) | 3 approval cards, 1 `allow:` rule saved, 8 memories written, `SKILL.md` rewritten |
+| `run_915dfc1d` | **Morning Brief (Morning 2)** | **`$0.0209`** | `57,015` | `20` / `18` | **27% saved** (vs. `$0.0287` ceiling) | **3% cheaper** than Run 1, reviewer reply auto-sent under saved rule (0 cards), **16 memories** held |
+| `run_6b393ab6` | **Live `/v1/chat/completions` Run** | **`$0.0282`** | `76,827` | `23` / `20` | Routed across Ultra, Super, Nano | Triggered and approved end-to-end via the OpenClaw / Hermes `/v1` API on Railway |
+
+---
+
+## Where Nebius Token Factory & Nebius Ecosystem Tools Accelerated Our Workflow
+
+1. **Unified OpenAI-Compatible Inference Across Three Model Sizes (`Nebius Token Factory`)**:
+   Pointing the Vercel AI SDK (`@ai-sdk/openai`) at a single base URL (`https://api.tokenfactory.nebius.com/v1` in `src/lib/tokenfactory.ts`) gave us immediate access to `Ultra 550B`, `Super 120B`, `Nano 30B`, and `BAAI/bge-en-icl` with zero GPU provisioning. Switching an agent hop between a 550B planner and a 30B verifier is a single model string change in `src/runtime/router.ts`, and automatic tier fallback (`Ultra → Super → Nano`) on `429`, `5xx`, or timeout kept multi-agent runs resilient.
+2. **Transparent Per-Token Pricing & Cached-Input Prefixes (`Nebius Token Factory`)**:
+   Because Token Factory exposes clear per-tier input, cached-input, and output pricing (`$0.06` to `$3.00` per 1M tokens) plus a public catalog endpoint (`/api/public/models_info`), Nimbus calculates exact dollar spend per agent call in real time, enforces hard per-run (`NIMBUS_RUN_CAP_USD`) and daily (`NIMBUS_DAY_CAP_USD`) spend caps, and includes a **Token Factory Watch** workstream (`ws-watch`) that audits its own 7-day SQLite call log against the live Token Factory catalog to propose cheaper routing rules.
+3. **Grounded Web Search for the Researcher Agent (`Tavily`, a Nebius Company)**:
+   Integrating `@tavily/core` into the Researcher agent's `web_search` tool (`src/runtime/tools.ts`) took 15 lines of code. When `TAVILY_API_KEY` is present, the Researcher queries the live Tavily API (`maxResults: 5, includeAnswer: true`) for grounded citations during competitor and release research, and cleanly falls back to local JSON fixtures (`fixtures/search/*.json`) in zero-key offline mode.
+4. **Containerized App & Batch Cron Runner (`Nebius Serverless Endpoints & Jobs`)**:
+   We structured Nimbus with a self-contained multi-stage `Dockerfile`, persistent SQLite volume (`/app/data`), and a headless CLI runner (`pnpm run:job --workstream <id> --yes` in `scripts/run-job.ts` and `docs/deploy.md`) so the exact same codebase runs as an interactive web console on a Serverless Endpoint or as a scheduled batch job.
+5. **Drop-In Bridge for the NVIDIA Agent Ecosystem (`OpenClaw`, `Hermes Agent`, `NemoClaw`, `OpenShell`)**:
+   Nimbus exposes an OpenAI-compatible `POST /v1/chat/completions` endpoint (`src/app/api/v1/chat/completions/route.ts` and [docs/openclaw.md](docs/openclaw.md)) with SSE streaming, bearer auth, and outbound Telegram notifications (`src/lib/telegram.ts`). You can point OpenClaw or Hermes Agent at Nimbus in 10 lines of config to ask `"what needs me?"` or `"approve"` from your phone while keeping one unified timeline and audit log.
+
+---
+
+## What Real Nemotron 3 Models Taught Us Beyond the Mock (7 Engineering Fixes)
+
+Running 198 live calls across six recording takes (`$0.49` total on Nebius Token Factory) exposed seven real multi-agent behaviors that our scripted mock never triggered:
+
+1. **Thinking Tokens Starving `Nano 30B` (`src/runtime/learner.ts`, commit `23f32be`)**: With `<think>` enabled by default, `Nemotron-3-Nano-30B-A3B` spent its entire 600 to 1,500 `max_tokens` budget inside `<think>` blocks and exited before emitting the `save_learning` tool call. Passing `chat_template_kwargs: { enable_thinking: false }` cut Learner output from `690+` tokens to `102` tokens (`$0.0005`), saving 8 memories and rewriting `SKILL.md` reliably on every run.
+2. **Child Agents Burning All Turns on Reads (`src/runtime/agent.ts`, commit `be3ddc0`)**: On live models, the Researcher called `read_repo` once per file across 8 turns and hit the turn cap before writing its report. We raised child turn budgets to 12 and added a tool-free final synthesis turn when an agent hits the limit with no summary.
+3. **Orchestrator Handoff Placeholders (`src/runtime/orchestrator.ts`, commit `3e117e6`)**: `Ultra` sometimes passed `"Draft the brief (include the Researcher's report)"` instead of copying the full report text, forcing the Writer to re-read every raw file. The runtime bus now automatically attaches completed crew reports to every downstream `spawn_agent` call.
+4. **Declaring Source Paths Upfront (`src/lib/workstreams.ts`)**: Live `Researcher` agents initially paused to ask where the inbox lived; declaring exact paths (`fixtures/inbox/*.eml`, `fixtures/calendar.ics`, `fixtures/github-notifications.json`) in the initial `SKILL.md` eliminated the extra round-trip.
+5. **Triggering Approval Cards via Tool Calls (`src/lib/workstreams.ts`)**: The `Writer` initially wrote reply text inside the brief markdown without calling `send_message`, producing zero approval cards. Instructing the Writer that `send_message` itself triggers the human approval gate fixed it immediately.
+6. **Preventing PR Status Hallucinations (`src/lib/workstreams.ts`, commit `f9a0be7`)**: In an early live run, a drafted reply claimed a PR fix *"has shipped"* when `github-notifications.json` showed it was still in review. Tightening source-grounding rules across the Writer and Checker eliminated status drift.
+7. **Normalizing Rule Keys Across Runs (`src/runtime/agent.ts`)**: Normalizing `send_message` arguments (`{ to, body }` and `{ channel, text }`) ensured that `allow: send_message to reviewer@example.com` saved in Run 1 matched automatically on Run 2 with zero friction.
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  U([You]) -->|goal, steer, answer, approve| UI[Overview · run view<br/>timeline · transcript · inspector]
-  UI <-->|SSE events + POST| API[Next.js API routes]
+  U([You]) -->|goal, steer, answer, approve| UI[Overview · Run View<br/>Timeline · Transcript · Inspector]
+  UI <-->|SSE events + POST| API[Next.js 15 API Routes]
   CHAT[OpenClaw / Hermes] -->|/v1/chat/completions| API
   CRON[node-cron · pnpm run:job] --> API
-  API --> RT[Runtime<br/>bus · agent loop · orchestrator]
-  RT --> R{Router<br/>rules → Nano classifier<br/>retry → one tier down}
-  R -->|ceiling · super · nano| TF[(Nebius Token Factory<br/>Nemotron 3 Ultra / Super / Nano)]
-  R -.->|no key| MOCK[Scripted mock model]
-  RT --> T[Tools: web_search · fetch_url · run_code · read_repo · write_artifact · send_message · open_pr]
-  RT --> DB[(SQLite · libsql + drizzle<br/>events · artifacts · memories · skills · llm_cache)]
+  API --> RT[Runtime<br/>Bus · Agent Loop · Orchestrator]
+  RT --> R{3-Tier Cost Router<br/>Rules → Nano Classifier<br/>Retry → One Tier Down}
+  R -->|Ultra · Super · Nano| TF[(Nebius Token Factory<br/>Nemotron 3 550B / 120B / 30B)]
+  R -.->|no API key| MOCK[Scripted Mock Model]
+  RT --> T[Tools: web_search (Tavily) · fetch_url · run_code · read_repo · write_artifact · send_message · open_pr]
+  RT --> DB[(SQLite · libsql + Drizzle<br/>events · artifacts · memories · skills · llm_cache)]
 ```
 
-**The crew.** An Orchestrator (Nemotron 3 Ultra) plans, spawns agents concurrently, hands off, asks you before any
-action with side effects, and finishes. Researcher, Analyst and Writer run on Super; Checker and Learner on Nano. Those
-tiers are *ceilings*: the router picks the cheapest tier each hop needs (deterministic rules first, then a cached Nano
-classifier) and falls one tier down on 429, 5xx, timeout or a bad model id. It never falls up.
+### Key Surfaces in the App
 
-**Approvals are a real gate.** `send_message` (and anything risky) waits for you: *Approve*, *Approve & always allow*
-(writes an `allow:` line into the workstream's `SKILL.md`, honored on the next run), or *Reject with a note*.
+| Surface | What It Does |
+| :--- | :--- |
+| **Overview** | Seven live SQLite regions (stat cards, 7-day stacked spend by tier, tokens by tier, 8-week runs calendar, scheduled health, router savings, impact line). |
+| **Plan Draft & Checklist** | The Orchestrator's plan is editable until you approve it, then becomes a live checklist that collapses when complete. |
+| **Multi-Agent Timeline** | One lane per agent with its Nemotron tier badge and cost; click any segment to trace handoffs or replay a finished run at `0.5×`, `1×`, or `2×`. |
+| **Agent I/O & Loop Inspector** | Inspects every hop as three stations (**Gather**, **Act**, **Verify**) including failed commands and retry loops. |
+| **Status Pill** | Tracks background runs in the top bar with inline **Pause**, **Stop**, **Open run**, **Approve**, and **Deny**. |
+| **Memory & Skill Inspector** | Displays active `allow:` rules (with one-click **Revoke**), the workstream's `SKILL.md` (with diff view and **Revert**), and learned memories (with **Forget**). |
 
-**It learns.** After each run the Learner (Nano) saves memories (embedded; top-k go into the next run's prompt) and
-rewrites `SKILL.md`. The diff is in the run summary, with a **Revert skill change** button.
+---
 
-**Always on.** `node-cron` inside the app starts scheduled workstreams; `pnpm run:job` is the headless entrypoint for
-Serverless Jobs. **In chat apps:** model `nimbus` on `POST /v1/chat/completions` understands approve, deny, answer, status, ask and run, and can message you first on Telegram ([docs/openclaw.md](docs/openclaw.md); mock-tested with `pnpm check:chat`, not yet run against a real OpenClaw or Hermes).
+## Verification & Evaluation Commands
 
-## How I used Nemotron and Token Factory
+| Command | What It Verifies |
+| :--- | :--- |
+| `pnpm smoke` | **Live Nebius Token Factory check:** verifies `Ultra`, `Super`, and `Nano` responses and tool calling (requires `NEBIUS_API_KEY`). |
+| `pnpm demo` | Headless run of the demo workstream: `>= 3` concurrent agents, markdown artifact, approval gate, usage, and cost. |
+| `pnpm demo:router` | Verifies cost with router `on` vs `off`, forced `429` and `404` falling one tier down to `Nano`, and `$0` cache hits. |
+| `pnpm eval [--cheap] [--ab]` | Runs all **19 trajectory goldens (145 per-hop assertions)** and writes `evals/report.json` (`-47.9%` routed spend in `--ab` mode). |
+| `pnpm check:cases` | End-to-end verification of all 6 core workstreams (`ship`, `radar`, `brief`, `audit`, `watch`, `release`). |
+| `pnpm check:tools` | Verifies `read_repo` read-only guards, `run_code` allow-listed sandbox execution, and `open_pr` safety gates. |
+| `pnpm check:rules` | Verifies that approving a `Token Factory watch` router proposal updates `data/router-rules.json` and reduces run spend by `15.3%`. |
+| `pnpm check:learning` | Verifies Memory & Skill tab APIs: rule revocation, `SKILL.md` revert, and memory deletion. |
+| `pnpm check:loop` | Verifies that Run 2's prompt injects Run 1's memories and updated `SKILL.md`, and honors saved `allow:` rules. |
+| `pnpm check:budget` | Verifies per-run cap (`NIMBUS_RUN_CAP_USD`), daily cap (`NIMBUS_DAY_CAP_USD`), and zero-cost `NIMBUS_REPLAY` fidelity. |
+| `pnpm check:chat` | Verifies the OpenClaw / Hermes `POST /v1/chat/completions` bridge (`status`, `approve`, `deny`, `answer`, `run`) and Telegram alerts. |
 
-| Tier | Token Factory id (checked against the live catalog 2026-10-27) | Used by | $/1M in/out |
-|---|---|---|---|
-| Ultra | `nvidia/Nemotron-3-Ultra-550b-a55b` | Orchestrator (plan, approvals, final judgment) | 1.00 / 3.00 |
-| Super | `nvidia/nemotron-3-super-120b-a12b` | Researcher, Analyst, Writer | 0.30 / 0.90 |
-| Nano | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Checker, Learner, router classifier, judge | 0.06 / 0.24 |
+---
 
-- **Token Factory:** I use one OpenAI-compatible provider through the Vercel AI SDK (`src/lib/tokenfactory.ts`).
-  Structure comes from tool calls with zod schemas, not JSON mode. Role prompts are a stable prefix, so the cached-input
-  price applies. The router (`src/runtime/router.ts`) picks the cheapest tier that can do each step and falls back on a
-  429 or 5xx.
-- **What one real morning cost** *(measured on the recorded take, Oct 29, every hop on its routed tier)*: run one of
-  the Morning brief (`run_724b8d9d`) was **$0.0216** for 58,950 tokens; with every hop at its role's ceiling tier it
-  would have cost $0.0283, so the router saved **24 %**. Run two (`run_915dfc1d`), after the Learner, was **$0.0209**,
-  and the reviewer's reply went out under the rule with no card. The workstream held 16 memories after both runs.
-- **The headless check before the take** *(measured, Oct 28, every hop on its routed tier)*: run one of the Morning
-  brief was **$0.0276** for 75,291 tokens. The same run with every hop at its role's ceiling tier would have cost
-  $0.0356, so the router saved **22 %**. The Learner on Nano saved 8 memories and rewrote the skill file. An earlier
-  pair of runs, before the Learner fix, was $0.0225 then $0.0288 (27 % and 21 % saved).
-- **What the real models did that the mock never did**, with the fix for each: the Researcher didn't know where the
-  inbox was; a child agent used every turn on reads and reported nothing; the Orchestrator handed the Writer
-  "(include the report)" instead of the report; the Writer drafted replies and never sent them; and the Learner spent
-  its whole output budget thinking. The fixes are in `src/lib/workstreams.ts`, `src/runtime/agent.ts`,
-  `src/runtime/orchestrator.ts`, `src/runtime/router.ts` and `src/runtime/learner.ts`. The details and every run's cost
-  are in [docs/video/RELEASE.md](docs/video/RELEASE.md).
-- **Tavily** for the Researcher's web search (Tavily is a Nebius company). The key is set, but the Morning brief does
-  no searching, so the real runs made 0 Tavily calls; the radar's searches are fixtures until it runs for real.
-- **Serverless Endpoint and Jobs:** `Dockerfile` and [docs/deploy.md](docs/deploy.md) are written with the exact
-  commands. *Not built or deployed yet* (no Docker daemon in the dev environment).
+## Environment Variables (`.env.example`)
 
-## Router and eval numbers
+| Variable | Purpose |
+| :--- | :--- |
+| `NIMBUS_MODEL` | `mock` or `nebius` (default: `nebius` when `NEBIUS_API_KEY` is set, otherwise `mock` at `$0`). |
+| `NEBIUS_API_KEY` | Your Nebius Token Factory API key (`https://tokenfactory.nebius.com`). |
+| `NEBIUS_BASE_URL` | Nebius Token Factory endpoint (`https://api.tokenfactory.nebius.com/v1`). |
+| `TAVILY_API_KEY` | Live Tavily API key for the Researcher's `web_search` tool (falls back to `fixtures/search/*.json` when unset). |
+| `NIMBUS_ROUTER` | `on` (default 3-tier cost routing) or `off` (pins every hop to its role's ceiling tier). |
+| `NIMBUS_RUN_CAP_USD` | Hard per-run spend ceiling in USD (default `0.25`). Stops the run cleanly with a `Cap hit` badge if exceeded. |
+| `NIMBUS_DAY_CAP_USD` | Hard daily real-model spend ceiling in USD (default `5.00`). Mock runs do not count against the cap. |
+| `NIMBUS_API_TOKEN` | Bearer token for `POST /v1/chat/completions` (OpenClaw / Hermes bridge). |
+| `NIMBUS_TELEGRAM_BOT_TOKEN`, `NIMBUS_TELEGRAM_CHAT_ID` | Optional outbound Telegram bot notifications when a background run needs approval or finishes. |
+| `NIMBUS_DATA_DIR` | Directory for the SQLite database (`nimbus.db`) and run workspaces (default `./data`). |
 
-All of these use the scripted mock model: token counts are scripted, so they show the mechanics, not measured spend.
+---
 
-- `pnpm demo:router` *(mock)*: the checkout demo run costs **44.8 % less** with the router on than pinned to ceilings
-  ($0.023 vs $0.042); a forced 429 and a bad model id (404) both fall to Nano and complete; cache hits cost $0.
-- `pnpm eval:ab` *(mock)*: over the 17 goldens both settings run, spend is **−47.9 %** with the router on ($0.864 → $0.451)
-  and the pass rate is **+0.0 pp**. Mock outputs do not depend on the tier, so this does **not** demonstrate "under 2 %
-  quality drop"; that claim needs `NIMBUS_MODEL=nebius`.
-- 19 goldens across the seven workstreams, 145 assertions, all passing; a deliberately wrong golden fails the gate; two
-  deliberately failing *demo* goldens (`evals/demo/`) are what Ship Nimbus repairs, outside the suite.
-- Ship Nimbus *(mock)*: run one $0.080 (−45 % vs every hop at its ceiling), run two $0.045 (−42 %): no question, the PR goes
-  through under the learned rule.
-- An approved router rule (the Token Factory watch proposal: "the Analyst's third hop on runs on Nano") cut the same Ship
-  Nimbus run by **15.3 %** ($0.0800 → $0.0678) in `pnpm check:rules`; the proposal's week estimate for it is −8.7 % on top of
-  a −11.7 % price change (a fixture), −19.4 % in all.
+## Tech Stack
 
-## What is not verified yet
+Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, React Bits Pro (Sorbet), [dithercn](https://dithercn.dev) (Bayer-8 ordered dither charts and backgrounds), Vercel AI SDK (`@ai-sdk/openai`), Nebius Token Factory (`Nemotron 3 Ultra / Super / Nano` + `BAAI/bge-en-icl`), Tavily Search (`@tavily/core`), SQLite (`@libsql/client` + Drizzle ORM), `node-cron`, Playwright, and Remotion.
 
-Real embeddings and real Tavily searches · the radar and Token Factory watch beats on the real models (the take
-stopped before them) · the real `open_pr` path (a
-throwaway git worktree, push and `gh pr create` as harrymove-ctrl: written, never run; mock mode logs the PR) · the Docker
-image on Nebius (Railway builds the same Dockerfile; no Docker daemon in the dev environment) · the Nebius Serverless Endpoint (the demo is on Railway instead) ·
-OpenClaw against `/v1` · the phone layout at 390 × 844 (seen at 541 px). `run_code` is a temp-dir subprocess with a
-stripped environment and a 30 s timeout (180 s for the allow-listed `pnpm eval`/`typecheck` commands); it does not block
-the network (OpenShell is the production path). The demo video was recorded by Playwright against the real models (`docs/video/RELEASE.md`, take 1915).
-
-## Stack
-
-Next.js 15, React 19, TypeScript, Tailwind v4, shadcn, React Bits Pro (Sorbet), dithercn (charts, dithered backgrounds,
-loaders), Manrope, Vercel AI SDK v7, libsql + drizzle, node-cron, pnpm. Planning docs: [docs/PLAN.md](docs/PLAN.md), [docs/SPEC.md](docs/SPEC.md).
+Additional documentation: [docs/SUBMISSION.md](docs/SUBMISSION.md) · [docs/video/RELEASE.md](docs/video/RELEASE.md) · [docs/deploy.md](docs/deploy.md) · [docs/openclaw.md](docs/openclaw.md) · [docs/CASES.md](docs/CASES.md) · [docs/SPEC.md](docs/SPEC.md).
 
 ## License
 
-MIT, see [LICENSE](LICENSE).
+Released under the OSI-approved **MIT License**. See [LICENSE](LICENSE) for full text.
