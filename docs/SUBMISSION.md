@@ -14,6 +14,9 @@ Hackathon page: https://nebiusglobalaihackathon.devpost.com/
 - [x] Devpost story ("About the project") synced with Oct 29 live numbers and zero dashes (below)
 - [x] Devpost "Additional info" form answers and Nebius/NVIDIA feedback filled out with zero placeholders (below)
 - [x] New project started Oct 27, 2026 after the Submission Period opened
+- [x] Three doors told on `/welcome`, in the README and in the story below (web, Telegram, CLI and MCP), each with its proof line
+- [ ] Redeploy and check the three doors section on Railway at 1280 and 390 wide (verified on `pnpm dev` only so far)
+- [ ] Close the pending lines in section 6 ("Unverified") or leave them there, by name
 
 ---
 
@@ -75,8 +78,16 @@ Nothing with an outside side effect leaves without you. When the Writer wants to
 ### 4. Learning you can read and revert
 After the run finishes, a Learner agent on `Nemotron 3 Nano 30B` extracts vector memories and rewrites the workstream's `SKILL.md` file with a side-by-side diff and a one-click **Revert** button. When the job runs again the next morning, it starts with what it learned, sends the pre-approved reply automatically under your rule without interrupting you, and costs less.
 
-### 5. Same crew in your chat app (`/v1/chat/completions`)
-Nimbus exposes an OpenAI-compatible `/v1/chat/completions` endpoint, so OpenClaw, Hermes Agent, or NemoClaw can point at it with ten lines of config. You can ask `"what needs me?"`, start a run, and approve pending cards straight from your phone while every step records into the exact same web timeline.
+### 5. Three doors to the same crew
+One crew, one timeline, one set of rules, reachable from whichever door is closest:
+- **Web, the ops room.** Everything above: the plan, the lanes, the cards, the memories and the skill file, with the cost of every hop.
+- **Phone, Telegram.** Nimbus reads its own bot. `/run morning brief` becomes one progress message edited in place, and approvals and crew questions arrive as buttons (**Approve**, **Always allow**, **Reject**) that the web timeline records as `via telegram`. Tested end to end against a stub Bot API (40/40); the real run from a phone is still pending.
+- **Terminal and coding agent, `nimbus` and `nimbus mcp`.** `pnpm nimbus run checkout` follows a run as text and asks for each approval in the terminal; `nimbus mcp` is a stdio MCP server, so Claude Code, Cursor, OpenClaw or Hermes can start a run, wait for its approval, approve it and read the result. `nimbus doctor` is green against production; the CLI and MCP server pass 36/36 in mock, and the real Claude Code run is still pending.
+
+The older chat door stays: an OpenAI-compatible `/v1/chat/completions` endpoint, so OpenClaw, Hermes Agent, or NemoClaw can ask `"what needs me?"`, start a run, and approve pending cards with ten lines of config, while every step records into the same web timeline.
+
+### 6. Model-written code runs in Nebius Sandboxes
+When the crew writes Python to answer a question about your data, that code does not run on the server. Each `run_code` call goes to Nebius Token Factory Sandboxes: one disposable VM per call, from an image with pandas 3.0 and numpy, networking off, and the operation id on the timeline as a **Nebius Sandbox** chip. On production, Checkout `run_668c7252` ran three of them in 3.5 to 4.9 s each end to end, under 0.8 s of that inside the VM.
 
 ### Standing workstreams included
 - **Morning Brief:** Reads your inbox export, calendar, and GitHub notifications at 08:00 into a ranked one-page brief and holds three drafted replies in the approval tray.
@@ -84,7 +95,7 @@ Nimbus exposes an OpenAI-compatible `/v1/chat/completions` endpoint, so OpenClaw
 - **Token Factory Cost Audit & Watch:** Audits Nimbus's own SQLite call log, runs A/B trajectory evaluations (`pnpm eval:ab`), and proposes `router-rules.json` changes that cut run spend by an additional **15.3%**.
 - **Hackathon Radar:** Scheduled research using **Tavily** web search that compares updates against yesterday's memories and queues a three-bullet digest for approval.
 
-Every workstream on the live demo has at least one finished run on the real models (Oct 29, 2026, UTC), so a judge can open any of them and read the plan, the lanes, the approvals and the cost: Morning brief `run_782c6eff` (cron 08:00, $0.020) and `run_0c6cdb23` ($0.022); Hackathon radar `run_3066dc6c` (cron 09:00, $0.013); Ship Nimbus `run_ebcd619b` ($0.016, 15 model calls, 13 tool calls); Token Factory cost audit `run_876af0c5` ($0.005); Token Factory watch `run_fb68d365` ($0.046, 54 model calls); Release watch `run_85b5b8e6` ($0.027; its "open PR: Upgrade Next.js to v16.4.3" card was rejected with a note, so the gate is on record); Checkout conversion drop `run_bd1ee7a8` ($0.077, the reply to #growth approved) and, after the attached-files fix, `run_41d10ede` ($0.015, 50 s, no questions asked, six run_code calls on data.csv and inbox.csv, the #growth message approved). From 21:30 ICT on Oct 29 the crew's `run_code` executes in Nebius Token Factory Sandboxes: Checkout `run_668c7252` ($0.009, 51 s) made three run_code calls, each in a disposable VM at Nebius (image with pandas 3.0 and numpy, networking off, under 0.8 s inside the sandbox), and Agent I/O shows the **Nebius Sandbox** chip with the image and operation id on each call. Nothing on the demo is mock: `/api/budget` reports `mock: false` and every run carries real Nemotron usage events.
+Every workstream on the live demo has at least one finished run on the real models (Oct 29, 2026, UTC), so a judge can open any of them and read the plan, the lanes, the approvals and the cost: Morning brief `run_782c6eff` (cron 08:00, $0.020) and `run_0c6cdb23` ($0.022); Hackathon radar `run_3066dc6c` (cron 09:00, $0.013); Ship Nimbus `run_ebcd619b` ($0.016, 15 model calls, 13 tool calls); Token Factory cost audit `run_876af0c5` ($0.005); Token Factory watch `run_fb68d365` ($0.046, 54 model calls); Release watch `run_85b5b8e6` ($0.027; its "open PR: Upgrade Next.js to v16.4.3" card was rejected with a note, so the gate is on record); Checkout conversion drop `run_bd1ee7a8` ($0.077, the reply to #growth approved) and, after the attached-files fix, `run_41d10ede` ($0.015, 50 s, no questions asked, six run_code calls on data.csv and inbox.csv, the #growth message approved). From 21:30 ICT on Oct 29 the crew's `run_code` executes in Nebius Token Factory Sandboxes: Checkout `run_668c7252` ($0.009, 51 s) made three run_code calls on data.csv and inbox.csv, each in its own disposable VM at Nebius (an imported image with pandas 3.0 and numpy, networking off), taking 4.9, 3.5 and 3.5 s per call end to end, of which 0.63, 0.75 and 0.71 s ran inside the VM, and Agent I/O shows the **Nebius Sandbox** chip with the image and operation id on each call. The two new doors are tested in mock and wait for their real runs: the Telegram bot passes 40/40 against a stub Bot API, the CLI and MCP server pass 36/36, and `nimbus doctor` against production is green on every row it checks. Nothing on the demo is mock: `/api/budget` reports `mock: false` and every run carries real Nemotron usage events.
 
 ### Measured numbers on live Nebius Token Factory runs
 
@@ -95,6 +106,7 @@ All numbers below come from real NVIDIA Nemotron 3 runs on Nebius Token Factory 
 | **Morning Brief Run 1** (`run_724b8d9d`) | **$0.0216** | 58,950 | 23 / 21 | $0.0283 | **24%** | 1 plan, 1 brief page, 3 replies approved; saved 1 `allow:` rule |
 | **Morning Brief Run 2** (`run_915dfc1d`) | **$0.0209** | 57,015 | 20 / 18 | $0.0287 | **27%** | **3% cheaper** than Run 1; reviewer reply sent under rule with no card; **16 memories** held |
 | **Live Chat API Run** (`run_6b393ab6`) | **$0.0282** | 76,827 | 24 / 21 | N/A | N/A | Triggered and approved end to end via `/v1/chat/completions`; 8 memories saved |
+| **Sandboxes Run** (`run_668c7252`) | **$0.0092** | 20,060 | 8 / 7 | N/A | N/A | 3 `run_code` calls, each in its own Nebius Sandbox VM, 0.63 to 0.75 s inside |
 | **Unapproved sends** | **$0.0000** | 0 | 0 / 0 | N/A | N/A | Every outgoing action waited for human approval or matched an active rule |
 
 ---
@@ -113,6 +125,12 @@ The entire model layer is a single Vercel AI SDK provider (`src/lib/tokenfactory
 | **Nano** | `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` | Checker, Learner, Router Classifier | $0.06 / $0.24 | 1/16th of Ultra's input cost for high-frequency verification and memory extraction |
 
 Those role assignments act as ceilings rather than fixed tiers. Before each hop, the cost router (`src/runtime/router.ts`) checks deterministic rules and a cached Nano classifier to pick the cheapest tier that can handle the step. If a call hits a `429` rate limit, `5xx`, or timeout, the router falls one tier down (Ultra to Super to Nano) and never up, protecting both reliability and the hard per-run and per-day spend caps (`NIMBUS_RUN_CAP_USD` and `NIMBUS_DAY_CAP_USD`).
+
+### Code execution in Nebius Token Factory Sandboxes
+`run_code` talks to `https://api.tokenfactory.nebius.com/sandboxes/v1` over plain REST from Node (`src/runtime/sandbox.ts`; the official SDK is Python): `POST /files` uploads the script and the attached CSVs, `POST /instances` spawns one instance with networking off and a 60 s timeout, and `GET /operations/{id}` is polled until it returns stdout, stderr, the exit code and the elapsed time. The public catalog has `python:3.12-slim` and `node:20-slim` but no data-science image, so production imports `amancevice/pandas:slim` once (`POST /images/import`, about 17 s) and spawns by its UUID (about 3.6 s, the same as the slim image). The same API key works for models and sandboxes; the project id is the only new variable. If a sandbox call fails, the code runs locally and the timeline says so.
+
+### Three doors on one runtime
+The Telegram bot (`src/runtime/telegram.ts`, plain `fetch`, no new dependency) and the CLI with its MCP server (`bin/nimbus.mjs`, `@modelcontextprotocol/sdk`) add no second server: Telegram text goes through the same intent router as `/v1` (rules first, then the Nano classifier), and the CLI and MCP tools call the same HTTP API the web app uses. A tap on **Approve**, an `a` in the terminal and a click in the browser all resolve the same approval record.
 
 ### Zero-key judge mode and evaluation suite
 So judges can test the entire app in two minutes without API keys, `pnpm dev` runs out of the box against a deterministic scripted mock model whenever `NEBIUS_API_KEY` is unset, and switches to live Nebius Token Factory models as soon as a key is added. Every change is gated by **19 trajectory evaluation goldens (145 per-hop assertions)** and **27 end-to-end checks** (`pnpm eval`, `pnpm check:cases`, `pnpm check:rules`, `pnpm check:learning`, `pnpm check:budget`).
@@ -155,7 +173,7 @@ Finally, I learned that live per-token pricing from the API is a product feature
 
 ## What's next for Nimbus
 
-Next, I plan to move the Analyst's `run_code` step from a restricted local subprocess into isolated **Nebius Token Factory Sandboxes** and **NVIDIA OpenShell** containers right next to the models (beta access requested). I also want to fine-tune `Nemotron 3 Nano 30B` on our trajectory evaluation dataset as a dedicated, ultra-cheap Checker, deploy the container image directly on a **Nebius Serverless Endpoint** alongside scheduled **Nebius Serverless Jobs**, and bring `Nemotron 3.5 Super VL` into the Researcher and Analyst lanes so workstreams can inspect screenshots, invoices, and PDFs on the same Token Factory endpoint.
+Sandboxes now run the code the crew writes; next they run more of the work. Ship Nimbus will run its evals inside a Nebius Sandbox on a clone of the repo, each workstream will name its own image, and the crew's charts and CSVs will come back out as artifacts. Nimbus becomes an MCP client too, so the Gmail, Calendar, GitHub, Notion and Linear servers you already use arrive behind the same approval cards and rules. More doors (voice notes from Telegram, Discord, Slack) land on the same intent router, and multi-user accounts with per-user caps let a household or a class share one deployment. I also want to fine-tune `Nemotron 3 Nano 30B` on our trajectory evaluation dataset as a dedicated, ultra-cheap Checker and bring `Nemotron 3.5 Super VL` into the Researcher and Analyst lanes so workstreams can read screenshots, invoices, and PDFs on the same Token Factory endpoint. The full list is Lane 2 of [`docs/ROADMAP.md`](https://github.com/harrymove-ctrl/nimbus/blob/main/docs/ROADMAP.md).
 ```
 
 ---
@@ -212,7 +230,8 @@ For multi-agent tool calling, the three-tier Nemotron 3 family on Nebius Token F
 ```text
 1. Nebius Token Factory's OpenAI-compatible API (`https://api.tokenfactory.nebius.com/v1`): Our entire inference and embedding layer is a single Vercel AI SDK provider (`src/lib/tokenfactory.ts`), so routing across Nemotron 3 Ultra, Super, and Nano is a single string change per hop.
 2. Transparent per-token pricing and cached-input discounts: Because Token Factory exposes clear per-tier pricing, Nimbus prices every agent call live in the UI header, enforces hard per-run and daily spend caps, and runs a Token Factory Watch workstream that audits its own call log to propose cheaper routing rules.
-3. Tavily integration: Having Tavily web search in the same ecosystem made wiring grounded web research into the Researcher agent a 15-line tool definition.
+3. Nebius Token Factory Sandboxes (`https://api.tokenfactory.nebius.com/sandboxes/v1`): the crew's model-written Python runs in a disposable VM per call with networking off, from an imported image with pandas 3.0 and numpy, with the same API key as the models. On production, Checkout run_668c7252 ran three run_code calls this way, 3.5 to 4.9 s each end to end and under 0.8 s inside the VM, and the timeline shows the operation id on each call.
+4. Tavily integration: Having Tavily web search in the same ecosystem made wiring grounded web research into the Researcher agent a 15-line tool definition.
 ```
 
 ### How likely are you to recommend Nemotron on Nebius? (1 to 10)
@@ -231,7 +250,7 @@ For multi-agent tool calling, the three-tier Nemotron 3 family on Nebius Token F
 ```text
 1. Nebius Token Factory (Model IDs & Reasoning Toggle): The OpenAI-compatible endpoint and function calling across all three Nemotron 3 tiers were rock-solid across 198 live calls. Two small friction points: (a) Model ID casing is inconsistent across the catalog (`nvidia/Nemotron-3-Ultra-550b-a55b` uses mixed case, `nvidia/nemotron-3-super-120b-a12b` is all lowercase, and `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B` prefixes `NVIDIA-` in uppercase), which caused a 404 until we queried `/api/public/models_info` directly. (b) On `Nemotron-3-Nano-30B-A3B`, reasoning (`<think>`) is on by default and consumed our entire 600 to 1,500 `max_tokens` budget before emitting a required tool call. Documenting `chat_template_kwargs: { enable_thinking: false }` prominently on the model card (and exposing a first-class reasoning budget parameter) would save builders hours of debugging.
 
-2. Nebius Token Factory Fine-Tuning & Sandboxes: LoRA fine-tuning currently lists Llama and Qwen models, but adding `Nemotron-3-Nano-30B-A3B` to the fine-tuning catalog would let agent builders distill cheap, specialized Checker and Router classifiers. We also requested beta access to Token Factory Sandboxes so our Analyst agent can run `pnpm eval` and Python scripts next to the models instead of in a local subprocess.
+2. Nebius Token Factory Fine-Tuning & Sandboxes: LoRA fine-tuning currently lists Llama and Qwen models, but adding `Nemotron-3-Nano-30B-A3B` to the fine-tuning catalog would let agent builders distill cheap, specialized Checker and Router classifiers. Token Factory Sandboxes (beta) now runs our crew's run_code in production, and it was quick to wire over REST from Node. Three things would help: an official Node/TypeScript client (the SDK is Python only, so we wrote a small REST client), a public Python image with pandas and numpy (we imported `amancevice/pandas:slim` ourselves), and imported images listed under `GET /images?tag=` (today only the returned UUID finds them, so we keep it in an environment variable).
 
 3. Nebius Serverless Endpoints: Creating endpoints from a pre-built container registry works well, but adding a direct `nebius serverless deploy --dockerfile ./Dockerfile` build-and-push flow (similar to `railway up`) plus `nebius serverless logs --tail` in the CLI would make deploying Next.js/Node agent apps much faster when a local Docker daemon is unavailable.
 
@@ -257,6 +276,8 @@ Give it the job once and it runs every morning at 8:00. What makes it different 
 2. The crew runs on a live visual timeline, one row per agent, with model badges and real-time cost. Super reads and writes; Nano checks. Click any step to read the exact source it read.
 3. Every outgoing action arrives as an approval card. You can approve once, reject with a note, or click "Approve & always allow" to write a plain-text rule into the workstream's SKILL.md that you can revoke anytime.
 4. After each run, a Learner agent on Nano saves vector memories and rewrites SKILL.md with a diff and a Revert button.
+5. Code the crew writes runs in a disposable Nebius Sandbox VM with networking off, never on the server.
+6. Three doors to the same crew: the web ops room, your own Telegram bot (approvals as buttons), and the nimbus CLI with an MCP server for Claude Code or Cursor.
 
 Measured on our recorded live take on Nebius Token Factory (Oct 29):
 - Morning 1: $0.0216 (58,950 tokens), saving 24% vs. pinning every step to its ceiling model ($0.0283).
@@ -321,3 +342,39 @@ Live tour: https://nimbus-production-6f7b.up.railway.app/welcome
 Repo (MIT): https://github.com/harrymove-ctrl/nimbus (`pnpm dev` runs with no keys)
 Three Nemotron 3 tiers on Nebius Token Factory: Ultra plans, Super writes, Nano checks and learns.
 ```
+
+---
+
+## 6. Unverified (keep this list honest)
+
+Say "mock-tested" or "pending" for each of these until a real run exists, and move a line out only with its run id or transcript.
+
+- **Telegram, real run from a phone: pending.** Only the mock test exists: `pnpm check:telegram` 40/40 against a stub Bot API. The bot token was not on Railway when this was written.
+- **MCP, real run from Claude Code against production: pending.** Only the mock test exists: `pnpm check:cli` 36/36, which drives `nimbus mcp` with the SDK's client.
+  - PLANNER PLACEHOLDER, replace this line: "Real MCP run: `docs/mcp/<transcript>.md`, run `run_<id>` on production (trigger api)."
+- **CLI, real `nimbus run checkout` against production: pending.** `nimbus doctor` against production is real (every row green, the optional Telegram row not set); the `nimbus run` example in `docs/CLI.md` is on a local server.
+- **`/v1/chat/completions` with a real OpenClaw or Hermes client: not done.** `run_6b393ab6` was started and approved over the endpoint itself, not from either client.
+- **Sandboxes scope.** Only `run_code` runs in Nebius Sandboxes. The Ship Nimbus `shell` commands (`pnpm eval`, `pnpm typecheck`) still run as an allow-listed subprocess on the server.
+- **`/welcome` three doors section on Railway: not checked yet.** Verified on `pnpm dev` (mock) at 1280 and 390 wide (`docs/ui-ux-qa/welcome-*.png`); Lighthouse not run on it.
+
+---
+
+## 7. Gallery images to upload (Devpost: 3:2, up to 15)
+
+The twelve 3:2 frames in `docs/gallery/` (3600 x 2400 JPEG, real screenshots from the recorded take, made by `docs/gallery/nimbus-gallery.html`), in this order:
+
+1. `01-hero.jpg`: the headline and the ops room, the crew that asks before it acts.
+2. `02-crew.jpg`: one row per agent on the live timeline, a model badge on every hop.
+3. `03-agent-io.jpg`: click a segment and read exactly what that agent read.
+4. `04-brief.jpg`: the morning brief, inbox, calendar and GitHub on one page.
+5. `05-approvals.jpg`: the approval cards, nothing leaves without you.
+6. `06-rules.jpg`: one rule saved in SKILL.md by recipient, revocable.
+7. `07-memory.jpg`: what it learned, memories and the rewritten skill file.
+8. `08-run-two.jpg`: the next morning, cheaper, the ruled reply sent with no card.
+9. `09-nebius.jpg`: priced per step, every call to api.tokenfactory.nebius.com.
+10. `10-measured.jpg`: what one morning cost, measured on the recorded take.
+11. `11-chat-app.jpg`: the same crew from a chat app over the OpenAI-compatible endpoint.
+12. `12-try-it.jpg`: try it in two minutes, `pnpm dev` with no keys.
+
+Not made yet, worth adding as frames 13 and 14 once the footage exists (nothing staged): the Telegram approval card from the real phone run, and a terminal frame of `nimbus doctor` plus `nimbus run checkout` against production. `docs/ui-ux-qa/welcome-doors-1280.png` (688 x 1053, not 3:2) is QA evidence of the `/welcome` section, not a gallery frame.
+
