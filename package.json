@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@10.28.0",
+  "bin": {
+    "nimbus": "bin/nimbus.mjs"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -30,7 +33,9 @@
     "prune:runs": "node --env-file-if-exists=.env.local --import tsx scripts/prune-dev-runs.mts",
     "prune:seed": "node --env-file-if-exists=.env.local --import tsx scripts/prune-seed.mts",
     "check:rules": "node --env-file-if-exists=.env.local --import tsx scripts/check-rules.mts",
-    "sandbox:probe": "tsx scripts/sandbox-probe.mts"
+    "sandbox:probe": "tsx scripts/sandbox-probe.mts",
+    "nimbus": "node bin/nimbus.mjs",
+    "check:cli": "node --import tsx scripts/check-cli.mts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.79",
@@ -38,6 +43,7 @@
     "@hugeicons/core-free-icons": "^4.3.5",
     "@hugeicons/react": "^1.1.10",
     "@libsql/client": "^0.18.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "@tavily/core": "^0.7.14",
     "ai": "^7.0.154",
     "class-variance-authority": "^0.7.1",
