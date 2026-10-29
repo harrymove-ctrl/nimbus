@@ -43,3 +43,15 @@ directory on the demo server, and the app shows it. One integration, no new depe
 `pnpm sandbox:probe` prints `ok <hostname>` and a `data.csv` line; a real Checkout run on the demo shows the Nebius
 Sandbox chip in Agent I/O for the Analyst's `run_code`; `pnpm eval --cheap` (mock) stays 6/6; with the project id
 unset the app behaves exactly as before.
+
+## Images with pandas and numpy (measured 2026-10-29)
+
+The public catalog has no data-science image, so production imports one once and pins its UUID:
+
+1. The first `run_code` with `NIMBUS_SANDBOX_IMAGE_PYTHON=amancevice/pandas:slim` triggers `POST /images/import` from
+   docker.io and runs by the returned UUID (about 17 s including the import and pull).
+2. Spawning by that UUID directly takes about 3.6 s, the same as `python:3.12-slim`, with pandas 3.0 and numpy 2.5.
+   Production therefore sets `NIMBUS_SANDBOX_IMAGE_PYTHON` to the UUID (`f5f498d8-b384-33c5-8ac9-f95459624559` in
+   this project; UUIDs are per project, import your own). The imported image does not appear under `GET /images?tag=`,
+   so keep the UUID in the environment, not the tag.
+3. The `run_code` description tells the crew that pandas and numpy exist in the sandbox, no pip and no network.

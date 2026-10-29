@@ -17,7 +17,7 @@ const agentBrief = z.object({ role, brief: z.string() });
 export const SCHEMAS = {
   web_search: z.object({ query: z.string() }),
   fetch_url: z.object({ url: z.string() }),
-  run_code: z.object({ language: z.enum(["python", "node", "shell"]), filename: z.string().optional(), code: z.string() }),
+  run_code: z.object({ language: z.enum(["python", "node", "shell"]).optional(), filename: z.string().optional(), code: z.string() }),
   write_artifact: z.object({ artifactId: z.string(), kind: z.enum(["doc", "code"]), title: z.string(), language: z.string().optional(), content: z.string() }),
   send_message: z.object({ channel: z.string(), text: z.string() }),
   read_repo: z.object({ action: z.enum(["read", "list", "diff", "changed"]), path: z.string().optional(), ref: z.string().optional() }),
@@ -38,7 +38,7 @@ export type ToolName = keyof typeof SCHEMAS;
 const DESCRIPTIONS: Record<ToolName, string> = {
   web_search: "Search the web (Tavily). Returns title, url and snippet for each result.",
   fetch_url: "Fetch a page and return its readable text (first 20k characters).",
-  run_code: "Run a short Python or Node script in an isolated sandbox (a Nebius Token Factory Sandbox when configured, networking off) that already contains the attached data files (e.g. data.csv). Standard library only: no pandas, numpy or npm packages; parse CSV with the csv module or fs. 30 s timeout. language \"shell\" runs one allow-listed command in the repository: pnpm eval [--only <golden>] [--patch <artifact>], pnpm eval:ab, pnpm typecheck, git apply --check <artifact>, git diff.",
+  run_code: "Run a short Python or Node script in an isolated sandbox (a Nebius Token Factory Sandbox when configured, networking off) that already contains the attached data files (e.g. data.csv). Python 3 has pandas and numpy in the Nebius sandbox (the csv module always works); Node 20 has no npm packages. No network, no pip or npm install. 60 s timeout. language \"shell\" runs one allow-listed command in the repository: pnpm eval [--only <golden>] [--patch <artifact>], pnpm eval:ab, pnpm typecheck, git apply --check <artifact>, git diff.",
   write_artifact: "Create or update a document or code artifact. Calling it again with the same artifactId creates the next version.",
   send_message: "Send a message to a channel. Always needs the person's approval.",
   read_repo: "Read the repository, read-only: action read (a file), list (a directory), diff (git diff, optionally of one path or against a ref) or changed (files changed since HEAD). Never writes.",
@@ -127,14 +127,14 @@ export type RunCodeResult = { ok: boolean; exitCode: number | null; stdout: stri
  * this server. Otherwise, or if the sandbox call fails, it runs as a local subprocess: a per-run temp workspace,
  * stripped environment (no API keys), 30 s timeout, output capped. The result says which one happened (`where`).
  */
-export async function runCode(ctx: RunCtx, i: { language: "python" | "node" | "shell"; filename?: string; code: string }): Promise<RunCodeResult> {
+export async function runCode(ctx: RunCtx, i: { language?: "python" | "node" | "shell"; filename?: string; code: string }): Promise<RunCodeResult> {
   mkdirSync(ctx.workspace, { recursive: true });
   if (i.language === "shell") return { ...(await runShell(ctx, i.code)), where: "local" };
   // The model sometimes labels Python as node (or the reverse); the code itself is unambiguous, so trust it.
   const script = { language: sniffLanguage(i.language, i.code), filename: i.filename, code: i.code };
   if (script.language !== i.language) script.filename = i.filename?.replace(/\.(py|js|mjs)$/i, script.language === "python" ? ".py" : ".js");
   if (sandboxEnabled()) {
-    const file = (i.filename ?? (i.language === "python" ? "script.py" : "script.js")).replace(/[^\w.-]/g, "_");
+    const file = (script.filename ?? (script.language === "python" ? "script.py" : "script.js")).replace(/[^\w.-]/g, "_");
     // the run's attached files (copied into the workspace at run start, usage-7d.csv included), else the sample CSVs
     const names = ctx.attached?.length ? ctx.attached : readdirSync(fixturesDir()).filter((n) => n.endsWith(".csv"));
     const files = names.map((n) => ({ path: n, content: readFileSync(existsSync(path.join(ctx.workspace, n)) ? path.join(ctx.workspace, n) : fixturesDir(n)) }));
@@ -150,11 +150,13 @@ export async function runCode(ctx: RunCtx, i: { language: "python" | "node" | "s
   return runLocal(ctx, script);
 }
 
-function sniffLanguage(declared: "python" | "node", code: string): "python" | "node" {
+function sniffLanguage(declared: "python" | "node" | undefined, code: string): "python" | "node" {
+  // The model sometimes omits the language (the schema allows it): decide from the code, Python when unsure.
   const py = /^\s*(import \w+(\s+as\s+\w+)?|from \w+ import|def \w+\(|print\()/m.test(code) && !/\b(const|let|var)\s+\w+\s*=|require\(|=>|console\./.test(code);
   const js = /\b(const|let|var)\s+\w+\s*=|require\(|=>|console\.|module\.exports/.test(code) && !/^\s*(def \w+\(|from \w+ import)/m.test(code);
   if (declared === "node" && py) return "python";
   if (declared === "python" && js) return "node";
+  if (declared !== "python" && declared !== "node") return js && !py ? "node" : "python";
   return declared;
 }
 
