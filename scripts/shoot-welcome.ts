@@ -17,6 +17,13 @@ async function main() {
     console.log(`${w}px: load ${load} ms, scrollWidth ${scrollW}`);
     await page.close();
   }
+  // reduced motion: no loop autoplays, each shows its poster with the browser's play control
+  const page = await browser.newPage({ viewport: { width: 1280, height: 800 }, colorScheme: "dark", reducedMotion: "reduce" });
+  await page.goto(BASE + "/welcome", { waitUntil: "load" });
+  await page.waitForTimeout(1500);
+  const rm = await page.evaluate(() => [...document.querySelectorAll("video")].map((v) => ({ paused: v.paused, controls: v.controls })));
+  console.log(`reduced motion: ${rm.every((v) => v.paused && v.controls) ? "ok" : "FAIL"} (${rm.length} loops paused with controls)`);
+  await page.close();
   await browser.close();
 }
 void main();
