@@ -1,7 +1,7 @@
 // The run's attached data files: the sample CSVs in fixtures/, any files the run was started with, and (for the cost
 // audit and Token Factory watch) a 7 day export of the app's own model usage. They are copied into the run workspace
 // at run start and named once in every agent's first prompt, so nobody searches the web for data.csv.
-import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { and, asc, eq, gte } from "drizzle-orm";
 import { dataDir, getDb, schema } from "@/db";
@@ -108,7 +108,25 @@ export async function prepareAttachments(ctx: RunCtx, inputFiles: string[] = [])
   return [...names].sort();
 }
 
-/** The one sentence every agent sees. "In your workspace" reads true locally and in a Nebius Sandbox (/work). */
-export function attachedSentence(files: string[]) {
-  return files.length ? `Attached files in your workspace (read them with run_code, never search the web for them): ${files.join(", ")}` : "";
+/** The header line of a CSV, so the crew uses the real column names instead of guessing (KeyError: 'card_id'). */
+function csvColumns(file: string): string {
+  try {
+    const head = readFileSync(file, "utf8").split(/\r?\n/, 1)[0] ?? "";
+    return head.length > 0 && head.length <= 200 ? head : "";
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * The one sentence every agent sees. "In your workspace" reads true locally and in a Nebius Sandbox (/work). With the
+ * workspace given, each CSV carries its columns, and the crew is told that every run_code call starts fresh.
+ */
+export function attachedSentence(files: string[], workspace?: string) {
+  if (!files.length) return "";
+  const named = files.map((f) => {
+    const cols = workspace && f.toLowerCase().endsWith(".csv") ? csvColumns(path.join(workspace, f)) : "";
+    return cols ? `${f} (columns: ${cols})` : f;
+  });
+  return `Attached files in your workspace (read them with run_code, never search the web for them): ${named.join("; ")}. Each run_code call starts in a fresh sandbox with these files only: print what the next step needs, or save results with write_artifact; a file you wrote in an earlier call is gone.`;
 }

@@ -253,7 +253,7 @@ export function Overview({
         <section className={card} aria-label="Impact">
           <h2 className={eyebrow}>Impact · this week</h2>
           <p className="text-[15px]/[24px] text-neutral-100">
-            <b>{d.impact.prs}</b> pull requests opened · <b>{d.impact.messages}</b> messages sent · <b>{d.impact.docs}</b> documents produced · <b>{usd(d.impact.savedUsd, 2)}</b> saved by the router · about <b>{hours ? `${hours} h ` : ""}{mins} min</b> of your time
+            <b>{d.impact.prs}</b> pull requests opened · <b>{d.impact.messages}</b> messages approved · <b>{d.impact.docs}</b> documents produced · <b>{usd(d.impact.savedUsd, 2)}</b> saved by the router · about <b>{hours ? `${hours} h ` : ""}{mins} min</b> of your time
           </p>
           <p className="mt-1 text-[12px]/[18px] text-neutral-400">
             The time is an estimate: a per-workstream figure for doing that work by hand, counted once per finished run ({d.impact.runs} runs). Everything else is counted from the run logs.

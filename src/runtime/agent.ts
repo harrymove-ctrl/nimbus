@@ -60,7 +60,7 @@ export function firstPrompt(ctx: RunCtx, brief: string, role?: AgentRole) {
   if (ctx.skill.trim()) parts.push(`SKILL.md for this workstream:\n${ctx.skill.trim()}`);
   if (ctx.memories.length) parts.push(`Memories from earlier runs:\n${ctx.memories.map((m) => `- ${m}`).join("\n")}`);
   parts.push(`Goal: ${ctx.goal}`);
-  const attached = attachedSentence(ctx.attached ?? []);
+  const attached = attachedSentence(ctx.attached ?? [], ctx.workspace);
   if (attached) parts.push(attached);
   parts.push(`Your brief: ${brief}`);
   return parts.join("\n\n");

@@ -226,7 +226,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
         <ChevronUp className="size-4" />
       </button>
       {(trace && trace.size > 1) || canScrub ? (
-        <div className={cx("z-20 flex items-center gap-1.5 text-[12px] font-bold text-neutral-200", fill ? "flex-wrap justify-end border-b border-white/10 px-3 py-1.5" : "absolute right-11 top-2")}>
+        <div className={cx("z-20 flex items-center gap-1.5 text-[12px] font-bold text-neutral-200", fill ? "flex-wrap justify-end border-b border-white/10 px-3 py-1.5" : "absolute right-11 top-1.5 rounded-full bg-neutral-950/85 p-1 ring-1 ring-white/10 backdrop-blur-sm")}>
           {trace && trace.size > 1 && (
             <button type="button" data-cuelume-close="" data-cuelume-emphasis="subtle" onClick={onClearSelection} className="rounded-full bg-white/10 px-2.5 py-1 hover:bg-white/16" title="Esc clears the trace">
               Tracing {trace.size} lanes · clear
