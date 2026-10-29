@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { WORKSTREAMS } from "@/lib/workstreams";
 import { checkDayBudget } from "@/runtime/budget";
-import { startRun } from "@/runtime/source";
+import { getRun, startRun } from "@/runtime/source";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,5 +36,10 @@ export async function GET(req: Request) {
   const db = await getDb();
   const q = db.select({ id: schema.runs.id, status: schema.runs.status, trigger: schema.runs.trigger, startedAt: schema.runs.startedAt, costUsd: schema.runs.costUsd }).from(schema.runs);
   const rows = await (wsId ? q.where(eq(schema.runs.workstreamId, wsId)) : q).orderBy(desc(schema.runs.startedAt)).limit(10);
+  // A run that says "running" but is not in memory died with its server process (a redeploy mid-run): show it, and
+  // store it, as stopped, so history never lists a run that is running forever.
+  const orphans = rows.filter((r) => r.status === "running" && !getRun(r.id));
+  for (const r of orphans) r.status = "stopped";
+  if (orphans.length) void Promise.all(orphans.map((r) => db.update(schema.runs).set({ status: "stopped" }).where(eq(schema.runs.id, r.id)))).catch(() => {});
   return Response.json({ runs: rows });
 }
