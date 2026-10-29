@@ -81,19 +81,21 @@ The mock checks are green after every fix: eval 19/19, check:cases 27/27, budget
 
 None of the six recording attempts produced a full take. Attempts 1 and 2 stopped on real-model behaviour (1, 5). Attempts 3 to 5 stopped on recorder assumptions taken from the mock scripts. Attempt 6 recorded run one in full and stopped in run two (8). Every product bug found along the way is fixed and committed (1 to 6). The one thing left is in the recorder (7). The data directories of all five attempts are kept under `data/`.
 
-## Video (final render on the real-model take 1915, 2026-10-29; rev 6 locked "Lock them")
+## Video (final render, rev 7: real footage only, 2026-10-29)
 
-Script rev 6, board rev E, music rev D. Two compositions at 1920 × 1080, 30 fps, 120 BPM: NimbusFull (88 bars) and NimbusX (22 bars).
+Script rev 7 (the user: "Cut them, real scatter"), board rev F, music rev D refitted. Two compositions at 1920 × 1080, 30 fps, 120 BPM: NimbusFull (80 bars) and NimbusX (22 bars).
+
+**The rev 7 cut.** Rev 6 played the mock take 1258 in two scenes the real take never reached: scene 15 (the radar and the status pill, 5 bars) and scene 18 (the Token Factory watch, 3 bars). Rev 7 cuts both, so every frame of footage in both cuts is the real-model take 1915, and `video/src/take-1258.ts` is deleted. The full cut drops from 2:56 to 2:40; the scenes before chapter 4 (2:04) keep their times, and everything after it is 16 s earlier. The orbit's third stop reads "ONE HISTORY" (the web run) instead of "STATUS PILL", and its whip lands on the phone stack. The music is refitted so the S72 entry stays on 2:04, the finale lands on the terminal (2:24) and the track's own ending on 2:40.
 
 ### Files
 
 | File | Duration | Size | Picture | Audio |
 |---|---|---|---|---|
-| `video/out/nimbus-full.mp4` | 2:56.1 | 89.1 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.8 LUFS, −1.8 dBTP |
-| `video/out/nimbus-full-4k.mp4` | 2:56.1 | 204.1 MB | 3840 × 2160, h264 crf 17 (`--scale=2`, footage upscaled 2×) | AAC 256k, −13.8 LUFS, −1.8 dBTP |
+| `video/out/nimbus-full.mp4` | 2:40.1 | 79.7 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.8 LUFS, −1.6 dBTP |
+| `video/out/nimbus-full-4k.mp4` | (rendering) | (rendering) | 3840 × 2160, h264 crf 17 (`--scale=2`, footage upscaled 2×) | AAC 256k, (rendering) |
 | `video/out/nimbus-x.mp4` | 0:44.1 | 16.4 MB | 1920 × 1080, h264 crf 17 | AAC 256k, −13.7 LUFS, −1.8 dBTP |
-| `docs/demo/preview/nimbus-full-preview.mp4` | 2:56.1 | 21.4 MB | 1280 × 720 | −13.8 LUFS, −1.8 dBTP |
-| `docs/demo/preview/nimbus-x-preview.mp4` | 0:44.1 | 4.3 MB | 1280 × 720 | −13.7 LUFS, −1.8 dBTP |
+| `docs/demo/preview/nimbus-full-preview.mp4` | 2:40.1 | 18.8 MB | 1280 × 720 | −13.8 LUFS, −1.6 dBTP |
+| `docs/demo/preview/nimbus-x-preview.mp4` | 0:44.1 | 4.2 MB | 1280 × 720 | −13.7 LUFS, −1.8 dBTP |
 | `docs/demo/gallery/gallery-1.png` … `gallery-5.png` | — | — | 1920 × 1080, from `nimbus-full.mp4` | — |
 | `docs/demo/preview/motion-frames.png` | — | — | one still per motion scene (12) | — |
 
@@ -103,8 +105,8 @@ Gallery frames (SUBMISSION.md "Devpost gallery"):
 1. Frame 200 (0:06.7): the hook, "every run." in the orb loop.
 2. Frame 1260 (0:42): the real timeline with its Orchestrator, Researcher and Writer rows, "One row per agent".
 3. Frame 2283 (1:16.1): the client's approval card, the drawn tick on Approve.
-4. Frame 4760 (2:38.7): the three Nemotron tiles, the Token Factory endpoint line, and "One morning: $0.0216 · 24 % saved by the router".
-5. Frame 4290 (2:23): the phone stack on the live Railway chat run.
+4. Frame 4280 (2:22.7): the three Nemotron tiles on the scatter of real calls, the Token Factory endpoint line, and "One morning: $0.0216 · 24 % saved by the router".
+5. Frame 3990 (2:13): the phone stack on the live Railway chat run.
 
 ### Take and numbers
 
@@ -115,9 +117,7 @@ Gallery frames (SUBMISSION.md "Devpost gallery"):
   - Scene 13: run two.
   - Scene 17: the web run started from chat.
   - The X clip's plan, lanes, gate and run two.
-- **Mock footage (take 1258):**
-  - Scene 15, the radar and status pill: the real take never reached the pill's approval.
-  - Scene 18, the Token Factory watch: no proposal on the real run.
+- **Mock footage: none.** Rev 7 cut the two scenes that played the mock take 1258 (above). OCR finds no "mock" and no "scripted" on any frame; the word fixtures/ on screen is the demo inbox's folder path in the real plan, Agent I/O and skill file, and no footage or number is scripted.
 - **Phone stack (scene 16, X scene 6):** the live Railway chat run on the real models, `docs/video/chat-transcript-real.json` (run_6b393ab6, $0.0282).
 - **Numbers on screen, all from take 1915** (above), and they match the footage under them:
   - The plan estimate and "The whole morning": $0.0216.
@@ -126,7 +126,7 @@ Gallery frames (SUBMISSION.md "Devpost gallery"):
   - The learned chip as the take shows it: 6 memories and 1 rule.
   - Metric Morph: run one's 23 calls, hop by hop.
   - The proof line: "One morning: $0.0216 · 24 % saved by the router".
-  - Scatter Bloom plots the dev database's mock call log, with no count shown.
+  - Scatter Bloom (scene 19) plots every real Token Factory call: the usage events of the runs with model `nebius` in the six real-take databases (`data/real-take-20261028`, `20261028b`, `20261028c`, `20261028d`, `20261029`, `20261029b`), 198 calls in 11 runs between 21:45 and 02:01 ICT, exported by `video/scripts/export-calls.py` to `video/src/datasets/calls.json` (`"models": ["nebius"]`, with the source list). Nothing from `data/nimbus.db`. Its x axis runs 21:00 to 03:00 and its caption reads "Every real model call · time of day × cost"; no count is shown.
 - **Known:**
   - The real Writer's drafts end with a placeholder signature ("[Your Name]") on the approval cards. It is the last body line, directly above the buttons, so it stays in frame; a product fix is queued.
   - The 4K master upscales the 1080p takes 2×.
@@ -136,14 +136,14 @@ Gallery frames (SUBMISSION.md "Devpost gallery"):
 The user's own Suno generation, variant A "Glassy Arpeggio" (`video/public/audio/music-full.mp3`, 208 s; gitignored and not in the public repo).
 
 `video/scripts/fit-music.py` stretches it from its measured 122.09 BPM to 120 (pitch kept) and cuts it onto the bar lines:
-- **Full cut:** entries on 0:12, 0:38, 1:16 (frame 2280, the first Approve), 2:04 and 2:40, and the track's own ending on 2:56.
+- **Full cut:** entries on 0:12, 0:38, 1:16 (frame 2280, the first Approve) and 2:04, the finale on 2:24 (the terminal), and the track's own ending on 2:40.
 - **X clip:** entries on 0:08 and 0:23 (frame 690).
 
 The bed sits about −18 LUFS under footage, ducks 3 dB under every sound cue and comes back +3 dB on the drop and the finale (`docs/video/music.md` "Fit").
 
 ### Sound effects
 
-The cue sheet is `docs/video/sfx.md` (rev E), rendered offline by `video/scripts/make-sound.mjs`:
+The cue sheet is `docs/video/sfx.md` (rev E, moved for rev 7), rendered offline by `video/scripts/make-sound.mjs`:
 - **UI sounds:** the app's own [cuelume](https://www.npmjs.com/package/cuelume) cues (0.2.8, MIT).
 - **Transitions:** designed in Tone.js (MIT) for this video. These are original sounds, so no third-party licence applies.
 

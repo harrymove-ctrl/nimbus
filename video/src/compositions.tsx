@@ -217,23 +217,17 @@ function fullCues(): Cue[] {
   add(F.memory.from + b(4), "open-subtle", -26);
   add(F.run2.from + 10, "ready-subtle", -22);
   add(F.run2.from + b(3), "success", -20);
-  // 14 Ch 4, 15 radar + pill
+  // 14 Ch 4: the orbit whips into the phone stack
   add(F.ch4.from, "orbit-swell", -20);
   add(F.ch4.from + ORBIT.whip - 8, "orbit-suck", -18);
-  add(F.radar.from, "navigate", -24);
-  add(F.radar.from + b(2) + 10, "attention", -20);
-  add(F.radar.from + b(4) + momentFrame("pillApprove", b(1), MOMENTS.pillApprove), "success", -20);
   // 16 chat: a tap per sent message, the reply's ready, success on "Approved"
   stackArrivals(STACK_FULL.length).forEach((f, i) => {
     const last = i === STACK_FULL.length - 1;
     const newest = STACK_FULL[i][STACK_FULL[i].length - 1];
     add(F.chat.from + f, last ? "success-strong" : newest.role === "user" ? "tap" : "ready-subtle", last ? -18 : -24);
   });
-  // 17 web run (hard cut), 18 watch
+  // 17 web run (hard cut)
   add(F.chatRun.from, "cut-dry", -20);
-  add(F.watch.from, "attention", -20);
-  add(F.watch.from + momentFrame("watch", b(2), MOMENTS.watchApprove), "success", -20);
-  add(F.watch.from + b(2), "count-700", -22);
   // 19 proof
   add(F.proof.from + 4, "bloom-sparkle", -22);
   PROOF.tiles.forEach((f) => add(F.proof.from + f, "sub-hit", -16));
@@ -279,10 +273,8 @@ export function NimbusFull() {
       {S("memory", <Shots shots={FULL_SCENE_SHOTS.memory!} />)}
       {S("run2", <Shots shots={FULL_SCENE_SHOTS.run2!} />)}
       {S("ch4", <OrbitFlow />)}
-      {S("radar", <Shots shots={FULL_SCENE_SHOTS.radar!} />)}
       {S("chat", <ChatStack messages={STACK_FULL} callout={PHONE_CALLOUT} />)}
       {S("chatRun", <Shots shots={FULL_SCENE_SHOTS.chatRun!} />)}
-      {S("watch", <Shots shots={FULL_SCENE_SHOTS.watch!} />)}
       {S("proof", <ProofScene />)}
       {S("terminal", <RunIt />)}
       {S("end", <LockupEnd />)}
@@ -293,7 +285,7 @@ export function NimbusFull() {
       ))}
       <MusicBed
         src={MUSIC.full}
-        footage={span(["overview", "plan", "timeline", "doc", "gate", "summary", "memory", "run2", "radar", "chatRun", "watch"])}
+        footage={span(["overview", "plan", "timeline", "doc", "gate", "summary", "memory", "run2", "chatRun"])}
         cues={FULL_CUES}
         lifts={[
           [F.gate.from + gate1, F.gate.from + gate1 + b(2)],

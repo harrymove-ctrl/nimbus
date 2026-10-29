@@ -6,7 +6,7 @@ orb opening, the name, a real app walkthrough with explainer callouts on a tilte
 designed card at each chapter, and the end card. Two compositions on a 120 BPM grid, both
 1920 × 1080 at 30 fps.
 
-- `NimbusFull`: the hackathon cut, 88 bars (5280 frames, 2:56).
+- `NimbusFull`: the hackathon cut, 80 bars (4800 frames, 2:40; script rev 7).
 - `NimbusX`: the X clip, 22 bars (1320 frames, 0:44), cut from the same shots.
 
 ```bash
@@ -40,13 +40,12 @@ only after the real-model take and the Suno tracks are in.
   demo/raw/<file>.webm [beats.json] [module]` writes `src/take.ts` (the live take) or a second
   module from a take's `beats.json` (beat windows, sub-beat clicks, callout target boxes).
   `src/beats.ts` turns those into shots, each tagged with its take, fitted to their scenes
-  at 0.5–1.5×. Today: the real-model take 1915 (`src/take.ts`) for every footage scene but the
-  radar + status pill and the Token Factory watch, which play the mock take 1258
-  (`src/take-1258.ts`, from `demo/raw/beats-20261028-1258.json`).
-- `../docs/video/chat-transcript.json`: real `/v1` replies for the phone scene,
+  at 0.5–1.5×. Today every footage scene plays the real-model take 1915 (`src/take.ts`);
+  script rev 7 cut the two scenes that played the mock take 1258.
+- `../docs/video/chat-transcript-real.json`: the live Railway chat run's replies for the phone scene,
   shown verbatim (the selection is in `src/compositions.tsx`).
-- Numbers on screen are the fixture take's until the real-model take lands; no "mock" tag
-  (script rev 6). The callout figures are in `src/shots.ts`.
+- Numbers on screen are take 1915's (`docs/video/RELEASE.md`); the callout figures are in
+  `src/shots.ts`.
 - Sound: `node scripts/make-sound.mjs` renders, offline in headless Chromium,
   every cue-sheet sound into `public/audio/sfx/` (the app's own cuelume cues,
   Tone.js-designed transitions) and the Tone.js temp score
@@ -87,9 +86,9 @@ only after the real-model take and the Suno tracks are in.
   app's `glow-cloud.tsx`, frame-pure. `FocusPull.tsx` (rejected) and `ScreenWall.tsx`
   (replaced by Phone Stack) are not in the cut.
 - `src/datasets/`: real rows for the motion scenes, written by
-  `python3 scripts/export-calls.py` (read-only on `data/nimbus.db` and the take's database,
-  `TAKE_DB` / `TAKE_RUN` in the script): every model call (Scatter Bloom, the proof's count
-  and spend) and the take's run hop by hop (Metric Morph). Re-run after the real-model run.
+  `python3 scripts/export-calls.py` (read-only on the six real-take databases, `REAL_DBS`,
+  and the take's run, `TAKE_DB` / `TAKE_RUN`): every real Token Factory call (Scatter Bloom)
+  and the take's run hop by hop (Metric Morph). `data/nimbus.db` is not read.
 - `PromptRoll`, `CommentStorm`, `ColumnCut` and `AgentChat` are from rev 4 and not in this cut.
 - `src/components/snap-cn/`: snapcn scenes (MIT, ours to edit: `screen-recording` gained
   `footageRate`; `check-cycle` gained `speed`, `scale`, `fontWeight`; `word-gather` gained

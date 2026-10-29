@@ -97,7 +97,7 @@ Moved by the motion bars (same sounds): 18 attention → 2000 (the cloud turns o
 
 # Rev E cue sheet (plays in the rev E cuts)
 
-Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1 720, plan 780, timeline 1140, doc 1740, ch2 2100, gate 2160, summary 2700, ch3 3000, memory 3060, run2 3420, ch4 3720, radar 3780, chat 4080, web run 4320, watch 4440, proof 4620, terminal 4800, end 4980). Frames marked ≈ follow the take's sub-beats and move with the real-model take. The drop of the music lands on E17 (the fitted Suno track's S48 entry, measured +13 ms). With the Suno fit no cue moves: E2's riser still lands on the track's first entry at 360, and E37's impact lands under the finale.
+Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1 720, plan 780, timeline 1140, doc 1740, ch2 2100, gate 2160, summary 2700, ch3 3000, memory 3060, run2 3420, ch4 3720, chat 3780, web run 4020, proof 4140, terminal 4320, end 4500; rev F cut the radar and the watch, so E26 and E30 are gone and the rows after them moved 300 and 480 frames earlier). Frames marked ≈ follow the take's sub-beats and move with the real-model take. The drop of the music lands on E17 (the fitted Suno track's S48 entry, measured +13 ms). With the Suno fit no cue moves: E2's riser still lands on the track's first entry at 360, and E37's impact lands under the finale.
 
 | # | Frame | Scene | Moment | Sound | Source | Level | File |
 |---|---|---|---|---|---|---|---|
@@ -125,19 +125,17 @@ Frames absolute in NimbusFull (scene starts: hook 0, name 240, overview 360, ch1
 | E22 | 3000, 3011, 3021, 3031 | 11 | The four slot rolls, a step up each | short high whoosh | designed | −26 | `slot-roll.wav` **new** |
 | E23 | 3060 / 3300 | 12 | Memory opens · hover Forget | select · open subtle | cuelume | −24 / −26 | |
 | E24 | 3430 / 3600 | 13 | The learned plan · run two ends cheaper | ready subtle · success | cuelume | −22 / −20 | |
-| E25 | 3720 / ≈ 3826 | 14 | Orbit Flow draws in · winds up and whips into the radar | low swell · high suck | designed | −20 / −18 | |
-| E26 | 3780 / 3910 / ≈ 4040 | 15 | The rail · the pill needs you · approve from the pill | navigate · attention · success | cuelume | −24 / −20 / −20 | |
-| E27 | 4099, 4129, 4159, 4189, 4219 | 16 | A phone lands per message: tap for yours, ready for its replies | tap · ready subtle | cuelume | −24 | |
-| E28 | 4249 | 16 | The last phone: "Approved" | success strong | cuelume | −18 | |
-| E29 | 4320 | 17 | Hard cut to the web run | short dry impact | designed | −20 | `cut-dry.wav` **new** |
-| E30 | 4440 / ≈ 4515 / 4560 | 18 | The routing proposal · approved · the gauge counts | attention · success · count 700 | cuelume | −20 / −20 / −22 | |
-| E31 | 4624 | 19 | Scatter Bloom: the calls bloom | bells run | designed | −22 | `bloom-sparkle.wav` |
-| E32 | 4680, 4695, 4710 | 19 | A model tile lands per beat | sub hit | designed | −16 | `sub-hit.wav` |
-| E33 | 4744 | 19 | The call count and spend count up | count 700 | cuelume | −22 | `count-700.wav` |
-| E34 | 4808–4904 | 20 | The terminal types (one key per 3 f) | type | cuelume | −32 | `type.wav` |
-| E35 | 4910 | 20 | The URL line | ready | cuelume | −20 | `ready.wav` |
-| E36 | 4965–4980 | — | One beat of silence (cut into the fitted Suno track by `fit-music.py`, music.md "Fit") | — | — | — | |
-| E37 | 4980 | 21 | The end card | impact, deep | designed | −14 | `impact-deep.wav` |
+| E25 | 3720 / ≈ 3826 | 14 | Orbit Flow draws in · winds up and whips into the phone stack | low swell · high suck | designed | −20 / −18 | |
+| E27 | 3799, 3829, 3859, 3889, 3919 | 16 | A phone lands per message: tap for yours, ready for its replies | tap · ready subtle | cuelume | −24 | |
+| E28 | 3949 | 16 | The last phone: "Approved" | success strong | cuelume | −18 | |
+| E29 | 4020 | 17 | Hard cut to the web run | short dry impact | designed | −20 | `cut-dry.wav` **new** |
+| E31 | 4144 | 19 | Scatter Bloom: the calls bloom | bells run | designed | −22 | `bloom-sparkle.wav` |
+| E32 | 4200, 4215, 4230 | 19 | A model tile lands per beat | sub hit | designed | −16 | `sub-hit.wav` |
+| E33 | 4264 | 19 | The call count and spend count up | count 700 | cuelume | −22 | `count-700.wav` |
+| E34 | 4328–4424 | 20 | The terminal types (one key per 3 f) | type | cuelume | −32 | `type.wav` |
+| E35 | 4430 | 20 | The URL line | ready | cuelume | −20 | `ready.wav` |
+| E36 | 4485–4500 | — | One beat of silence (cut into the fitted Suno track by `fit-music.py`, music.md "Fit") | — | — | — | |
+| E37 | 4500 | 21 | The end card | impact, deep | designed | −14 | `impact-deep.wav` |
 
 ## X clip, rev E (frames absolute in NimbusX; scenes: hook 0, name 120, plan 240, lanes 420, ch2 540, gate 600, run2 720, chat 900, terminal 1140, end 1200)
 

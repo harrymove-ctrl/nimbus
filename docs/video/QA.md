@@ -1,3 +1,38 @@
+status: rev 7, real footage only · 2026-10-29 · the user: "Cut them, real scatter" (script rev 7, board rev F); rev 6 was locked 2026-10-28, "Lock them"
+cuts: NimbusFull 2:40 (80 bars, 4800 f) · NimbusX 0:44 (22 bars, 1320 f) · compositions 1920 × 1080, 30 fps; the 4K master is the same composition at `--scale=2`
+footage, stated plainly: **real only.**
+- every footage shot in both cuts is take 1915 (`docs/demo/raw/nimbus-demo-20261028-1915.webm`, real Nemotron models on Token Factory, 885 s): scene 3 Overview, scenes 5–10 (goal, plan, timeline, Agent I/O, brief, the four approvals, summary), 12 Memory & skill, 13 run two, 17 the web run started from chat. X: plan, lanes, the gate, run two
+- the phone stack (scene 16, X scene 6): the live Railway chat run on the real models (`docs/video/chat-transcript-real.json`, run_6b393ab6)
+- the proof scatter (scene 19): the 198 real Token Factory calls of the six real-take databases (`video/src/datasets/calls.json`, `"models": ["nebius"]`); nothing from `data/nimbus.db`
+- cut in rev 7: scene 15 (radar + status pill) and scene 18 (Token Factory watch), the two scenes that played the mock take 1258; `video/src/take-1258.ts` is deleted and `beats.ts` knows one take
+- the 4K master renders the 1080p take upscaled 2×
+numbers on screen, all from take 1915 (RELEASE.md "Measured on take 1915"): plan estimate $0.0216; "The whole morning $0.0216"; "Router savings: 24 %"; "Run two: $0.0209 · Cheaper and faster"; the learned chip as it reads in the take, "Uses 6 memories and 1 rule"; Metric Morph's bars = run one (run_724b8d9d) hop by hop, 23 calls, $0.0216; the proof line "One morning: $0.0216 · 24 % saved by the router"
+known: **the real Writer's draft ends with a placeholder signature** ("Best, [Your Name]") on the approval cards in scene 9, including the first Approve at 1:16. It is the last body line, directly above the buttons, so no framing can crop it with the buttons whole; left as the real model wrote it, product fix queued
+music: the Suno track refitted by `video/scripts/fit-music.py` to 80 bars (music.md "Fit"); the bed about −18 LUFS under footage, ducked 3 dB under every cue
+
+# QA, rev 7
+
+Measured 2026-10-29 on the rev 7 renders (1080p masters and 720p previews; the 4K row below).
+
+| Check | Result | Evidence |
+|---|---|---|
+| Duration | PASS | full 160.1 s, X 44.1 s; 19.9 s spare under 3:00 |
+| Scenes on downbeats | PASS | `layout()` in `shots.ts`, whole bars only (`onTheBeat` passes); chapter 4 at frame 3720 (2:04), the phone stack 3780, the web run 4020, the proof 4140, the terminal 4320, the end 4500 |
+| First Approve on 2280 / 690 | PASS | Frame extract: the cursor ring is still light on 2279 and the dark tick sits on Approve on **2280** (full, the client's card); the same on 689 → **690** (X). Nothing before 2:04 moved |
+| No take 1258 | PASS | `video/src/take-1258.ts` deleted, `TakeId` is `"real"` only, `tsc --noEmit` clean; the X clip's shots (xPlan, xLanes, xGate, learned, run2End) were take 1915 already |
+| Words "mock", "fixture", "scripted" | PASS · note | macOS Vision OCR on one frame per second of both cuts (160 + 44 frames): **no "mock", no "scripted"**. "fixtures/" appears 32 times, all in take 1915's own UI: the word fixtures/ on screen is the demo inbox's folder path in the real plan, Agent I/O and skill file; no footage or number is scripted (full 0:30–0:44, 0:55–0:58, 1:47–1:50; X 0:09–0:18). Left as recorded, the planner's call "A" |
+| Scatter is real | PASS | `calls.json`: 198 calls, 11 runs, `"models": ["nebius"]`, six real-take databases listed in `sources`; caption "Every real model call · time of day × cost", x axis 21:00 to 03:00 (ticks 22:00 to 02:00) |
+| Cards clear of UI text | PASS | the 27 remaining spots are unchanged from rev 6 (26 cover no text cell; `timelineB:agent-io` covers 1); the 4 cut spots are removed from `callout-layout.json` |
+| No watermark | PASS | OCR: nothing on the frame outside the story |
+| Freeze and black | PASS · note | freeze only on the end card (full 150.5–, X 40.5–). Black ≥ 0.3 s only on dark motion openings: orbs 0–0.6, hook → name 7.1–9.2, Word Gather 24–25.3, Metric Morph 90.6–91.2, Check Cycle 100.2–102, Orbit Flow 124–124.4, the phone stack 126–126.3, Scatter Bloom **138–140.5** (the real calls sit in two bands, 21:45–22:25 and 01:00–02:01, so the plane is sparse for its first 2.5 s; the points keep landing) |
+| Loudness | PASS | full −13.8 LUFS, −1.6 dBTP (LRA 8.4); X −13.7 LUFS, −1.8 dBTP (LRA 7.1); previews the same |
+| Music fit | PASS (by design) · not measured | `fit-music.py` segments (32, +2) (58, +13) (134, +10) (162, +24): the entries before 2:04 keep their rev 6 offsets; the finale's track bar S96 sits on V72 (2:24, the terminal) and the track's ending on V80 (2:40); silence 149.5–150.0 s |
+| No metronome | PASS | the Suno fit and the cue sheet only |
+| 4K master | PENDING | rendering at `--concurrency=4` |
+| Sound by ear | NOT VERIFIED | no listening in this environment |
+
+# History: the rev 6 render on take 1915 (2026-10-29 03:03, 88 bars, scenes 15 and 18 on the mock take 1258)
+
 status: locked · 2026-10-28 · "Lock them" · rev 6; final render on the real-model take 1915 (2026-10-29)
 approved: script rev 6, board rev E, music rev D · "Approve rev 6" · Gate 3 "Lock them"
 cuts: NimbusFull 2:56 (88 bars, 5280 f) · NimbusX 0:44 (22 bars, 1320 f) · compositions 1920 × 1080, 30 fps; the 4K master is the same composition at `--scale=2`
@@ -10,7 +45,7 @@ numbers on screen, all from take 1915 (RELEASE.md "Measured on take 1915"): plan
 known: **the real Writer's draft ends with a placeholder signature** ("Best, [Your Name]"; the teammate's ends "Thanks. [Your Name]") on all four approval cards in scene 9, including the first Approve at 1:16. It is the last body line, directly above the buttons, so no framing can crop it with the buttons whole; left as the real model wrote it, product fix queued
 music: the Suno track fitted by `video/scripts/fit-music.py`; the bed about −18 LUFS under footage, ducked 3 dB under every cue
 
-# QA, final (checklist.md F, build-qa.md), on the 03:03 renders
+## QA of the rev 6 render (03:03)
 
 | Check | Result | Evidence |
 |---|---|---|

@@ -1,6 +1,6 @@
 // Orbit Flow (board rev D, chapter 4), our own build, dark: three dashed orbits round
 // "Always on, wherever you are". Three stops ride the inner orbit as pills with a role-colour
-// half-dot; on the last beat the inner orbit winds up to a blur and whips into the radar.
+// half-dot; on the last beat the inner orbit winds up to a blur and whips into the phone stack.
 import { AbsoluteFill, Easing, useCurrentFrame } from "remotion";
 import { ramp } from "../components/CloudMark";
 import { beats } from "../grid";
@@ -13,7 +13,7 @@ const TILT = 0.4; // ry / rx: the orbits lie on a tilted plane
 const STOPS = [
   { label: "08:00 SCHEDULE", color: ROLE.researcher, at: 0 },
   { label: "CHAT APP", color: ROLE.writer, at: (2 * Math.PI) / 3 },
-  { label: "STATUS PILL", color: ROLE.checker, at: (4 * Math.PI) / 3 },
+  { label: "ONE HISTORY", color: ROLE.checker, at: (4 * Math.PI) / 3 },
 ];
 export const ORBIT = { windUp: beats(7), whip: beats(8) - 6 };
 

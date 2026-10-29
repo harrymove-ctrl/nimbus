@@ -1,6 +1,6 @@
-status: approved · 2026-10-28 · "Approve rev 6" · rev D (for script rev 6; the rev C map for the built rev 5 cut is in git history: f54a32a)
+status: approved · 2026-10-29 · "Cut them, real scatter" · rev D, refitted for script rev 7 (rev D approved 2026-10-28 "Approve rev 6", for script rev 6; the rev C map for the built rev 5 cut is in git history: f54a32a)
 bpm: 120 · 4/4 · key: pick by ear; keep the take whose second drop lands nearest 1:16
-length: full cut 2:56 (88 bars) + a 1-bar tail = 2:58; X clip 0:44 (22 bars) + tail
+length: full cut 2:40 (80 bars, rev 7) + a 1-bar tail = 2:42; X clip 0:44 (22 bars) + tail
 
 # How to use this in Suno
 
@@ -90,12 +90,13 @@ vocals, singing, voice, spoken word, choir, rap, humming, lyrics, vocal chops, v
 | Groove | 1:30–1:40 | 45–50 | 10 the summary | Satisfied |
 | **Calm** | 1:40–1:54 | 50–57 | 11–12 "It learns", Memory & skill | Quiet, thoughtful |
 | Groove | 1:54–2:04 | 57–62 | 13 run two | Friendly, back on its feet |
-| Playful | 2:04–2:28 | 62–74 | 14–17 always on, chat app | Conversational |
-| Build-up | 2:28–2:34 | 74–77 | 18 its own bill | Rising |
-| **Lift** | 2:34–2:40 | 77–80 | 19 the proof | Riser into the terminal |
-| Finale | 2:40–2:45.5 | 80–82¾ | 20 run it | Biggest |
-| Break | 2:45.5 | ¼ | — | One beat of silence before the end card |
-| Outro | 2:46–2:58 | 83–89 | 21 end card + 1-bar tail | One chord rings while the URL holds |
+| Playful | 2:04–2:18 | 62–69 | 14, 16, 17 always on, chat app, the web run | Conversational |
+| **Lift** | 2:18–2:24 | 69–72 | 19 the proof | Riser into the terminal |
+| Finale | 2:24–2:29.5 | 72–74¾ | 20 run it | Biggest |
+| Break | 2:29.5 | ¼ | — | One beat of silence before the end card |
+| Outro | 2:30–2:42 | 75–81 | 21 end card + 1-bar tail | One chord rings while the URL holds |
+
+Rev 7 cut scenes 15 and 18 (8 bars): the map up to 2:04 is unchanged, the build-up under scene 18 is gone, and everything from the proof on is 16 s earlier.
 
 # Section map, X clip
 
@@ -112,9 +113,9 @@ vocals, singing, voice, spoken word, choir, rap, humming, lyrics, vocal chops, v
 
 The edit nudges each drop onto its click by at most half a beat. The click times come from the take's sub-beats (`approve-1`); see board.md "From the new take".
 
-# Fit of the Suno track (2026-10-28)
+# Fit of the Suno track (2026-10-28; full cut refitted 2026-10-29 for rev 7)
 
-Track: variant A "Glassy Arpeggio", `video/public/audio/music-full.mp3`, 208.0 s, 48 kHz (gitignored). Fitted by `video/scripts/fit-music.py` into `music-full-fit.mp3` (178 s) and `music-x.mp3` (46 s), both gitignored.
+Track: variant A "Glassy Arpeggio", `video/public/audio/music-full.mp3`, 208.0 s, 48 kHz (gitignored). Fitted by `video/scripts/fit-music.py` into `music-full-fit.mp3` (162 s) and `music-x.mp3` (46 s), both gitignored.
 
 **Tempo.** The take is a steady **122.09 BPM**, not 120: a comb over the onset envelope gives 122.09 overall, and 30 s windows agree within 0.1 BPM through 150 s. Left at 122, its bars would drift 1.5 s a minute against the grid, so no single offset can hold the drops. It is time-stretched to 120 BPM first (ffmpeg `atempo` 0.98288, pitch kept; 211.6 s), and the stretched take measures 119.98 BPM.
 
@@ -133,16 +134,16 @@ Track: variant A "Glassy Arpeggio", `video/public/audio/music-full.mp3`, 208.0 s
 | 93–95 | 186.1–192.1 | A dip, then the finale at **96** (about −9.6 dB) |
 | 104 | 208.1 | The track ends (decay to 211.6) |
 
-**Full cut: four segments**, each placed so a track bar line is a video bar line (video bar V plays track bar V + Δ). They're joined by 8-frame equal-power crossfades that end on a bar line, with one beat of silence at 165.5–166.0 s.
+**Full cut: four segments**, each placed so a track bar line is a video bar line (video bar V plays track bar V + Δ). They're joined by 8-frame equal-power crossfades that end on a bar line, with one beat of silence at 149.5–150.0 s.
 
 | Video bars | Δ | Track bars | What lands where |
 |---|---|---|---|
 | V0–16 (0:00–0:32) | +2 | S2–18 | The intro under the hook and the name; the S8 entry lands on **0:12**, the cut into the laptop and the Overview (with the riser and impact-soft) |
 | V16–29 (0:32–0:58) | +13 | S29–42 | The S29–31 dip under the goal being sent; the S32 entry lands on **0:38**, as the timeline fills |
-| V29–64 (0:58–2:08) | +10 | S39–74 | The S45–47 dip under the Ch 2 card; the S48 entry lands on **1:16, frame 2280, the first Approve** (drop 2); the breakdown (quietest 1:46–1:56, building to 2:04) under Calm and run two; the S72 entry lands on **2:04**, the Ch 4 card |
-| V64–89 (2:08–2:58) | +16 | S80–105 | The groove under radar, the chat and the watch; the S93–95 dip under the proof; the S96 finale lands on **2:40**, the terminal; the track's own ending lands on **2:56**, the cut's last frame |
+| V29–67 (0:58–2:14) | +10 | S39–77 | The S45–47 dip under the Ch 2 card; the S48 entry lands on **1:16, frame 2280, the first Approve** (drop 2); the breakdown (quietest 1:46–1:56, building to 2:04) under Calm and run two; the S72 entry lands on **2:04**, the Ch 4 card, and plays under the phone stack |
+| V67–81 (2:14–2:42) | +24 | S91–105 | From the web run's hard cut: the S93–95 dip under the proof; the S96 finale lands on **2:24**, the terminal; the track's own ending lands on **2:40**, the cut's last frame |
 
-Crossfades end at 0:32 (A → B: −11.6 into the −13.5 dip), 0:58 (−11.4 / −11.7) and 2:08 (−10.0 / −10.2). The silence is at V82.75–83, the beat before the end card. Measured entries: 0:12 +16 ms, 0:38 +16 ms, 1:16 +13 ms, 2:04 −45 ms, 2:40 +205 ms. The last one is the finale's first strong hit, inside half a beat, so it isn't nudged.
+Crossfades end at 0:32 (A → B: −11.6 into the −13.5 dip), 0:58 (−11.4 / −11.7) and 2:14 (rev 7, on the web run's hard cut). The silence is at V74.75–75, the beat before the end card. Measured entries (rev 6 fit; the rev 7 segments keep each entry on the same track bar): 0:12 +16 ms, 0:38 +16 ms, 1:16 +13 ms, 2:04 −45 ms, the finale +205 ms (now on 2:24). The last one is the finale's first strong hit, inside half a beat, so it isn't nudged.
 
 Changes from the proposed fit (a single +18.5 s offset with one intro segment): that offset assumed 120 BPM. At 122.09 the 94.5 s jump would sit on 1:16, but the others would drift by up to a second. The breakdown would fall at 1:41–1:56, close to Calm. The finale would fall at 2:50 under the end card, and the track would run past 2:58. On the stretched grid the finale lands on the terminal, which is the map's "Finale: biggest". The track's own ending closes the cut, so no fade is needed inside the 2:56 (a 1.5 s fade sits on the tail).
 

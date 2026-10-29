@@ -55,14 +55,6 @@
   "x": 368,
   "y": 768
  },
- "overviewAfter:router-gauge:0": {
-  "x": 400,
-  "y": 208
- },
- "pill:status-pill:0": {
-  "x": 304,
-  "y": 352
- },
  "plan:estimate:60": {
   "x": 1232,
   "y": 432
@@ -74,10 +66,6 @@
  "plan:tools:120": {
   "x": 672,
   "y": 672
- },
- "radar:unread-dot:0": {
-  "x": 416,
-  "y": 832
  },
  "run2End:run2-cost:0": {
   "x": 656,
@@ -106,10 +94,6 @@
  "timelineB:run-cost:0": {
   "x": 1264,
   "y": 288
- },
- "watch:routing-table:0": {
-  "x": 400,
-  "y": 768
  },
  "xGate:approval-card:0": {
   "x": 784,

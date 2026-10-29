@@ -1,18 +1,15 @@
 // Every footage cut, in source seconds of its take (generated from each take's beats.json by
 // scripts/sync-take.mjs), so a new take only needs a sync and a look at the fit.
-// Two takes play in the cut: the real-model take 1915 (src/take.ts, the live beats.json) for
-// the Overview, the Morning brief run one and run two, the web run; the mock take 1258
-// (src/take-1258.ts) for the radar + status pill and the Token Factory watch, which the real
-// take never reached (RELEASE.md "Measured on take 1915").
+// Every shot plays the real-model take 1915 (src/take.ts, the live beats.json; RELEASE.md
+// "Measured on take 1915"). Script rev 7 cut the two scenes the mock take 1258 played.
 // Shots start inside their beats where the take waits; the composition plays each one
 // fitted to its scene at MIN_RATE–MAX_RATE.
 import * as REAL from "./take";
-import * as MOCK from "./take-1258";
 import type { Box } from "./take";
 
-export type TakeId = "real" | "mock";
-const TAKES = { real: REAL, mock: MOCK } as const;
-export const TAKE_FILES: Record<TakeId, string> = { real: REAL.TAKE_FILE, mock: MOCK.TAKE_FILE };
+export type TakeId = "real";
+const TAKES = { real: REAL } as const;
+export const TAKE_FILES: Record<TakeId, string> = { real: REAL.TAKE_FILE };
 export const TAKE_W = 1920;
 export const TAKE_H = 1080;
 
@@ -45,8 +42,7 @@ const landOn = (t: number, to: number, sceneS: number, atS: number): Cut => {
   return cut(t - atS * rate, to);
 };
 
-// Board rev E scenes → source windows. Comments say what each window shows (take 1915 unless
-// marked mock).
+// Board rev E scenes → source windows. Comments say what each window shows (all take 1915).
 export const SHOTS = {
   // 3 Overview: cards count up, the spend chart, the router gauge (also inside the laptop).
   // From 6 s in: the boot overlay and the list's loading placeholders are gone by then
@@ -75,15 +71,8 @@ export const SHOTS = {
   // 13 the next morning: the plan with the learned chip, then the end of run two (91 s run)
   learned: cut(at("brief2-plan-arrives"), end("brief2-plan-arrives")),
   run2End: cut(end("brief2-run") - 6, end("brief2-run")),
-  // 15 (mock 1258) radar from the rail, the status pill, the approve from the pill
-  radar: cut(at("radar", "mock"), at("radar", "mock") + 4, "mock"),
-  pill: cut(at("status-pill", "mock") + 1.5, at("status-pill", "mock") + 7.5, "mock"),
-  pillApprove: cut(at("pill-approve", "mock"), at("pill-approve", "mock") + 3, "mock"),
   // 17 the run started from chat, in the web timeline (trigger "chat")
   chatRun: cut(end("chat-run") - 6, end("chat-run")),
-  // 18 (mock 1258) Token Factory watch: the routing table and its approval, then the Overview
-  watch: cut(at("watch-approve", "mock") - 5, at("watch-approve", "mock") + 1, "mock"),
-  overviewAfter: cut(at("overview-after", "mock"), at("overview-after", "mock") + 3, "mock"),
   // X clip variants
   xPlan: cut(at("brief1-plan-arrives") - 0.4, end("brief1-approve-plan")),
   xLanes: cut(76, 82),
@@ -102,8 +91,6 @@ export const MOMENTS = {
   approve3: at(SUB.approve3),
   alwaysAllow: at("always-allow"),
   learnedPlan: at("brief2-plan-arrives"),
-  pillApprove: at("pill-approve", "mock") + 0.6,
-  watchApprove: at("watch-approve", "mock"),
 };
 
 export const MIN_RATE = 0.5;

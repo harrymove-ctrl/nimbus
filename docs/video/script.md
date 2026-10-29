@@ -1,10 +1,10 @@
-status: approved · 2026-10-28 · "Approve rev 6" · rev 6
-revision: rev 6 · rebuilt from the v3 opening the user liked, with the real app explained scene by scene and a designed motion scene at every turn. Supersedes rev 5 (approved 2026-10-27) and the rev D motion layer.
+status: approved · 2026-10-29 · "Cut them, real scatter" · rev 7 (rev 6 approved 2026-10-28, "Approve rev 6")
+revision: rev 7 · every mock frame cut: scenes 15 (radar + status pill) and 18 (Token Factory watch) are gone, and the proof scatter plots real Token Factory calls only. Rev 6 · rebuilt from the v3 opening the user liked, with the real app explained scene by scene and a designed motion scene at every turn. Supersedes rev 5 (approved 2026-10-27) and the rev D motion layer.
 why: the user's words, 2026-10-28: "full planning to add and not write mock in video … i feel in demo app intro not good why u dont copy nimbus-demo-v3.mp4 version … Dont ask like Dana story for your story it could be neutral and for user … reuse all CSS global i design … Full cut (2:54) … not understanding at all"
 track: Personal AI
-cuts: full (2:56, 1920 × 1080, 88 bars + 1-bar audio tail) · X clip (0:44, 22 bars, cut from full)
+cuts: full (2:40, 1920 × 1080, 80 bars + 1-bar audio tail) · X clip (0:44, 22 bars, cut from full)
 grid: 120 BPM · 1 bar = 2.0 s = 60 frames at 30 fps
-length rule: Devpost (confirmed by the user, 2026-10-28): "a 3-minute or shorter public YouTube video showing your project working — how you used Nebius Token Factory and NVIDIA Nemotron". The master is 2:56; the "+" column is not used for the submission (it stays for an optional longer cut on X or YouTube after the deadline).
+length rule: Devpost (confirmed by the user, 2026-10-28): "a 3-minute or shorter public YouTube video showing your project working — how you used Nebius Token Factory and NVIDIA Nemotron". The master is 2:40 (rev 7); the "+" column is not used for the submission (it stays for an optional longer cut on X or YouTube after the deadline).
 captions / transcript: none. Words live in callouts, the opening sentence, the chapter cards and the end card.
 on-screen words: about 240.
 numbers: **no "mock" tag anywhere in the final.** The final render happens after one recorded real-model run of Morning brief on Oct 29 (see "Footage and numbers"); every number on screen comes from that run or from the dev database's real call log. Until then, preview renders carry one small corner watermark, "preview · fixture numbers · temp music", and nothing else.
@@ -23,6 +23,18 @@ No voice.
 | Motion scenes with invented colour fields (the green-blue blur) | Every motion scene sits on the app's own surfaces: neutral-950, the app's dither texture, mint, the role colours, and the boot sky. No colour field, no blur blob |
 | The app footage is flat | Footage rides a tilted 3D camera (8–14°, soft edge focus), like the reference still the user sent |
 | "not understanding at all" | Every chapter opens with a card that says the one idea in plain words, then the footage proves it, then a callout names each part |
+
+## Rev 7 (2026-10-29, the user via the planner: "Cut them, real scatter")
+
+| Rev 6 | Rev 7 |
+|---|---|
+| Scene 15, radar + status pill (5 bars), played the mock take 1258 | Cut. The real take never reached the pill's approval |
+| Scene 18, Token Factory watch (3 bars), played the mock take 1258 | Cut. The real run made no routing proposal |
+| The orbit's third stop read "STATUS PILL" and whipped into the radar | It reads "ONE HISTORY" (scene 17) and whips into the phone stack |
+| Scene 19's scatter plotted the dev database's mock call log | It plots the 198 real Token Factory calls of the six real-take databases (11 runs, 21:45 to 02:01 ICT); caption "Every real model call · time of day × cost" |
+| 88 bars, 2:56 | 80 bars, 2:40. Chapter 4 starts at 2:04 as before; everything after it is 16 s earlier |
+
+The other scenes keep their numbers, so the board, the cue sheet and QA.md still match.
 
 ## The two word components
 
@@ -46,16 +58,14 @@ No voice.
 | 11 | 1:40–1:42 | 1 | Ch 3 card | A sentence that finishes itself: the word beside a ticked box rolls up out of a slot four times, then the line steps back to 80 % and rests. | "It learns ☑ your priorities" → "your tone" → "your rules" → "your tools" → "every run." | `check-cycle` (free) | — |
 | 12 | 1:42–1:54 | 6 | Memory & skill | The Memory & skill tab: memory cards, the skill file, the rule card; hover Forget. | Callouts: "Memories · what it learned from your morning" · "Its own how-to · rewritten after each run" · "Forget or revoke · you stay in charge" | footage `memory-skill` | +2 |
 | 13 | 1:54–2:04 | 5 | Run two | The next morning's plan with the learned chip; the ruled reply goes out with no card; the header cost is lower than run one. | Callouts: "Uses what it learned · no repeat questions" · "Run two: $[real] · cheaper and faster" | footage `brief2-learned` → `brief2-summary` | +2 |
-| 14 | 2:04–2:06 | 1 | Ch 4 card | Three dashed orbits round the line, three labelled stops riding the inner one; it winds up to a blur and whips into the footage. Dark. | "Always on, wherever you are" · stops "08:00 SCHEDULE" · "CHAT APP" · "STATUS PILL" | `OrbitFlow` (ours) | — |
-| 15 | 2:06–2:16 | 5 | Radar + pill | The rail shows an unread dot "ran 09:00"; open the digest; switch workstream; the status pill shows "Radar · 1 waiting"; approve from the pill. | Callouts: "Ran on schedule · while you were away" · "Status pill · answer from anywhere in the app" | footage `radar` → `status-pill` | +2 |
-| 16 | 2:16–2:24 | 4 | Chat app | Phone screens rise out of a blur one after another, each pushing the stack back: "what needs me?" → the reply · "run morning brief" → "Needs your OK · 2 more waiting" · "approve all" → "Approved". Every screen is the real `/v1` exchange from `docs/video/chat-transcript.json`. | Callout: "Same crew in your chat app · via OpenClaw or Hermes" | `phone-stack` (free) | +1 |
-| 17 | 2:24–2:28 | 2 | Web run | Hard cut to the web timeline: the same run, trigger "chat". | Callout: "Same run, same approvals · one history" | footage `chat-run` | +1 |
-| 18 | 2:28–2:34 | 3 | Its own bill | Token Factory watch: the crew's proposal table of which Nemotron tier each role uses; approve; the router gauge moves. | Callouts: "It watches its own bill · proposes cheaper routing" · "Approved · the saving shows up here" | footage `watch` | +1 |
-| 19 | 2:34–2:40 | 3 | How we used Nebius | A scatter of every model call from the real call log blooms onto a tilted plane (x time of day, y cost, colour = tier); the three model-id tiles land on it one per beat, each with its job; under them the endpoint line. | Tiles: `Nemotron-3-Ultra-550b-a55b` "plans" · `nemotron-3-super-120b-a12b` "reads, writes, researches" · `NVIDIA-Nemotron-3-Nano-30B-A3B` "checks, learns" · line: "One endpoint · api.tokenfactory.nebius.com · [real] calls · $[real] this week" | `ScatterBloom` (ours) + `count-grid` tiles | — |
-| 20 | 2:40–2:46 | 3 | Run it | A terminal types `git clone github.com/harrymove-ctrl/nimbus && pnpm dev`, the output scrolls, the last line reads "Nimbus · http://localhost:3000"; a cursor-pinned zoom on the URL. | (the terminal is the text) | `terminal-simulator` (free, installed) | — |
-| 21 | 2:46–2:56 | 5 | End | The lockup on the boot sky, held still: the CloudMark, "Nimbus", the repo URL and `pnpm dev`, then "MIT · Nebius × NVIDIA Global AI Hackathon". | "github.com/harrymove-ctrl/nimbus" · "pnpm dev" | `Lockup` (ours) | — |
+| 14 | 2:04–2:06 | 1 | Ch 4 card | Three dashed orbits round the line, three labelled stops riding the inner one; it winds up to a blur and whips into the phone stack. Dark. | "Always on, wherever you are" · stops "08:00 SCHEDULE" · "CHAT APP" · "ONE HISTORY" | `OrbitFlow` (ours) | — |
+| 16 | 2:06–2:14 | 4 | Chat app | Phone screens rise out of a blur one after another, each pushing the stack back: "what needs me?" → the reply · "run morning brief" → "Needs your OK · 2 more waiting" · "approve all" → "Approved". Every screen is the real `/v1` exchange from `docs/video/chat-transcript-real.json`. | Callout: "Same crew in your chat app · via OpenClaw or Hermes" | `phone-stack` (free) | +1 |
+| 17 | 2:14–2:18 | 2 | Web run | Hard cut to the web timeline: the same run, trigger "chat". | Callout: "Same run, same approvals · one history" | footage `chat-run` | +1 |
+| 19 | 2:18–2:24 | 3 | How we used Nebius | A scatter of every real Token Factory call (198, from the six real-take databases) blooms onto a tilted plane (x time of day, y cost, colour = tier); the three model-id tiles land on it one per beat, each with its job; under them the endpoint line. | Tiles: `Nemotron-3-Ultra-550b-a55b` "plans" · `nemotron-3-super-120b-a12b` "reads, writes, researches" · `NVIDIA-Nemotron-3-Nano-30B-A3B` "checks, learns" · line: "One endpoint · api.tokenfactory.nebius.com · [real] calls · $[real] this week" | `ScatterBloom` (ours) + `count-grid` tiles | — |
+| 20 | 2:24–2:30 | 3 | Run it | A terminal types `git clone github.com/harrymove-ctrl/nimbus && pnpm dev`, the output scrolls, the last line reads "Nimbus · http://localhost:3000"; a cursor-pinned zoom on the URL. | (the terminal is the text) | `terminal-simulator` (free, installed) | — |
+| 21 | 2:30–2:40 | 5 | End | The lockup on the boot sky, held still: the CloudMark, "Nimbus", the repo URL and `pnpm dev`, then "MIT · Nebius × NVIDIA Global AI Hackathon". | "github.com/harrymove-ctrl/nimbus" · "pnpm dev" | `Lockup` (ours) | — |
 
-88 bars. The "+" column is the bars each scene may take if a longer master is allowed (sum +25 bars → 3:46).
+80 bars. The "+" column is the bars each scene may take if a longer master is allowed (sum +22 bars → 3:24).
 
 # X clip (0:44, 22 bars)
 
@@ -73,5 +83,5 @@ No voice.
 
 1. **Role-named contacts.** In `fixtures/inbox/`, `fixtures/inbox.csv` and the `ws-brief` / `ws-brief~2` writer fixtures, the people become roles: "Client · contract review" (was Dana), "Teammate · demo link" (was Priya), "Reviewer · bug fix" (was Sam), with neutral example addresses (`client@example.com` …). No first names anywhere on screen.
 2. **One recorded real run.** On Oct 29, after Phase 3 is green, record `pnpm demo:video` once with `NIMBUS_MODEL` set to the real tiers (the planned final-day run, moved a day earlier). The recorder writes `beats.json` with the sub-beats and callout targets as before. That take is the footage, and its costs are the `$[real]` numbers. Budget: one Morning brief run twice (run one and run two) plus the radar, watch and chat beats, about $0.50 at list prices; cap with `NIMBUS_DAY_CAP`.
-3. **The call log** for the proof scene: `video/scripts/export-mock-calls.py` becomes `export-calls.py` and reads the dev database after the real run; the tile under it says the real count.
+3. **The call log** for the proof scene: `video/scripts/export-calls.py` reads the usage events of the runs with model `nebius` in the six real-take databases (`data/real-take-20261028`, `b`, `c`, `d`, `20261029`, `20261029b`); nothing from `data/nimbus.db`.
 4. Until that take exists, the video session builds on take 1633 with the preview watermark, so the edit is final before the real footage drops in.

@@ -270,27 +270,6 @@ export const RUN2END: Shot = {
   callouts: [call("run2-cost", "Run two: $0.0209", "Cheaper and faster", "below", 0, b(2))],
 };
 
-export const RADAR: Shot = {
-  shot: "radar",
-  frames: b(2),
-  tilt: 12,
-  camera: [cam(0, 2.2, fo("unread-dot", undefined, "mock"), 1), cam(2, 2.5, fo("unread-dot", undefined, "mock"), b(2) - 2)],
-  callouts: [call("unread-dot", "Ran on schedule", "While you were away", "right", 0, b(2))],
-};
-export const PILL: Shot = {
-  shot: "pill",
-  frames: b(2),
-  tilt: 12,
-  camera: [cam(0, 2.2, fo("status-pill", undefined, "mock"), 1), cam(2, 2.5, fo("status-pill", undefined, "mock"), b(2) - 2)],
-  callouts: [call("status-pill", "Status pill", "Answer from anywhere in the app", "below", 0, b(2))],
-};
-export const PILL_APPROVE: Shot = {
-  shot: "pillApprove",
-  frames: b(1),
-  tilt: 12,
-  camera: [cam(0, 2.4, { u: 0.86, v: 0.2 }, 1), cam(2, 2.6, { u: 0.86, v: 0.2 }, b(1) - 2)],
-};
-
 export const CHAT_RUN: Shot = {
   shot: "chatRun",
   frames: b(2),
@@ -298,21 +277,7 @@ export const CHAT_RUN: Shot = {
   callouts: [call("chat-run", "Same run, same approvals", "One history", "right", 0, b(2))],
 };
 
-export const WATCH: Shot = {
-  shot: "watch",
-  frames: b(2),
-  tilt: 8,
-  camera: [cam(0, 2.0, fo("routing-table", undefined, "mock"), 1), cam(2, 2.3, fo("routing-table", undefined, "mock"), b(2) - 2)],
-  callouts: [call("routing-table", "It watches its own bill", "Proposes cheaper routing", "right", 0, b(2))],
-};
-export const OVERVIEW_AFTER: Shot = {
-  shot: "overviewAfter",
-  frames: b(1),
-  camera: [cam(0, 2.0, GAUGE_ROOM, 1), cam(2, 2.1, GAUGE_ROOM, b(1) - 2)],
-  callouts: [call("router-gauge", "Approved", "The saving shows up here", "left", 0, b(1), { inBeat: "overview-after" })],
-};
-
-// ── NimbusFull: 88 bars (script rev 6) ───────────────────────────────────────────────────
+// ── NimbusFull: 80 bars (script rev 7) ───────────────────────────────────────────────────
 
 export const FULL = layout([
   { id: "hook", bars: 4 },
@@ -329,10 +294,8 @@ export const FULL = layout([
   { id: "memory", bars: 6 },
   { id: "run2", bars: 5 },
   { id: "ch4", bars: 1 },
-  { id: "radar", bars: 5 },
   { id: "chat", bars: 4 },
   { id: "chatRun", bars: 2 },
-  { id: "watch", bars: 3 },
   { id: "proof", bars: 3 },
   { id: "terminal", bars: 3 },
   { id: "end", bars: 5 },
@@ -356,7 +319,6 @@ export const CHAPTERS = [
   { n: 2, title: CH[1], from: F.gate.from, to: F.summary.from },
   { n: 2, title: CH[1], from: after("summary"), to: F.ch3.from },
   { n: 3, title: CH[2], from: F.memory.from, to: F.ch4.from },
-  { n: 4, title: CH[3], from: F.radar.from, to: F.chat.from },
   { n: 4, title: CH[3], from: F.chatRun.from, to: F.proof.from },
 ];
 
@@ -370,9 +332,7 @@ export const FULL_SCENE_SHOTS: Partial<Record<keyof typeof F, Shot[]>> = {
   summary: [SUMMARY],
   memory: [MEMORY],
   run2: [LEARNED, RUN2END],
-  radar: [RADAR, PILL, PILL_APPROVE],
   chatRun: [CHAT_RUN],
-  watch: [WATCH, OVERVIEW_AFTER],
 };
 
 /** Scene 16's callout (the phones are not footage; its box is the front phone). */

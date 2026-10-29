@@ -3,11 +3,11 @@
 
   python3 scripts/export-calls.py      # → src/datasets/calls.json, src/datasets/run-hops.json
 
-- calls.json (Scatter Bloom, scene 19): one point per `usage` event in the dev database
-  (data/nimbus.db): minute of the day it ran (ICT), its tier, and its cost from the token counts
-  at src/lib/models.ts PRICE_PER_M. `models` lists the run models found, so a fixture-only
-  export is visible in the file (the preview watermark covers it on screen). Re-run after the
-  real-model run.
+- calls.json (Scatter Bloom, scene 19): one point per real Token Factory call, the `usage`
+  events of runs with model 'nebius' in the six real-take databases (REAL_DBS; the mock
+  fixture runs those databases also carry are left out, and data/nimbus.db is not read): its
+  minute in ICT counted from midnight of the first call's day (so a call after midnight is
+  past 1440), its tier, and its cost from the token counts at src/lib/models.ts PRICE_PER_M.
 - run-hops.json (Metric Morph, scene 10): the hops of the take's first Morning brief run
   (TAKE_DB / TAKE_RUN: the run on screen), in order, with their cost.
 
@@ -25,6 +25,8 @@ ICT_MS = 7 * 3600 * 1000
 # take 1915": run_724b8d9d, $0.0216)
 TAKE_DB = "data/real-take-20261029b/nimbus.db"
 TAKE_RUN = "run_724b8d9d"
+# every real-model take recorded (RELEASE.md), oldest first
+REAL_DBS = [f"data/real-take-{d}/nimbus.db" for d in ("20261028", "20261028b", "20261028c", "20261028d", "20261029", "20261029b")]
 
 
 def db(path):
@@ -42,15 +44,18 @@ def usage_rows(con, where="", args=()):
     return [(rid, model, t, json.loads(p)) for rid, model, t, p in con.execute(q, args)]
 
 
-rows = usage_rows(db(REPO / "data/nimbus.db"))
+rows, seen = [], set()
+for path in REAL_DBS:
+    new = [row for row in usage_rows(db(REPO / path), "and r.model = 'nebius'") if row[0] not in seen]
+    rows += new  # a run copied into a later database counts once
+    seen |= {r for r, *_ in new}
+rows.sort(key=lambda r: r[2])
 models = sorted({m for _, m, _, _ in rows})
-calls = [
-    {"min": round(((t + ICT_MS) % 86_400_000) / 60_000, 2), "tier": u["tier"], "usd": round(cost(u), 7)}
-    for _, _, t, u in rows
-]
+day0 = (rows[0][2] + ICT_MS) // 86_400_000 * 86_400_000
+calls = [{"min": round((t + ICT_MS - day0) / 60_000, 2), "tier": u["tier"], "usd": round(cost(u), 7)} for _, _, t, u in rows]
 out = ROOT / "src/datasets"
 out.mkdir(exist_ok=True)
-(out / "calls.json").write_text(json.dumps({"source": "data/nimbus.db usage events", "models": models, "runs": len({r for r, *_ in rows}), "calls": calls}) + "\n")
+(out / "calls.json").write_text(json.dumps({"source": "usage events of the 'nebius' runs", "sources": REAL_DBS, "models": models, "runs": len({r for r, *_ in rows}), "calls": calls}) + "\n")
 
 hops = usage_rows(db(REPO / TAKE_DB if not TAKE_DB.startswith("/") else Path(TAKE_DB)), "and r.id = ?", (TAKE_RUN,))
 run_hops = [{"tier": u["tier"], "usd": round(cost(u), 7)} for *_, u in hops]

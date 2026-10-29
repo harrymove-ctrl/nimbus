@@ -1,7 +1,7 @@
-status: approved · 2026-10-28 · "Approve rev 6" · rev E (for script rev 6)
-script: docs/video/script.md rev 6 (draft)
+status: approved · 2026-10-29 · "Cut them, real scatter" · rev F (for script rev 7; rev E approved 2026-10-28, "Approve rev 6")
+script: docs/video/script.md rev 7 (approved). Rev F cuts scenes 15 and 18 (the mock take 1258) and plots real calls in scene 19; the other rows are rev E's with their frames moved
 captions: none. Words live in callouts, the opening sentence, the chapter cards and the end card.
-grid: 120 BPM · 30 fps · beat = 15 f · bar = 60 f · full cut 88 bars (5280 f, 2:56) + 1-bar audio tail · X clip 22 bars (1320 f, 0:44)
+grid: 120 BPM · 30 fps · beat = 15 f · bar = 60 f · full cut 80 bars (4800 f, 2:40) + 1-bar audio tail · X clip 22 bars (1320 f, 0:44)
 supersedes: rev C/D (in git history: f54a32a, 6d4cffd). The rev C callout component and chapter chip are kept as built.
 
 # Look · rev E (the app's look, nothing invented)
@@ -32,12 +32,10 @@ supersedes: rev C/D (in git history: f54a32a, 6d4cffd). The rev C callout compon
 | 11 Ch 3 | `check-cycle` | free | Five words through the slot, one per 3 beats; rests at 80 % on the last downbeat |
 | 12 Memory | `Footage` | ours | — |
 | 13 Run two | `Footage` | ours | The learned chip ring opens the scene |
-| 14 Ch 4 | `OrbitFlow` | ours (built, rev D) | Dark; the three stops are pills with role half-dots; the wind-up whips into scene 15 |
-| 15 Radar + pill | `Footage` | ours | — |
+| 14 Ch 4 | `OrbitFlow` | ours (built, rev D) | Dark; the three stops are pills with role half-dots; the wind-up whips into the phone stack (scene 16); the third stop reads "ONE HISTORY" |
 | 16 Chat | `phone-stack` | free | Each phone screen is a rendered frame of the chat (our PhoneChat) at the message that lands; six phones, one per 2 beats, the last two hold |
 | 17 Web run | `Footage` | ours | Hard cut |
-| 18 Watch | `Footage` | ours | — |
-| 19 Proof | `ScatterBloom` + `count-grid` | ours; free, installed | Points from the real call log; tiles land per beat on the plane |
+| 19 Proof | `ScatterBloom` + `count-grid` | ours; free, installed | Points from the 198 real Token Factory calls (six real-take databases); tiles land per beat on the plane |
 | 20 Run it | `terminal-simulator` | free, installed | Cursor-pinned zoom on the URL for the last bar |
 | 21 End | `Lockup` | ours (built, rev D) | The reprise; held still (the one allowed hold) |
 
@@ -65,13 +63,11 @@ Frames are absolute in `NimbusFull`. Callout `in → out` in scene bars. Targets
 | 12 | 3060–3420 | 6 | `memory-skill` | tilt 10° | `memories` · "Memories" · "What it learned from your morning" · left · b0 → b2. `skill-file` · "Its own how-to" · "Rewritten after each run" · left · b2 → b4. `forget` · "Forget or revoke" · "You stay in charge" · left · b4 → b6 | select; open |
 | 13 | 3420–3720 | 5 | `brief2-learned` → `brief2-summary` | tilt 10° | `learned-chip` · "Uses what it learned" · "No repeat questions" · right · b0 → b2. `run2-cost` · "Run two: $[real]" · "Cheaper and faster" · below · b3 → b5 | ready; success |
 | 14 | 3720–3780 | 1 | — | — | — | orbit swell → suck |
-| 15 | 3780–4080 | 5 | `radar` → `status-pill` | tilt 12° | `unread-dot` · "Ran on schedule" · "While you were away" · right · b0 → b2. `status-pill` · "Status pill" · "Answer from anywhere in the app" · below · b3 → b5 | navigate; attention; success |
-| 16 | 4080–4320 | 4 | — (phone stack) | — | `phone` · "Same crew in your chat app" · "Via OpenClaw or Hermes" · left · b1 → b4 | tap per sent message; success strong on "Approved" |
-| 17 | 4320–4440 | 2 | `chat-run` | flat | `chat-run` · "Same run, same approvals" · "One history" · right · b0 → b2 | hard cut (designed, dry) |
-| 18 | 4440–4620 | 3 | `watch` | tilt 8° | `routing-table` · "It watches its own bill" · "Proposes cheaper routing" · right · b0 → b2. `router-gauge` · "Approved" · "The saving shows up here" · left · b2 → b3 | attention; success; count |
-| 19 | 4620–4800 | 3 | — (scatter) | plane drift | — (tiles are the text) | bloom-sparkle; sub hit per tile |
-| 20 | 4800–4980 | 3 | — (terminal) | pinned zoom b2 | — | type (cuelume, ≤ 1 per 3 f); ready on the URL line |
-| 21 | 4980–5280 | 5 | — (lockup) | still | — | silence 4965–4980; impact-deep 4980; the outro chord rings into the tail |
+| 16 | 3780–4020 | 4 | — (phone stack) | — | `phone` · "Same crew in your chat app" · "Via OpenClaw or Hermes" · left · b1 → b4 | tap per sent message; success strong on "Approved" |
+| 17 | 4020–4140 | 2 | `chat-run` | flat | `chat-run` · "Same run, same approvals" · "One history" · right · b0 → b2 | hard cut (designed, dry) |
+| 19 | 4140–4320 | 3 | — (scatter) | plane drift | — (tiles are the text) | bloom-sparkle; sub hit per tile |
+| 20 | 4320–4500 | 3 | — (terminal) | pinned zoom b2 | — | type (cuelume, ≤ 1 per 3 f); ready on the URL line |
+| 21 | 4500–4800 | 5 | — (lockup) | still | — | silence 4485–4500; impact-deep 4500; the outro chord rings into the tail |
 
 # X clip board (22 bars, 1320 f)
 

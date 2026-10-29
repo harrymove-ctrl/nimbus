@@ -28,14 +28,14 @@ def bar(s):
 
 # (video seconds the segment runs to, Δ in bars: video bar V plays track bar V + Δ)
 FULL = {
-    "seconds": 178,  # 88 bars + the 1-bar tail
+    "seconds": 162,  # 80 bars (script rev 7) + the 1-bar tail
     "segments": [
         (32, 2),  # V0–16: the intro under the hook and name; the S8 entry on V6 (0:12, into the Overview)
         (58, 13),  # V16–29: the S29–31 dip under the goal, the S32 entry on V19 (0:38, the timeline)
-        (128, 10),  # V29–64: S45–47 dip under the Ch 2 card, the S48 entry on V38 (1:16, frame 2280, the first Approve); the breakdown under Calm; S72 on V62 (2:04, Ch 4)
-        (178, 16),  # V64–89: S93–95 dip under the proof, the S96 finale on V80 (2:40, the terminal), the track's own ending on V88 (2:56)
+        (134, 10),  # V29–67: S45–47 dip under the Ch 2 card, the S48 entry on V38 (1:16, frame 2280, the first Approve); the breakdown under Calm; S72 on V62 (2:04, Ch 4) through the phone stack
+        (162, 24),  # V67–81, from the web run's hard cut: S93–95 dip under the proof, the S96 finale on V72 (2:24, the terminal), the track's own ending on V80 (2:40)
     ],
-    "silence": (165.5, 166.0),  # V82.75–83: one beat before the end card
+    "silence": (149.5, 150.0),  # V74.75–75: one beat before the end card
 }
 X = {
     "seconds": 46,  # 22 bars + the tail

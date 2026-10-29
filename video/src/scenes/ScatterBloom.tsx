@@ -1,19 +1,21 @@
-// Scatter Bloom (board rev D, scene 14), our own build: one point per model call from the
-// dev database (src/datasets/calls.json, exported from data/nimbus.db by
-// scripts/export-calls.py: real rows, nothing invented). x = the minute of the day it
-// ran, y = its cost (log), colour = its tier (the Overview's). The points bloom onto a tilted
-// plane in time order while the camera drifts; the proof tiles land on it from bar 3.
+// Scatter Bloom (board rev D, scene 14), our own build: one point per real Token Factory call
+// from the six real-take databases (src/datasets/calls.json, exported by
+// scripts/export-calls.py: real rows, nothing invented). x = the time of day it ran (the
+// whole hours round the calls, which cross midnight), y = its cost (log), colour = its tier.
+// The points bloom onto a tilted plane in time order while the camera drifts; the proof
+// tiles land on it from bar 3.
 import { AbsoluteFill, Easing, useCurrentFrame, useVideoConfig } from "remotion";
 import { ramp } from "../components/CloudMark";
 import DATA from "../datasets/calls.json";
 import { C, GROUND, MANROPE, TIER } from "../theme";
 
+type Call = { min: number; tier: string; usd: number };
 const PLANE = { w: 1800, h: 900 };
-const DAY = { from: 6 * 60, to: 23 * 60 }; // 06:00–23:00, the hours the runs fall in
+const MINS = (DATA.calls as Call[]).map((c) => c.min);
+const DAY = { from: Math.floor(Math.min(...MINS) / 60) * 60, to: Math.ceil(Math.max(...MINS) / 60) * 60 };
 const COST = { lo: Math.log10(4e-5), hi: Math.log10(2e-2) };
 const BLOOM = { from: 2, len: 64 };
 
-type Call = { min: number; tier: string; usd: number };
 const CALLS = (DATA.calls as Call[]).map((c, i) => {
   const u = (c.min - DAY.from) / (DAY.to - DAY.from);
   const v = (Math.log10(c.usd) - COST.lo) / (COST.hi - COST.lo);
@@ -22,7 +24,10 @@ const CALLS = (DATA.calls as Call[]).map((c, i) => {
   const jitter = ((i * 7919) % 97) / 97 - 0.5;
   return { x: u * PLANE.w, y: (1 - v) * PLANE.h + jitter * 10, tier: c.tier as keyof typeof TIER, at: BLOOM.from + u * BLOOM.len };
 });
-const TICKS = [8, 12, 16, 20].map((h) => ({ label: `${String(h).padStart(2, "0")}:00`, x: ((h * 60 - DAY.from) / (DAY.to - DAY.from)) * PLANE.w }));
+const TICKS = Array.from({ length: (DAY.to - DAY.from) / 60 - 1 }, (_, i) => DAY.from / 60 + 1 + i).map((h) => ({
+  label: `${String(h % 24).padStart(2, "0")}:00`,
+  x: ((h * 60 - DAY.from) / (DAY.to - DAY.from)) * PLANE.w,
+}));
 
 /** `dimFrom`: the frame the tiles start landing; the plane dims a little under them. */
 export function ScatterBloom({ dimFrom }: { dimFrom: number }) {
@@ -65,7 +70,7 @@ export function ScatterBloom({ dimFrom }: { dimFrom: number }) {
         </svg>
       </div>
       <div style={{ position: "absolute", left: 64, top: 56, fontFamily: MANROPE, fontSize: 30, fontWeight: 600, color: C.muted, opacity: ramp(frame, 20, 30) * dim }}>
-        Every model call in the log · time of day × cost
+        Every real model call · time of day × cost
       </div>
     </AbsoluteFill>
   );
