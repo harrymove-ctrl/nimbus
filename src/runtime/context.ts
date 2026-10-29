@@ -22,6 +22,8 @@ export type RunCtx = {
   /** resolves when the person approves or sends back the draft plan */
   awaitPlan(): Promise<{ action: "approve" | "revise"; steps: PlanStep[] }>;
   workspace: string;
+  /** data files copied into the workspace at run start (attachments.ts); named once in every agent's first prompt */
+  attached: string[];
   /** resolves at once unless the person paused the run (agents call it before every hop) */
   untilResumed(): Promise<void>;
   signal: AbortSignal;

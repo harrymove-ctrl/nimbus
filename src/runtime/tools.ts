@@ -133,9 +133,9 @@ export async function runCode(ctx: RunCtx, i: { language: "python" | "node" | "s
   const script = { language: i.language, filename: i.filename, code: i.code };
   if (sandboxEnabled()) {
     const file = (i.filename ?? (i.language === "python" ? "script.py" : "script.js")).replace(/[^\w.-]/g, "_");
-    const files = readdirSync(fixturesDir())
-      .filter((n) => n.endsWith(".csv"))
-      .map((n) => ({ path: n, content: readFileSync(fixturesDir(n)) }));
+    // the run's attached files (copied into the workspace at run start, usage-7d.csv included), else the sample CSVs
+    const names = ctx.attached?.length ? ctx.attached : readdirSync(fixturesDir()).filter((n) => n.endsWith(".csv"));
+    const files = names.map((n) => ({ path: n, content: readFileSync(existsSync(path.join(ctx.workspace, n)) ? path.join(ctx.workspace, n) : fixturesDir(n)) }));
     try {
       const r = await sandboxRun({ language: script.language, file, code: i.code, files, timeoutS: 60 });
       return { ok: r.ok, exitCode: r.exitCode, stdout: r.stdout, stderr: r.timedOut ? `${r.stderr}\n[sandbox: timed out]`.trim() : r.stderr, workspace: "/work", where: "nebius-sandbox", sandbox: r.sandbox };

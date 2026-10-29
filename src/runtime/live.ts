@@ -7,6 +7,7 @@ import type { AnyRunEvent, PayloadMap, ProposedAction, RunEventType, PlanStep } 
 import type { AgentRole } from "@/lib/models";
 import { modelMode } from "@/lib/tokenfactory";
 import { SpendCapError, inflight } from "./budget";
+import { prepareAttachments } from "./attachments";
 import { RunAborted, deferred, untilAborted, type ApprovalResult, type RunCtx } from "./context";
 import { runLearner } from "./learner";
 import { notifyEvent } from "./notify";
@@ -88,6 +89,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       return gated(planGate.promise);
     },
     workspace: path.join(dataDir(), "workspaces", id),
+    attached: [],
     signal,
     emit,
     script: input.workstreamId,
@@ -155,6 +157,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     const freeze = process.env.NIMBUS_FREEZE_CONTEXT === "1";
     ctx.skill = freeze ? "" : await loadSkill(input.workstreamId);
     ctx.memories = freeze ? [] : await topMemories(input.workstreamId, input.goal);
+    ctx.attached = await prepareAttachments(ctx, input.files);
     if (ctx.memories.length) ctx.script = `${input.workstreamId}~2`; // mock mode: run two plays its "~2" scripts where they exist
     await retryBusy(() => db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt, model: modelMode() }));
     emit("run.start", "orchestrator", "orchestrator", { title: input.title, workstreamId: input.workstreamId, goal: input.goal, startedAt, trigger: input.trigger ?? "manual", learned: { memories: ctx.memories.length, policies: policySection(ctx.skill).length } });

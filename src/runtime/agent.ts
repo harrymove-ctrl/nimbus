@@ -7,6 +7,7 @@ import { dataDir } from "@/db";
 import type { AgentRole } from "@/lib/models";
 import { ROLE_TIER, costUsd } from "@/lib/models";
 import { hopLabel, stripThink } from "@/lib/tokenfactory";
+import { attachedSentence } from "./attachments";
 import { RunAborted, type RunCtx } from "./context";
 import { SpendCapError, inflight, runCapUsd } from "./budget";
 import { callHop, pickTier } from "./router";
@@ -34,6 +35,8 @@ export function firstPrompt(ctx: RunCtx, brief: string) {
   if (ctx.skill.trim()) parts.push(`SKILL.md for this workstream:\n${ctx.skill.trim()}`);
   if (ctx.memories.length) parts.push(`Memories from earlier runs:\n${ctx.memories.map((m) => `- ${m}`).join("\n")}`);
   parts.push(`Goal: ${ctx.goal}`);
+  const attached = attachedSentence(ctx.attached ?? []);
+  if (attached) parts.push(attached);
   parts.push(`Your brief: ${brief}`);
   return parts.join("\n\n");
 }
