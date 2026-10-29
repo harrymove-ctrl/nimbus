@@ -19,6 +19,7 @@ import {
 import { DitherNumber } from "@/components/dithercn/dither-number";
 import { Divider } from "@/components/dithercn/divider";
 import { PlanSkeleton } from "./loading";
+import { Markdown } from "./markdown";
 import { PlanCard } from "./plan-card";
 import { Why } from "./why";
 import { buttonSm, cx, ghostButton, panel, panelBody, panelFoot, panelHead, primaryButton, secondaryButton, toolOutput, toolWell, userBubble } from "./ui";
@@ -107,7 +108,7 @@ function Item({ item, view, now, manualMinutes, onDraft, onCancelPlan, onPlan, o
           <Dot role={item.role} />
           <div className="min-w-0">
             <p className="text-[12px] font-bold uppercase tracking-wide text-neutral-400">{laneName(item.instance, item.role)}</p>
-            <p className="text-[15px]/[24px] font-medium text-neutral-100 [overflow-wrap:anywhere]">{item.text}</p>
+            <Markdown text={item.text} compact className="text-[15px]/[24px] font-medium text-neutral-100" />
           </div>
         </div>
       );
@@ -124,7 +125,7 @@ function Item({ item, view, now, manualMinutes, onDraft, onCancelPlan, onPlan, o
             <span style={{ color: to ? ROLE_COLOR[to.role] : undefined }}>{to ? laneName(to.instance, to.role) : item.to}</span>
             <span className="ms-1 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">handoff</span>
           </p>
-          <p className="text-[13px]/[19px] text-neutral-400">{item.context}</p>
+          <Markdown text={item.context} compact className="text-[13px]/[19px] text-neutral-400" />
         </div>
       );
     }
@@ -226,7 +227,7 @@ function ApprovalCard({ item, onDecide }: { item: ApprovalItem; onDecide: Props[
               <p className="text-[12px] font-bold text-neutral-400">
                 To <span className="text-neutral-100">{d.channel}</span> · {item.action.kind}
               </p>
-              <p className="text-[14px]/[21px] text-neutral-200">{d.text}</p>
+              <Markdown text={d.text ?? ""} compact className="text-[14px]/[21px] text-neutral-200" />
             </>
           ) : d?.branch ? (
             <>

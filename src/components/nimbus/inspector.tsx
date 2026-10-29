@@ -1,12 +1,13 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Check, Copy } from "lucide-react";
 import type { Workstream } from "@/lib/workstreams";
 import { ROLE_COLOR, TIER_LABEL, fmtTokens, laneName, type Artifact, type RunView } from "@/lib/run-view";
 import { InspectorSkeleton } from "./loading";
 import { MemoryTab } from "./learning";
 import { LoopView } from "./loop-view";
+import { Markdown } from "./markdown";
 import { cx } from "./ui";
 import type { SegRef } from "./timeline";
 
@@ -146,7 +147,7 @@ function ArtifactTab({ view, focus }: { view: RunView; focus?: { id: string; ver
         <span className="ms-auto text-[11px] font-bold tabular-nums text-neutral-500">v{shown.version} of {latest.version}</span>
       </div>
       <div key={`${art.id}-${shown.version}`} data-demo={art.kind === "doc" ? "brief-doc" : undefined} className="nimbus-fade min-h-0 flex-1 overflow-auto">
-        {art.kind === "doc" ? <Markdown text={shown.content} /> : <Code text={shown.content} />}
+        {art.kind === "doc" ? <Markdown text={shown.content} className="px-5 py-4 text-[15px]/[24px] text-neutral-200" /> : <Code text={shown.content} />}
       </div>
     </div>
   );
@@ -163,63 +164,6 @@ function Code({ text }: { text: string }) {
         </div>
       ))}
     </pre>
-  );
-}
-
-function inline(s: string): ReactNode[] {
-  return s.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).map((p, i) =>
-    p.startsWith("**") ? (
-      <strong key={i} className="font-extrabold text-neutral-50">
-        {p.slice(2, -2)}
-      </strong>
-    ) : p.startsWith("`") ? (
-      <code key={i} className="rounded bg-white/10 px-1 font-mono text-[0.9em]">
-        {p.slice(1, -1)}
-      </code>
-    ) : (
-      <Fragment key={i}>{p}</Fragment>
-    ),
-  );
-}
-
-const cells = (l: string) => l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
-
-function Markdown({ text }: { text: string }) {
-  // consecutive "| a | b |" lines become one table (the second line, |---|---|, is the header rule)
-  const blocks: (string | string[])[] = [];
-  for (const l of text.split("\n")) {
-    const last = blocks[blocks.length - 1];
-    if (l.trim().startsWith("|")) Array.isArray(last) ? last.push(l) : blocks.push([l]);
-    else blocks.push(l);
-  }
-  return (
-    <div className="flex flex-col gap-2 px-5 py-4 text-[15px]/[24px] text-neutral-200">
-      {blocks.map((l, i) => {
-        if (Array.isArray(l)) {
-          const [head, , ...rows] = l;
-          return (
-            <div key={i} className="overflow-x-auto rounded-lg border border-white/10">
-              <table className="w-full text-start text-[13px]/[19px]">
-                <thead className="bg-white/5 text-neutral-300">
-                  <tr>{cells(head).map((c, j) => <th key={j} className="px-2.5 py-1.5 text-start font-extrabold">{inline(c)}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {rows.map((r, j) => (
-                    <tr key={j} className="border-t border-white/8">{cells(r).map((c, k) => <td key={k} className="px-2.5 py-1.5 align-top">{inline(c)}</td>)}</tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          );
-        }
-        if (/^\d+\.\s/.test(l)) return <p key={i} className="ps-5 -indent-5">{inline(l)}</p>;
-        if (l.startsWith("# ")) return <h2 key={i} className="text-[20px]/[26px] font-extrabold text-neutral-50">{inline(l.slice(2))}</h2>;
-        if (l.startsWith("## ")) return <h3 key={i} className="mt-2 text-[13px] font-extrabold uppercase tracking-wider text-neutral-400">{inline(l.slice(3))}</h3>;
-        if (l.startsWith("- ")) return <p key={i} className="ps-4 -indent-3">• {inline(l.slice(2))}</p>;
-        if (l.trim() === "") return null;
-        return <p key={i}>{inline(l)}</p>;
-      })}
-    </div>
   );
 }
 
