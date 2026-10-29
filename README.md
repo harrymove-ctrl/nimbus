@@ -143,6 +143,15 @@ Running 198 live calls across six recording takes (`$0.49` total on Nebius Token
 
 ---
 
+## From your terminal and your coding agent (CLI and MCP)
+
+`pnpm nimbus …` (or `npx nimbus …` in the repo) drives a running Nimbus over its HTTP API: `nimbus doctor` checks the
+keys, Sandboxes, Telegram and the day cap; `nimbus run checkout` follows a run as text and asks for the plan, each
+approval and each question in the terminal; `nimbus status`, `approve`, `reject "note"` and `ws export|import` (YAML)
+do the rest. `nimbus mcp` is a stdio MCP server, so Claude Code, Cursor, OpenClaw or Hermes can start a run, wait for
+its approval, approve it and read the artifact (`pnpm nimbus mcp install claude --write`). Every command, the tool
+table and the client snippets: [docs/CLI.md](docs/CLI.md). Test: `pnpm check:cli` (mock, $0).
+
 ## Architecture
 
 ```mermaid
