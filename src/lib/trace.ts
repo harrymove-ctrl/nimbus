@@ -76,6 +76,50 @@ export const spanDur = (s: Span, nowMs?: number) => Math.max(0, (s.endMs ?? nowM
 export const isLive = (s: Span) => s.endMs === undefined;
 export const isWaitKind = (s: Span) => s.kind === "wait" || s.kind === "gate";
 
+/**
+ * The row's human title: "Search the web", "Run code · funnel.py", "Write doc · Checkout report", "Send to #growth".
+ * The raw tool id stays on the span (`tool.name`) for the card. `detail` is the part of the segment's label after
+ * the tool id ("run_code · funnel.py" gives "funnel.py").
+ */
+export function toolTitle(name: string, input: unknown, segLabel?: string): string {
+  const inp = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+  const detail = segLabel?.includes(" · ") ? segLabel.slice(segLabel.indexOf(" · ") + 3) : "";
+  const channel = typeof inp.channel === "string" ? inp.channel : "";
+  const withDetail = (head: string, d = detail) => (d ? `${head} · ${d}` : head);
+  switch (name) {
+    case "web_search":
+      return "Search the web";
+    case "fetch_url":
+      return withDetail("Read page");
+    case "run_code":
+      return withDetail("Run code");
+    case "write_artifact":
+      return withDetail(inp.kind === "code" ? "Write code" : "Write doc", detail || (typeof inp.title === "string" ? inp.title : ""));
+    case "send_message":
+      return `Send to ${channel || detail || "a channel"}`;
+    case "read_repo":
+      return withDetail("Read repo");
+    case "open_pr":
+      return withDetail("Open PR");
+    case "save_learning":
+      return "Save learning";
+    case "ask_user":
+      return "Ask you";
+    case "plan":
+      return "Plan the run";
+    case "spawn_agents":
+      return "Spawn the crew";
+    case "handoff":
+      return "Hand off";
+    case "finish":
+      return "Finish the run";
+    case "request_approval":
+      return "Ask for approval";
+    default:
+      return segLabel ?? name;
+  }
+}
+
 const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}…` : s);
 const show = (v: unknown) => (typeof v === "string" ? v : JSON.stringify(v, null, 2) ?? "");
 const bytes = (s: unknown) => (typeof s === "string" ? new TextEncoder().encode(s).length : 0);
@@ -227,7 +271,7 @@ export function buildTrace(events: AnyRunEvent[]): Trace {
           id: p.callId,
           kind: "tool",
           ...base(inst, e.agent),
-          label: seg?.label ?? p.tool,
+          label: toolTitle(p.tool, p.input, seg?.label),
           startMs: e.tMs,
           depth: parent ? 1 : 0,
           parentId: parent?.id,

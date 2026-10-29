@@ -87,6 +87,8 @@ let live: Trace;
   const modelSpans = live.spans.filter((s) => s.model && s.model.out > 0 && !s.model.cached);
   check(`tokPerS is computed in buildTrace for every model span (${modelSpans.length}) = out / (ms / 1000)`, modelSpans.length > 5 && modelSpans.every((s) => s.model!.ms !== undefined && s.model!.tokPerS !== undefined && Math.abs(s.model!.tokPerS - s.model!.out / (s.model!.ms! / 1000)) < 1e-6 && s.model!.ttftMs === undefined), modelSpans.map((s) => `${s.id} ${s.model!.ms} ${s.model!.tokPerS}`).join("\n"));
   check("a model span carries its prompt (hop 1: the brief or goal) and its output (text or the tool calls as name(args))", live.spans.filter((s) => s.model).every((s) => (s.model!.prompt ?? "").length > 0 || s.id.endsWith("-h1") === false) && live.spans.some((s) => s.model && /\w+\(\{/.test(s.model.calls.map((c) => `${c.name}(${JSON.stringify(c.input)})`).join())));
+  const titles = new Map(live.spans.filter((x) => x.tool).map((x) => [x.tool!.name, x.label]));
+  check(`tool rows have human titles and keep the raw id on the span (${[...titles].map(([n, t]) => `${n} → ${t}`).join(", ")})`, titles.get("web_search") === "Search the web" && /^Run code · \S+/.test(titles.get("run_code") ?? "") && /^Write doc · /.test(titles.get("write_artifact") ?? "") && titles.get("request_approval") === "Ask for approval" && live.spans.filter((x) => x.tool).every((x) => x.label !== x.tool!.name));
   const gate = live.spans.find((s) => s.kind === "gate");
   check(`the plan gate (${gate ? spanDur(gate) : "none"} ms until you approve) and the approval waits are spans of their own`, planGate > 0 && !!gate && spanDur(gate) >= 300 && live.spans.some((s) => s.kind === "wait" && s.wait?.what === "approval" && s.wait.decision === "approved"));
 }

@@ -5,7 +5,7 @@
 // the panel: headline, filter chips, rows with bars on a shared axis, hover cursor, drag zoom, keyboard, live growth,
 // the comparison with the workstream's last run, the export and the detail card.
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent, type ReactNode } from "react";
-import { ArrowUpRight, Box, Copy, Download, Ellipsis, Hand, Wrench, X, ZoomOut } from "lucide-react";
+import { ArrowUpRight, Box, Copy, Download, Ellipsis, FileText, FolderGit2, Globe, GitPullRequest, Hand, Link2, MessageSquare, Send, Sparkles, Terminal, Wrench, X, ZoomOut, CircleQuestionMark, type LucideIcon } from "lucide-react";
 import { useTween } from "@/hooks/use-tween";
 import type { AnyRunEvent } from "@/lib/events";
 import { ROLE_COLOR, TIER_LABEL, TIER_SHORT } from "@/lib/run-view";
@@ -20,7 +20,6 @@ import {
   fmtDur,
   fmtPct,
   fmtTok,
-  hasRunCodeIO,
   headline,
   ioBytes,
   spanCopyText,
@@ -36,6 +35,9 @@ import type { SegRef } from "./timeline";
 import { cx } from "./ui";
 
 const RED = "oklch(0.68 0.21 25)";
+// the model blue and the tool green the legend of the rows uses; orchestration calls and waits keep their own greys and amber
+const MODEL_BLUE = "oklch(0.72 0.14 250)";
+const TOOL_GREEN = "oklch(0.78 0.14 160)";
 const WAIT = "oklch(0.78 0.15 60)";
 const AXIS_H = 28;
 const ROW_H = 36;
@@ -630,10 +632,9 @@ const Row = memo(function Row({ span: s, index, d0, span_, end, lw, rw, compact,
   const dur = Math.max(0, end - s.startMs);
   const left = ((s.startMs - d0) / span_) * 100;
   const width = (dur / span_) * 100;
-  const color = s.failed ? RED : s.kind === "model" ? ROLE_COLOR[s.role] : s.kind === "tool" ? "var(--color-neutral-300)" : WAIT;
+  const color = s.failed ? RED : s.kind === "model" ? MODEL_BLUE : s.kind === "tool" ? (s.control ? "var(--color-neutral-400)" : TOOL_GREEN) : WAIT;
   const ttft = s.model?.ttftMs && dur > 0 ? Math.min(100, (s.model.ttftMs / dur) * 100) : 0;
   const tokens = s.model ? s.model.in + s.model.out : 0;
-  const sandbox = s.tool?.name === "run_code" && s.tool.where === "nebius-sandbox";
   const sub = s.kind === "model" ? `${s.agent} · ${TIER_SHORT[s.model!.tier]}${s.model?.route?.fallback ? " ↻" : s.model?.cached ? " · cached" : ""}` : s.agent;
   return (
     <div
@@ -649,8 +650,8 @@ const Row = memo(function Row({ span: s, index, d0, span_, end, lw, rw, compact,
     >
       {selected && <span className="absolute inset-y-0 left-0 z-[6] w-0.5 bg-[var(--rb-accent)]" aria-hidden="true" />}
       <div role="gridcell" className={cx("flex min-w-0 items-center gap-2 pe-2", compact ? "ps-2" : "ps-4", s.depth === 1 && !compact && "ps-8")}>
-        <span className="grid size-5 shrink-0 place-items-center" style={{ color: s.failed ? RED : s.kind === "model" ? "#76b900" : s.kind === "tool" ? "var(--color-neutral-400)" : WAIT }}>
-          {s.kind === "model" ? <NemotronMark /> : s.kind === "tool" ? sandbox ? <Box className="size-4" aria-label="Nebius Sandbox" /> : <Wrench className="size-4" aria-hidden="true" /> : <Hand className="size-4" aria-hidden="true" />}
+        <span className="grid size-5 shrink-0 place-items-center" style={{ color: s.failed ? RED : s.kind === "model" ? "#76b900" : s.kind === "tool" ? (s.control ? "var(--color-neutral-400)" : TOOL_GREEN) : WAIT }}>
+          {s.kind === "model" ? <NemotronMark /> : s.kind === "tool" ? <ToolIcon span={s} className="size-4" /> : <Hand className="size-4" aria-hidden="true" />}
         </span>
         <span className="min-w-0 leading-tight">
           <span className={cx("block truncate font-semibold text-neutral-100", compact ? "text-[12px]" : "text-[13px]")} title={spanName(s)}>
@@ -700,6 +701,42 @@ const Row = memo(function Row({ span: s, index, d0, span_, end, lw, rw, compact,
   );
 });
 
+const TOOL_ICON: Record<string, LucideIcon> = { web_search: Globe, fetch_url: Link2, write_artifact: FileText, send_message: MessageSquare, read_repo: FolderGit2, open_pr: GitPullRequest, save_learning: Sparkles, ask_user: CircleQuestionMark };
+
+/** One icon per tool: a globe for a search, a link for a page, the sandbox glyph for run_code at Nebius and a terminal when it ran locally */
+function ToolIcon({ span: s, className }: { span: Span; className?: string }) {
+  const t = s.tool;
+  if (!t) return <Wrench className={className} aria-hidden="true" />;
+  if (t.name === "run_code") return t.where === "nebius-sandbox" ? <Box className={className} aria-label="Nebius Sandbox" /> : <Terminal className={className} aria-label="Ran locally" />;
+  const telegram = t.name === "send_message" && /telegram/i.test(String((t.input as { channel?: unknown } | null)?.channel ?? ""));
+  const Icon = telegram ? Send : (TOOL_ICON[t.name] ?? Wrench);
+  return <Icon className={className} aria-hidden="true" />;
+}
+
+/** The pretty-printed JSON with keys blue, numbers and literals orange, strings plain and the braces dim; newlines inside a string are shown as lines */
+function JsonView({ text }: { text: string }) {
+  const out: ReactNode[] = [];
+  const re = /("(?:\\.|[^"\\])*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)|([{}\[\],:])/g;
+  let last = 0;
+  let i = 0;
+  for (let m = re.exec(text); m; m = re.exec(text)) {
+    if (m.index > last) out.push(text.slice(last, m.index));
+    if (m[1] !== undefined) {
+      const shown = m[2] ? m[1] : m[1].replace(/\\n/g, "\n");
+      out.push(
+        <span key={i++} className={m[2] ? "text-sky-300" : "text-neutral-200"}>
+          {shown}
+        </span>,
+      );
+      if (m[2]) out.push(<span key={i++} className="text-neutral-500">{m[2]}</span>);
+    } else if (m[3] !== undefined) out.push(<span key={i++} className="text-orange-300">{m[3]}</span>);
+    else out.push(<span key={i++} className="text-neutral-500">{m[4]}</span>);
+    last = m.index + m[0].length;
+  }
+  out.push(text.slice(last));
+  return <>{out}</>;
+}
+
 function NemotronMark() {
   return (
     <svg viewBox="0 0 20 20" className="size-[18px]" aria-label="Nemotron">
@@ -713,7 +750,6 @@ function NemotronMark() {
 
 function tabsFor(s: Span): { tabs: string[]; initial: string } {
   if (s.model) return { tabs: ["output", "prompt"], initial: "output" };
-  if (s.tool && hasRunCodeIO(s)) return { tabs: ["input", "stdout", "stderr"], initial: "stdout" };
   if (s.tool) return { tabs: ["input", "output"], initial: "output" };
   return { tabs: [], initial: "" };
 }
@@ -742,8 +778,13 @@ function Card({ span: s, openEnd, sheet, tab, tabs, onTab, onClose, onCopy, onOp
           </>
         ) : s.tool ? (
           <>
-            <Wrench className="size-4 shrink-0 text-neutral-400" aria-hidden="true" />
-            <h3 className="min-w-0 truncate text-[15px] font-extrabold text-neutral-50">{s.tool.name}</h3>
+            <span className="shrink-0" style={{ color: s.control ? "var(--color-neutral-400)" : TOOL_GREEN }}>
+              <ToolIcon span={s} className="size-4" />
+            </span>
+            <h3 className="min-w-0 truncate text-[15px] font-extrabold text-neutral-50">{s.label}</h3>
+            <span className="hidden min-w-0 shrink-0 truncate font-mono text-[11px] text-neutral-500 sm:inline" title="The tool's id">
+              {s.tool.name}
+            </span>
             {s.tool.name === "run_code" && s.tool.where === "nebius-sandbox" && (
               <span className="shrink-0 rounded-md border border-[var(--rb-accent)]/40 bg-[var(--rb-accent)]/10 px-1.5 py-0.5 text-[11px] font-bold text-[var(--rb-accent)]" title={sb ? `${sb.image}${sb.operation ? ` · op ${sb.operation}` : ""}` : undefined}>
                 Nebius Sandbox
@@ -793,6 +834,7 @@ function Card({ span: s, openEnd, sheet, tab, tabs, onTab, onClose, onCopy, onOp
               ? [
                   ["Started", fmtDur(s.startMs)],
                   ["Duration", fmtDur(dur)],
+                  ["Where", s.tool.where === "nebius-sandbox" ? "Nebius Sandbox" : s.tool.where === "local" ? "Local" : "n/a"],
                   ["Exit code", s.tool.exitCode !== undefined ? String(s.tool.exitCode) : "n/a"],
                   ["Stdout", `${io.stdout.toLocaleString("en-US")} B`],
                   ["Stderr", `${io.stderr.toLocaleString("en-US")} B`],
@@ -834,8 +876,8 @@ function Card({ span: s, openEnd, sheet, tab, tabs, onTab, onClose, onCopy, onOp
               <Copy className="size-3.5" aria-hidden="true" /> Copy
             </button>
           </div>
-          <pre role="tabpanel" className={cx("max-h-36 overflow-auto whitespace-pre-wrap rounded-lg bg-neutral-900 p-2.5 font-mono text-[12px]/[18px] [overflow-wrap:anywhere]", tab === "stderr" || s.failed ? "text-red-200" : "text-neutral-300")}>
-            {text || (s.endMs === undefined ? "Still running…" : tab === "prompt" ? "No prompt was recorded for this call." : tab === "output" && s.model ? "No text: this hop only asked for tools." : "(empty)")}
+          <pre role="tabpanel" className={cx("overflow-auto whitespace-pre-wrap rounded-lg bg-neutral-900 p-2.5 font-mono [overflow-wrap:anywhere]", s.tool ? "max-h-[400px] text-[13px]/[20px]" : "max-h-36 text-[12px]/[18px]", s.model && s.failed ? "text-red-200" : "text-neutral-300")}>
+            {text ? (s.tool && /^\s*[\[{]/.test(text) ? <JsonView text={text} /> : text) : s.endMs === undefined ? "Still running…" : tab === "prompt" ? "No prompt was recorded for this call." : tab === "output" && s.model ? "No text: this hop only asked for tools." : "(empty)"}
           </pre>
         </div>
       )}
