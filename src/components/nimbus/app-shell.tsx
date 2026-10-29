@@ -22,9 +22,11 @@ import { LEARNING_CHANGED } from "./learning";
 import { NewWorkstream } from "./new-workstream";
 import { Tour, TOUR_SEEN } from "./tour";
 import { Rail } from "./rail";
-import { RunHeader } from "./run-header";
+import { RunHeader, type RunMode } from "./run-header";
 import { cue, SoundToggle, useRunCues, useSound } from "./sound";
 import { Timeline, type SegRef } from "./timeline";
+import { Trace } from "./trace";
+import { isFilter, type TraceFilter } from "@/lib/trace";
 import { Transcript } from "./transcript";
 import { cx } from "./ui";
 
@@ -41,6 +43,12 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
   const [tab, setTab] = useState<InspectorTab>("artifact");
   const [selSeg, setSelSeg] = useState<SegRef | null>(null);
   const [wsLoaded, setWsLoaded] = useState(false);
+  // Lanes or Trace (docs/TRACE.md): remembered per browser, and a link can say it (?view=trace&span=…&filter=slow)
+  const [runMode, setRunMode] = useState<RunMode>("lanes");
+  const [traceSpan, setTraceSpan] = useState<string | null>(null);
+  const [traceFilter, setTraceFilter] = useState<TraceFilter>("all");
+  const [hoverSeg, setHoverSeg] = useState<SegRef | null>(null);
+  const [modeReady, setModeReady] = useState(false);
   const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number; mock?: boolean } | undefined>(initialBudget);
   const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
@@ -72,6 +80,37 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
   const lastDraft = useRef("");
   const focusN = useRef(0);
 
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    let m: RunMode = "lanes";
+    try {
+      if (window.localStorage.getItem("nimbus.runView") === "trace") m = "trace";
+    } catch {
+      /* no storage: Lanes */
+    }
+    const v = q.get("view");
+    if (v === "trace" || v === "lanes") m = v;
+    setRunMode(m);
+    const f = q.get("filter");
+    if (isFilter(f)) setTraceFilter(f);
+    setTraceSpan(q.get("span"));
+    setModeReady(true);
+  }, []);
+  useEffect(() => {
+    if (!modeReady) return;
+    try {
+      window.localStorage.setItem("nimbus.runView", runMode);
+    } catch {
+      /* not remembered */
+    }
+    const u = new URL(window.location.href);
+    const put = (k: string, v: string | null) => (v ? u.searchParams.set(k, v) : u.searchParams.delete(k));
+    put("view", runMode === "trace" ? "trace" : null);
+    put("span", runMode === "trace" ? traceSpan : null);
+    put("filter", runMode === "trace" && traceFilter !== "all" ? traceFilter : null);
+    if (u.href !== window.location.href) window.history.replaceState(null, "", u);
+  }, [modeReady, runMode, traceSpan, traceFilter]);
+
   const ws = workstreams.find((w) => w.id === selectedId);
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
   const active = useActiveRuns();
@@ -85,6 +124,15 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
   }, [phoneTab]);
   const restored = useRef(false);
   const { events } = useRunEvents(runId);
+  // another run: its spans are not this one's (the first run id, which a deep link names, keeps its span)
+  const prevRunId = useRef<string | null>(null);
+  useEffect(() => {
+    if (prevRunId.current && prevRunId.current !== runId) {
+      setTraceSpan(null);
+      setHoverSeg(null);
+    }
+    prevRunId.current = runId;
+  }, [runId]);
   const view = useMemo(() => buildView(events), [events]);
   const sound = useSound();
   const freshRun = useRef<string | null>(null);
@@ -330,6 +378,14 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     if (target) document.getElementById(`tr-${target.seq}`)?.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" });
   };
 
+  // The Trace view selects the same step the lane timeline would: a span carries its segment's { instance, id }
+  const selectRef = (ref: SegRef) => {
+    const seg = view.lanes.find((l) => l.instance === ref.instance)?.segments.find((x) => x.id === ref.id);
+    if (seg) selectSeg(seg);
+    else (setSelSeg(ref), setTab("agent"));
+  };
+  const traceOn = runMode === "trace" && !!runId;
+
   const pendingByWs = selectedId && view.pendingApprovals.length ? { [selectedId]: view.pendingApprovals.length } : {};
   const busyWs = selectedId && runBusy ? { [selectedId]: true } : {};
   const needsYou = view.pendingApprovals.length > 0 || view.planAwaiting || view.status === "failed";
@@ -421,12 +477,30 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
             <Overview titles={Object.fromEntries(workstreams.map((w) => [w.id, w.title]))} onOpenRun={openRun} refreshKey={view.status === "done" ? 1 : 0} empty={<PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />} />
           ) : (
             <>
-              <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} />
-              {(!isPhone || phoneTab === "run") && <Timeline fill={isPhone} view={view} now={now} selected={selSeg} onSelect={selectSeg} onClearSelection={() => setSelSeg(null)} scrubMs={scrub} onScrub={(ms) => (setReplaying(false), setScrub(ms))} replay={{ playing: replaying, speed, onSpeed: setSpeed, onToggle: () => (replaying ? setReplaying(false) : (setScrub(0), setReplaying(true))) }} collapsed={collapsed && !isPhone} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />}
+              <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} mode={runMode} onMode={setRunMode} />
+              {(!isPhone || phoneTab === "run") && traceOn && (
+                <Trace
+                  key={runId}
+                  events={events}
+                  now={now}
+                  workstreamId={ws.id}
+                  runId={runId}
+                  selectedSpan={traceSpan}
+                  selSeg={selSeg}
+                  onPin={(id, ref) => (setTraceSpan(id), ref ? selectRef(ref) : setSelSeg(null))}
+                  onHover={setHoverSeg}
+                  onOpenAgentIO={(ref) => (selectRef(ref), setDrawer("inspector"), isPhone && setPhoneTab("doc"))}
+                  filter={traceFilter}
+                  onFilter={setTraceFilter}
+                  phone={isPhone}
+                  reducedMotion={reduced}
+                />
+              )}
+              {(!isPhone || phoneTab === "run") && !traceOn && <Timeline fill={isPhone} view={view} now={now} selected={selSeg} onSelect={selectSeg} onClearSelection={() => setSelSeg(null)} scrubMs={scrub} onScrub={(ms) => (setReplaying(false), setScrub(ms))} replay={{ playing: replaying, speed, onSpeed: setSpeed, onToggle: () => (replaying ? setReplaying(false) : (setScrub(0), setReplaying(true))) }} collapsed={collapsed && !isPhone} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />}
               {isPhone && phoneTab === "chat" && tray}
               {(!isPhone || phoneTab === "chat") && (
               <>
-              <Transcript
+              {(isPhone || !traceOn) && <Transcript
                 waitingForCrew={!!runId && (events.length === 0 || (view.status === "planning" && !view.plan))}
                 view={shown}
                 now={now}
@@ -451,7 +525,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
                   setFocusArtifact({ id, version, n: ++focusN.current });
                   setDrawer("inspector");
                 }}
-              />
+              />}
               <div className="relative isolate flex shrink-0 flex-col gap-2 px-4 pb-4 pt-2">
                 {view.pendingApprovals.length > 0 && (
                   <div className="nb-fade pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-40 opacity-[0.1]" aria-hidden="true">
@@ -535,7 +609,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
           workstream={ws}
           tab={tab}
           setTab={setTab}
-          selected={selSeg}
+          selected={traceOn && hoverSeg ? hoverSeg : selSeg}
           focusArtifact={focusArtifact}
           loading={!!runId && events.length === 0}
           className={cx(!ws && "!hidden", ws && isPhone && (phoneTab === "doc" || phoneTab === "memory") ? "!flex min-h-0 flex-1 !border-l-0" : cx("z-40 xl:static xl:flex xl:w-[420px] xl:shrink-0", drawer === "inspector" ? "nb-drawer-right fixed inset-y-12 right-0 flex max-w-full sm:w-[420px]" : "hidden"))}
