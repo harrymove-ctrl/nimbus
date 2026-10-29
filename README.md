@@ -87,6 +87,10 @@ docker run --rm -p 3000:3000 --env-file .env.local -v "$(pwd)/data:/app/data" ni
 
 ---
 
+## From your phone (Telegram)
+
+Nimbus runs its own Telegram bot: send `/run morning brief` and one message follows the crew lane by lane, approvals arrive as cards with **Approve · Always allow · Reject**, crew questions arrive with their options as buttons, and scheduled runs message you first. Every decision appears on the web timeline as `via telegram`. Setup (BotFather token, `/start` to learn your chat id, `NIMBUS_TELEGRAM_CHAT_ID`): [docs/TELEGRAM.md](docs/TELEGRAM.md). Mock test: `pnpm check:telegram`.
+
 ## How We Used NVIDIA Nemotron 3 & Open-Source Models
 
 Nimbus uses **all three tiers of the NVIDIA Nemotron 3 family** plus open-source embeddings on **Nebius Token Factory** (`src/lib/models.ts` and `src/lib/tokenfactory.ts`), matching each agent role to the smallest model tier that can reliably execute its job:
@@ -187,6 +191,7 @@ flowchart LR
 | `pnpm check:loop` | Verifies that Run 2's prompt injects Run 1's memories and updated `SKILL.md`, and honors saved `allow:` rules. |
 | `pnpm check:budget` | Verifies per-run cap (`NIMBUS_RUN_CAP_USD`), daily cap (`NIMBUS_DAY_CAP_USD`), and zero-cost `NIMBUS_REPLAY` fidelity. |
 | `pnpm check:chat` | Verifies the OpenClaw / Hermes `POST /v1/chat/completions` bridge (`status`, `approve`, `deny`, `answer`, `run`) and Telegram alerts. |
+| `pnpm check:telegram` | Verifies the Nimbus Telegram bot against a stub Bot API: privacy, `/run` with one edited progress message, three-button approval cards, question buttons, scheduled pushes, `/status`, one poller per database. |
 
 ---
 
