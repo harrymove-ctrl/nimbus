@@ -23,6 +23,9 @@ importers:
       '@libsql/client':
         specifier: ^0.18.0
         version: 0.18.0
+      '@modelcontextprotocol/sdk':
+        specifier: 1.32.2
+        version: 1.32.2(zod@4.6.7)
       '@tavily/core':
         specifier: ^0.7.14
         version: 0.7.14
