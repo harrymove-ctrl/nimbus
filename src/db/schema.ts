@@ -1,5 +1,6 @@
 // SPEC §5 + §12: SQLite via libsql + drizzle. Tables are created by ensureSchema() in ./index.ts.
 import { index, integer, primaryKey, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import type { CrewRole } from "@/lib/roles";
 
 export const workstreams = sqliteTable("workstreams", {
   id: text("id").primaryKey(),
@@ -8,6 +9,8 @@ export const workstreams = sqliteTable("workstreams", {
   scheduleCron: text("schedule_cron"),
   scheduleLabel: text("schedule_label"),
   tools: text("tools", { mode: "json" }).$type<string[]>().notNull(),
+  /** the crew the Orchestrator plans with (src/lib/roles.ts); null reads as the default five */
+  roles: text("roles", { mode: "json" }).$type<CrewRole[]>(),
   unread: integer("unread").notNull().default(0),
   /** hidden from the rail until restored (rail menu: Archive) */
   archived: integer("archived").notNull().default(0),

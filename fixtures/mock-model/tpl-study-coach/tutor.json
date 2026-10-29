@@ -1,0 +1,52 @@
+{
+ "role": "tutor",
+ "turns": [
+  {
+   "label": "Applying SM-2 to last week's grades",
+   "usage": {
+    "in": 2600,
+    "out": 900
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "python",
+      "filename": "sm2.py",
+      "code": "import csv\nfrom datetime import date, timedelta\nfrom collections import Counter\n\nTODAY = date(2026, 11, 2)  # the Monday this plan starts\ncards = {r[\"id\"]: r for r in csv.DictReader(open(\"flashcards.csv\"))}\nfor r in cards.values():\n    r[\"ease\"], r[\"interval_days\"] = float(r[\"ease\"]), int(r[\"interval_days\"])\n    r[\"reps\"], r[\"lapses\"] = int(r[\"reps\"]), int(r[\"lapses\"])\n\nfor g in csv.DictReader(open(\"review-log.csv\")):\n    c, q = cards[g[\"card_id\"]], int(g[\"grade\"])\n    if q < 3:\n        c[\"reps\"], c[\"interval_days\"], c[\"lapses\"] = 0, 1, c[\"lapses\"] + 1\n    else:\n        c[\"reps\"] += 1\n        c[\"interval_days\"] = 1 if c[\"reps\"] == 1 else 6 if c[\"reps\"] == 2 else round(c[\"interval_days\"] * c[\"ease\"])\n    c[\"ease\"] = max(1.3, round(c[\"ease\"] + 0.1 - (5 - q) * (0.08 + (5 - q) * 0.02), 2))\n    c[\"due\"] = (date.fromisoformat(g[\"date\"]) + timedelta(days=c[\"interval_days\"])).isoformat()\n\n# overdue cards come due today; Sunday is a rest day; at most 15 a day\nload = Counter()\nfor c in sorted(cards.values(), key=lambda c: (c[\"due\"], c[\"ease\"])):\n    d = max(date.fromisoformat(c[\"due\"]), TODAY)\n    if d < TODAY + timedelta(days=7):\n        while d.weekday() == 6 or load[d] >= 15:\n            d += timedelta(days=1)\n        load[d] += 1\n    c[\"due\"] = d.isoformat()\n\nprint(\"due per day:\", {d.strftime(\"%a %d\"): n for d, n in sorted(load.items())})\nweak = sorted(cards.values(), key=lambda c: (c[\"ease\"], -c[\"lapses\"]))[:5]\nprint(\"weakest:\", [(c[\"id\"], c[\"front\"][:40], c[\"ease\"], c[\"lapses\"]) for c in weak])\nw = csv.DictWriter(open(\"flashcards-updated.csv\", \"w\", newline=\"\"), fieldnames=[\"id\", \"deck\", \"front\", \"back\", \"ease\", \"interval_days\", \"reps\", \"lapses\", \"due\"])\nw.writeheader()\nw.writerows(cards.values())\nprint(\"wrote flashcards-updated.csv:\", len(cards), \"cards\")\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Saving the updated deck",
+   "usage": {
+    "in": 3800,
+    "out": 1400
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "deck",
+      "kind": "code",
+      "title": "flashcards.csv, after this week's grades",
+      "language": "csv",
+      "content": "id,deck,front,back,ease,interval_days,reps,lapses,due\nes-01,Spanish A2,to remember (recordar) in the preterite yo form,recordé,2.6,15,3,0,2026-11-11\nes-02,Spanish A2,I have been living here for two years,Llevo dos años viviendo aquí,2.04,1,0,2,2026-11-02\nes-03,Spanish A2,\"the difference between por and para in \"\"gracias ___ todo\"\"\",por (gratitude for a cause),2.5,15,3,0,2026-11-09\nes-04,Spanish A2,\"subjunctive after \"\"espero que\"\": that you come (venir, tú)\",espero que vengas,1.64,1,0,3,2026-11-02\nes-05,Spanish A2,to get used to,acostumbrarse a,2.6,6,2,0,2026-11-02\nes-06,Spanish A2,\"the bill, please (restaurant)\",\"la cuenta, por favor\",2.7,32,4,0,2026-11-25\nes-07,Spanish A2,yesterday I went to the market (ir),ayer fui al mercado,2.5,6,2,0,2026-11-02\nes-08,Spanish A2,to be about to (do something),estar a punto de,2.32,7,3,1,2026-11-03\nes-09,Spanish A2,imperfect of tener (nosotros),teníamos,2.5,6,2,0,2026-11-03\nes-10,Spanish A2,false friend: embarazada means,pregnant (not embarrassed),2.8,40,5,0,2026-12-04\nes-11,Spanish A2,it is worth it,vale la pena,2.5,6,2,0,2026-11-02\nes-12,Spanish A2,\"if I had time, I would travel\",\"si tuviera tiempo, viajaría\",1.42,1,0,4,2026-11-02\nst-01,Statistics,what a p-value is,the probability of data at least this extreme if the null hypothesis is true,2.5,15,3,0,2026-11-12\nst-02,Statistics,standard error of a mean,s / sqrt(n),2.6,15,3,0,2026-11-10\nst-03,Statistics,when the median beats the mean,skewed data or outliers,2.6,6,2,0,2026-11-02\nst-04,Statistics,type I error,rejecting a true null hypothesis (false positive),1.9,1,0,3,2026-11-02\nst-05,Statistics,type II error,failing to reject a false null hypothesis (false negative),2.36,7,3,1,2026-11-03\nst-06,Statistics,what a 95% confidence interval means,the method captures the true value in 95% of repeated samples,1.96,2,4,2,2026-11-02\nst-07,Statistics,Simpson's paradox,a trend in groups reverses when the groups are combined,2.5,6,2,0,2026-11-02\nst-08,Statistics,correlation of 0 means,no linear relationship (there can still be a non-linear one),2.6,6,2,0,2026-11-02\nst-09,Statistics,why randomise in an A/B test,to balance unknown confounders between the groups,2.7,20,4,0,2026-11-15\nst-10,Statistics,base rate fallacy,ignoring how common the condition is before the test,2.16,2,3,1,2026-11-02\nst-11,Statistics,the law of large numbers,the sample mean converges to the true mean as n grows,2.5,6,2,0,2026-11-04\nst-12,Statistics,regression to the mean,extreme results tend to be followed by more typical ones,2.36,6,2,0,2026-11-02\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting the week",
+   "usage": {
+    "in": 4200,
+    "out": 380
+   },
+   "complexity": 1,
+   "text": "Applied 15 grades with SM-2. Due this week: Mon 02 13 cards, Tue 03 3, Wed 04 1, next Mon 09 1 (no day over 15, Sunday empty). Weakest five by ease, then lapses: es-12 \"if I had time, I would travel\" (ease 1.42, 4 lapses), es-04 \"espero que vengas\" (1.64, 3 lapses), st-04 type I error (1.90, 3 lapses), st-06 95% confidence interval (1.96, 2 lapses), es-02 \"Llevo dos años viviendo aquí\" (2.04, 2 lapses). The updated deck is the artifact \"flashcards.csv, after this week's grades\"."
+  }
+ ]
+}

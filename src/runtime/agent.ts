@@ -4,14 +4,15 @@ import { appendFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import type { JSONValue, ModelMessage } from "ai";
 import { dataDir } from "@/db";
-import type { AgentRole } from "@/lib/models";
+import type { AgentRole, BuiltinRole, Tier } from "@/lib/models";
 import { ROLE_TIER, costUsd } from "@/lib/models";
+import { isDefaultCrew, roleTitle } from "@/lib/roles";
 import { hopLabel, stripThink } from "@/lib/tokenfactory";
 import { attachedSentence } from "./attachments";
 import { RunAborted, type RunCtx } from "./context";
 import { SpendCapError, inflight, runCapUsd } from "./budget";
 import { callHop, pickTier } from "./router";
-import { CONTROL_TOOLS, ROLE_TOOLS, fetchUrl, openPr, readRepo, runCode, sendMessage, toolLabel, toolSet, webSearch, writeArtifact, type ToolName } from "./tools";
+import { CONTROL_TOOLS, DEFAULT_CREW, ROLE_TOOLS, fetchUrl, openPr, readRepo, runCode, sendMessage, toolLabel, toolSet, webSearch, writeArtifact, type ToolName } from "./tools";
 
 export type AgentRef = { role: AgentRole; instance: string };
 export type Exec = Partial<Record<ToolName, (input: never) => Promise<unknown>>>;
@@ -21,7 +22,9 @@ const SIGNER = process.env.NIMBUS_USER_NAME?.trim();
 const SIGN_OFF = SIGNER ? `Sign each reply "${SIGNER}".` : "End each reply after its closing line, with no signature.";
 
 // Role prompts are a stable prefix (Token Factory's cached-input price); per-run material goes in the first user message.
-const ROLE_PROMPT: Record<AgentRole, string> = {
+// The default crew's briefs in src/lib/roles.ts are these prompts after "You are the <Role>. ", so roleSpec() rebuilds
+// them byte for byte; this table is the fallback for a built-in role a crew does not list.
+const ROLE_PROMPT: Record<BuiltinRole, string> = {
   orchestrator: "You are the Orchestrator of a small crew of agents working for one person. First call plan, then spawn_agents for parallel work, handoff for sequential work, request_approval before any action with side effects, ask_user only when blocked, and finish when done. Be brief.",
   researcher: "You are the Researcher. Use web_search and fetch_url, cite sources, and return a short sourced report. Ask the person with ask_user only if the brief is ambiguous.",
   analyst: "You are the Analyst. Use run_code on the attached data to compute exact numbers, fix your own script errors, save useful code with write_artifact, and report the numbers.",
@@ -30,8 +33,30 @@ const ROLE_PROMPT: Record<AgentRole, string> = {
   learner: "You are the Learner. From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).",
 };
 
-export function firstPrompt(ctx: RunCtx, brief: string) {
+/** Tools for a role the workstream named without listing any: every worker tool (the run's allowed tools still filter them). */
+const ANY_WORKER_TOOLS: ToolName[] = ["web_search", "fetch_url", "run_code", "write_artifact", "read_repo", "send_message", "open_pr", "ask_user"];
+
+/** The Orchestrator's crew: the roles it may plan, spawn and hand off to (the Learner runs on its own after the run). */
+export const crewNames = (ctx: Pick<RunCtx, "roles">) => {
+  const names = ctx.roles.map((r) => r.role).filter((r) => r !== "learner");
+  return names.length ? names : DEFAULT_CREW;
+};
+
+/** System prompt, tier ceiling and tools of one role in this run's crew. */
+export function roleSpec(ctx: Pick<RunCtx, "roles">, role: AgentRole): { system: string; ceiling: Tier; tools: ToolName[] } {
+  if (role === "orchestrator") return { system: ROLE_PROMPT.orchestrator, ceiling: ROLE_TIER.orchestrator, tools: ROLE_TOOLS.orchestrator };
+  const builtin = role in ROLE_PROMPT ? (role as BuiltinRole) : null;
+  const r = ctx.roles.find((x) => x.role === role);
+  if (role === "learner") return { system: r ? `You are the Learner. ${r.brief}` : ROLE_PROMPT.learner, ceiling: ROLE_TIER.learner, tools: ROLE_TOOLS.learner };
+  if (!r) return builtin ? { system: ROLE_PROMPT[builtin], ceiling: ROLE_TIER[builtin], tools: ROLE_TOOLS[builtin] } : { system: `You are the ${roleTitle(role)}. Do what your brief asks and report back briefly.`, ceiling: "super", tools: ANY_WORKER_TOOLS };
+  const tools = (r.tools as ToolName[] | undefined) ?? (builtin ? ROLE_TOOLS[builtin] : ANY_WORKER_TOOLS);
+  return { system: `You are the ${roleTitle(role)}. ${r.brief}${tools.includes("send_message") ? ` ${SIGN_OFF}` : ""}`, ceiling: r.tier, tools };
+}
+
+export function firstPrompt(ctx: RunCtx, brief: string, role?: AgentRole) {
   const parts: string[] = [];
+  // a crew of its own: the Orchestrator learns who it can call on (the default crew's prompts stay as they were)
+  if (role === "orchestrator" && !isDefaultCrew(ctx.roles)) parts.push(`Your crew (plan, spawn_agents and handoff take these role names):\n${ctx.roles.filter((r) => r.role !== "learner").map((r) => `- ${r.role} (${r.tier}): ${r.brief}`).join("\n")}`);
   if (ctx.skill.trim()) parts.push(`SKILL.md for this workstream:\n${ctx.skill.trim()}`);
   if (ctx.memories.length) parts.push(`Memories from earlier runs:\n${ctx.memories.map((m) => `- ${m}`).join("\n")}`);
   parts.push(`Goal: ${ctx.goal}`);
@@ -45,11 +70,11 @@ const json = (v: unknown) => JSON.parse(JSON.stringify(v ?? null)) as JSONValue;
 
 export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: Exec = {}): Promise<string> {
   const { role, instance } = ref;
-  const names = ROLE_TOOLS[role];
-  const tools = toolSet(names, ctx.allowedTools);
-  const ceiling = ROLE_TIER[role];
+  const spec = roleSpec(ctx, role);
+  const tools = toolSet(spec.tools, ctx.allowedTools, crewNames(ctx));
+  const ceiling = spec.ceiling;
   const maxTurns = role === "orchestrator" ? 10 : 12;
-  const messages: ModelMessage[] = [{ role: "user", content: firstPrompt(ctx, brief) }];
+  const messages: ModelMessage[] = [{ role: "user", content: firstPrompt(ctx, brief, role) }];
   const now = () => Date.now() - ctx.startedAt;
   let report = "";
   let finished = false;
@@ -57,7 +82,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
   ctx.emit("agent.start", role, instance, {});
   if (process.env.NIMBUS_DEBUG_PROMPTS === "1") {
     mkdirSync(path.join(dataDir(), "prompts"), { recursive: true });
-    appendFileSync(path.join(dataDir(), "prompts", `${ctx.runId}.jsonl`), JSON.stringify({ instance, role, system: ROLE_PROMPT[role], user: messages[0].content }) + "\n");
+    appendFileSync(path.join(dataDir(), "prompts", `${ctx.runId}.jsonl`), JSON.stringify({ instance, role, system: spec.system, user: messages[0].content }) + "\n");
   }
   for (let turn = 1; turn <= maxTurns && !finished; turn++) {
     if (ctx.signal.aborted) throw ctx.signal.reason instanceof RunAborted ? ctx.signal.reason : new RunAborted("stop");
@@ -84,7 +109,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
     let call;
     try {
       call = await callHop(ctx, {
-        role, instance, turn, hopNo, ceiling, tier, system: ROLE_PROMPT[role], messages, tools: hopTools,
+        role, instance, turn, hopNo, ceiling, tier, system: spec.system, messages, tools: hopTools,
         onFallback: (to, why) => {
           ctx.emit("route", role, instance, { hop: hopNo, role, chosen: to, ceiling, reason: why, fallback: true });
           ctx.routedHops++;

@@ -1,7 +1,8 @@
 // Pure reducer: the full RunEvent[] → everything the run view draws. The UI keeps no
 // other run state, so a refresh (replay from seq 0) rebuilds the same screen.
 import type { AnyRunEvent, PlanAgent, PlanStep, ProposedAction, RunEndStatus, RunSummary } from "./events";
-import { ROLE_TIER, costUsd, type AgentRole, type Tier } from "./models";
+import { costUsd, roleTier, type AgentRole, type Tier } from "./models";
+import { roleTitle } from "./roles";
 
 export type RouteInfo = { hop: number; chosen: Tier; ceiling: Tier; reason: string; fallback?: boolean };
 
@@ -109,27 +110,48 @@ export type RunView = {
   error?: string;
 };
 
-export const ROLE_LABEL: Record<AgentRole, string> = {
-  orchestrator: "Orchestrator",
-  researcher: "Researcher",
-  analyst: "Analyst",
-  writer: "Writer",
-  checker: "Checker",
-  learner: "Learner",
-};
+/**
+ * A lookup that answers for any role: the built-in crew from the table, a role the workstream named itself (a tutor, a
+ * scout) from `fallback`. Only the built-in keys are enumerable, so a legend still lists the five it always listed.
+ */
+const anyRole = (known: Record<string, string>, fallback: (role: string) => string): Record<AgentRole, string> =>
+  new Proxy(known, { get: (t, k) => (typeof k === "string" && !(k in t) && k !== "then" && k !== "toJSON" && !k.startsWith("$$") ? fallback(k) : Reflect.get(t, k)) });
+
+export const ROLE_LABEL: Record<AgentRole, string> = anyRole(
+  {
+    orchestrator: "Orchestrator",
+    researcher: "Researcher",
+    analyst: "Analyst",
+    writer: "Writer",
+    checker: "Checker",
+    learner: "Learner",
+  },
+  roleTitle,
+);
 
 export const TIER_LABEL: Record<Tier, string> = { ultra: "Nemotron 3 Ultra", super: "Nemotron 3 Super", nano: "Nemotron 3 Nano" };
 export const TIER_SHORT: Record<Tier, string> = { ultra: "Ultra", super: "Super", nano: "Nano" };
 
 /** Agent colors (sketch Part 3): the only places color carries meaning besides the cloud. */
-export const ROLE_COLOR: Record<AgentRole, string> = {
-  orchestrator: "var(--color-neutral-300)",
-  checker: "oklch(0.72 0.14 250)",
-  researcher: "oklch(0.72 0.15 305)",
-  analyst: "oklch(0.78 0.15 60)",
-  writer: "oklch(0.78 0.11 190)",
-  learner: "var(--rb-accent)",
-};
+export const ROLE_COLOR: Record<AgentRole, string> = anyRole(
+  {
+    orchestrator: "var(--color-neutral-300)",
+    checker: "oklch(0.72 0.14 250)",
+    researcher: "oklch(0.72 0.15 305)",
+    analyst: "oklch(0.78 0.15 60)",
+    writer: "oklch(0.78 0.11 190)",
+    learner: "var(--rb-accent)",
+  },
+  (role) => `oklch(0.76 0.14 ${CUSTOM_HUES[hashOf(role) % CUSTOM_HUES.length]})`,
+);
+
+/** Hues for roles a workstream named itself, away from the built-in five so a tutor never reads as the Checker. */
+const CUSTOM_HUES = [25, 95, 140, 340, 280, 165, 0, 115];
+function hashOf(s: string) {
+  let h = 0;
+  for (const ch of s) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return h;
+}
 
 export const laneName = (instance: string, role: AgentRole) => {
   const n = instance.match(/-(\d+)$/)?.[1];
@@ -178,7 +200,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
   const lane = (instance: string, role: AgentRole): Lane => {
     let l = lanes.get(instance);
     if (!l) {
-      l = { instance, role, status: "pending", segments: [], tokens: 0, costUsd: 0, tier: ROLE_TIER[role], ceiling: ROLE_TIER[role], routed: false };
+      l = { instance, role, status: "pending", segments: [], tokens: 0, costUsd: 0, tier: roleTier(role), ceiling: roleTier(role), routed: false };
       lanes.set(instance, l);
       v.lanes.push(l);
     }
@@ -317,7 +339,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
         l.costUsd += c;
         v.tokens += p.in + p.out;
         v.costUsd += c;
-        v.baselineUsd += p.cached ? 0 : costUsd(ROLE_TIER[e.agent], p.in, p.out);
+        v.baselineUsd += p.cached ? 0 : costUsd(l.ceiling, p.in, p.out);
         v.usage.push({ instance: e.agentInstance, tMs: e.tMs, tier: p.tier, in: p.in, out: p.out });
         break;
       }

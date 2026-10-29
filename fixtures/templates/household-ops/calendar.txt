@@ -1,0 +1,15 @@
+# Family calendar, exported as text: one event per line.
+# date | time | who | what | notes
+2026-11-02 | 07:45 | Mia | swim practice | Alex drives
+2026-11-02 | 18:30 | Sam | parent-teacher meeting | school room 4B
+2026-11-03 | 15:30 | Mia | dentist (Lumen Dental) | Sam takes her, pay $180 at the desk
+2026-11-04 | 09:00 | Alex | car service | drop-off by 09:00, needs a lift back
+2026-11-04 | 17:00 | Leo | football | bring shin pads
+2026-11-05 | all day | everyone | daycare closed (staff training) | someone stays home with Leo
+2026-11-06 | 19:00 | Alex and Sam | dinner with the Parks | babysitter not booked yet
+2026-11-07 | 10:00 | Mia | birthday party (Ana) | gift under $25
+2026-11-08 | 12:00 | everyone | grandma's lunch | bring dessert
+2026-11-09 | 07:45 | Mia | swim practice | Sam drives
+2026-11-11 | 08:00 | Leo | daycare photo day | blue shirt
+2026-11-12 | 18:00 | Sam | gym class | 
+2026-11-14 | 09:30 | everyone | farmers market | 

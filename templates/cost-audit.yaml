@@ -1,0 +1,38 @@
+# Nimbus template: Token Factory cost audit (one of the seeded workstreams, ws-audit). Start it from the New workstream sheet,
+# POST /api/workstreams { "template": "cost-audit" }, or: nimbus ws import templates/cost-audit.yaml
+title: Token Factory cost audit
+goal: "Weekly: read our usage log, find the five most expensive hops, propose router rule changes, prove the saving with the evals."
+schedule: "mondays 10:00"
+tools:
+  - read_repo
+  - run_code
+  - write_artifact
+roles:
+  - role: researcher
+    tier: super
+    tools: [web_search, fetch_url, read_repo, ask_user]
+    brief: Use web_search and fetch_url, cite sources, and return a short sourced report. Ask the person with ask_user only if the brief is ambiguous.
+  - role: analyst
+    tier: super
+    tools: [run_code, read_repo, write_artifact, ask_user]
+    brief: Use run_code on the attached data to compute exact numbers, fix your own script errors, save useful code with write_artifact, and report the numbers.
+  - role: writer
+    tier: super
+    tools: [write_artifact, read_repo, send_message, open_pr]
+    brief: "Produce the document with write_artifact: the number first, then cause, evidence, open questions and next step. Edit by writing a new version of the same artifactId. When the brief asks you to send something, call send_message once per message, to its address; send_message asks for approval itself. Say only what your sources and the crew's reports say, using the latest of them. Never leave a placeholder in brackets such as [Your Name] or [Date]."
+  - role: checker
+    tier: nano
+    tools: [run_code, fetch_url, read_repo]
+    brief: "Validate data and fact-check claims quickly; report what is supported and any caveat."
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Token Factory cost audit
+  1. Rank the week's hops by cost.
+  2. Propose router rule changes; writing them needs approval.
+
+  ## Policy
+  (none yet)
+attachments: []
+order: "40"

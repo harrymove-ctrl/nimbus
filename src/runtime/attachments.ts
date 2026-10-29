@@ -1,10 +1,10 @@
 // The run's attached data files: the sample CSVs in fixtures/, any files the run was started with, and (for the cost
 // audit and Token Factory watch) a 7 day export of the app's own model usage. They are copied into the run workspace
 // at run start and named once in every agent's first prompt, so nobody searches the web for data.csv.
-import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { and, asc, eq, gte } from "drizzle-orm";
-import { getDb, schema } from "@/db";
+import { dataDir, getDb, schema } from "@/db";
 import { TIERS, costUsd, type Tier } from "@/lib/models";
 import type { RunCtx } from "./context";
 
@@ -52,9 +52,37 @@ export async function exportUsage(file: string, now = Date.now()): Promise<numbe
   return rows.length;
 }
 
+/** A workstream's own files (a template's flashcards.csv, an imported bills.csv): attached to every run of it. */
+export const workstreamFilesDir = (workstreamId: string) => path.join(dataDir(), "workstreams", workstreamId.replace(/[^\w.-]/g, "_"), "files");
+export const MAX_FILE_BYTES = 512 * 1024;
+export const MAX_FILES = 8;
+/** "My Bills (2026).csv" → "My_Bills_2026_.csv": the name the crew sees in its workspace */
+export const fileName = (name: string) => path.basename(name).replace(/[^\w.-]/g, "_").replace(/^\.+/, "").slice(0, 80);
+
+/** Store files with a workstream (created from a template or `nimbus ws import`). Returns the stored names. */
+export function saveWorkstreamFiles(workstreamId: string, files: { name: string; content: string }[]): string[] {
+  const dir = workstreamFilesDir(workstreamId);
+  mkdirSync(dir, { recursive: true });
+  const names: string[] = [];
+  for (const f of files.slice(0, MAX_FILES)) {
+    const name = fileName(f.name);
+    if (!name || Buffer.byteLength(f.content) > MAX_FILE_BYTES) continue;
+    writeFileSync(path.join(dir, name), f.content);
+    names.push(name);
+  }
+  return names;
+}
+
+export const workstreamFiles = (workstreamId: string) => {
+  const dir = workstreamFilesDir(workstreamId);
+  return existsSync(dir) ? readdirSync(dir).sort() : [];
+};
+
+export const removeWorkstreamFiles = (workstreamId: string) => rmSync(path.dirname(workstreamFilesDir(workstreamId)), { recursive: true, force: true });
+
 /**
- * Copy the attached files into the run workspace and return their names: fixtures/*.csv, the run's input files that
- * exist in fixtures/ or the workspace, and usage-7d.csv when the workstream reads our usage.
+ * Copy the attached files into the run workspace and return their names: fixtures/*.csv, the workstream's own files,
+ * the run's input files that exist in fixtures/ or the workspace, and usage-7d.csv when the workstream reads our usage.
  */
 export async function prepareAttachments(ctx: RunCtx, inputFiles: string[] = []): Promise<string[]> {
   mkdirSync(ctx.workspace, { recursive: true });
@@ -65,6 +93,10 @@ export async function prepareAttachments(ctx: RunCtx, inputFiles: string[] = [])
     if (existsSync(dest)) names.add(name);
   };
   for (const f of readdirSync(fixturesDir()).filter((n) => n.endsWith(".csv"))) attach(f);
+  for (const f of workstreamFiles(ctx.workstreamId)) {
+    copyFileSync(path.join(workstreamFilesDir(ctx.workstreamId), f), path.join(ctx.workspace, f));
+    names.add(f);
+  }
   for (const f of inputFiles) {
     const base = path.basename(f).replace(/[^\w.-]/g, "_");
     if (base) attach(base);

@@ -1,0 +1,27 @@
+{
+ "role": "learner",
+ "turns": [
+  {
+   "label": "Extracting memories, rewriting SKILL.md",
+   "usage": {
+    "in": 5200,
+    "out": 900
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "save_learning",
+     "input": {
+      "memories": [
+       "es-12 (si tuviera tiempo, viajaría) and es-04 (espero que vengas) are the cards lapsed most; both are subjunctive.",
+       "Grades come from review-log.csv (date, card_id, grade 0 to 5); flashcards.csv holds the SM-2 state.",
+       "Overdue cards pile onto Monday: 13 of 18 reviews landed there in the week of 2 November.",
+       "Mnemonics are added for cards with 3 or more lapses: es-12, es-04 and st-04 this week."
+      ],
+      "skill": "## Study coach\n### Decks\n- Spanish A2: the preterite and the subjunctive are the weak spots (es-12 and es-04 lapse most)\n- Statistics: definitions first, then one applied question a week\n\n### Rules\n1. At most 15 reviews a day; Sunday is a rest day (its cards move to Saturday or Monday).\n2. A card with 3 or more lapses gets a mnemonic next to its answer.\n3. The quiz is 10 questions, at least 3 from each deck.\n4. Never change a card's front or back; report a card that looks wrong instead.\n5. When one day carries more than half the week, move the easiest cards (highest ease) to Thursday.\n\n## Policy\n(none yet)"
+     }
+    }
+   ]
+  }
+ ]
+}

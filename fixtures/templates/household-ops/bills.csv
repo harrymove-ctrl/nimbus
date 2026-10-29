@@ -1,0 +1,18 @@
+payee,category,amount,currency,due,autopay,paid_on,account
+Riverside Apartments,rent,1850.00,USD,2026-11-01,no,,joint checking
+City Power & Light,electricity,96.40,USD,2026-11-04,yes,,joint checking
+Metro Water,water,41.15,USD,2026-11-06,no,,joint checking
+Fiberline,internet,65.00,USD,2026-11-09,yes,,joint checking
+Northwind Mobile,phones,88.00,USD,2026-11-12,yes,,Alex card
+Bright Steps Daycare,childcare,1240.00,USD,2026-11-05,no,,joint checking
+Harbor Auto Insurance,car insurance,142.30,USD,2026-11-15,yes,,joint checking
+Lumen Dental,dental (Mia),180.00,USD,2026-11-03,no,,Sam card
+StreamBox,subscriptions,15.99,USD,2026-11-07,yes,,Sam card
+City Power & Light,electricity,71.85,USD,2026-10-04,yes,2026-10-04,joint checking
+Metro Water,water,39.80,USD,2026-10-06,no,2026-10-05,joint checking
+Bright Steps Daycare,childcare,1240.00,USD,2026-10-05,no,2026-10-03,joint checking
+Riverside Apartments,rent,1850.00,USD,2026-10-01,no,2026-09-30,joint checking
+Northwind Mobile,phones,88.00,USD,2026-10-12,yes,2026-10-12,Alex card
+Harbor Auto Insurance,car insurance,142.30,USD,2026-10-15,yes,2026-10-15,joint checking
+StreamBox,subscriptions,15.99,USD,2026-10-07,yes,2026-10-07,Sam card
+Fiberline,internet,65.00,USD,2026-10-09,yes,2026-10-09,joint checking

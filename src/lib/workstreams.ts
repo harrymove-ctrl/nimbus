@@ -1,5 +1,7 @@
 // Seeded workstreams (docs/CASES.md): the rail shows them in this order. seedWorkstreams() (src/db/index.ts) writes
 // them to SQLite and keeps title, goal, schedule and tools in step with this file.
+import type { CrewRole } from "./roles";
+
 export type Workstream = {
   id: string;
   /** model name after `nimbus/` on the OpenAI-compatible endpoint */
@@ -9,6 +11,10 @@ export type Workstream = {
   scheduleCron?: string;
   scheduleLabel?: string;
   tools: string[];
+  /** the crew (GET /api/workstreams; the seed gets the default five) */
+  roles?: CrewRole[];
+  /** the workstream's own attached files (a template's CSVs) */
+  files?: string[];
   /** current SKILL.md content, shown in the Inspector's Memory tab */
   skill: string;
   unread?: boolean;
