@@ -23,7 +23,31 @@ export function createLiveRun(input: StartRunInput): RunHandle {
   const eventFns = new Set<(e: AnyRunEvent) => void>();
   const doneFns = new Set<() => void>();
   const controller = new AbortController();
-  const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(5 * 60_000)]); // wall-clock cap
+  const signal = controller.signal;
+  // Two clocks. The crew gets ACTIVE_CAP_MS of its own time; while a plan, an approval, a question or a pause waits on the
+  // person, that clock stops (a run must not die because someone read the plan for six minutes). A gate left open longer than
+  // GATE_CAP_MS (nobody is there: a cron run at 07:00) stops the run instead of holding a model process forever.
+  const ACTIVE_CAP_MS = Number(process.env.NIMBUS_RUN_ACTIVE_MS) || 5 * 60_000;
+  const GATE_CAP_MS = Number(process.env.NIMBUS_RUN_GATE_MS) || 60 * 60_000;
+  let waitedMs = 0;
+  let openGates = 0;
+  let waitingSince = 0;
+  const gated = async <T>(p: Promise<T>): Promise<T> => {
+    if (openGates++ === 0) waitingSince = Date.now();
+    try {
+      return await untilAborted(p, signal);
+    } finally {
+      if (--openGates === 0) {
+        waitedMs += Date.now() - waitingSince;
+        waitingSince = 0;
+      }
+    }
+  };
+  const clock = setInterval(() => {
+    const now = Date.now();
+    const active = now - startedAt - waitedMs - (waitingSince ? now - waitingSince : 0);
+    if (active > ACTIVE_CAP_MS || (waitingSince && now - waitingSince > GATE_CAP_MS)) controller.abort(new RunAborted("stop"));
+  }, 2_000);
   let finished = false;
   let persistChain: Promise<unknown> = Promise.resolve();
   let n = 0;
@@ -57,11 +81,11 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     startedAt,
     review: !!input.review,
     untilResumed() {
-      return pauseGate ? untilAborted(pauseGate.promise, signal) : Promise.resolve();
+      return pauseGate ? gated(pauseGate.promise) : Promise.resolve();
     },
     awaitPlan() {
       planGate = deferred();
-      return untilAborted(planGate.promise, signal);
+      return gated(planGate.promise);
     },
     workspace: path.join(dataDir(), "workspaces", id),
     signal,
@@ -81,7 +105,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
       const d = deferred<string>();
       pendingQuestions.set(questionId, { d, role, instance });
       emit("question", role, instance, { questionId, text, options });
-      const answer = await untilAborted(d.promise, signal);
+      const answer = await gated(d.promise);
       // mock mode: the first answer picks the script variant ("Golden" → ws-ship-nimbus+golden, where that directory exists)
       const slug = answer.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 24);
       if (slug && !ctx.script.includes("+")) ctx.script += `+${slug}`;
@@ -102,7 +126,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
         persist((db) => db.update(schema.approvals).set({ status: "approved", decidedAt: Date.now() }).where(eq(schema.approvals.id, `${id}:${approvalId}`)));
         return r;
       }
-      return untilAborted(d.promise, signal);
+      return gated(d.promise);
     },
     drainSteering: () => steering.splice(0),
     ackSteering(msgId, text) {
@@ -119,6 +143,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
   const finish = () => {
     if (finished) return;
     finished = true;
+    clearInterval(clock);
     for (const fn of doneFns) fn();
     void persistChain.then(settle);
   };
