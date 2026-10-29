@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelLeft, PanelRight, Brain, Compass, FileText, GanttChart, MessageSquare } from "lucide-react";
+import Link from "next/link";
 import { GlowCloud } from "@/components/glow-cloud";
 import { useNow, useReducedMotion, useRunEvents } from "@/hooks/use-run";
 import { buildView, type ApprovalItem, type QuestionItem, type Seg } from "@/lib/run-view";
@@ -354,9 +355,10 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
         <button type="button" aria-label="Workstreams" data-cuelume-open={drawer === "rail" ? undefined : ""} data-cuelume-close={drawer === "rail" ? "" : undefined} onClick={() => setDrawer(drawer === "rail" ? null : "rail")} className="grid size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden">
           <PanelLeft className="size-4" />
         </button>
-        <div className="size-10 shrink-0" title={needsYou ? "Needs you" : "Crew ready"}>
+        {/* the cloud mark opens the landing (/welcome); the app itself stays at / */}
+        <Link href="/welcome" className="size-10 shrink-0 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--rb-accent)]" title={needsYou ? "Needs you · about Nimbus" : "About Nimbus"}>
           <GlowCloud color={needsYou ? "orange" : "blue"} background={false} followPointer={false} label={needsYou ? "Nimbus needs your approval" : "Nimbus"} />
-        </div>
+        </Link>
         <span className="text-[16px] font-extrabold tracking-tight">Nimbus</span>
         <span className="ms-2 hidden text-[13px] font-semibold text-neutral-500 sm:inline" aria-live="polite">
           {needsYou ? <span className="text-orange-300">{view.pendingApprovals.length > 0 ? `${view.pendingApprovals.length + (view.planAwaiting ? 1 : 0)} waiting for you` : view.planAwaiting ? "1 plan waiting for you" : "needs a look"}</span> : view.status === "asked" ? <span className="text-orange-300">the crew asked you a question</span> : view.status === "running" || view.status === "planning" ? "crew at work" : "crew idle"}
