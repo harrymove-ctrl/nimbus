@@ -129,6 +129,15 @@ Every clip in our 2:40 demo video and `/welcome` tour comes from real runs again
 
 Set `NEBIUS_PROJECT_ID` (tokenfactory.nebius.com/project/api-keys) next to `NEBIUS_API_KEY` and the crew's `run_code` tool stops running model-written code on your machine: each call uploads the script and the attached data to Nebius Token Factory Sandboxes, spawns one disposable VM from `python:3.12-slim` or `node:20-slim` with networking off, polls the operation and brings back stdout, stderr and the exit code. Agent I/O shows a **Nebius Sandbox** chip on the call with the image, the elapsed time and the operation id. Without the project id, or if the sandbox call fails, the same code runs as a local subprocess and the result says so. `pnpm sandbox:probe` checks the key, lists the public images and does one real run. Design notes: `docs/SANDBOX.md`.
 
+Turn it on in four steps:
+
+1. Open [tokenfactory.nebius.com](https://tokenfactory.nebius.com), pick your project and go to **API keys**. The **Project id** (`aiproject-...`) is shown above the keys. Sandboxes is in beta: request access once from the Sandboxes page; the same key then works for models and sandboxes.
+2. Add `NEBIUS_PROJECT_ID=aiproject-...` under `NEBIUS_API_KEY` in `.env.local`.
+3. Run `pnpm sandbox:probe`. It prints who the key is, the image catalog and one real run that reads an uploaded CSV. Expected last lines: `run: SUCCESS exit 0` and `stdout: ok ...`.
+4. Hosted: `railway variables --service nimbus --set NEBIUS_PROJECT_ID=aiproject-...` and redeploy. Start any workstream with `run_code` (Checkout, Audit, Ship Nimbus) and open Agent I/O: the tool call shows the **Nebius Sandbox** chip.
+
+Measured on 2026-10-29: `python:3.12-slim` and `node:20-slim` runs complete in about 3 s end to end (the sandbox itself reports under 0.1 s of execution); the beta allows 50 concurrent instances and a 3600 s timeout. Where this goes next (images with pandas, files out, networking on for the repo crew) is in `docs/ROADMAP.md`.
+
 ## What Real Nemotron 3 Models Taught Us Beyond the Mock (7 Engineering Fixes)
 
 Running 198 live calls across six recording takes (`$0.49` total on Nebius Token Factory) exposed seven real multi-agent behaviors that our scripted mock never triggered:
