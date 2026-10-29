@@ -17,6 +17,7 @@ Hackathon page: https://nebiusglobalaihackathon.devpost.com/
 - [x] Three doors told on `/welcome`, in the README and in the story below (web, Telegram, CLI and MCP), each with its proof line
 - [ ] Redeploy and check the three doors section on Railway at 1280 and 390 wide (verified on `pnpm dev` only so far)
 - [ ] Close the pending lines in section 6 ("Unverified") or leave them there, by name
+- [ ] Keys stay valid until judging ends on Dec 15, 2026, because the demo must stay free and unrestricted through judging; rotate the Nebius, Tavily and Telegram keys after that, not before
 
 ---
 
@@ -93,7 +94,7 @@ When the crew writes Python to answer a question about your data, that code does
 - **Morning Brief:** Reads your inbox export, calendar, and GitHub notifications at 08:00 into a ranked one-page brief and holds three drafted replies in the approval tray.
 - **Ship Nimbus (Self-Maintaining Repo Crew):** Runs `pnpm eval` and `pnpm typecheck` on its own repository, reproduces a failing router test in a sandbox, asks you inline whether to fix the router or the test golden, drafts a unified diff patch, and waits for approval before opening a GitHub PR.
 - **Token Factory Cost Audit & Watch:** Audits Nimbus's own SQLite call log, runs A/B trajectory evaluations (`pnpm eval:ab`), and proposes `router-rules.json` changes that cut run spend by an additional **15.3%**.
-- **Hackathon Radar:** Scheduled research using **Tavily** web search that compares updates against yesterday's memories and queues a three-bullet digest for approval.
+- **Hackathon Radar:** Scheduled research using **Tavily** web search that compares updates against yesterday's memories and queues a three-bullet digest for approval. On production the Researcher's `web_search` is a runtime Tavily call (`TAVILY_API_KEY` is set on Railway): Hackathon radar `run_3066dc6c` made three `web_search` calls, and every result came back tagged `source: tavily`.
 
 Every workstream on the live demo has at least one finished run on the real models (Oct 29, 2026, UTC), so a judge can open any of them and read the plan, the lanes, the approvals and the cost: Morning brief `run_782c6eff` (cron 08:00, $0.020) and `run_0c6cdb23` ($0.022); Hackathon radar `run_3066dc6c` (cron 09:00, $0.013); Ship Nimbus `run_ebcd619b` ($0.016, 15 model calls, 13 tool calls); Token Factory cost audit `run_876af0c5` ($0.005); Token Factory watch `run_fb68d365` ($0.046, 54 model calls); Release watch `run_85b5b8e6` ($0.027; its "open PR: Upgrade Next.js to v16.4.3" card was rejected with a note, so the gate is on record); Checkout conversion drop `run_bd1ee7a8` ($0.077, the reply to #growth approved) and, after the attached-files fix, `run_41d10ede` ($0.015, 50 s, no questions asked, six run_code calls on data.csv and inbox.csv, the #growth message approved). From 21:30 ICT on Oct 29 the crew's `run_code` executes in Nebius Token Factory Sandboxes: Checkout `run_668c7252` ($0.009, 51 s) made three run_code calls on data.csv and inbox.csv, each in its own disposable VM at Nebius (an imported image with pandas 3.0 and numpy, networking off), taking 4.9, 3.5 and 3.5 s per call end to end, of which 0.63, 0.75 and 0.71 s ran inside the VM, and Agent I/O shows the **Nebius Sandbox** chip with the image and operation id on each call. The MCP door has its real run: Release watch `run_e8b4dff2` ($0.061, 82.5 s of run time) was driven only through `nimbus mcp` tools by an MCP client script (list_workstreams, start_run, wait_for_run at each gate, answer, approve, run_status, read_artifact, list_memories), six decisions in all, with the transcript in `docs/mcp/2026-10-29-release-watch.md`; `nimbus doctor` against production is green on every row it checks. The Telegram door is tested in mock only (40/40 against a stub Bot API) and waits for its real run from a phone. Nothing on the demo is mock: `/api/budget` reports `mock: false` and every run carries real Nemotron usage events.
 
@@ -193,7 +194,7 @@ Sandboxes now run the code the crew writes; next they run more of the work. Ship
 | Repository URL | https://github.com/harrymove-ctrl/nimbus |
 | Demo URL | https://nimbus-production-6f7b.up.railway.app |
 | Video URL | https://www.youtube.com/watch?v=obMWKCewVTY |
-| Used Tavily? | Yes. The Researcher agent's `web_search` tool (`src/runtime/tools.ts`) calls the live Tavily API (`tavily().search`, 5 results per query) whenever `TAVILY_API_KEY` is configured. |
+| Used Tavily? | Yes. The Researcher agent's `web_search` tool (`src/runtime/tools.ts`) calls the live Tavily API (`tavily().search`, 5 results per query) whenever `TAVILY_API_KEY` is configured. It is set on Railway, so the live demo makes runtime Tavily calls: Hackathon radar run_3066dc6c made three web_search calls, each result tagged source: tavily. |
 | AI tools used while building | Claude Code, Antigravity, Suno (custom background music), Remotion and snapcn (video production). |
 | Learning derived | Significant |
 | AI value for your career | Yes |
@@ -208,7 +209,7 @@ I used all three NVIDIA Nemotron 3 tiers on Nebius Token Factory, routed by agen
 
 3. nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B ($0.06 / $0.24 per 1M tokens) for the Checker, the Learner, and the cost router's step classifier. Verification and memory writing run after every step and every job, so they have to be fast and cheap. Nano costs 1/16th of Ultra per input token.
 
-On our recorded live Morning Brief take on Nebius Token Factory (Oct 29, run_724b8d9d), Run 1 cost $0.0216 across 58,950 tokens compared to $0.0283 with every hop pinned to its ceiling tier, saving 24%. Run 2 (run_915dfc1d) cost $0.0209 (27% saved vs. ceiling).
+On our recorded live Morning Brief take on Nebius Token Factory (Oct 29, run_724b8d9d), Run 1 cost $0.0216 across 58,950 tokens compared to $0.0283 with every hop pinned to its ceiling tier, saving 24%. Run 2 (run_915dfc1d) cost $0.0209 (27% saved vs. ceiling). On production, the Sandboxes run run_668c7252 cost $0.0092 against $0.0132 at ceiling, saving 30%.
 ```
 
 ### How would you rate Nemotron's output quality? (1 to 10)
