@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Nimbus gallery frames</title>
+<meta name="description" content="Twelve 3:2 frames (1800x1200) for the Devpost gallery: real screenshots of Nimbus with the video's callouts on a still dither. Export with scripts/export-gallery.mjs." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet" />
+<style>
+  :root { --bg: #0a0a0a; --paper: #141414; --fg: #f5f5f5; --fg-2: #a3a3a3; --fg-3: #737373; --line: rgba(255,255,255,.1); --mint: #9ff5cf; --blue: #5eb3ff; --violet: #b69cff; --amber: #ffb46b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #050505; color: var(--fg); font-family: Manrope, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 40px 0; }
+  .frame { position: relative; isolation: isolate; width: 1800px; height: 1200px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; padding: 64px 72px 56px; }
+  .frame > * { position: relative; z-index: 1; }
+  .frame > canvas.bg { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; }
+  .top { display: flex; align-items: center; gap: 14px; font-size: 20px; font-weight: 700; color: var(--fg-3); }
+  .top img { width: 40px; height: 40px; border-radius: 9px; }
+  .top .brand { font-size: 24px; font-weight: 800; color: var(--fg); }
+  .top .grow { flex: 1; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; margin-top: 36px; }
+  .chip { display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent, var(--mint)) 45%, transparent); background: color-mix(in srgb, var(--accent, var(--mint)) 10%, transparent); color: var(--accent, var(--mint)); font-family: "JetBrains Mono", monospace; font-size: 15px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 18px; }
+  h1 { margin: 0; font-size: 60px; line-height: 1.06; font-weight: 800; letter-spacing: -.025em; text-wrap: balance; max-width: 1150px; }
+  h1 em { font-style: normal; color: var(--accent, var(--mint)); }
+  .sub { margin: 14px 0 0; font-size: 23px; line-height: 1.45; font-weight: 600; color: var(--fg-2); max-width: 1000px; }
+  .facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; min-width: 360px; }
+  .facts li { display: flex; align-items: baseline; gap: 14px; font-size: 19px; font-weight: 600; color: var(--fg-2); white-space: nowrap; }
+  .facts b { font-size: 30px; font-weight: 800; color: var(--fg); font-variant-numeric: tabular-nums; letter-spacing: -.02em; min-width: 130px; }
+  .shot { position: relative; margin: 28px auto 0; width: 1500px; aspect-ratio: 16 / 9; border-radius: 20px; border: 1px solid rgba(255,255,255,.14); background: #111; overflow: hidden; box-shadow: 0 40px 120px rgba(0,0,0,.7); }
+  .shot img { display: block; width: 100%; height: 100%; object-fit: cover; transform-origin: 0 0; transform: translate(var(--ox, 0), var(--oy, 0)) scale(var(--zoom, 1)); }
+  .shot figcaption { position: absolute; left: 28px; bottom: 28px; max-width: 60%; padding: 16px 22px; border-radius: 16px; background: rgba(23,23,23,.93); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 16px 40px rgba(0,0,0,.5); font-size: 24px; line-height: 1.3; font-weight: 700; }
+  .shot figcaption small { display: block; margin-top: 4px; font-size: 19px; font-weight: 600; color: var(--fg-2); }
+  .shot figcaption.tr { left: auto; right: 28px; bottom: auto; top: 28px; }
+  .shot figcaption.tl { bottom: auto; top: 28px; }
+  .foot { margin-top: auto; display: flex; align-items: center; gap: 20px; font-size: 18px; font-weight: 600; color: var(--fg-3); padding-top: 24px; }
+  .foot .grow { flex: 1; }
+  /* number cards (the dithercn static card) */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 44px; }
+  .card { position: relative; isolation: isolate; overflow: hidden; border-radius: 24px; background: var(--paper); border: 1px solid var(--line); padding: 30px 32px 0; min-height: 300px; display: flex; flex-direction: column; gap: 6px; }
+  .card canvas { position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; width: 100%; height: 34%; display: block; }
+  .card > span { position: relative; z-index: 1; }
+  .card .k { font-size: 21px; font-weight: 600; color: var(--fg-2); }
+  .card .v { font-size: 64px; line-height: 1; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .card .n { padding-top: 16px; font-size: 19px; line-height: 1.4; font-weight: 600; color: var(--fg-2); }
+  .cmd { display: inline-flex; margin-top: 28px; font-family: "JetBrains Mono", monospace; font-size: 24px; color: var(--mint); background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 14px; padding: 16px 22px; }
+  .links { list-style: none; margin: 28px 0 0; padding: 0; display: flex; flex-direction: column; gap: 12px; font-size: 24px; font-weight: 600; color: var(--fg-2); }
+  .links b { color: var(--fg); font-weight: 800; margin-right: 10px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; margin-top: 36px; align-items: center; flex: 1; }
+  .split .shot { width: 100%; margin: 0; aspect-ratio: 4 / 3; }
+</style>
+</head>
+<body>
+
+<!-- 01 · Hero (cover) -->
+<section class="frame" data-name="hero" style="--accent: var(--mint)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.85,0.9" data-radius="0.6" data-from="0.22" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>Nebius × NVIDIA Global AI Hackathon · Personal AI track</span></header>
+  <div class="head"><div><span class="chip">Runs on Nemotron 3 · Nebius Token Factory</span><h1>Your standing work, done every morning by a crew that <em>asks before it acts</em>.</h1></div>
+    <ul class="facts"><li><b>$0.0216</b>one real morning</li><li><b>24&nbsp;%</b>saved by the router</li><li><b>0</b>sent without your OK</li></ul></div>
+  <figure class="shot" style="--zoom: 1.6; --ox: -40%; --oy: -24%"><img src="../../public/landing/loop-1.jpg" alt="" /><figcaption class="tl">The plan arrives first<small>who does what, and the price, before anything runs</small></figcaption></figure>
+  <footer class="foot"><span>Free and open source · MIT · github.com/harrymove-ctrl/nimbus</span><span class="grow"></span><span>01</span></footer>
+</section>
+
+<!-- 02 · One row per agent -->
+<section class="frame" data-name="crew" style="--accent: var(--violet)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.2,0.95" data-radius="0.6" data-from="0.18" data-to="0" data-ink="#8c6fe0" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>02 · The crew</span></header>
+  <div class="head"><div><span class="chip">You set the goal. It plans.</span><h1>One row per agent. <em>They work at the same time.</em></h1></div>
+    <ul class="facts"><li><b>Ultra</b>plans and reviews</li><li><b>Super</b>researches and writes</li><li><b>Nano</b>checks and learns</li></ul></div>
+  <figure class="shot"><img src="../demo/gallery/gallery-2.png" alt="" /></figure>
+  <footer class="foot"><span>Frame from the recorded take of Oct 29, real models</span><span class="grow"></span><span>02</span></footer>
+</section>
+
+<!-- 03 · Every step is open -->
+<section class="frame" data-name="agent-io" style="--accent: var(--blue)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.08,0.95" data-radius="0.5" data-from="0.16" data-to="0" data-ink="#3f86c8" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>03 · Agent I/O</span></header>
+  <div class="head"><div><span class="chip">No spinner, no bubble</span><h1>Click a segment. <em>Read the route, the brief, the tool call, the result.</em></h1></div>
+    <ul class="facts"><li><b>23</b>model calls in run one</li><li><b>21</b>tool calls, all open</li><li><b>58,950</b>tokens across the crew</li></ul></div>
+  <figure class="shot" style="--zoom: 1.55; --ox: -52%; --oy: -3%"><img src="../../public/landing/loop-4.jpg" alt="" /><figcaption class="tl">Every step is open<small>click one, read what it read</small></figcaption></figure>
+  <footer class="foot"><span>Researcher on Nemotron 3 Super, reading fixtures/inbox/01-client.eml</span><span class="grow"></span><span>03</span></footer>
+</section>
+
+<!-- 04 · Your morning, already read -->
+<section class="frame" data-name="brief" style="--accent: var(--amber)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.92,0.95" data-radius="0.55" data-from="0.16" data-to="0" data-ink="#d08a3e" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>04 · The brief</span></header>
+  <div class="head"><div><span class="chip">One page at 08:00</span><h1>Your morning, <em>already read</em>.</h1><p class="sub">Inbox, calendar and GitHub notifications on one page: what needs you today, drafts for the replies that matter, what can wait.</p></div></div>
+  <figure class="shot" style="--zoom: 1.6; --ox: -62%; --oy: -4%"><img src="../../public/landing/loop-5.jpg" alt="" /><figcaption class="tl">Needs you today<small>the client's contract, the teammate's slot, the reviewer's question</small></figcaption></figure>
+  <footer class="foot"><span>The Writer's document, run one, real models</span><span class="grow"></span><span>04</span></footer>
+</section>
+
+<!-- 05 · Nothing leaves without you -->
+<section class="frame" data-name="approvals" style="--accent: var(--amber)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.9,1.05" data-radius="0.5" data-from="0.16" data-to="0" data-ink="#d08a3e" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>05 · Approvals</span></header>
+  <div class="head"><div><span class="chip">Every side effect is a card</span><h1><em>Nothing leaves</em> without you.</h1></div>
+    <ul class="facts"><li><b>3</b>sends, each approved by you</li><li><b>1</b>rule saved from "always allow"</li><li><b>0</b>sent without a card</li></ul></div>
+  <figure class="shot"><img src="../demo/gallery/gallery-3.png" alt="" /></figure>
+  <footer class="foot"><span>The approval card for the reply to the client, run one</span><span class="grow"></span><span>05</span></footer>
+</section>
+
+<!-- 06 · One rule saved -->
+<section class="frame" data-name="rules" style="--accent: var(--mint)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.1,0.9" data-radius="0.55" data-from="0.18" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>06 · Rules</span></header>
+  <div class="head"><div><span class="chip">Approve &amp; always allow</span><h1>One rule saved. <em>You can revoke it anytime.</em></h1><p class="sub">The rule is one line in the workstream's SKILL.md, by recipient. The next morning that reply goes out with no card; everything else still asks.</p></div></div>
+  <figure class="shot" style="--zoom: 1.6; --ox: -20%; --oy: -25%"><img src="../../public/landing/loop-6.jpg" alt="" /><figcaption>Approve &amp; always allow<small>saves one rule, by recipient, that you can revoke</small></figcaption></figure>
+  <footer class="foot"><span>The reviewer's reply, run one</span><span class="grow"></span><span>06</span></footer>
+</section>
+
+<!-- 07 · What it learned -->
+<section class="frame" data-name="memory" style="--accent: var(--mint)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.9,1.05" data-radius="0.5" data-from="0.16" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>07 · Memory</span></header>
+  <div class="head"><div><span class="chip">After every run</span><h1>What it learned: <em>its own how-to, rewritten.</em></h1></div>
+    <ul class="facts"><li><b>8</b>memories after run one</li><li><b>$0.022</b>run summary</li><li><b>24&nbsp;%</b>under baseline</li></ul></div>
+  <figure class="shot" style="--zoom: 1.6; --ox: -20%; --oy: -34%"><img src="../../public/landing/loop-7.jpg" alt="" /><figcaption>Policy saved · 8 memories<small>Nano writes them, the next run asks less</small></figcaption></figure>
+  <footer class="foot"><span>End of run one, real models</span><span class="grow"></span><span>07</span></footer>
+</section>
+
+<!-- 08 · Run two, cheaper -->
+<section class="frame" data-name="run-two" style="--accent: var(--mint)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.08,1.0" data-radius="0.5" data-from="0.16" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>08 · The next morning</span></header>
+  <div class="head"><div><span class="chip">Run two starts from what it learned</span><h1>The next morning, <em>cheaper and quieter</em>.</h1></div>
+    <ul class="facts"><li><b>$0.0209</b>run two, 3&nbsp;% cheaper</li><li><b>27&nbsp;%</b>saved by the router</li><li><b>16</b>memories after two mornings</li></ul></div>
+  <figure class="shot" style="--zoom: 1.5; --ox: -10%; --oy: -2%"><img src="../../public/landing/loop-8.jpg" alt="" /><figcaption class="tr">learned · 6 mem · 1 rule<small>the badge on the Orchestrator's row</small></figcaption></figure>
+  <footer class="foot"><span>Run two of the recorded take, real models</span><span class="grow"></span><span>08</span></footer>
+</section>
+
+<!-- 09 · Nemotron on Nebius -->
+<section class="frame" data-name="nebius" style="--accent: var(--blue)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.5,1.1" data-radius="0.55" data-from="0.18" data-to="0" data-ink="#3f86c8" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>09 · How it uses Nebius</span></header>
+  <div class="head"><div><span class="chip">Three sizes, one endpoint</span><h1>Priced per step. <em>The bill is on screen.</em></h1><p class="sub">A classifier routes every hop to the cheapest Nemotron that can do it. Every call goes to api.tokenfactory.nebius.com.</p></div></div>
+  <figure class="shot" style="aspect-ratio: 16/8"><img src="../demo/gallery/gallery-4.png" alt="" style="--zoom: 1.12; --ox: -6%; --oy: -8%" /></figure>
+  <footer class="foot"><span>Every real model call of the six recording takes, time of day × cost</span><span class="grow"></span><span>09</span></footer>
+</section>
+
+<!-- 10 · Numbers -->
+<section class="frame" data-name="measured" style="--accent: var(--mint)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.5,1.2" data-radius="0.5" data-from="0.2" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>10 · Measured</span></header>
+  <div class="head"><div><span class="chip">Two real mornings, Oct 29, 2026</span><h1>What one morning <em>actually cost</em>.</h1><p class="sub">Measured on the recorded take: two runs of the Morning brief on real Nemotron 3 models, the second starting from what the first learned. Every number is in docs/video/RELEASE.md.</p></div></div>
+  <div class="cards">
+    <div class="card"><canvas data-dither data-from="0.42" data-to="0" data-ink="#9ff5cf"></canvas><span class="k">One morning, all five agents</span><span class="v">$0.0216</span><span class="n">The next morning $0.0209, 3&nbsp;% cheaper</span></div>
+    <div class="card"><canvas data-dither data-from="0.42" data-to="0" data-ink="#9ff5cf"></canvas><span class="k">Saved by the cost router</span><span class="v">24&nbsp;%</span><span class="n">27&nbsp;% the next morning, against all-Ultra</span></div>
+    <div class="card"><canvas data-dither data-from="0.42" data-to="0" data-ink="#9ff5cf"></canvas><span class="k">Replies sent without your OK</span><span class="v">0</span><span class="n">3 sends, each with a card; 1 rule saved</span></div>
+    <div class="card"><canvas data-dither data-from="0.25" data-to="0" data-ink="#e6e6e6" data-cell="3"></canvas><span class="k">Tokens, run one</span><span class="v">58,950</span><span class="n">23 model calls, 21 tool calls</span></div>
+    <div class="card"><canvas data-dither data-from="0.25" data-to="0" data-ink="#e6e6e6" data-cell="3"></canvas><span class="k">Memories after two mornings</span><span class="v">16</span><span class="n">plus its own how-to, rewritten</span></div>
+    <div class="card"><canvas data-dither data-from="0.25" data-to="0" data-ink="#e6e6e6" data-cell="3"></canvas><span class="k">Day cap on the live demo</span><span class="v">$1</span><span class="n">runs stop there, $0.25 per run</span></div>
+  </div>
+  <footer class="foot"><span>nimbus-production-6f7b.up.railway.app · live on Nebius Token Factory</span><span class="grow"></span><span>10</span></footer>
+</section>
+
+<!-- 11 · Chat app -->
+<section class="frame" data-name="chat-app" style="--accent: var(--mint)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.95,0.85" data-radius="0.5" data-from="0.14" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>11 · Always on</span></header>
+  <div class="split">
+    <div><span class="chip">Yours · always on · open source</span><h1>Same crew in <em>your chat app</em>.</h1><p class="sub">An OpenAI-compatible endpoint lets OpenClaw or Hermes drive the same crew. Approvals come back as replies. Schedules run in the app.</p>
+      <ul class="links"><li><b>Live</b>nimbus-production-6f7b.up.railway.app/welcome</li><li><b>Code</b>github.com/harrymove-ctrl/nimbus</li><li><b>Video</b>youtube.com/watch?v=obMWKCewVTY · 2:40</li></ul></div>
+    <figure class="shot" style="background: #0a0a0a; --zoom: 1.1; --ox: 4%; --oy: -4%"><img src="../demo/gallery/gallery-5.png" alt="" style="object-fit: contain" /></figure>
+  </div>
+  <footer class="foot"><span>The endpoint's live run run_6b393ab6 cost $0.0282</span><span class="grow"></span><span>11</span></footer>
+</section>
+
+<!-- 12 · Try it -->
+<section class="frame" data-name="try-it" style="--accent: var(--mint)">
+  <canvas class="bg" data-dither data-mode="radial" data-center="0.5,1.3" data-radius="0.42" data-from="0.22" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a"></canvas>
+  <header class="top"><img src="../../public/brand/favicon-64.png" alt="" /><span class="brand">Nimbus</span><span class="grow"></span><span>12 · Try it</span></header>
+  <div class="split">
+    <div><span class="chip">Two minutes, no keys</span><h1>Try it in two minutes with <em>no keys</em>, or live on Nebius.</h1><p class="sub">MIT. pnpm dev runs it on a scripted mock model with no keys at all; add a Nebius Token Factory key and the same crew runs on Nemotron 3.</p>
+      <span class="cmd">git clone github.com/harrymove-ctrl/nimbus &amp;&amp; pnpm dev</span>
+      <ul class="links"><li><b>Live</b>nimbus-production-6f7b.up.railway.app</li><li><b>Code</b>github.com/harrymove-ctrl/nimbus</li><li><b>Video</b>youtube.com/watch?v=obMWKCewVTY</li></ul></div>
+    <figure class="shot" style="--zoom: 1.0"><img src="../../public/landing/loop-9.jpg" alt="" /><figcaption class="tl">The 60-second tour<small>blur, focus, one thing at a time</small></figcaption></figure>
+  </div>
+  <footer class="foot"><span>Built alone in three days for the Nebius × NVIDIA Global AI Hackathon, Personal AI track</span><span class="grow"></span><span>12</span></footer>
+</section>
+
+<script>
+(function () {
+  var B8 = [[0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],[12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],[3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],[15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]];
+  function num(v, d) { var n = parseFloat(v); return isNaN(n) ? d : n; }
+  function draw(c) {
+    var d = c.dataset, w = c.offsetWidth, h = c.offsetHeight; if (!w || !h) return;
+    var cell = num(d.cell, 5), from = num(d.from, 0), to = num(d.to, 1), mode = d.mode || "linear", dpr = 2;
+    var cols = Math.ceil(w / cell), rows = Math.ceil(h / cell), px = cell * dpr;
+    c.width = cols * px; c.height = rows * px;
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = d.paper || getComputedStyle(c.parentElement).backgroundColor || "#141414"; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.fillStyle = d.ink || "#9ff5cf";
+    var cc = (d.center || "0.5,0.5").split(","), cx = num(cc[0], .5), cy = num(cc[1], .5), rad = num(d.radius, 1), aspect = w / h;
+    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
+      var u = (x + .5) / cols, v = (y + .5) / rows, pos;
+      if (mode === "radial") { var dx = (u - cx) * aspect, dy = v - cy; pos = Math.min(1, Math.sqrt(dx * dx + dy * dy) / rad); } else pos = 1 - v;
+      if (from + (to - from) * pos > (B8[y & 7][x & 7] + .5) / 64) ctx.fillRect(x * px, y * px, px, px);
+    }
+  }
+  function all() { document.querySelectorAll("canvas[data-dither]").forEach(draw); }
+  all(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(all); window.addEventListener("load", all);
+})();
+</script>
+</body>
+</html>
