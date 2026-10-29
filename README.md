@@ -125,6 +125,10 @@ Every clip in our 2:40 demo video and `/welcome` tour comes from real runs again
 
 ---
 
+## Nebius Token Factory Sandboxes (Beta)
+
+Set `NEBIUS_PROJECT_ID` (tokenfactory.nebius.com/project/api-keys) next to `NEBIUS_API_KEY` and the crew's `run_code` tool stops running model-written code on your machine: each call uploads the script and the attached data to Nebius Token Factory Sandboxes, spawns one disposable VM from `python:3.12-slim` or `node:22-slim` with networking off, polls the operation and brings back stdout, stderr and the exit code. Agent I/O shows a **Nebius Sandbox** chip on the call with the image, the elapsed time and the operation id. Without the project id, or if the sandbox call fails, the same code runs as a local subprocess and the result says so. `pnpm sandbox:probe` checks the key, lists the public images and does one real run. Design notes: `docs/SANDBOX.md`.
+
 ## What Real Nemotron 3 Models Taught Us Beyond the Mock (7 Engineering Fixes)
 
 Running 198 live calls across six recording takes (`$0.49` total on Nebius Token Factory) exposed seven real multi-agent behaviors that our scripted mock never triggered:

@@ -234,6 +234,7 @@ function AgentTab({ view, selected }: { view: RunView; selected: SegRef | null }
       {data.calls.map((c) => (
         <Block key={c.callId} title={`Tool call · ${c.tool}${c.ok === false ? " · failed" : ""}`}>
           <Pre>{typeof c.input === "string" ? c.input : JSON.stringify(c.input, null, 2)}</Pre>
+          {c.tool === "run_code" && <SandboxLine output={c.output} />}
           {c.output !== undefined && (
             <>
               <p className="mt-2 text-[11px] font-bold uppercase tracking-wider text-neutral-500">Result</p>
@@ -254,6 +255,28 @@ function AgentTab({ view, selected }: { view: RunView; selected: SegRef | null }
     </div>
     </>
   );
+}
+
+/** Where a run_code call ran: in a Nebius Token Factory Sandbox (an isolated VM, networking off) or as a local subprocess. */
+function SandboxLine({ output }: { output: unknown }) {
+  const o = (output && typeof output === "object" ? output : {}) as { where?: string; sandbox?: { image?: string; elapsedS?: number | null; operation?: string; status?: string }; sandboxError?: string };
+  if (o.where === "nebius-sandbox" && o.sandbox) {
+    return (
+      <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] font-semibold text-neutral-300">
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-[var(--rb-accent)]/40 bg-[var(--rb-accent)]/10 px-1.5 py-0.5 text-[11px] font-bold text-[var(--rb-accent)]">Nebius Sandbox</span>
+        <span>
+          ran in an isolated VM at Nebius, networking off · {o.sandbox.image}
+          {typeof o.sandbox.elapsedS === "number" ? ` · ${o.sandbox.elapsedS.toFixed(1)} s` : ""}
+        </span>
+        {o.sandbox.operation && <span className="font-mono text-[11px] text-neutral-500">op {o.sandbox.operation.slice(0, 8)}</span>}
+      </p>
+    );
+  }
+  if (o.where === "local" && o.sandboxError) {
+    return <p className="mt-2 text-[12px] font-semibold text-neutral-400">Nebius Sandbox unavailable ({o.sandboxError.slice(0, 120)}); ran as a local subprocess instead.</p>;
+  }
+  if (o.where === "local") return <p className="mt-2 text-[12px] font-semibold text-neutral-500">Ran as a local subprocess (set NEBIUS_PROJECT_ID to run it in a Nebius Sandbox).</p>;
+  return null;
 }
 
 function Block({ title, children }: { title: string; children: ReactNode }) {

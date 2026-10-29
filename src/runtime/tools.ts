@@ -8,6 +8,7 @@ import { z } from "zod";
 import { dataDir } from "@/db";
 import type { AgentRole } from "@/lib/models";
 import { modelMode } from "@/lib/tokenfactory";
+import { sandboxEnabled, sandboxRun, type SandboxResult } from "./sandbox";
 import type { RunCtx } from "./context";
 
 const role = z.enum(["researcher", "analyst", "writer", "checker"]);
@@ -37,7 +38,7 @@ export type ToolName = keyof typeof SCHEMAS;
 const DESCRIPTIONS: Record<ToolName, string> = {
   web_search: "Search the web (Tavily). Returns title, url and snippet for each result.",
   fetch_url: "Fetch a page and return its readable text (first 20k characters).",
-  run_code: "Run a short Python or Node script in a sandboxed temp workspace that already contains the attached data files (e.g. data.csv). 30 s timeout. language \"shell\" runs one allow-listed command in the repository: pnpm eval [--only <golden>] [--patch <artifact>], pnpm eval:ab, pnpm typecheck, git apply --check <artifact>, git diff.",
+  run_code: "Run a short Python or Node script in an isolated sandbox (a Nebius Token Factory Sandbox when configured, networking off) that already contains the attached data files (e.g. data.csv). 30 s timeout. language \"shell\" runs one allow-listed command in the repository: pnpm eval [--only <golden>] [--patch <artifact>], pnpm eval:ab, pnpm typecheck, git apply --check <artifact>, git diff.",
   write_artifact: "Create or update a document or code artifact. Calling it again with the same artifactId creates the next version.",
   send_message: "Send a message to a channel. Always needs the person's approval.",
   read_repo: "Read the repository, read-only: action read (a file), list (a directory), diff (git diff, optionally of one path or against a ref) or changed (files changed since HEAD). Never writes.",
@@ -118,13 +119,36 @@ export async function fetchUrl(url: string) {
   return { url, text: text.slice(0, 20_000) };
 }
 
+export type RunCodeResult = { ok: boolean; exitCode: number | null; stdout: string; stderr: string; workspace: string; where: "nebius-sandbox" | "local"; sandbox?: SandboxResult["sandbox"]; sandboxError?: string };
+
 /**
- * Sandboxed subprocess: a per-run temp workspace, stripped environment (no API keys), 30 s timeout,
- * output capped. It does NOT block the network: OpenShell is the production path for that (README).
+ * run_code. With Nebius Token Factory Sandboxes on (NEBIUS_PROJECT_ID set), a Python or Node script runs in a fresh
+ * isolated VM at Nebius with networking off and the attached data files under /work; nothing model-written touches
+ * this server. Otherwise, or if the sandbox call fails, it runs as a local subprocess: a per-run temp workspace,
+ * stripped environment (no API keys), 30 s timeout, output capped. The result says which one happened (`where`).
  */
-export function runCode(ctx: RunCtx, i: { language: "python" | "node" | "shell"; filename?: string; code: string }): Promise<{ ok: boolean; exitCode: number | null; stdout: string; stderr: string; workspace: string }> {
+export async function runCode(ctx: RunCtx, i: { language: "python" | "node" | "shell"; filename?: string; code: string }): Promise<RunCodeResult> {
   mkdirSync(ctx.workspace, { recursive: true });
-  if (i.language === "shell") return runShell(ctx, i.code);
+  if (i.language === "shell") return { ...(await runShell(ctx, i.code)), where: "local" };
+  const script = { language: i.language, filename: i.filename, code: i.code };
+  if (sandboxEnabled()) {
+    const file = (i.filename ?? (i.language === "python" ? "script.py" : "script.js")).replace(/[^\w.-]/g, "_");
+    const files = readdirSync(fixturesDir())
+      .filter((n) => n.endsWith(".csv"))
+      .map((n) => ({ path: n, content: readFileSync(fixturesDir(n)) }));
+    try {
+      const r = await sandboxRun({ language: script.language, file, code: i.code, files, timeoutS: 60 });
+      return { ok: r.ok, exitCode: r.exitCode, stdout: r.stdout, stderr: r.timedOut ? `${r.stderr}\n[sandbox: timed out]`.trim() : r.stderr, workspace: "/work", where: "nebius-sandbox", sandbox: r.sandbox };
+    } catch (e) {
+      const sandboxError = e instanceof Error ? e.message : String(e);
+      console.warn("[nimbus] sandbox unavailable, running locally:", sandboxError);
+      return { ...(await runLocal(ctx, script)), sandboxError };
+    }
+  }
+  return runLocal(ctx, script);
+}
+
+function runLocal(ctx: RunCtx, i: { language: "python" | "node"; filename?: string; code: string }): Promise<RunCodeResult> {
   // the workstream's attached data files (sample CSVs live in fixtures/)
   for (const f of readdirSync(fixturesDir()).filter((n) => n.endsWith(".csv"))) if (!existsSync(path.join(ctx.workspace, f))) copyFileSync(fixturesDir(f), path.join(ctx.workspace, f));
   const file = (i.filename ?? (i.language === "python" ? "script.py" : "script.js")).replace(/[^\w.-]/g, "_");
@@ -136,8 +160,8 @@ export function runCode(ctx: RunCtx, i: { language: "python" | "node" | "shell";
     child.stderr.on("data", (d) => (err = (err + d).slice(-2000)));
     // macOS python3 shim noise (xcrun cache file) is not the script's error
     const clean = (e: string) => e.split("\n").filter((l) => !l.includes("xcrun_db")).join("\n").trim();
-    child.on("error", (e) => resolve({ ok: false, exitCode: null, stdout: out, stderr: String(e), workspace: ctx.workspace }));
-    child.on("close", (code) => resolve({ ok: code === 0, exitCode: code, stdout: out, stderr: clean(err), workspace: ctx.workspace }));
+    child.on("error", (e) => resolve({ ok: false, exitCode: null, stdout: out, stderr: String(e), workspace: ctx.workspace, where: "local" }));
+    child.on("close", (code) => resolve({ ok: code === 0, exitCode: code, stdout: out, stderr: clean(err), workspace: ctx.workspace, where: "local" }));
   });
 }
 
