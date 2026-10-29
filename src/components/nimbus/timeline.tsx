@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Play, Square } from "lucide-react";
+import { ChevronDown, ChevronUp, MousePointerClick, Play, Square } from "lucide-react";
 import { GlowCloud } from "@/components/glow-cloud";
 import { ROLE_COLOR, TIER_LABEL, TIER_SHORT, fmtCost3, fmtTokens, laneName, type Lane, type RunView, type Seg } from "@/lib/run-view";
 import { useTween } from "@/hooks/use-tween";
@@ -49,6 +49,21 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
   const followLanes = useRef(true);
   const [cw, setCw] = useState(640);
   const [tip, setTip] = useState<{ x: number; y: number; text: string; sub: string } | null>(null);
+  // One-time hint that the pills open: shown until the first click on a segment (remembered per browser).
+  const [hinted, setHinted] = useState(true);
+  useEffect(() => {
+    try {
+      setHinted(localStorage.getItem("nimbus.seg-hint") === "1");
+    } catch {
+      setHinted(false);
+    }
+  }, []);
+  const dismissHint = () => {
+    setHinted(true);
+    try {
+      localStorage.setItem("nimbus.seg-hint", "1");
+    } catch {}
+  };
 
   useEffect(() => {
     const el = chartRef.current;
@@ -252,6 +267,11 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
             }}
             className="relative min-h-0 flex-1 overflow-y-auto"
           >
+            {!planning && !hinted && !selected && view.lanes.length < 4 && view.lanes.some((l) => l.segments.length > 0) && (
+              <div className="nb-rise pointer-events-none absolute bottom-2 right-3 z-10 flex items-center gap-1.5 rounded-full border border-white/10 bg-neutral-900/90 px-2.5 py-1 text-[12px] font-bold text-neutral-200 shadow-lg backdrop-blur-md">
+                <MousePointerClick className="size-3.5 text-[var(--rb-accent)]" aria-hidden="true" /> Click any step to read what it thought and did
+              </div>
+            )}
             {planning && (
               <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center bg-neutral-950/80 backdrop-blur-[2px]">
                 <div className="flex flex-col items-center gap-1">
@@ -343,19 +363,23 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
                       const labelW = s.label.length * 6.4;
                       const label = s.failed ? "" : s.kind === "wait" ? (w >= Math.max(160, labelW + 24) ? s.label : "") : w >= labelW + 30 ? s.label : "";
                       const routed = s.route && (s.route.chosen !== s.route.ceiling || s.route.fallback);
+                      // a pill too short for its label names itself just after the pill, when the lane has room before the next step
+                      const nextStart = l.segments.reduce<number | null>((m, o) => (o.startMs > s.startMs && (m === null || o.startMs < m) ? o.startMs : m), null);
+                      const room = (nextStart === null ? cw : x(nextStart)) - (x0 + w);
+                      const after = !label && !s.failed && s.kind !== "wait" && room >= labelW + 18 ? s.label : "";
                       return (
                         <g
                           key={`${s.instance}:${s.id}`}
                           id={segDomId(s)}
                           opacity={dim(s.instance)}
-                          className="cursor-pointer outline-none transition-opacity duration-150"
+                          className="group cursor-pointer outline-none transition-opacity duration-150"
                           tabIndex={0}
                           role="button"
                           aria-label={`${laneName(l.instance, l.role)}: ${s.label}${s.failed ? " (failed)" : ""}`}
                           data-cuelume-select=""
-                          onClick={() => onSelect(s)}
+                          onClick={() => (dismissHint(), onSelect(s))}
                           onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") return void (e.preventDefault(), onSelect(s));
+                            if (e.key === "Enter" || e.key === " ") return void (e.preventDefault(), dismissHint(), onSelect(s));
                             const t = neighbour(s, e.key);
                             if (t) {
                               e.preventDefault();
@@ -365,7 +389,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
                           }}
                           onMouseMove={(e) => {
                             const r = chartRef.current?.getBoundingClientRect();
-                            if (r) setTip({ x: e.clientX - r.left, y: i * LANE_H, text: s.label, sub: `${((end - s.startMs) / 1000).toFixed(1)}s${s.route ? ` · ${TIER_LABEL[s.route.chosen]}` : ""}` });
+                            if (r) setTip({ x: e.clientX - r.left, y: i * LANE_H, text: s.label, sub: `${((end - s.startMs) / 1000).toFixed(1)}s${s.route ? ` · ${TIER_LABEL[s.route.chosen]}` : ""} · click to open` });
                           }}
                           onMouseLeave={() => setTip(null)}
                         >
@@ -382,6 +406,7 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
                             strokeWidth={s.failed ? 1.75 : 1}
                             className={cx(!reducedMotion && s.endMs === undefined && "nimbus-seg-live", s.failed && "nb-flash")}
                           />
+                          {!isSel && <rect x={x0 - 2.5} y={y - 2.5} width={w + 5} height={SEG_H + 5} rx={(SEG_H + 5) / 2} fill="none" stroke="white" strokeOpacity={0.6} strokeWidth={1.5} className="opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100" />}
                           {isSel && <rect x={x0 - 2.5} y={y - 2.5} width={w + 5} height={SEG_H + 5} rx={(SEG_H + 5) / 2} fill="none" stroke="white" strokeWidth={1.5} />}
                           {s.failed && (
                             <text className="nb-fade-late" x={x0 + w / 2} y={y + SEG_H / 2 + 5} textAnchor="middle" fontSize={14} fontWeight={700} fill={RED}>
@@ -391,6 +416,11 @@ export function Timeline({ view, now, selected, onSelect, onClearSelection, fill
                           {label && (
                             <text x={s.kind === "wait" ? x0 + w / 2 : x0 + 14 + 8} textAnchor={s.kind === "wait" ? "middle" : "start"} y={y + SEG_H / 2 + 4} fontSize={11} fontWeight={700} fill="oklch(0.2 0.01 285)" className="pointer-events-none select-none">
                               {label}
+                            </text>
+                          )}
+                          {after && (
+                            <text x={x0 + w + 8} y={y + SEG_H / 2 + 4} fontSize={11} fontWeight={600} fill="currentColor" opacity={0.7} className="pointer-events-none select-none">
+                              {after}
                             </text>
                           )}
                           {routed && (
