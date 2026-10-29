@@ -92,7 +92,7 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
         </div>
       </div>
       {error && <p className="text-[13px] text-red-300">{error}</p>}
-      <div className="flex justify-end gap-2 pt-1">
+      <div className="sticky -bottom-5 -mx-5 -mb-5 flex justify-end gap-2 rounded-b-[inherit] bg-neutral-900/92 px-5 pb-5 pt-3 backdrop-blur-md">
         <button type="button" data-cuelume-close="" onClick={onCancel} className={cx(secondaryButton, buttonSm)}>
           Cancel
         </button>
