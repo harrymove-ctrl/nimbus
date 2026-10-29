@@ -38,7 +38,7 @@ export type ToolName = keyof typeof SCHEMAS;
 const DESCRIPTIONS: Record<ToolName, string> = {
   web_search: "Search the web (Tavily). Returns title, url and snippet for each result.",
   fetch_url: "Fetch a page and return its readable text (first 20k characters).",
-  run_code: "Run a short Python or Node script in an isolated sandbox (a Nebius Token Factory Sandbox when configured, networking off) that already contains the attached data files (e.g. data.csv). Standard library only: no pandas, numpy or npm packages; parse CSV with the csv module or fs. 30 s timeout. language \"shell\" runs one allow-listed command in the repository: pnpm eval [--only <golden>] [--patch <artifact>], pnpm eval:ab, pnpm typecheck, git apply --check <artifact>, git diff.",
+  run_code: "Run a short Python or Node script in an isolated sandbox (a Nebius Token Factory Sandbox when configured, networking off) that already contains the attached data files (e.g. data.csv). Python 3 has pandas and numpy in the Nebius sandbox (the csv module always works); Node 20 has no npm packages. No network, no pip or npm install. 60 s timeout. language \"shell\" runs one allow-listed command in the repository: pnpm eval [--only <golden>] [--patch <artifact>], pnpm eval:ab, pnpm typecheck, git apply --check <artifact>, git diff.",
   write_artifact: "Create or update a document or code artifact. Calling it again with the same artifactId creates the next version.",
   send_message: "Send a message to a channel. Always needs the person's approval.",
   read_repo: "Read the repository, read-only: action read (a file), list (a directory), diff (git diff, optionally of one path or against a ref) or changed (files changed since HEAD). Never writes.",
