@@ -40,26 +40,53 @@ export type MockTurn = {
 type Script = { role: string; turns: MockTurn[] };
 
 const scripts = new Map<string, Script>();
+/** Workstreams with a crew of their own (set at run start by live.ts): what the mock plays when no fixture scripts them. */
+const mockCrews = new Map<string, { roles: string[]; skill: string }>();
+export const setMockCrew = (workstreamId: string, roles: string[], skill = "") => mockCrews.set(workstreamId, { roles, skill });
 /**
  * Which script plays this agent. `ws` is the workstream id, plus "~2" once the run starts with memories (the second
  * run of a workstream behaves differently: it skips what it already learned), plus "+<answer>" once the person has
  * answered the run's first question (the choice changes what the crew does next: "+golden" patches the golden).
  * Directories tried, first hit wins, each as <instance>.json (writer-2: the second Writer of a run) then <role>.json:
- *   <ws>, <ws without +answer>, <ws without ~2>, <ws without either>; then fixtures/mock-model/<role>.json (Checkout).
+ *   <ws>, <ws without +answer>, <ws without ~2>, <ws without either>; a workstream made from a template
+ *   (ws-u-<template>-<hex>) then tries the same under tpl-<template>; then fixtures/mock-model/<role>.json (Checkout).
+ * A crew of its own with no fixture plays crewScript(): plan with its roles, spawn them, finish.
  */
 export function mockScript(role: string, ws?: string, instance?: string): Script {
-  const key = `${ws ?? ""}/${instance ?? role}`;
+  const parts = ws?.match(/^([^~+]+)(~\d+)?(\+.+)?$/);
+  const crew = parts ? mockCrews.get(parts[1]) : undefined;
+  const key = `${ws ?? ""}/${instance ?? role}${crew ? `/${crew.roles.join()}` : ""}`;
   let s = scripts.get(key);
   if (!s) {
     const root = path.join(process.cwd(), "fixtures", "mock-model");
-    const parts = ws?.match(/^([^~+]+)(~\d+)?(\+.+)?$/);
-    const dirs = parts ? [parts[1] + (parts[2] ?? "") + (parts[3] ?? ""), parts[1] + (parts[2] ?? ""), parts[1] + (parts[3] ?? ""), parts[1]].filter((d, i, a) => a.indexOf(d) === i) : [];
+    const own = parts ? [parts[1] + (parts[2] ?? "") + (parts[3] ?? ""), parts[1] + (parts[2] ?? ""), parts[1] + (parts[3] ?? ""), parts[1]].filter((d, i, a) => a.indexOf(d) === i) : [];
+    const tpl = parts?.[1].match(/^ws-u-(.+)-[0-9a-f]{4}$/)?.[1];
+    const dirs = tpl ? [...own, ...own.map((d) => d.replace(parts![1], `tpl-${tpl}`))] : own;
     const names = [...(instance ? [instance] : []), role];
-    const hit = dirs.flatMap((d) => names.map((n) => path.join(root, d, `${n}.json`))).find((f) => existsSync(f)) ?? path.join(root, `${role}.json`);
-    s = JSON.parse(readFileSync(hit, "utf8")) as Script;
+    const hit = dirs.flatMap((d) => names.map((n) => path.join(root, d, `${n}.json`))).find((f) => existsSync(f));
+    if (!hit && crew) s = crewScript(role, crew);
+    else s = JSON.parse(readFileSync(hit ?? path.join(root, `${role}.json`), "utf8")) as Script;
     scripts.set(key, s);
   }
   return s;
+}
+
+/** The mock for a crew nobody scripted: the Orchestrator plans its roles, runs them side by side and finishes; each role reports one line. */
+function crewScript(role: string, crew: { roles: string[]; skill: string }): Script {
+  const title = (r: string) => r.replace(/[-_]+/g, " ").replace(/^./, (c) => c.toUpperCase());
+  const brief = (r: string) => ({ role: r, brief: `${title(r)}: your part of the goal, reported back in a few lines.` });
+  if (role === "orchestrator")
+    return {
+      role,
+      turns: [
+        { label: "Planning the run", complexity: 2, usage: { in: 2400, out: 420 }, toolCalls: [{ name: "plan", input: { agents: crew.roles.map(brief), tools: [], estimate: { costUsd: 0.02, tokens: 12000, label: `≈ $0.02 · ${crew.roles.length} roles` } } }] },
+        { label: "Spawning the crew", complexity: 0, usage: { in: 1200, out: 160 }, toolCalls: [{ name: "spawn_agents", input: { agents: crew.roles.map(brief) } }] },
+        { label: "Wrapping up", complexity: 0, usage: { in: 1600, out: 120 }, toolCalls: [{ name: "finish", input: { summary: `The crew (${crew.roles.map(title).join(", ")}) finished its parts.` } }] },
+      ],
+    };
+  if (role === "learner" && crew.skill)
+    return { role, turns: [{ label: "Extracting memories", complexity: 0, usage: { in: 1800, out: 200 }, toolCalls: [{ name: "save_learning", input: { memories: [`A crew of ${crew.roles.map(title).join(", ")} ran this goal end to end.`], skill: crew.skill } }] }] };
+  return { role, turns: [{ label: `${title(role)} at work`, complexity: 1, usage: { in: 1500, out: 220 }, text: `${title(role)}: my part is done (scripted mock run).` }] };
 }
 export const mockTurn = (role: string, turn: number, ws?: string, instance?: string): MockTurn | undefined => mockScript(role, ws, instance).turns[turn - 1];
 

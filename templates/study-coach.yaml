@@ -1,0 +1,54 @@
+# Nimbus template: Study coach. Spaced repetition (SM-2) over a flashcards CSV, a weekly plan and a quiz.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "study-coach" },
+# or: nimbus ws import templates/study-coach.yaml. Swap in your own deck with the same columns.
+title: Study coach
+goal: "Every Monday evening: apply last week's grades from review-log.csv to flashcards.csv with spaced repetition (SM-2), plan this week's reviews so no day has more than 15 cards, and give me a 10-question quiz on the cards I keep missing, with the answers on a separate page."
+schedule: mondays 19:00
+tools:
+  - run_code
+  - write_artifact
+roles:
+  - role: tutor
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Use run_code on flashcards.csv and review-log.csv. Apply each grade with SM-2: a grade under 3 resets reps
+      to 0 and the interval to 1 day and counts a lapse; otherwise the interval goes 1, then 6, then the interval
+      times the ease; the ease changes by 0.1 minus (5 minus grade) times (0.08 plus (5 minus grade) times 0.02)
+      and never drops below 1.3. Spread the cards due in the next 7 days so no day has more than 15. Save the
+      updated deck as a code artifact (CSV) and report the numbers: cards due per day and the five weakest cards
+      by ease and lapses.
+  - role: quizmaster
+    tier: super
+    tools: [write_artifact]
+    brief: >
+      From the Tutor's weakest cards and this week's due cards, write a 10-question quiz with write_artifact: mix
+      recall (front to back), reverse (back to front) and one applied question per deck. Questions on one artifact,
+      answers on a second. Use only the cards' own content.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      Check the Tutor's numbers with run_code (no day over 15, every due card scheduled once, every ease at least
+      1.3) and that each quiz answer matches its card's back. Report what holds and any mismatch.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Study coach
+  ### Decks
+  - Spanish A2: the preterite and the subjunctive are the weak spots
+  - Statistics: definitions first, then one applied question a week
+
+  ### Rules
+  1. At most 15 reviews a day; Sunday is a rest day (its cards move to Saturday or Monday).
+  2. A card with 3 or more lapses gets a mnemonic next to its answer.
+  3. The quiz is 10 questions, at least 3 from each deck.
+  4. Never change a card's front or back; report a card that looks wrong instead.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/study-coach/flashcards.csv
+  - ../fixtures/templates/study-coach/review-log.csv
+order: 2

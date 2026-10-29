@@ -1,0 +1,49 @@
+# Nimbus template: Household ops. The week's bills and calendar in one plan, sent to the family chat after approval.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "household-ops" },
+# or: nimbus ws import templates/household-ops.yaml. Replace the sample bills.csv and calendar.txt with your own.
+title: Household ops
+goal: "Every Monday morning: read bills.csv and calendar.txt, tell us what is due this week and what changed since last month, who drives whom and where the week has a gap, and send a short plan to the family chat once I approve it."
+schedule: mondays 07:30
+tools:
+  - run_code
+  - write_artifact
+  - send_message
+roles:
+  - role: planner
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Read calendar.txt with run_code and lay out the next 7 days: each day's events, who takes whom, and the gaps
+      (no driver named, a closure with nobody home, a booking still missing). Report the gaps first.
+  - role: accountant
+    tier: super
+    tools: [run_code]
+    brief: >
+      Read bills.csv with run_code: the unpaid bills due in the next 10 days with amount, due date and whether
+      autopay covers them, the total by account, and every payee whose amount moved more than 15% from last month.
+      Exact numbers from the file only.
+  - role: writer
+    tier: super
+    tools: [write_artifact, send_message]
+    brief: >
+      Write the week plan with write_artifact (gaps, then bills to pay by hand, then day by day), then send the
+      family a short version with send_message to family-chat: at most 8 lines, the gaps and who does what, bill
+      totals only. send_message asks for approval itself.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Household ops
+  Family: Alex and Sam (parents), Mia (9), Leo (3, at daycare).
+  1. Bills on autopay need no action unless the amount moved more than 15%; say which ones did.
+  2. Bills paid by hand: name who pays and from which account, two days before the due date.
+  3. A daycare closure or an evening out needs a named adult or a booked babysitter; flag it when neither is set.
+  4. The family chat gets totals, never single bill amounts or account names.
+  5. Messages go to family-chat only, and nothing is sent without approval.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/household-ops/bills.csv
+  - ../fixtures/templates/household-ops/calendar.txt
+order: 3

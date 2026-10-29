@@ -392,8 +392,10 @@ async function cmdWs(pos: string[], flags: Flags) {
     if (!rest[0]) throw new UsageError("nimbus ws export <workstream> [file]");
     const w = await findWorkstream(rest[0]);
     const m = SCHED_LABEL.exec(w.scheduleLabel ?? "");
+    // the crew and the SKILL.md as it stands today (what the workstream learned travels with it); files stay on the server
+    const roles = w.roles?.map((r) => ({ role: r.role, tier: r.tier, ...(r.tools ? { tools: r.tools } : {}), brief: r.brief }));
     const yaml = toYaml(
-      { title: w.title, goal: w.goal, schedule: m ? `${m[1].toLowerCase()} ${m[2]}` : (w.scheduleCron ?? undefined), schedule_label: !m && w.scheduleCron ? w.scheduleLabel : undefined, tools: w.tools },
+      { title: w.title, goal: w.goal, schedule: m ? `${m[1].toLowerCase()} ${m[2]}` : (w.scheduleCron ?? undefined), schedule_label: !m && w.scheduleCron ? w.scheduleLabel : undefined, tools: w.tools, roles, skill: w.skill?.trim() || undefined },
       `Nimbus workstream "${w.title}" (${w.id}). Import it with: nimbus ws import <this file>`,
     );
     if (rest[1]) {
@@ -406,12 +408,19 @@ async function cmdWs(pos: string[], flags: Flags) {
     const file = rest[0];
     if (!file) throw new UsageError("nimbus ws import <file>   (- reads stdin)");
     const y = parseYaml(file === "-" ? readFileSync(0, "utf8") : readFileSync(file, "utf8"));
-    const title = str(y.title);
-    const goal = str(y.goal);
-    const tools = Array.isArray(y.tools) ? y.tools : (str(y.tools) ?? "").split(",").map((t) => t.trim()).filter(Boolean);
+    const text = (v: unknown) => (typeof v === "string" ? v : undefined);
+    const list = (v: unknown) => (Array.isArray(v) ? v.map(String) : (text(v) ?? "").split(",").map((t) => t.trim()).filter(Boolean));
+    const title = text(y.title);
+    const goal = text(y.goal);
+    const tools = list(y.tools);
     if (!title || !goal || !tools.length) throw new Error(`${file}: needs title, goal and tools`);
-    const w = await createWorkstream({ title, goal, tools, schedule: str(y.schedule), scheduleLabel: str(y.schedule_label) });
-    return void console.log(`imported ${w.id} · ${w.title}${w.scheduleLabel ? ` · ${w.scheduleLabel}` : ""} · tools ${w.tools.join(", ")}`);
+    const roles = Array.isArray(y.roles) && y.roles.length && typeof y.roles[0] === "object" ? y.roles : undefined;
+    // a template's attachments sit next to it (paths relative to the file): their contents go up with the workstream
+    const base = file === "-" ? process.cwd() : path.dirname(path.resolve(file));
+    const files = list(y.attachments).map((a) => ({ name: path.basename(a), content: readFileSync(path.resolve(base, a), "utf8") }));
+    const w = await createWorkstream({ title, goal, tools, schedule: text(y.schedule), scheduleLabel: text(y.schedule_label), roles, skill: text(y.skill), files });
+    const crew = w.roles?.map((r) => r.role).join(", ");
+    return void console.log(`imported ${w.id} · ${w.title}${w.scheduleLabel ? ` · ${w.scheduleLabel}` : ""} · tools ${w.tools.join(", ")}${crew ? ` · crew ${crew}` : ""}${w.files?.length ? ` · files ${w.files.join(", ")}` : ""}`);
   }
   throw new UsageError("nimbus ws list|create|export|import");
 }

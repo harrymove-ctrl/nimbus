@@ -5,6 +5,7 @@ import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import { eq } from "drizzle-orm";
 import * as schema from "./schema";
 import { seedHistory } from "./history";
+import { DEFAULT_ROLES } from "@/lib/roles";
 import { LEGACY_WORKSTREAM_IDS, WORKSTREAMS } from "@/lib/workstreams";
 
 export { schema };
@@ -23,7 +24,7 @@ export const seedsDemoData = () => {
 export const dataDir = () => path.resolve(process.env.NIMBUS_DATA_DIR || "./data");
 
 const DDL = [
-  `CREATE TABLE IF NOT EXISTS workstreams (id TEXT PRIMARY KEY, title TEXT NOT NULL, goal TEXT NOT NULL, schedule_cron TEXT, schedule_label TEXT, tools TEXT NOT NULL, unread INTEGER NOT NULL DEFAULT 0, archived INTEGER NOT NULL DEFAULT 0, schedule_edited INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
+  `CREATE TABLE IF NOT EXISTS workstreams (id TEXT PRIMARY KEY, title TEXT NOT NULL, goal TEXT NOT NULL, schedule_cron TEXT, schedule_label TEXT, tools TEXT NOT NULL, roles TEXT, unread INTEGER NOT NULL DEFAULT 0, archived INTEGER NOT NULL DEFAULT 0, schedule_edited INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, workstream_id TEXT NOT NULL, title TEXT NOT NULL, goal TEXT NOT NULL, status TEXT NOT NULL, trigger TEXT NOT NULL, started_at INTEGER NOT NULL, ended_at INTEGER, tokens_in INTEGER NOT NULL DEFAULT 0, tokens_out INTEGER NOT NULL DEFAULT 0, cost_usd REAL NOT NULL DEFAULT 0, baseline_usd REAL NOT NULL DEFAULT 0, model TEXT, usage_by_tier TEXT)`,
   `CREATE TABLE IF NOT EXISTS run_events (id TEXT PRIMARY KEY, run_id TEXT NOT NULL, seq INTEGER NOT NULL, t_ms INTEGER NOT NULL, agent TEXT NOT NULL, agent_instance TEXT NOT NULL, type TEXT NOT NULL, payload TEXT NOT NULL)`,
   `CREATE INDEX IF NOT EXISTS run_events_run_t ON run_events (run_id, t_ms)`,
@@ -76,6 +77,11 @@ function open(): Holder {
     if (!(await has("memories", "used_count"))) await client.execute("ALTER TABLE memories ADD COLUMN used_count INTEGER NOT NULL DEFAULT 0");
     if (!(await has("runs", "usage_by_tier"))) await client.execute("ALTER TABLE runs ADD COLUMN usage_by_tier TEXT");
     if (!(await has("runs", "model"))) await client.execute("ALTER TABLE runs ADD COLUMN model TEXT");
+    // crews per workstream: the rows from before them get today's five, written out so an export shows the crew
+    if (!(await has("workstreams", "roles"))) {
+      await client.execute("ALTER TABLE workstreams ADD COLUMN roles TEXT");
+      await client.execute({ sql: "UPDATE workstreams SET roles = ? WHERE roles IS NULL", args: [JSON.stringify(DEFAULT_ROLES)] });
+    }
     // Runs live in memory. A run still marked running after the 5 minute wall-clock cap belonged to a process that is
     // gone. Younger ones may be alive in another process (dev server, cron), so they are left alone.
     await client.execute({ sql: "UPDATE runs SET status = 'interrupted' WHERE status = 'running' AND started_at < ?", args: [Date.now() - 6 * 60_000] });
@@ -111,6 +117,7 @@ export async function seedWorkstreams(db: Db) {
       scheduleCron: w.scheduleCron ?? null,
       scheduleLabel: w.scheduleLabel ?? null,
       tools: w.tools,
+      roles: DEFAULT_ROLES,
       unread: w.unread ? 1 : 0,
       createdAt: Date.now(),
     });

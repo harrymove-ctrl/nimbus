@@ -6,12 +6,14 @@ import path from "node:path";
 import { tool, type ToolSet } from "ai";
 import { z } from "zod";
 import { dataDir } from "@/db";
-import type { AgentRole } from "@/lib/models";
+import type { AgentRole, BuiltinRole } from "@/lib/models";
 import { modelMode } from "@/lib/tokenfactory";
 import { sandboxEnabled, sandboxRun, type SandboxResult } from "./sandbox";
 import type { RunCtx } from "./context";
 
-const role = z.enum(["researcher", "analyst", "writer", "checker"]);
+/** The roles the Orchestrator may plan with: the workstream's crew minus the Learner, which runs after every finished run. */
+export const DEFAULT_CREW = ["researcher", "analyst", "writer", "checker"];
+const role = z.enum(DEFAULT_CREW as [string, ...string[]]);
 const agentBrief = z.object({ role, brief: z.string() });
 
 export const SCHEMAS = {
@@ -35,6 +37,17 @@ export const SCHEMAS = {
 
 export type ToolName = keyof typeof SCHEMAS;
 
+/** plan, spawn_agents and handoff for a crew of its own: the same shapes with the workstream's role names. */
+function crewSchemas(crew: string[]): Partial<Record<ToolName, z.ZodType>> {
+  const r = z.enum(crew as [string, ...string[]]);
+  const brief = z.object({ role: r, brief: z.string() });
+  return {
+    plan: SCHEMAS.plan.extend({ agents: z.array(brief), steps: z.array(z.object({ text: z.string(), role: r })).optional() }),
+    spawn_agents: z.object({ agents: z.array(brief) }),
+    handoff: z.object({ to: r, context: z.string() }),
+  };
+}
+
 const DESCRIPTIONS: Record<ToolName, string> = {
   web_search: "Search the web (Tavily). Returns title, url and snippet for each result.",
   fetch_url: "Fetch a page and return its readable text (first 20k characters).",
@@ -55,7 +68,7 @@ const DESCRIPTIONS: Record<ToolName, string> = {
 /** Control tools run inside the orchestrator and show as waits, not tool segments. */
 export const CONTROL_TOOLS = new Set<ToolName>(["plan", "spawn_agents", "handoff", "request_approval", "ask_user", "finish"]);
 
-export const ROLE_TOOLS: Record<AgentRole, ToolName[]> = {
+export const ROLE_TOOLS: Record<BuiltinRole, ToolName[]> = {
   orchestrator: ["plan", "spawn_agents", "handoff", "request_approval", "ask_user", "finish"],
   researcher: ["web_search", "fetch_url", "read_repo", "ask_user"],
   analyst: ["run_code", "read_repo", "write_artifact", "ask_user"],
@@ -64,9 +77,11 @@ export const ROLE_TOOLS: Record<AgentRole, ToolName[]> = {
   learner: ["save_learning"],
 };
 
-export function toolSet(names: ToolName[], allowed: string[]): ToolSet {
+/** The tools one agent gets: its role's tools the run allows, plus the control tools. `crew` names the roles plan, spawn_agents and handoff accept. */
+export function toolSet(names: ToolName[], allowed: string[], crew: string[] = DEFAULT_CREW): ToolSet {
+  const own = crew.join() === DEFAULT_CREW.join() || !crew.length ? {} : crewSchemas(crew);
   const set: ToolSet = {};
-  for (const n of names) if (CONTROL_TOOLS.has(n) || n === "save_learning" || allowed.includes(n)) set[n] = tool({ description: DESCRIPTIONS[n], inputSchema: SCHEMAS[n] as unknown as z.ZodType<unknown> });
+  for (const n of names) if (CONTROL_TOOLS.has(n) || n === "save_learning" || allowed.includes(n)) set[n] = tool({ description: DESCRIPTIONS[n], inputSchema: (own[n] ?? SCHEMAS[n]) as unknown as z.ZodType<unknown> });
   return set;
 }
 

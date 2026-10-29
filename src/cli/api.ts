@@ -1,5 +1,6 @@
 // The HTTP API the web app uses, from a terminal: JSON calls plus the run's SSE event stream.
 import type { AnyRunEvent } from "../lib/events";
+import type { CrewRole } from "../lib/roles";
 import { baseUrl } from "./env";
 
 export class ApiError extends Error {
@@ -126,7 +127,7 @@ export async function snapshot(runId: string, quietMs = 500): Promise<{ events: 
   }
 }
 
-export type WorkstreamRow = { id: string; title: string; goal: string; scheduleCron?: string; scheduleLabel?: string; tools: string[]; archived?: boolean; skill?: string };
+export type WorkstreamRow = { id: string; title: string; goal: string; scheduleCron?: string; scheduleLabel?: string; tools: string[]; archived?: boolean; skill?: string; roles?: CrewRole[]; files?: string[] };
 export type ActiveRow = { id: string; workstreamId: string; title: string; status: string; startedAt: number; elapsedMs: number; activity: string; model: string; step: { index: number; total: number } | null; approval?: { approvalId: string; summary: string; risk: string }; question?: string; planAwaiting: boolean };
 export type Budget = { todayUsd: number; dayCapUsd: number; runCapUsd: number; refusing: boolean; mock: boolean };
 
@@ -156,9 +157,11 @@ export function parseSchedule(s: string | undefined): { kind: string; time: stri
 }
 
 /** POST /api/workstreams, then PATCH for a cron schedule the create form cannot express */
-export async function createWorkstream(w: { title: string; goal: string; schedule?: string; scheduleLabel?: string; tools: string[] }) {
+export async function createWorkstream(w: { title: string; goal: string; schedule?: string; scheduleLabel?: string; tools: string[]; roles?: unknown; skill?: string; files?: { name: string; content: string }[] }) {
   const sched = parseSchedule(w.schedule);
-  const made = await api<{ id: string; title: string; scheduleLabel: string | null; tools: string[] }>("/api/workstreams", { body: { title: w.title, goal: w.goal, tools: w.tools, schedule: sched && "kind" in sched ? sched : null } });
+  const made = await api<{ id: string; title: string; scheduleLabel: string | null; tools: string[]; roles?: CrewRole[]; files?: string[] }>("/api/workstreams", {
+    body: { title: w.title, goal: w.goal, tools: w.tools, schedule: sched && "kind" in sched ? sched : null, roles: w.roles, skill: w.skill, files: w.files?.length ? w.files : undefined },
+  });
   if (sched && "cron" in sched) {
     await api(`/api/workstreams/${made.id}`, { method: "PATCH", body: { schedule: { cron: sched.cron, label: w.scheduleLabel ?? null } } });
     made.scheduleLabel = w.scheduleLabel ?? `Cron ${sched.cron}`;

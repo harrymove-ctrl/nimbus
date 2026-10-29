@@ -1,11 +1,15 @@
 "use client";
 
-// "+ New workstream" (rail, and /new in the composer): a standing goal of your own. Name, the goal, a schedule, the tools
-// it may use; Create inserts it (POST /api/workstreams), selects it and puts the goal in the composer for the first run.
+// "+ New workstream" (rail, and /new in the composer): a standing goal of your own. A template to start from, the name,
+// the goal, a schedule, the tools it may use and its crew; Create inserts it (POST /api/workstreams), selects it and puts
+// the goal in the composer for the first run. A picked template also brings its SKILL.md seed and sample files.
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
+import { DEFAULT_ROLES, type CrewRole } from "@/lib/roles";
 import { TOOL_LABELS } from "@/lib/workstreams";
+import { CrewEditor, crewProblem } from "./crew-editor";
+import { TemplateGallery, type TemplateCard } from "./template-gallery";
 import { buttonSm, cx, panelGlass, primaryButton, secondaryButton } from "./ui";
 
 const KINDS = [
@@ -23,10 +27,26 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
   const [kind, setKind] = useState<(typeof KINDS)[number]["key"]>("");
   const [time, setTime] = useState("08:00");
   const [tools, setTools] = useState<string[]>(["web_search", "fetch_url", "write_artifact"]);
+  const [roles, setRoles] = useState<CrewRole[]>(DEFAULT_ROLES);
+  const [template, setTemplate] = useState<TemplateCard | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   useEffect(() => nameRef.current?.focus(), []);
+  const crewIssue = crewProblem(roles);
+
+  // a template fills every field; "Start blank" (or picking it again) clears them back to an empty form
+  const pick = (t: TemplateCard | null) => {
+    setTemplate(t);
+    setTitle(t?.title ?? "");
+    setGoal(t?.goal ?? "");
+    const m = t?.schedule && /^(daily|weekdays|mondays)\s+(\d{1,2}:\d{2})$/i.exec(t.schedule);
+    setKind(m ? (m[1].toLowerCase() as typeof kind) : "");
+    if (m) setTime(m[2].padStart(5, "0"));
+    setTools(t ? t.tools.filter((x) => x in TOOL_LABELS) : ["web_search", "fetch_url", "write_artifact"]);
+    setRoles(t?.roles ?? DEFAULT_ROLES);
+    setError(null);
+  };
 
   const create = async () => {
     setBusy(true);
@@ -34,7 +54,7 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
     const r = await fetch("/api/workstreams", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ title, goal, tools, schedule: kind ? { kind, time } : null }),
+      body: JSON.stringify({ title, goal, tools, roles, schedule: kind ? { kind, time } : null, ...(template ? { template: template.slug } : {}) }),
     }).catch(() => null);
     setBusy(false);
     if (!r) return setError("Could not reach the server.");
@@ -49,6 +69,12 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
     <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-neutral-950/60 p-4 backdrop-blur-[2px]" onClick={(e) => e.target === e.currentTarget && onCancel()}>
     <div role="dialog" aria-modal="true" aria-label="New workstream" onKeyDown={(e) => e.key === "Escape" && onCancel()} className={cx(panelGlass, "nb-rise-fast my-auto w-[min(560px,calc(100vw-32px))] max-h-[calc(100dvh-32px)] gap-3 overflow-y-auto p-5")}>
       <p className="text-[15px] font-extrabold">New workstream</p>
+      <TemplateGallery picked={template?.slug ?? null} onPick={pick} />
+      {template && (
+        <p className="text-[12px] text-neutral-400">
+          Starts with the {template.title} SKILL.md{template.attachments.length ? ` and ${template.attachments.join(", ")}` : ""}. Change anything below.
+        </p>
+      )}
       <label className="flex flex-col gap-1 text-[12px] font-bold text-neutral-400">
         Name
         <input ref={nameRef} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Weekly invoices" maxLength={60} className={field} />
@@ -91,12 +117,14 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
           })}
         </div>
       </div>
+      <CrewEditor roles={roles} onChange={setRoles} />
+      {crewIssue && <p className="text-[12px] text-amber-300">{crewIssue}</p>}
       {error && <p className="text-[13px] text-red-300">{error}</p>}
       <div className="sticky -bottom-5 -mx-5 -mb-5 flex justify-end gap-2 rounded-b-[inherit] bg-neutral-900/92 px-5 pb-5 pt-3 backdrop-blur-md">
         <button type="button" data-cuelume-close="" onClick={onCancel} className={cx(secondaryButton, buttonSm)}>
           Cancel
         </button>
-        <button type="button" data-cuelume-tap="" disabled={busy || !title.trim() || !goal.trim() || !tools.length} onClick={() => void create()} className={cx(primaryButton, buttonSm)}>
+        <button type="button" data-cuelume-tap="" disabled={busy || !title.trim() || !goal.trim() || !tools.length || !!crewIssue} onClick={() => void create()} className={cx(primaryButton, buttonSm)}>
           Create
         </button>
       </div>

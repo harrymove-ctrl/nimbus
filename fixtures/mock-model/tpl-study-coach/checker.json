@@ -1,0 +1,32 @@
+{
+ "role": "checker",
+ "turns": [
+  {
+   "label": "Checking the schedule and answers",
+   "usage": {
+    "in": 2700,
+    "out": 420
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "run_code",
+     "input": {
+      "language": "python",
+      "filename": "check_week.py",
+      "code": "import csv\nfrom collections import Counter\nfrom datetime import date\ncards = list(csv.DictReader(open(\"flashcards.csv\")))\nprint(\"cards:\", len(cards), \"ids unique:\", len({c[\"id\"] for c in cards}) == len(cards))\nbacks = {c[\"id\"]: c[\"back\"] for c in cards}\nquiz = {\"es-12\": \"si tuviera tiempo, viajaría\", \"es-04\": \"espero que vengas\", \"es-02\": \"Llevo dos años viviendo aquí\", \"es-11\": \"vale la pena\", \"es-07\": \"ayer fui al mercado\", \"st-04\": \"rejecting a true null hypothesis (false positive)\", \"st-06\": \"the method captures the true value in 95% of repeated samples\", \"st-03\": \"skewed data or outliers\"}\nprint(\"quiz answers that differ from the card:\", [k for k, v in quiz.items() if backs[k] != v])\nplan = Counter({\"2026-11-02\": 13, \"2026-11-03\": 3, \"2026-11-04\": 1, \"2026-11-09\": 1})\nprint(\"max per day:\", max(plan.values()), \"sundays:\", [d for d in plan if date.fromisoformat(d).weekday() == 6])\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 3200,
+    "out": 200
+   },
+   "complexity": 0,
+   "text": "All checks hold: 24 cards with unique ids, every quiz answer matches its card's back, at most 13 reviews on any day and none on Sunday. Caveat: Monday carries 13 of the 18; moving two to Thursday would even the week."
+  }
+ ]
+}

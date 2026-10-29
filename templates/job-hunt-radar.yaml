@@ -1,0 +1,62 @@
+# Nimbus template: Job hunt radar. A daily short list of jobs that fit, screened against the criteria in SKILL.md.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "job-hunt-radar" },
+# or: nimbus ws import templates/job-hunt-radar.yaml. Edit the Criteria section of the skill first.
+title: Job hunt radar
+goal: "Every morning: find new postings that match my criteria in SKILL.md, drop the ones I already applied to or ruled out, and give me the five best with why each fits, the red flags, and a two-line opener for each."
+schedule: daily 07:30
+tools:
+  - web_search
+  - fetch_url
+  - write_artifact
+roles:
+  - role: scout
+    tier: super
+    tools: [web_search, fetch_url]
+    brief: >
+      Search job boards and company career pages for postings that match the Criteria in SKILL.md (role, level,
+      location, salary floor, posted in the last 7 days). Open each promising posting with fetch_url and report its
+      title, company, location, salary if stated, posting date and url. Ten at most; never invent a posting.
+  - role: screener
+    tier: nano
+    tools: []
+    brief: >
+      Score each posting from the Scout against SKILL.md: must-haves first (one miss rules it out), then the
+      nice-to-haves. Drop every company under "Already applied" or "Ruled out". Return the top five with a score out
+      of 10, one line on why it fits, and any red flag (an unpaid take-home over 4 hours, no salary range, a role
+      that is really two jobs).
+  - role: writer
+    tier: super
+    tools: [write_artifact]
+    brief: >
+      Write the morning page with write_artifact, titled "Job radar, <date>": a table of the five (role, company,
+      score, salary, link), then for each one why it fits, its red flags and a two-line opener in my voice. End with
+      "Skipped", one line per posting that was dropped and why.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Job hunt radar
+  ### Criteria (edit these; the crew reads them every run)
+  - Roles: senior or staff product engineer, full-stack (TypeScript, React, Node)
+  - Location: remote within EU time zones, or hybrid in Lisbon
+  - Salary floor: EUR 85,000, or a stated range that reaches it
+  - Must have: a salary range or band in the posting; a product the team ships to real users
+  - Nice to have: AI features in the product, a public engineering blog, a 4-day week
+  - Not interested: crypto trading, ad tech, agencies
+
+  ### Already applied (company, role, date)
+  - Northbeam Health, Senior Product Engineer, 2026-10-21
+  - Tessera Maps, Staff Engineer, 2026-10-24
+
+  ### Ruled out
+  - Quickfold (unpaid take-home over 8 hours)
+
+  ### How to search
+  1. Start with remote-friendly job boards, then the career pages of companies already on the short list.
+  2. Skip a posting older than 7 days unless it was reposted.
+  3. The opener names one specific thing about the product; never "I am passionate about".
+
+  ## Policy
+  (none yet)
+attachments: []
+order: 1

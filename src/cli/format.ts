@@ -13,7 +13,8 @@ export const short = (v: unknown, n = 90) => {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 };
 
-const lane = (e: AnyRunEvent) => (e.agent in ROLE_LABEL ? laneName(e.agentInstance, e.agent as AgentRole) : e.agentInstance === "user" ? "You" : e.agentInstance);
+// a crew of its own names its lanes after its roles: tutor-1 is "Tutor"
+const lane = (e: AnyRunEvent) => (e.agent in ROLE_LABEL || e.agentInstance.startsWith(`${e.agent}-`) ? laneName(e.agentInstance, e.agent as AgentRole) : e.agentInstance === "user" ? "You" : e.agentInstance);
 
 /** crew moves that have their own timeline line (plan, question, approval, handoff, artifact), so the call is not shown */
 const OWN_LINE = new Set(["plan", "ask_user", "request_approval", "handoff", "write_artifact", "spawn_agents", "finish", "save_learning"]);

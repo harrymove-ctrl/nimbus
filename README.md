@@ -177,6 +177,21 @@ do the rest. `nimbus mcp` is a stdio MCP server, so Claude Code, Cursor, OpenCla
 its approval, approve it and read the artifact (`pnpm nimbus mcp install claude --write`). Every command, the tool
 table and the client snippets: [docs/CLI.md](docs/CLI.md). Test: `pnpm check:cli` (mock, $0).
 
+## Your own crew and templates
+
+The crew is not fixed. Each workstream has its own roles (a name, a brief, a Nemotron tier ceiling and tools), edited
+under "Crew" in the New workstream sheet; the Orchestrator plans, spawns and hands off to exactly those roles, and the
+timeline draws one lane per role. A tutor, a job-hunt scout or a household accountant is a row, not code. The default
+five (researcher, analyst, writer, checker, learner) keep today's prompts word for word.
+
+"Start from a template" offers nine ready workstreams from `templates/*.yaml`: the six seeded ones plus **Job hunt
+radar** (scout, screener, writer), **Study coach** (tutor, quizmaster, checker; SM-2 spaced repetition with `run_code`
+on an attached flashcards CSV) and **Household ops** (planner, accountant, writer; bills and calendar files, a family
+chat message behind approval). Each ships a SKILL.md seed, so run 1 already knows the person's rules. The same file
+works from the terminal (`pnpm nimbus ws import templates/study-coach.yaml`) and the API (`POST /api/workstreams
+{ "template": "study-coach" }`). Format and how to share one: [docs/TEMPLATES.md](docs/TEMPLATES.md). Test:
+`pnpm check:templates` (mock, $0).
+
 ## Architecture
 
 ```mermaid

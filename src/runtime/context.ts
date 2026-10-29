@@ -1,5 +1,6 @@
 import type { PayloadMap, PlanStep, ProposedAction, RunEventType } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
+import type { CrewRole } from "@/lib/roles";
 
 export type Emit = <T extends RunEventType>(type: T, agent: AgentRole, instance: string, payload: PayloadMap[T]) => void;
 
@@ -13,6 +14,8 @@ export type RunCtx = {
   script: string;
   goal: string;
   mode: "ask" | "auto-low" | "dry";
+  /** the workstream's crew (src/lib/roles.ts): the roles the Orchestrator plans with, their briefs, tiers and tools */
+  roles: CrewRole[];
   /** tools the person allowed for this run (composer Tools chip); control tools are always available */
   allowedTools: string[];
   tierChoice: "auto" | "cheap" | "max";

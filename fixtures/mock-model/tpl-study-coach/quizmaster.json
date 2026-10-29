@@ -1,0 +1,52 @@
+{
+ "role": "quizmaster",
+ "turns": [
+  {
+   "label": "Writing the quiz",
+   "usage": {
+    "in": 3900,
+    "out": 700
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "quiz",
+      "kind": "doc",
+      "title": "Study quiz, week of 2 November",
+      "content": "# Study quiz, week of Monday 2 November\n\nTen questions, Spanish A2 first. Answer out loud or on paper, then check the answer sheet.\n\n1. Translate: if I had time, I would travel.\n2. Complete with venir (tú): espero que ___.\n3. Translate: I have been living here for two years.\n4. What does *vale la pena* mean?\n5. Translate: yesterday I went to the market.\n6. Applied: a friend says *estoy embarazada*. What is she telling you?\n7. What is a type I error?\n8. What does a 95% confidence interval mean?\n9. When should you report the median instead of the mean?\n10. Applied: a test is 99% accurate for a condition 1 in 1,000 people have. You test positive. Which fallacy makes \"99% sure I have it\" wrong?\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Writing the answer sheet",
+   "usage": {
+    "in": 4400,
+    "out": 620
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "quiz-answers",
+      "kind": "doc",
+      "title": "Quiz answers, week of 2 November",
+      "content": "# Answer sheet, week of Monday 2 November\n\n1. si tuviera tiempo, viajaría. Mnemonic (4 lapses): *tuviera* is the \"if only\" form; \"si tuviera\" = \"if I had\", and the -ía ending is the \"would\".\n2. espero que vengas. Mnemonic (3 lapses): hope (esperar) pulls the subjunctive; venir → vengo → veng- + as.\n3. Llevo dos años viviendo aquí.\n4. it is worth it.\n5. ayer fui al mercado.\n6. She is pregnant (not embarrassed).\n7. rejecting a true null hypothesis (false positive). Mnemonic (3 lapses): type I = \"I see an effect that is not there\".\n8. the method captures the true value in 95% of repeated samples.\n9. skewed data or outliers.\n10. The base rate fallacy: ignoring how common the condition is before the test.\n"
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "usage": {
+    "in": 4800,
+    "out": 160
+   },
+   "complexity": 0,
+   "text": "Quiz written: 10 questions (6 Spanish A2, 4 Statistics), one applied question per deck, all five weakest cards included; the answer sheet quotes each card's back and adds a mnemonic for the three cards with 3 or more lapses."
+  }
+ ]
+}

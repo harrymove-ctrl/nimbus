@@ -1,0 +1,46 @@
+# Nimbus template: Morning brief (one of the seeded workstreams, ws-brief). Start it from the New workstream sheet,
+# POST /api/workstreams { "template": "morning-brief" }, or: nimbus ws import templates/morning-brief.yaml
+title: Morning brief
+goal: "At 08:00, read my inbox export, today's calendar and GitHub notifications; give me one page: what needs me today, drafts for the three replies that matter, and what can wait."
+schedule: "weekdays 08:00"
+tools:
+  - read_repo
+  - fetch_url
+  - write_artifact
+  - send_message
+roles:
+  - role: researcher
+    tier: super
+    tools: [web_search, fetch_url, read_repo, ask_user]
+    brief: Use web_search and fetch_url, cite sources, and return a short sourced report. Ask the person with ask_user only if the brief is ambiguous.
+  - role: analyst
+    tier: super
+    tools: [run_code, read_repo, write_artifact, ask_user]
+    brief: Use run_code on the attached data to compute exact numbers, fix your own script errors, save useful code with write_artifact, and report the numbers.
+  - role: writer
+    tier: super
+    tools: [write_artifact, read_repo, send_message, open_pr]
+    brief: "Produce the document with write_artifact: the number first, then cause, evidence, open questions and next step. Edit by writing a new version of the same artifactId. When the brief asks you to send something, call send_message once per message, to its address; send_message asks for approval itself. Say only what your sources and the crew's reports say, using the latest of them. Never leave a placeholder in brackets such as [Your Name] or [Date]."
+  - role: checker
+    tier: nano
+    tools: [run_code, fetch_url, read_repo]
+    brief: "Validate data and fact-check claims quickly; report what is supported and any caveat."
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Morning brief
+  Sources (read them with read_repo; nothing else is connected):
+  - inbox export: fixtures/inbox/*.eml, one email per file
+  - today's calendar: fixtures/calendar.ics
+  - GitHub notifications: fixtures/github-notifications.json
+  1. Urgent = a person waiting on us with a date.
+  2. Crew: the Researcher reads the sources and reports what they say; one Writer writes the page and the replies. No Analyst is needed. Hand the Researcher's full report to the Writer once.
+  3. The Writer writes the page as one doc artifact titled "Morning brief · <weekday> <date>" with four sections: "Needs you today" (people waiting on us, by their deadline), "Today" (the calendar as a table), "GitHub", "Can wait" (no drafts for these).
+  4. For each person under "Needs you today", the Writer drafts the reply as its own doc artifact, then sends it with send_message to the address it came from. send_message asks for approval itself: do not use request_approval for replies and do not ask whether to send.
+  5. Say only what the sources say; if they do not answer a question, the reply says so.
+
+  ## Policy
+  (none yet)
+attachments: []
+order: "10"

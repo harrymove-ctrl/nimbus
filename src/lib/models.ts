@@ -17,7 +17,11 @@ export const ROLE_TIER = {
   learner: "nano",
 } as const satisfies Record<string, Tier>;
 
-export type AgentRole = keyof typeof ROLE_TIER;
+/** The built-in crew. A workstream may name its own roles (src/lib/roles.ts), so a role is any lane name. */
+export type BuiltinRole = keyof typeof ROLE_TIER;
+export type AgentRole = BuiltinRole | (string & {});
+/** The default tier ceiling of a role: its built-in tier, Super for a role a workstream named itself. */
+export const roleTier = (role: AgentRole): Tier => (ROLE_TIER as Record<string, Tier>)[role] ?? "super";
 
 // USD per 1M tokens: [input, output]
 export const PRICE_PER_M: Record<Tier, readonly [number, number]> = {
@@ -34,7 +38,7 @@ export const LEARNER_MAX_OUT_TOKENS = 4000;
 export const maxOutTokens = (tier: Tier, role: string) => (role === "learner" ? LEARNER_MAX_OUT_TOKENS : MAX_OUT_TOKENS[tier]);
 
 export function tierFor(role: AgentRole): Tier {
-  return process.env.NIMBUS_DEV_CHEAP === "1" ? "nano" : ROLE_TIER[role];
+  return process.env.NIMBUS_DEV_CHEAP === "1" ? "nano" : roleTier(role);
 }
 
 export function modelFor(role: AgentRole): string {

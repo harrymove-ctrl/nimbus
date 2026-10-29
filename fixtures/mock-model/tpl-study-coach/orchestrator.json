@@ -1,0 +1,125 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Planning the week",
+   "usage": {
+    "in": 2900,
+    "out": 520
+   },
+   "complexity": 2,
+   "toolCalls": [
+    {
+     "name": "plan",
+     "input": {
+      "agents": [
+       {
+        "role": "tutor",
+        "brief": "Apply last week's grades from review-log.csv to flashcards.csv with SM-2, spread this week's due cards (at most 15 a day, Sunday off), save the updated deck as a CSV artifact and report cards due per day and the five weakest cards."
+       },
+       {
+        "role": "quizmaster",
+        "brief": "Write a 10-question quiz from the Tutor's five weakest cards and this week's due cards (at least 3 per deck, one applied question per deck), questions on one artifact and answers with mnemonics for 3+ lapses on a second."
+       },
+       {
+        "role": "checker",
+        "brief": "Verify the Tutor's schedule with run_code (no day over 15, no Sunday, every ease at least 1.3) and that each quiz answer matches its card's back."
+       }
+      ],
+      "tools": [
+       "run_code",
+       "write_artifact"
+      ],
+      "steps": [
+       {
+        "text": "Tutor: apply last week's grades with SM-2 and plan the week's reviews",
+        "role": "tutor"
+       },
+       {
+        "text": "Quizmaster: write the 10-question quiz and its answer sheet",
+        "role": "quizmaster"
+       },
+       {
+        "text": "Checker: verify the schedule and every quiz answer",
+        "role": "checker"
+       }
+      ],
+      "estimate": {
+       "costUsd": 0.03,
+       "tokens": 21000,
+       "label": "≈ $0.03 · Ultra ×2 · Super ×4 · Nano ×3"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing off to the Tutor",
+   "usage": {
+    "in": 1300,
+    "out": 200
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "tutor",
+      "context": "Apply last week's grades from review-log.csv to flashcards.csv with SM-2, spread this week's due cards (at most 15 a day, Sunday off), save the updated deck as a CSV artifact and report cards due per day and the five weakest cards. The files are flashcards.csv (id, deck, front, back, ease, interval_days, reps, lapses, due) and review-log.csv (date, card_id, grade 0 to 5) in your workspace; the plan starts Monday 2026-11-02."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing off to the Quizmaster",
+   "usage": {
+    "in": 2600,
+    "out": 240
+   },
+   "complexity": 1,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "quizmaster",
+      "context": "Write a 10-question quiz from the Tutor's five weakest cards and this week's due cards (at least 3 per deck, one applied question per deck), questions on one artifact and answers with mnemonics for 3+ lapses on a second. Use the Tutor's report below for the weakest cards and the due list; quote the cards' backs exactly in the answers."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Handing off to the Checker",
+   "usage": {
+    "in": 3100,
+    "out": 210
+   },
+   "complexity": 0,
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "checker",
+      "context": "Verify the Tutor's schedule with run_code (no day over 15, no Sunday, every ease at least 1.3) and that each quiz answer matches its card's back. The Tutor's numbers and the Quizmaster's answer sheet are in the reports below; report every mismatch, or say that all checks hold."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Wrapping up",
+   "usage": {
+    "in": 3400,
+    "out": 260
+   },
+   "complexity": 1,
+   "text": "Week planned: 18 reviews Monday to Wednesday (13 on Monday), quiz and answers written, the Checker found no mismatch.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "SM-2 applied to 15 grades; 18 cards due this week (Mon 13, Tue 3, Wed 1, next Mon 1); the five weakest are es-12, es-04, st-04, st-06 and es-02; the quiz and answer sheet are in the Artifact tab."
+     }
+    }
+   ]
+  }
+ ]
+}

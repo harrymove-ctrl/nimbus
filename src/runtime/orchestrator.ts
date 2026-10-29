@@ -2,10 +2,11 @@
 // ask_user, finish (SPEC §4). Turns are capped at 6 and the run has a 5 minute wall clock (live.ts).
 import type { z } from "zod";
 import type { PlanStep } from "@/lib/events";
-import { ROLE_TIER, type AgentRole } from "@/lib/models";
+import type { AgentRole } from "@/lib/models";
+import { roleTitle } from "@/lib/roles";
 import { modelMode } from "@/lib/tokenfactory";
 import { RunAborted, sleep, type RunCtx } from "./context";
-import { runAgent, type AgentRef, type Exec } from "./agent";
+import { roleSpec, runAgent, type AgentRef, type Exec } from "./agent";
 import { SpendCapError } from "./budget";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -79,9 +80,10 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
 
   const exec: Exec = {
     plan: async (input: z.infer<typeof SCHEMAS.plan>) => {
-      const agents = input.agents.map((a) => ({ role: a.role, instance: `${a.role}-1`, tier: ROLE_TIER[a.role], brief: a.brief }));
-      const label = (r: AgentRole) => r[0].toUpperCase() + r.slice(1);
-      let draft: PlanStep[] = (input.steps?.length ? input.steps.map((s) => ({ text: s.text, role: s.role })) : input.agents.map((a) => ({ text: `${label(a.role)}: ${a.brief}`, role: a.role }))).map((s, i) => ({ id: `s${i + 1}`, text: s.text, role: s.role, tier: ROLE_TIER[s.role] }));
+      // tiers are the crew's ceilings (a tutor at Super, a checker at Nano), so the estimate and the plan card match the run
+      const ceiling = (r: AgentRole) => roleSpec(ctx, r).ceiling;
+      const agents = input.agents.map((a) => ({ role: a.role, instance: `${a.role}-1`, tier: ceiling(a.role), brief: a.brief }));
+      let draft: PlanStep[] = (input.steps?.length ? input.steps.map((s) => ({ text: s.text, role: s.role })) : input.agents.map((a) => ({ text: `${roleTitle(a.role)}: ${a.brief}`, role: a.role }))).map((s, i) => ({ id: `s${i + 1}`, text: s.text, role: s.role, tier: ceiling(s.role) }));
       for (let revision = 0; ; revision++) {
         ctx.emit("plan", "orchestrator", ORCH.instance, { agents, tools: input.tools, estimate: input.estimate, steps: draft, awaiting: ctx.review, revision });
         if (!ctx.review) {
@@ -105,7 +107,7 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
       }
     },
     spawn_agents: stepped(async (input: z.infer<typeof SCHEMAS.spawn_agents>) =>
-      wait(`Waiting on ${input.agents.map((a) => a.role[0].toUpperCase() + a.role.slice(1)).join(", ")}`, async () => {
+      wait(`Waiting on ${input.agents.map((a) => roleTitle(a.role)).join(", ")}`, async () => {
         const kids = input.agents.map((a) => {
           const instance = nextInstance(ctx, a.role);
           ctx.emit("agent.spawn", a.role, instance, { by: ORCH.instance, role: a.role, instance, brief: a.brief });
@@ -123,7 +125,7 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
       const resolved = resolveHandoff(input.context, crewReports);
       ctx.emit("handoff", "orchestrator", ORCH.instance, { from: ORCH.instance, to: instance, context: resolved });
       ctx.emit("agent.spawn", input.to, instance, { by: ORCH.instance, role: input.to, instance, brief: resolved });
-      return wait(`Waiting on ${input.to[0].toUpperCase()}${input.to.slice(1)}`, async () => {
+      return wait(`Waiting on ${roleTitle(input.to)}`, async () => {
         const r = await runChild(ctx, { role: input.to, instance }, resolved === input.context ? withReports(input.context) : resolved, {});
         if (r.report) crewReports.push(r);
         return { report: r.report };

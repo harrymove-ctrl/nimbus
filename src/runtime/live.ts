@@ -5,7 +5,8 @@ import { eq } from "drizzle-orm";
 import { dataDir, getDb, retryBusy, schema } from "@/db";
 import type { AnyRunEvent, PayloadMap, ProposedAction, RunEventType, PlanStep } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
-import { modelMode } from "@/lib/tokenfactory";
+import { DEFAULT_ROLES, crewOf, isDefaultCrew } from "@/lib/roles";
+import { modelMode, setMockCrew } from "@/lib/tokenfactory";
 import { SpendCapError, inflight } from "./budget";
 import { prepareAttachments } from "./attachments";
 import { RunAborted, deferred, untilAborted, type ApprovalResult, type RunCtx } from "./context";
@@ -13,6 +14,7 @@ import { runLearner } from "./learner";
 import { notifyEvent } from "./notify";
 import { writeRecording } from "./recorder";
 import { topMemories } from "./memory";
+import { crewNames } from "./agent";
 import { runOrchestrator } from "./orchestrator";
 import { appendPolicy, countPolicyUse, loadSkill, policyAllows, policySection, ruleFor } from "./skills";
 import type { ApprovalDecision, RunHandle, StartRunInput } from "./source";
@@ -77,6 +79,7 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     workstreamId: input.workstreamId,
     goal: input.goal,
     mode: input.mode ?? "ask",
+    roles: DEFAULT_ROLES,
     allowedTools: input.tools ?? ["web_search", "fetch_url", "run_code", "write_artifact", "send_message", "read_repo", "open_pr"],
     tierChoice: input.tier ?? "auto",
     startedAt,
@@ -157,6 +160,10 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     const freeze = process.env.NIMBUS_FREEZE_CONTEXT === "1";
     ctx.skill = freeze ? "" : await loadSkill(input.workstreamId);
     ctx.memories = freeze ? [] : await topMemories(input.workstreamId, input.goal);
+    const [crew] = await retryBusy(() => db.select({ roles: schema.workstreams.roles }).from(schema.workstreams).where(eq(schema.workstreams.id, input.workstreamId)));
+    ctx.roles = crewOf(crew?.roles);
+    // mock mode: a crew of its own without a scripted fixture plans and spawns its own roles (tokenfactory.ts)
+    if (!isDefaultCrew(ctx.roles)) setMockCrew(input.workstreamId, crewNames(ctx), ctx.skill);
     ctx.attached = await prepareAttachments(ctx, input.files);
     if (ctx.memories.length) ctx.script = `${input.workstreamId}~2`; // mock mode: run two plays its "~2" scripts where they exist
     await retryBusy(() => db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt, model: modelMode() }));
@@ -182,7 +189,8 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     pendingApprovals.clear();
     emit("run.end", "orchestrator", "orchestrator", { status });
 
-    if (status === "done") {
+    // the Learner stays unless the workstream's crew drops it
+    if (status === "done" && ctx.roles.some((r) => r.role === "learner")) {
       try {
         await runLearner(ctx, transcriptOf(events));
       } catch (e) {
