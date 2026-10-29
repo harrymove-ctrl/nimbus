@@ -145,7 +145,10 @@ pnpm nimbus ws import checkout.yaml
 pnpm nimbus ws create --title "Inbox zero" --goal "Triage my inbox: three reply drafts" --tools web_search,write_artifact --schedule "weekdays 08:00"
 ```
 
-A workstream file is flat YAML: `title`, `goal`, `schedule` and a `tools` list.
+A workstream file is YAML: `title`, `goal`, `schedule` and a `tools` list, plus the crew (`roles`), the SKILL.md
+(`skill`) and `attachments` when the file has them. `ws export` writes the crew and the current SKILL.md; `ws import`
+reads them and uploads the attachments (paths relative to the file). The templates under `templates/` are such files:
+[TEMPLATES.md](TEMPLATES.md).
 
 ```yaml
 # Nimbus workstream "Inbox zero". Import it with: nimbus ws import <this file>
@@ -159,8 +162,8 @@ tools:
 
 `schedule` is `daily HH:MM`, `weekdays HH:MM`, `mondays HH:MM` or a five-field cron line (then `schedule_label` names
 it). Leave it out to run by hand. Tools: `web_search`, `fetch_url`, `run_code`, `write_artifact`, `send_message`,
-`read_repo`, `open_pr`. The parser reads `key: value` lines, `- item` and `[a, b]` lists, quoted strings, `|` and `>`
-blocks and `#` comments; nothing nested (no dependency).
+`read_repo`, `open_pr`. The parser reads `key: value` lines, `- item` and `[a, b]` lists, a list of maps (`roles`),
+quoted strings, `|` and `>` blocks and `#` comments; nothing else nested (no dependency).
 
 ## MCP server
 

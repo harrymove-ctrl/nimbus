@@ -29,7 +29,7 @@ const checks: [string, boolean][] = [];
 const check = (n: string, ok: boolean, detail = "") => (checks.push([n, ok]), console.log(`${ok ? "✓" : "✗"} ${n}${!ok && detail ? `\n    ${detail.slice(0, 1500).replace(/\n/g, "\n    ")}` : ""}`));
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-console.log("— a database from before crews");
+console.log("· a database from before crews");
 {
   // the workstreams table as the last release created it, with one row a person made
   mkdirSync(dataDir(), { recursive: true });
@@ -131,7 +131,7 @@ function cli(args: string[], answers: [RegExp, string][] = [], timeoutMs = 45_00
   check("the old row and every seeded workstream read back with the default five roles", !!oldRow && same(oldRow.roles, DEFAULT_ROLES) && WORKSTREAMS.every((s) => same(all.find((w) => w.id === s.id)?.roles, DEFAULT_ROLES)), JSON.stringify(oldRow));
 }
 
-console.log("— role prompts and lanes");
+console.log("· role prompts and lanes");
 {
   // today's prompts, verbatim from before crews: the default crew must rebuild them byte for byte (goldens and the cache)
   const BEFORE: Record<string, string> = {
@@ -150,7 +150,7 @@ console.log("— role prompts and lanes");
   check("lane names and colours fall back for any role (Quiz master, a colour of its own)", laneName("quiz-master-2", "quiz-master") === "Quiz master 2" && ROLE_LABEL.tutor === "Tutor" && /^oklch\(/.test(ROLE_COLOR.tutor) && ROLE_COLOR.tutor !== ROLE_COLOR.checker && Object.keys(ROLE_COLOR).length === 6, `${laneName("quiz-master-2", "quiz-master")} ${ROLE_COLOR.tutor}`);
 }
 
-console.log("— GET /api/templates");
+console.log("· GET /api/templates");
 const templates = listTemplates();
 {
   const r = await http<{ templates: (CrewRole & { slug: string; title: string; goal: string; tools: string[]; roles: CrewRole[]; skill: string; attachments: string[]; scheduleLabel: string })[] }>("/api/templates");
@@ -165,7 +165,7 @@ const templates = listTemplates();
   check("the sample files are named: flashcards.csv, review-log.csv, bills.csv, calendar.txt", same(t.find((x) => x.slug === "study-coach")?.attachments, ["flashcards.csv", "review-log.csv"]) && same(t.find((x) => x.slug === "household-ops")?.attachments, ["bills.csv", "calendar.txt"]));
 }
 
-console.log("— every template through POST /api/workstreams { template } and through nimbus ws import");
+console.log("· every template through POST /api/workstreams { template } and through nimbus ws import");
 const made: Record<string, string> = {};
 {
   const bad: string[] = [];
@@ -193,7 +193,7 @@ const made: Record<string, string> = {};
   check("the import line names the crew and the files", /crew tutor, quizmaster, checker, learner · files flashcards\.csv, review-log\.csv/.test(sc), sc);
 }
 
-console.log("— crews that the API refuses");
+console.log("· crews that the API refuses");
 {
   const base = { title: "Bad crew", goal: "x", tools: ["web_search"] };
   const a = await http<{ error?: string }>("/api/workstreams", { body: { ...base, roles: [{ role: "orchestrator", brief: "lead", tier: "ultra" }] } });
@@ -203,7 +203,7 @@ console.log("— crews that the API refuses");
   check("orchestrator as a role, an unknown tier, an unknown template and duplicate names are refused with a reason", a.status === 400 && /orchestrator/.test(a.json.error ?? "") && b.status === 400 && /tier/.test(b.json.error ?? "") && c.status === 404 && d.status === 400 && /two roles/.test(d.json.error ?? ""), JSON.stringify([a.json, b.json, c.json, d.json]));
 }
 
-console.log("— a Study coach run from the terminal (nimbus run, plan approved with y)");
+console.log("· a Study coach run from the terminal (nimbus run, plan approved with y)");
 {
   const r = await cli(["run", made["study-coach"]], [[/approve the plan\? \[Y\/n\]/, "y"], [/\[a\]pprove, approve a\[l\]ways, \[r\]eject\?/, "a"], [/answer \(1-\d+ or text\):/, "1"]]);
   if (process.argv.includes("--verbose")) console.log(r.out.replace(/^/gm, "    | "));
@@ -224,7 +224,7 @@ console.log("— a Study coach run from the terminal (nimbus run, plan approved 
   check("the Learner rewrote the Study coach SKILL.md (rule 5 learned, Policy kept)", !!w && /5\. When one day carries more than half the week/.test(w.skill) && /^## Policy$/m.test(w.skill), w?.skill);
 }
 
-console.log("— a crew nobody scripted (Job hunt radar), and the default crew");
+console.log("· a crew nobody scripted (Job hunt radar), and the default crew");
 {
   const go = async (wsId: string, title: string, goal: string, tools: string[]) => {
     const run = startRun({ workstreamId: wsId, title, goal, trigger: "manual", tools });
@@ -246,7 +246,7 @@ console.log("— a crew nobody scripted (Job hunt radar), and the default crew")
   check("a default workstream (Checkout) still produces the five known lanes", v2.status === "done" && same(roles, ["analyst", "checker", "learner", "researcher", "writer"]), roles.join());
 }
 
-console.log("— ws export, then import: the crew and the SKILL.md travel");
+console.log("· ws export, then import: the crew and the SKILL.md travel");
 {
   const crew = [
     { role: "tutor", brief: "Teach: one concept at a time, with an example.", tier: "super", tools: ["run_code", "write_artifact"] },
