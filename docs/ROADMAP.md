@@ -155,3 +155,29 @@ token redacted). Mock: `scripts/check-cli.mts` runs the commands against a mock 
 
 Checkpoint 3 before "done": each Lane 1 item has a **real** exit test on production and a recording, or it is
 listed in `docs/SUBMISSION.md` under "unverified" by name.
+
+## 7 · The next wave (added 22:40 ICT, Oct 29, after sections 2 and 3 shipped)
+
+Sandboxes, the Telegram bot and the CLI with MCP are live on deployment fa28ae1a (main 8967f20). What remains before
+the deadline, in the order it lands, each with an owner and a real exit test:
+
+| # | Piece | Owner | Real exit test |
+|---|---|---|---|
+| 7.1 | **Crew roles per workstream.** `roles` on the workstream (name, brief, tier ceiling, tools); the orchestrator plans with the roles it is given instead of the fixed five; the New workstream sheet gets a "Crew" section with role chips. | Opus session C | A Study coach workstream with roles tutor, quizmaster and checker runs on production and the timeline shows those three lanes |
+| 7.2 | **Templates gallery.** `templates/*.yaml` (the six existing workstreams plus Job hunt radar, Study coach, Household ops), `GET /api/templates`, a gallery in the New workstream sheet, the same YAML `nimbus ws import` reads. Each ships a SKILL.md seed. | Opus session C | `nimbus ws import templates/study-coach.yaml` creates the workstream on production; one real run finishes |
+| 7.3 | **Landing, README, Devpost.** `/welcome` gets three rows for the three doors (web, phone, terminal and coding agent) and a "Runs code in Nebius Sandboxes" feature; README gets "Three doors" and the Sandboxes paragraph with the measured numbers; `docs/SUBMISSION.md` gets the Devpost text for Sandboxes, Telegram and CLI with run ids and the unverified list. | Opus session D | `/welcome` renders on Railway at 1280 and 390 wide; every number traces to a run id |
+| 7.4 | **Real MCP run.** A Claude-driven client over `nimbus mcp` against production: list, start Release watch, wait for the approval, decide, read the artifact; transcript under `docs/mcp/`. | planner | the run id in the transcript exists on production with trigger from the API |
+| 7.5 | **Real Telegram run.** Token on Railway, pairing, `/run morning brief` from the phone, Approve tapped, screen recording. | user + planner | the run shows "from Telegram" and "Approved via telegram" on the web timeline |
+| 7.6 | **Footage.** Telegram phone recording (user) and a terminal recording of `nimbus run checkout` (planner, from the Terminal panel), cut into `/welcome` rows and a 45 s X clip. | planner | the clips are of the runs above, nothing staged |
+| 7.7 | **Freeze.** `pnpm demo`, `check:chat`, `check:telegram`, `check:cli` green on main; Devpost form filled; keys rotated once judging opens. | user | the checklist in `docs/SUBMISSION.md` |
+
+### Lane 2 additions (after the deadline)
+
+- **Voice from Telegram.** Voice notes transcribed and routed through the same intents, so "run the brief" works hands free.
+- **Discord and Slack doors** on the same handlers as Telegram (slash commands, buttons), one file each.
+- **MCP client in the crew.** The person lists their MCP servers in settings (Gmail, Calendar, GitHub, Notion, Linear); every tool arrives with the same approval card and the same always-allow rule by recipient. This retires the fixture `send_message`.
+- **One-line self-host.** `docker compose up` with the volume, `nimbus init` for the keys, a GitHub Action that runs a workstream on a schedule for people without a server.
+- **Run replay export.** A run as a single `.nimbus.json` anyone can open in a hosted viewer (no account), for sharing what a crew did.
+- **Crew marketplace in the repo.** `templates/` with a `community/` folder and a CI check that every template runs in mock mode.
+- **Per-workstream sandbox images.** `image:` in the template; Nimbus imports it once and pins the UUID.
+- **Multi-user and a hosted free tier** under a per-user day cap, so a household or a class shares one deployment.
