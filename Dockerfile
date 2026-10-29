@@ -37,6 +37,7 @@ COPY --from=build /app/public ./public
 COPY --from=build /app/src ./src
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/fixtures ./fixtures
+COPY --from=build /app/templates ./templates
 # Ship Nimbus really runs `pnpm eval --only` and `pnpm typecheck` inside the container: the goldens and the tsconfig must be there
 COPY --from=build /app/evals ./evals
 RUN mkdir -p /data && chown -R node:node /data /app/.next
