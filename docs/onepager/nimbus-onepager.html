@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nimbus one-pager</title>
+<meta name="description" content="One A4 page: what Nimbus is, what one real morning cost, how it uses Nemotron on Nebius Token Factory. Print it to PDF with backgrounds on." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --paper: #141414;
+    --paper-2: #101010;
+    --ink: #9ff5cf;          /* the app's mint accent, oklch(84% 0.15 165) */
+    --ink-soft: #e6e6e6;
+    --fg: #f5f5f5;
+    --fg-2: #a3a3a3;
+    --fg-3: #737373;
+    --line: rgba(255,255,255,.09);
+    --r: 16px;
+    --cell: 4px;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: Manrope, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { color: inherit; text-decoration: none; }
+
+  /* Screen chrome: a toolbar above the sheet. Hidden when printing. */
+  .toolbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(10,10,10,.85); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--fg-2); }
+  .toolbar .grow { flex: 1; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: #171717; color: var(--fg); font: inherit; font-weight: 700; cursor: pointer; }
+  .btn.primary { background: var(--ink); color: #0f2a21; border-color: transparent; }
+  .btn:hover { filter: brightness(1.08); }
+  .stage { display: grid; place-items: start center; padding: 24px 16px 48px; }
+
+  /* The sheet: A4 portrait. */
+  .page { position: relative; isolation: isolate; width: 210mm; height: 297mm; overflow: hidden; background: var(--bg); box-shadow: 0 30px 80px rgba(0,0,0,.6); display: flex; flex-direction: column; gap: 6mm; padding: 13mm 15mm 11mm; }
+  .page > canvas.bg { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; }
+
+  .top { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--fg-2); }
+  .top img { width: 30px; height: 30px; border-radius: 7px; display: block; }
+  .top .brand { font-size: 17px; font-weight: 800; color: var(--fg); letter-spacing: -.01em; }
+  .top .grow { flex: 1; }
+  .top .tag { font-size: 11.5px; color: var(--fg-3); text-align: right; line-height: 1.3; }
+
+  .hero h1 { margin: 0; font-size: 31px; line-height: 1.12; font-weight: 800; letter-spacing: -.025em; text-wrap: balance; max-width: 155mm; }
+  .hero h1 em { font-style: normal; color: var(--ink); }
+  .hero p { margin: 8px 0 0; font-size: 13.5px; line-height: 1.45; font-weight: 600; color: var(--fg-2); max-width: 150mm; }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm; }
+
+  /* The card from the dithercn example: paper surface, a still dither rising from the bottom edge, the text on top. */
+  .card { position: relative; isolation: isolate; overflow: hidden; border-radius: var(--r); background: var(--paper); border: 1px solid var(--line); padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 4px; min-height: 50mm; }
+  .card canvas { position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; width: 100%; height: 30%; display: block; }
+  .card > span { position: relative; z-index: 1; }
+  .card .k { font-size: 12.5px; font-weight: 600; color: var(--fg-2); }
+  .card .v { font-size: 36px; line-height: 1; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin-top: 2px; }
+  .card .note { padding-top: 10px; font-size: 11.5px; line-height: 1.35; font-weight: 600; color: var(--fg-2); }
+  .card.small { min-height: 34mm; padding: 14px 14px 12px; }
+  .card.small .v { font-size: 24px; }
+  .card.small .k { font-size: 11.5px; }
+  .card.small .note { padding-top: 6px; font-size: 10.5px; color: var(--fg-3); }
+
+  .section h2 { margin: 0 0 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-3); }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm 6mm; margin: 0; padding: 0; list-style: none; }
+  .features li { font-size: 12px; line-height: 1.4; font-weight: 600; color: var(--fg-2); }
+  .features b { display: block; font-size: 13px; font-weight: 800; color: var(--fg); margin-bottom: 2px; }
+
+  .models { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5mm; }
+  .model { border-left: 2px solid var(--ink); padding-left: 10px; font-size: 11.5px; line-height: 1.4; font-weight: 600; color: var(--fg-2); }
+  .model code { display: block; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: var(--fg); margin-bottom: 2px; }
+  .models-foot { margin-top: 8px; font-size: 11.5px; font-weight: 600; color: var(--fg-3); }
+  .models-foot code { font-family: ui-monospace, Menlo, monospace; color: var(--fg-2); }
+
+  .foot { margin-top: auto; display: flex; align-items: flex-end; gap: 16px; font-size: 11.5px; font-weight: 600; color: var(--fg-3); border-top: 1px solid var(--line); padding-top: 10px; }
+  .foot .links { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; white-space: nowrap; }
+  .foot .links a { color: var(--fg-2); }
+  .foot .links a b { color: var(--fg); font-weight: 800; }
+  .foot .grow { flex: 1; }
+  .foot .cmd { font-family: ui-monospace, Menlo, monospace; font-size: 10px; color: var(--ink); background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; white-space: nowrap; }
+
+  @page { size: A4 portrait; margin: 0; }
+  @media print {
+    .toolbar { display: none !important; }
+    .stage { padding: 0; display: block; }
+    .page { box-shadow: none; margin: 0; height: 296mm; page-break-after: avoid; page-break-inside: avoid; }
+    html, body { background: var(--bg); height: 297mm; overflow: hidden; }
+  }
+  @media (max-width: 820px) { .stage { padding: 12px 8px; } .page { transform: scale(calc((100vw - 16px) / 210mm)); transform-origin: top left; } }
+</style>
+</head>
+<body>
+  <div class="toolbar no-print">
+    <span>Nimbus one-pager · A4 · dark, backgrounds on</span>
+    <span class="grow"></span>
+    <span id="hint">In the print dialog choose "Save as PDF" and turn on "Background graphics".</span>
+    <button class="btn primary" id="export" type="button">Export PDF</button>
+  </div>
+
+  <div class="stage">
+  <main class="page" id="page">
+    <canvas class="bg" data-dither data-mode="radial" data-center="0.5,1.3" data-radius="0.42" data-from="0.13" data-to="0" data-ink="#5fcfa5" data-paper="#0a0a0a" data-cell="4" aria-hidden="true"></canvas>
+
+    <header class="top">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAACXBIWXMAAAh/AAAIgABhaR6yAAAQAElEQVR4nOVaeXBd1Xm/21ulp6fdsmXLkiwbrxgw3gBjY2JwjI1tAi7BBGJCIG4xIZlkWiZhSzJNm/yRZKakCRBwSZq9ZFqzOAFjCGBjJC9Y3mTJsiRbsrU+SW9/dzn9fd85VzjptDOdttNm+gTW03v3nvOtv+/3fefqqbEB7U/5Zf1vC/Bfff3nFBDql9B1/X9AmD/cS4iJ9//BdkoBfUI4/wa8BL8u+UReqBm67uElhPbf+pI7QnC8MwxsZEzs67qu8OTmpNil+lgsB26jewSrja/tQqFgO4GAZVkmr2Lk83msQlILkS/ki6LRSCQsPKFNLCXoOmUH9Y/QNfoR8ir/Sqm4LwOE9vgy3bZty8SP5TpuJpOTmzn8KistDQQtaTRcgM/xXm5j2cLFkqlkhu63IHPAMA18nclmIHE4FDJM0zSMQgHr2JDIc7x8LpfNF8KZEOnHGjoO7nDwJmAFoT9uxMV4g1thGGzkCc+AhQzdg1ywpnDJWpowTVgQC2bJwAYWM7BmIV9IJpOO40JAGMp2nFzBMUwN+8bjpWc6OsfGx9evXzc+PoYtLKyK5ULh0NN/9/09e/ZWT6omVwgBITTDyGdzkCAcDELnQDAIE+TyeTgG2kAt23bKysvy2Qy7xXZcryRWzB73YEVypaFBRMOPRggIsaADLOK4LkwWCgWgQEVF5bTaWnwDTSE9rolEIuQU0+jp7o7HY5NqpuBi7H6mo6O2tnbp0sUwh3Qj5QCsB737BwYbGuoRKqWlJVA9FAr99re/u+66FUVFRZAmEDTPnzsPA0+ZPDkcDnd2njnV1n7rresvXOivrpl88sTxyxcsCARD3V3dp9pOwWYcUWR6KGEaJtseroaVTfaPq5M/6JVMjn/m/s/c/9nPnjt3Hnt98P4HFZUVp06eutjff+2117Y0N69bt66mphrBg0Q4+uHRocEhSkLBBtJNS+YNbBQMBK5acd3s2ZedPHkym81dc901M2Y0Llt2TVvbqa6uniuuWLjnjTdi8Xh9Xd3wyEhv77nioqIV11333LM/SowkHnvs8V/94perVq1sO9UGiaORqK4rFfK2jbCkBLACOidAIBDwcwAxZpCrhYDhGR4MODKRGK2bPn3hlVdcvNCH64PBUHvHmZ/85KeP/tVfIvGCwQCcqMl0JxTiX3BQMBRoa2uDQyPhyEgi0Xbq9Lx583u6u+CT0cRo19kuGC8SCp1uP10aL1206Op4PD7QPwD9m2Y07Nu3r6qqqr+/H4GBDZAqBguIpAtCbkQS2cqE5UkxIRgwNJUVHtwbRFi/9NI/r7x+ZUVFOcIBmlLultN7hFNFWcWaNTdlc3nLNEPBYNAKsvgIOcEwKgiz8rnCrpd3QV26wDJhJ7INvvQonF555eVoURGi3/WcyspKGAlyHD3aWlQUbWk52N1zrqqyEgLh3nQmQ5mKNCVwoeChreB+MQFZpJzOoIcFocTeN98+1npiZHik43R7NpeJFRczpIl4SRyu/tFzz4SCYaT0h0c+7DzTuXLlCjgOMks0Iw8gSHP57PUrVzQ2NQZDIcswC7adSqWgYSabrayogBZAIcgHKwKdhgYHyisry0vLJHIjDCBqgZLMBY5BW41hDi+ysSwayGtBUG2oCgOLCWibGB4dSYwWFxchJ4Fo5CsOh/Fkks0n7vnUPcFwCKjnuA60/djqVTnASC7LzoMdPIvsYmm5XHrh5Qu23n2nYzvBYFF3d1dbW/v4eBILbVi/tqws/kHzQchaXl65+7Xdzz/3/F9/8xv33PMZ18lCGE+VO2FIw6IA6aoOwH3AT013peFlWiCrYT9PQKDInjffONhyeOvWP6utncLIa6XT6YHB/osXBt7+/e93vvD8k088vvXuba6TY3BzEGwvPP8CjOuXVchOaujIM8cBHhD6mmYGoF5bW3Pi+InTHe3Lll4Fb5MJNa2/f4BuNoxcLgcnjY6Okk1lHecqhtDRVR3VOfw8Jbp/Af9FX+PKSDQPS7Uea+3vX1lcHHEJRwVET4wmAIlDQ8O4O5vN5nNIkKRlAcS9UNgCdpMpKIngSR1ek0sjfEOoOxKwS0qKp02d8uMXf7z/vX07HtpeUVm9dGkpMru55VBpadmqVTfU1EyGklTIFI55VHUhOcoq+dSQQuuM1jL6dV2Fk08EHFTJ8z09zQcOuO6fx+NVyeQI0K/nXI9NURCsqZl05ZVXxkpiBPZUXmkBWTo5uKQ5PIuwC2Hn2GxiyTRo+Wwue/XiRbFYyem2tq6u7sqqKuF6FWXl3UZ3R3t7KpWEtrwE55upCw50SVSE6xCPoJfB8UWXociyGuoOvPL5wsKFlyOxANyAu+XXXhMMhIABgwNDvb19VdWVa9euQdkCaE4YRK5gUhmTCwmL7AHDkW89+pKxA4ZFLN2yft3tt8e+/KUvIgFuuOHGxsaGzZvXv/fuu+8f+GDLxdssKwwKQkwGywuyNIodKtElkaPJyOEL6DdANpvJsD7kB6Tjmps+tnHTbTt2PPzWW3t/+cufTZ4CcQWi59e//tWDDz54//3bU8lhlAgSkp3sUTnzABtC5hNyQNDmMA+tjsD0qRYBObgHcvoqQH5Zxcrrr0eheG//gen1Dd/9zreXLVucy6cp5ChT4VE9EAj2nu/buXOn5GvwteMR/YO1CKYMM5fNTZlSc9+2TxMcUXQRU8qTcGnERTgcPNvVMzqWeumfXqqZNOmpp56cOnVKMjmEVDFNVC6HNxI+K9Gkb/Gvxe802oVWVWQVH3qSyxr6pJoaYPDlC+fDeM0tBy+fv+COOz6RTo8hjzmDifkh/+LxKADkhed3wuP5XN6wTJgMksEeRAYN0y7YKOfbt38OahXyedwoQwlqoFD29w8ODAwlk9m9e95cu/amO++8u1AYz2QyhmF57C4JdJLhsg7seYQQ3E30k/HDd7gufNaLv44cOXK6rf2mNatHRhIvvrDz5ptvWrr0qoJdwMYehzcyDFhx7733QbLPbX+wZlLN7DmzC4UciqEZoEK5f99+4Mix1mOoFVu23DVv7pzHnvgK9JFAiBK04+GH7rr7k7t3v55OpR944AGg9+bNt9yy7pZt992bTKXgPqG6BY05LAwms4hktJiSgw8jghxOX79hoDsomhOJkVQagauhRzjd0bHo6kWmFZBRgOCBDlgun7f373sfJGLFihWzZjWhWBYKeUmksdDgAH4G29s7xsaS+9/b79g2M0iXQAtgZNuzLmsKWPN+8fNfAaaXL1+GK59//rn58+abJkEno65EMoMKiCs4T9nEBimgU+D74aUx2KnehNykh0ORaDSKeAaiff7zX0iOj12/YtUjjzyyZcuW8fGRUCi446FHznSc2Xr3VnDGj61ZHQoER0cTqrbxz7KlS4AtUDKRGFuydOloYmT1DWvu2HL7F7/whbHxBHqjRx/9aktLy1NPPVVSEkeUwlIlJSWRaETFAYcG/8dQ56CcWZIJWVTIhGzHDB+q8Q0TEdXD6XAOancqlcZy8+bOPn7i+OnT7RcvXkwkhsfGxkKhSF/vBbyAd9Prpk6ZXONQdyOoAAjVmYGTQZrp0+vKy1NIpK6zxtmu7nM951Fxx0fHimMliZEx+GjatGlV1dUtBw/LFVQIS67G4S64BiLgOYllwoLM8TUADdkiaIwRupB5AzmMQy0t+98/0Fjf0DijYdOmDaFgYMmSJb/5zW+e+eEz8Awan7Xr1m3ceOuqVStKS+OAPLmND2a0OPIBS624bjkK6q6XX4XED/3FjuPHj628fjWYbzKZ+tbf/s23vv1NFK9sOs1mFsgQ+EHTXMVJiEdpbBdTVkMhVK23FEGZaGqluyhAcSlYpAP4T6XT/QMXi4qLRsfGQKUiFFPRWHEMzTFatrq6afX10+MlMdA4ZuqKOXAAeKyOic4PuY59p0yeMhwcQccdpp5Lmzx5ck2NQM1C19vTcw4p23ehDwS+duq04lgx4laNF/xOGpIhaMH22L5sehn1IMCazGpJy4ggkC+w01NffxJofeuGTc3NLVVV1cnUeG3t1E0b16++cfXrr79+rPU4ilFNTU0umwVhNIj6y7GLQd5ke0gKZzsFxO6GDWvPnu15dffvYrFYeUX1jod3rF27dmRkeHh45N19+4GkaIxqp9Zu2LBhZlMT+IHujwi43WEggjkMGWGMgVI/VyiKIlTAyZfHZEaXlNvO5Q4fOtjYOH3FimsqKytgfDQfM5oa0YmDSEqLA0llmyI8h1jnhCc4Mjij3Eg4PHvWzMqK8pLiYvDcXC4jfQX6gAYV5o/FihZffeW0qdNcNqusW7Koo82AkzkNhFzcklBjSBIhoWmCNkqwRSBpHugqdvqHF3duveuuhz//pbGxgUwmPWvWzLlz5xRoYmFTcmlGpCgMnABHkIzTnzfRZgAx1/Gy2Ux5edkNN6w0LUSvRtQ+mwEBKYmXtAM+z3QAzcvLyjbfhlqZBA+Q6Uuk3WM80i1lIzkywN8a4wWSg7kGMTuCIU/lA2MYVTlIidC/+aa1l82eY9voNoiK4gukBF0osVczXnvtd+hOli1fhr2FkNMo1FpwYHvXrlenTq2dN3cuyhle+Ffjr5Ebb765t+fc+YGBi04hjzXBRnPZNHYkDsIsV6P+jlyo2CFuNFSDYclJmGTR5HoucFI9cpkriTf4Ahqo0KrVN85sagRA6D4/pGJF3Z2IREL79h34oLklMTKMzKxvaMjnyXKu5sSixa+8+taBAx+8vGvw8ccfq6quymUzTJB07tmDb7y596233i7kMzAiHGkFA1wEGUcNTdZ7rl4kGEgXzMflVzY0msJbbjIk8pHaFDlkehoHBcEzLRNWS6fGiQJx1AvZyBAWGJJAoX5dsfCKQ4cOotlvapqRx6YgWA4F7uDg0LKly/5l167E6AiIPrNANaXjEU4QND/rUFl3CrZpmCgvqOWgWBTumirGkgVJWFUdE0JIzhLJGtx76JJ2UCWgjha8+iuPfvV0WwfsNWnq1OqqysHBgRdf/Nmiqy6fN28e4kd2FdTCayA+oZ0vPAfXb968SaatIJqtw6aoTT/4wTO4EhksyTawFdQYUiAN7txyx7qPf/yn//izRGIUHQjWXH/Luk/cfvu2bfeCyBjEOBhaeDzgcEem1BfUD6gSDa95MmYZpfAG+YUvOtrPHD3aWlc3PWjBGYFcId9/sT+dybIP/XaRTYKdLl7sDwYCpqVwjMaeFGYETJ2dnVNrp4DheTRSZZcJxSubZjYGrOA77+wLBEMIv77eXkD2oqsXo23K5XM8ZVKdHcgXQILmmUJZ2vJHaBpRbr/04E1pvPTRv/rKq6++tnHjpptvXrt4yaKy0nhxSYyLhgiFQ3mmkzKrILxLXYFHE19AfsGWHicZPXQaABO9KFpkUt4LBW2a58ug5XN2Xit86u47bZtA9kxnJ0hR59nuxYuXffnLX7rvvgfGRod02XVdUnVZVEvmALxscBNjODo5KJNKpToAoAAACq9JREFUgdOD6oDZlpTE0FvMnDmjuKg4V8hhbxiAgsZxOclcOcUySI48AR97UmiyD+YZIE+T4TEeBRQQPBoPMzQGOx/lDRgInyHfQEnipWXibHdidBwijIwMgsCFIyFZjijlXG5cKUQ9eT4gg5I2hFglsdjfP/3M95/+wSfv2vL4Y48tX760urpSUJeck1nnFmiWisxDZLNkpLvtOPX19aFQGCDT2DiDIpUSCiQX3am3YMECoEd9w/Sq6goqGhpzRoCgachN8S8uowmYaXJLlJs997K58+e+/37Lsz989rvf+87qG2+AQZGVSHcUdUZKk2FUk/EqJwhyJmJkstmh4eFcrhAMhfFCwBBsc4WAs5C0o4lENpuHc0CGucqTdWddNvPp738vHArCBMAQgysD4BJfoaF7YeezZfHS4qIY9bgkNiVlYnQMzVB5aXkgFJBIz6ZEtLjYF5UHHhtJJAAMht9bw1IyrbmuyRMaXaPRODfEVJQM4EkABoYC/RcHsBXsiguIUZDz9Xhp6ZEjR9Hc37Z5A3IOhsG9QEaUp7pp01zPlt2mn+GCBxD5hoZ6MC6QKyovTAdKYiUHDx45duzEpk23xsvimXQK0B2OBLE1gACkARWd00kVXcl04MBAMKCW5pbA45marniXGhqb5KqghT6ttfV47/nembOasC6uGxoaPHWibWhoGKzhfG9fNpevriovLSvjxtoAP6Wxh6mrXobPLZgdUv+uMT+XwD08NHS2s3t8fBzLgocCnWtra/D5/v0HhgZHEKKwNCzhEdORAETiww8Wt6mcyRSHlnxrGJIQGJx+Mr2oRobCweaWw8XF0TnzZsOhgYDV1ta++7dvxOMlIMgdZ84eO3Zq08Z10aIoKDf1qrrEFVpaVk65Gfvf4BbVA5mMFhV1dHTu3ftOSTwGuU6eOhWwrIaGOsi8e/ce6F+K9YMBy4ArgnzwQTjATZiGMidUwaJlLZ3fQmMmj5osPwCZQCBw4vjx7q6u2XPnhiPhlpZD+CQcCvX2XkB0gjfRGF1o0aJIx5nOwaGhhsbp+FwKLeQBFvESkxejUajEctQIAAtWG6DJobDzYIFayASsue+8uw9FjbxHPZCDJITnU8lkUTQiJC/k/1ErHLugqVqsKrEmjzmEGksINBbJdOp0eztyqK6+zvPKQXLAhFGYYRNcNj4+BhFhnmg0cvJkGypcY2MjDcEdh3QwZDdn8o4WGwUpBC20cCQ6MDh8pPVYLkttmivC0VAklU4BWM52dUHZSDRs2yABFnrOAwf2RSNhaMUjV4Ox14Uy/vmSXF3RHpd24RFLKpXauGn90mWLfv7zXx9sOdh65OjpttMgmPCSa7u27qAggPmC8yxZsvSyy2Zj7WAw/P6BZmhbyNsALaQhN34uOhIeucJMbiqZghzoswCRoYAFlELSNzc3X7zQ1zSrCTGJKotGCoKASrW27nEdG/Zav2HDjTfeiG4WrJsNTQNMpj2KB6gDDpvYLwcZ2Kwj5s+fu3zZ9Xv27M1kMn19dM6zYMHlqI6e7sEPjivGRscuXOgDYNOBjytgpM7Os8yQKc/gEA4zoI5LhIySixo0m87vHPkHArJgO319vSdPnpg8ZUqsqJhnhHQQlk6nu7u7sEIiMVZXV7dmzbrx5BCf7hCDyGbTQEVdpjb1xMQmaXg2caZt0Dmxkxjt3759+7ZPb/v6175x+PCR11551TSZI1E5tGAedLEHm1s+PPwh8DEejzc2NlkQCrSSEEy+AHYiX6D+HE4PBEKGnrdcs7u7p6/3fCqdxBsoiGb6WGtr61HQ9QBt4WkOAZBz88Y1n952L0J0PDkISxAhZSyi1mXiiB1kjs9KCIUERZGQ9Zjn7F5DfUM0Gq6eVA2GGGDwMgkEiUGgpTfNeD5v45Z0KoUiUp1KQXwqe5Ew8C+byQKtmZ1ofHLq8O6AJgNfoTYh3rAaEpSmqI6LEIDqdKQZ0MEaKu2K+unTr7py8fj4MB0CGTwF5DNPBKj/mAC3lDz1NdQwVJViQyZNgfq99JNPfBVAxoWC7qeujrKT7IH+FGa+995tv3/r7cOHDsGpJpErMiG8SqFiEKbQCTllnwc55ABqJDFy99atX/vaE8lkyqI5H482mTObcnAC+DdEItFPCM8H7wqJufcTcsjItc2SFNShk13CDZf8IKGIyAruKCou1tUgkofCHNAeHyYQhTb1OXPmwHjRSMSw1NGLxyt4yqWG/7wDSUnNgWmMjo03NtTHYjFm2pbqetXIVhJzOr12+fSfLOwPJ4D5ZBU65FMdjSVX55N3i4gXPQRAX6oSqKH3cvnIiD1m8vMUfGStc8smbO8bX38cjpfnd7Jv5WogJLJpzE349F8SYLUz3ELkTDc93dbV1EcBC+xJ55uG5feRmjSEPOjxD2LIHPQcgKYObk2dA0NXxxP8DIZs/Q3uk2WrrMkTKe452Ww0KYE+rqv5BV/OdLkeyrmmOvPT/dGxpppWeZQmz0f4jfpDn+CXPusWPPhxZSl0iXcZmpoR8XCXBnTwqzSpTzvk6FlWDE31vjrljuep/kiRBaYohu7JPtXQ/SMlOa03pCTCn9dNPNgjd5ETBcXMlNTqDcmiC3+w7vl8SKNnT+S8jvp+z5KKotxEIsIk5PvoSFQwxPI4UiqAZWQJ4adddFPGt8YrCdWCcZdIxNY/sPI7ccmRaIrjcVxrfluvhrbcE4mJowl11Cl7Th75Cz6tMej5lYItw4FywKNzFNQUt/XY8RMnTpKZXRekRzb1ci6IN4g8nkgSKLA9PXalxa6jRgLf0/a+D+VpJOWVwUc4HqgEaExQDpvArhmXSWHgKRXEQJAzxZSAy5qajm1LjKS5qqBnRGBmVI/q6ip2gSmTmB7RQUXsO9/Lx+lEm1CSaNAmdDXmp+bc4Km3K6dg/LCDrBg8SzL4OJ7kpAyDVgRFgnKMPUMveV6mpgeeOqQgsGKmKc8fVacvPcz2Z+BFxGNBpL0tz2pnNjXx7JrsCAvR81lXXLHw6quvFPRYksmGly03n6vLebWQESLdK2Rz5AfzRJX0G3Y1ydTVmGNiwujHuRoF6NpHfYg/L6cHFNTUTAKHDwA8BvA8GjY69EhXllsLz5KfF2x41dP9EaHf83OHgGRlq/hRLjNYSKyUwyZdpow/y5XyGr6UfuWnwJJWVnig5rH03vAZMUvNn/qzOZZEdiw0piM4ohNOS0poyT6U5DLlQbTub2qq/oZPwrmTkJCka77ZDPlLTDwOqE3YSyWPMIQ8l5PpScEgi6JumfJRCrrPMtQWrOFEv6VQyRPq4SyOBQS95asqFBeSVpc1QB4C+qMbwcyH2YWcZhtcMOlc2WTd5NCSnSDDSlpQ/uhiAj8/GoJJLNL9euA7SiUuMRr1EIEh/ckVQ/NXUsetuj6hHz/QNuFhjcmcDHdDPtdgqMOiiQGwIrLCx3OlwwQ/VHMyTVMlT4gJQVhPOQZinqICR0aTkKApH56UdEfuwxLKqwjGFd1QG8KTspPkveU7k2iwxtMuFaRKLF9I9ZGcXyuONOF3FTsfKXRJVmsfHZ3opn+kpSyrhszCb6FVEKo8xuWmXwX1CYH5qYiPQveSKJ4I5n/3q0sUusT8l378x3f+29X/eJ0/vOoPP5/4/cfL/D97dvr/4OtPXoF/BfyKOpdandQFAAAAAElFTkSuQmCC" alt="" />
+      <span class="brand">Nimbus</span>
+      <span class="grow"></span>
+      <span class="tag">Nebius × NVIDIA Global AI Hackathon<br />Personal AI track · built alone in three days</span>
+    </header>
+
+    <section class="hero">
+      <h1>Your standing work, done every morning by a crew that <em>asks before it acts</em>.</h1>
+      <p>Free and open source. Five Nemotron 3 agents plan, research, write, check and learn through Nebius Token Factory, with the bill on screen and every send behind a card you approve.</p>
+    </section>
+
+    <section class="grid3" aria-label="One real morning">
+      <article class="card">
+        <canvas data-dither data-from="0.42" data-to="0" data-ink="#9ff5cf" aria-hidden="true"></canvas>
+        <span class="k">One morning, all five agents</span>
+        <span class="v">$0.0216</span>
+        <span class="note">The next morning $0.0209: it started from what it learned, 3&nbsp;% cheaper.</span>
+      </article>
+      <article class="card">
+        <canvas data-dither data-from="0.42" data-to="0" data-ink="#9ff5cf" aria-hidden="true"></canvas>
+        <span class="k">Saved by the cost router</span>
+        <span class="v">24&nbsp;%</span>
+        <span class="note">Against sending every step to the largest model. 27&nbsp;% the next morning.</span>
+      </article>
+      <article class="card">
+        <canvas data-dither data-from="0.42" data-to="0" data-ink="#9ff5cf" aria-hidden="true"></canvas>
+        <span class="k">Replies sent without your OK</span>
+        <span class="v">0</span>
+        <span class="note">3 sends, each behind a card. 1 rule saved, used the next morning with no card.</span>
+      </article>
+    </section>
+
+    <section class="grid4" aria-label="More numbers from the same take">
+      <article class="card small">
+        <canvas data-dither data-from="0.2" data-to="0" data-ink="#e6e6e6" data-cell="3" aria-hidden="true"></canvas>
+        <span class="k">Tokens, run one</span>
+        <span class="v">58,950</span>
+        <span class="note">across all five agents</span>
+      </article>
+      <article class="card small">
+        <canvas data-dither data-from="0.2" data-to="0" data-ink="#e6e6e6" data-cell="3" aria-hidden="true"></canvas>
+        <span class="k">Model calls</span>
+        <span class="v">23</span>
+        <span class="note">plus 21 tool calls, every one open</span>
+      </article>
+      <article class="card small">
+        <canvas data-dither data-from="0.2" data-to="0" data-ink="#e6e6e6" data-cell="3" aria-hidden="true"></canvas>
+        <span class="k">Memories</span>
+        <span class="v">16</span>
+        <span class="note">after two mornings, plus its own how-to</span>
+      </article>
+      <article class="card small">
+        <canvas data-dither data-from="0.2" data-to="0" data-ink="#e6e6e6" data-cell="3" aria-hidden="true"></canvas>
+        <span class="k">Day cap, live demo</span>
+        <span class="v">$1</span>
+        <span class="note">runs stop there, $0.25 per run</span>
+      </article>
+    </section>
+
+    <section class="section" aria-labelledby="h-does">
+      <h2 id="h-does">What it does</h2>
+      <ul class="features">
+        <li><b>Asks first</b>Every side effect is a card. An approved one can become a rule, and you can revoke it.</li>
+        <li><b>Learns</b>Memories and a rewritten skill file after every run, so the next one asks less.</li>
+        <li><b>Priced per step</b>Three Nemotron sizes, routed by job, with the bill on screen while it runs.</li>
+        <li><b>Yours</b>Your database, your keys, the tools you list. Nothing runs that you did not allow.</li>
+        <li><b>Always on</b>Schedules in the app, and an OpenAI-compatible endpoint for OpenClaw and Hermes.</li>
+        <li><b>Open source</b>MIT. <code>pnpm dev</code> runs it with no keys at all, on a scripted mock model.</li>
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="h-nebius">
+      <h2 id="h-nebius">How it uses Nemotron on Nebius</h2>
+      <div class="models">
+        <div class="model"><code>nvidia/Nemotron-3-Ultra-550b-a55b</code>plans the run, routes each hop and reviews the result (the Orchestrator).</div>
+        <div class="model"><code>nvidia/nemotron-3-super-120b-a12b</code>does the work: the Researcher, the Analyst and the Writer.</div>
+        <div class="model"><code>nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B</code>checks the output and writes the memories (the Checker and the Learner).</div>
+      </div>
+      <p class="models-foot">Every call goes to <code>api.tokenfactory.nebius.com</code>. Numbers above are measured on the recorded take of Oct 29, 2026, two real runs of the Morning brief, and listed in <code>docs/video/RELEASE.md</code>.</p>
+    </section>
+
+    <footer class="foot">
+      <div class="links">
+        <a href="https://nimbus-production-6f7b.up.railway.app/welcome"><b>Live</b> nimbus-production-6f7b.up.railway.app/welcome</a>
+        <a href="https://github.com/harrymove-ctrl/nimbus"><b>Code</b> github.com/harrymove-ctrl/nimbus</a>
+        <a href="https://www.youtube.com/watch?v=obMWKCewVTY"><b>Video</b> youtube.com/watch?v=obMWKCewVTY · 2:40</a>
+      </div>
+      <span class="cmd">git clone github.com/harrymove-ctrl/nimbus && pnpm dev</span>
+    </footer>
+  </main>
+  </div>
+
+<script>
+// A still Bayer-8 dither, drawn once per canvas: one filled square per cell where the tone beats the threshold.
+// Same idea as the dithercn DitherGradient with animate={false}: paper at `from`, ink at `to`, bottom to top.
+(function () {
+  var B8 = [
+    [0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],[12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],
+    [3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],[15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]
+  ];
+  function num(v, d) { var n = parseFloat(v); return isNaN(n) ? d : n; }
+  function draw(c) {
+    var d = c.dataset, r = c.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var cell = num(d.cell, 4), from = num(d.from, 0), to = num(d.to, 1);
+    var mode = d.mode || "linear", dpr = Math.max(2, window.devicePixelRatio || 1);
+    var cols = Math.ceil(r.width / cell), rows = Math.ceil(r.height / cell), px = cell * dpr;
+    c.width = Math.round(cols * px); c.height = Math.round(rows * px);
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = d.paper || getComputedStyle(c.parentElement).backgroundColor || "#141414";
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.fillStyle = d.ink || "#9ff5cf";
+    var cx = 0.5, cy = 0.5, rad = 1;
+    if (mode === "radial") {
+      var cc = (d.center || "0.5,0.5").split(","); cx = num(cc[0], 0.5); cy = num(cc[1], 0.5); rad = num(d.radius, 1);
+    }
+    var aspect = r.width / r.height;
+    for (var y = 0; y < rows; y++) {
+      for (var x = 0; x < cols; x++) {
+        var u = (x + 0.5) / cols, v = (y + 0.5) / rows, pos;
+        if (mode === "radial") {
+          var dx = (u - cx) * aspect, dy = v - cy;
+          pos = Math.min(1, Math.sqrt(dx * dx + dy * dy) / rad);
+        } else {
+          pos = 1 - v; // angle 0: start at the bottom edge, end at the top
+        }
+        var tone = from + (to - from) * pos;
+        var th = (B8[y & 7][x & 7] + 0.5) / 64;
+        if (tone > th) ctx.fillRect(x * px, y * px, px, px);
+      }
+    }
+  }
+  function all() { document.querySelectorAll("canvas[data-dither]").forEach(draw); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(all); else all();
+  window.addEventListener("load", all);
+  window.addEventListener("beforeprint", all);
+  var t; window.addEventListener("resize", function () { clearTimeout(t); t = setTimeout(all, 120); });
+  document.getElementById("export").addEventListener("click", function () { all(); window.print(); });
+})();
+</script>
+</body>
+</html>

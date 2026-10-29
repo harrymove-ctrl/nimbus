@@ -1,0 +1,11 @@
+import { chromium } from "playwright";
+const html = "file:///Volumes/Dev/nimbus/docs/onepager/nimbus-onepager.html";
+const browser = await chromium.launch();
+const page = await browser.newPage({ viewport: { width: 900, height: 1300 }, deviceScaleFactor: 2 });
+await page.goto(html, { waitUntil: "networkidle" });
+await page.waitForTimeout(600);
+await page.emulateMedia({ media: "print" });
+await page.pdf({ path: "docs/onepager/nimbus-onepager.pdf", format: "A4", printBackground: true, margin: { top: 0, right: 0, bottom: 0, left: 0 }, preferCSSPageSize: true });
+await page.emulateMedia({ media: "screen" });
+await page.screenshot({ path: "docs/onepager/nimbus-onepager.png", fullPage: true });
+await browser.close();
