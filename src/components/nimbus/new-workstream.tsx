@@ -3,6 +3,8 @@
 // "+ New workstream" (rail, and /new in the composer): a standing goal of your own. Name, the goal, a schedule, the tools
 // it may use; Create inserts it (POST /api/workstreams), selects it and puts the goal in the composer for the first run.
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { ChevronDown } from "lucide-react";
 import { TOOL_LABELS } from "@/lib/workstreams";
 import { buttonSm, cx, panelGlass, primaryButton, secondaryButton } from "./ui";
 
@@ -41,8 +43,11 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
     onCreated({ id: j.id, goal: j.goal ?? goal });
   };
 
-  return (
-    <div role="dialog" aria-label="New workstream" onKeyDown={(e) => e.key === "Escape" && onCancel()} className={cx(panelGlass, "nb-rise-fast mx-auto w-full max-w-[720px] gap-3 p-4")}>
+  // Portalled to <body>: inside <main> a transformed ancestor pins `fixed` to the column, and the sheet runs off the
+  // window (the chips and Create were clipped). The veil covers the rail and the inspector too.
+  return createPortal(
+    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-neutral-950/60 p-4 backdrop-blur-[2px]" onClick={(e) => e.target === e.currentTarget && onCancel()}>
+    <div role="dialog" aria-modal="true" aria-label="New workstream" onKeyDown={(e) => e.key === "Escape" && onCancel()} className={cx(panelGlass, "nb-rise-fast my-auto w-[min(560px,calc(100vw-32px))] max-h-[calc(100dvh-32px)] gap-3 overflow-y-auto p-5")}>
       <p className="text-[15px] font-extrabold">New workstream</p>
       <label className="flex flex-col gap-1 text-[12px] font-bold text-neutral-400">
         Name
@@ -55,13 +60,16 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
       <div className="flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-[12px] font-bold text-neutral-400">
           Schedule
-          <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} data-cuelume-select="" className={cx(field, "w-40")}>
+          <span className="relative">
+            <select value={kind} onChange={(e) => setKind(e.target.value as typeof kind)} data-cuelume-select="" className={cx(field, "w-44 appearance-none pe-8")}>
             {KINDS.map((k) => (
               <option key={k.key} value={k.key}>
                 {k.label}
               </option>
             ))}
           </select>
+            <ChevronDown className="pointer-events-none absolute end-2.5 top-1/2 size-4 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
+          </span>
         </label>
         {kind && (
           <label className="flex flex-col gap-1 text-[12px] font-bold text-neutral-400">
@@ -72,7 +80,7 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
       </div>
       <div className="flex flex-col gap-1.5">
         <p className="text-[12px] font-bold text-neutral-400">Tools it may use</p>
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Tools it may use">
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Tools it may use">
           {Object.entries(TOOL_LABELS).map(([k, l]) => {
             const on = tools.includes(k);
             return (
@@ -84,7 +92,7 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
         </div>
       </div>
       {error && <p className="text-[13px] text-red-300">{error}</p>}
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 pt-1">
         <button type="button" data-cuelume-close="" onClick={onCancel} className={cx(secondaryButton, buttonSm)}>
           Cancel
         </button>
@@ -93,5 +101,7 @@ export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; o
         </button>
       </div>
     </div>
+    </div>,
+    document.body,
   );
 }

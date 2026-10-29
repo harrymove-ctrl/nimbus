@@ -511,9 +511,11 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
             />
           )}
           {creating && (
-            <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/50 p-4" onClick={(e) => e.target === e.currentTarget && setCreating(false)}>
               <NewWorkstream
-                onCancel={() => setCreating(false)}
+                onCancel={() => {
+                  setCreating(false);
+                  setTimeout(() => document.querySelector<HTMLButtonElement>('button[aria-label="New workstream"]')?.focus(), 0);
+                }}
                 onCreated={async ({ id, goal }) => {
                   setCreating(false);
                   await refreshWorkstreams();
@@ -523,7 +525,6 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
                   setTimeout(() => document.querySelector<HTMLTextAreaElement>('textarea[aria-label="Message the crew"]')?.focus(), 150);
                 }}
               />
-            </div>
           )}
         </main>
 
