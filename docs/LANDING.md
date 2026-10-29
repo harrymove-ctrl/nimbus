@@ -28,7 +28,7 @@ Acceptance: at 1280 × 800 and 390 × 844 in the built-in browser, every chip an
 
 **Shape** (the reference is writer.computer: one headline, one button, then a column of captioned demo loops, then a short bulleted feature list, a three-link nav). Dark, on the app's own `globals.css` tokens (dither background, Manrope, mint accent); no new colours, no new fonts.
 
-1. Nav: the pixel cloud mark (`public/brand/nimbus-icon-512.png`) + "Nimbus" · right: "Open the app" (→ `/`), "GitHub" (→ github.com/harrymove-ctrl/nimbus), "Video" (→ the YouTube link once it exists; until then `#` with `aria-disabled`).
+1. Nav: the pixel cloud mark (`public/brand/nimbus-icon-512.png`) + "Nimbus" · right: "Open the app" (→ `/`), "GitHub" (→ github.com/harrymove-ctrl/nimbus), "Video" (→ https://www.youtube.com/watch?v=obMWKCewVTY; a "Watch the video · 2:40" button sits in the hero too).
 2. Hero: headline "Your standing work, done every morning by a crew that asks before it acts." (the video's opening line). Under it one line: "Free and open source. Runs on NVIDIA Nemotron 3 through Nebius Token Factory." Buttons: "Open the app" (primary, mint) and `git clone github.com/harrymove-ctrl/nimbus && pnpm dev` in a copyable mono chip. Then the three numbers from the recorded take, as three small tiles: "$0.0216 · one morning", "24 % · saved by the router", "0 · replies sent without your OK".
 3. Demo loops, one per row, each a `<video autoplay muted loop playsinline preload="metadata">` with a poster, inside a rounded device-less frame on the dither, with a one-line caption under it in the video's callout voice (what it is · why it helps you). Nine loops, in this order:
    | # | Caption | Source |

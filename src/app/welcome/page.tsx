@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 const REPO = "https://github.com/harrymove-ctrl/nimbus";
-const VIDEO: string | null = null; // the YouTube link once it exists
+const VIDEO: string | null = "https://www.youtube.com/watch?v=obMWKCewVTY"; // the 2:40 submission video
 
 // Every number here is from docs/video/RELEASE.md "Measured on take 1915".
 const NUMBERS = [
@@ -94,6 +94,11 @@ export default function Welcome() {
             <Link href="/" className={cx(primaryButton, buttonMd)}>
               Open the app
             </Link>
+            {VIDEO && (
+              <a href={VIDEO} className={cx(secondaryButton, buttonMd)}>
+                Watch the video · 2:40
+              </a>
+            )}
             <CopyChip text="git clone github.com/harrymove-ctrl/nimbus && pnpm dev" />
           </div>
           <dl className="mt-2 grid grid-cols-3 gap-3">

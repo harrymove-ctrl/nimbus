@@ -5,7 +5,8 @@
 Every morning I read my inbox, my calendar and GitHub before I've done any work, then write the same replies I wrote
 yesterday. Nimbus does that part for me with a crew of NVIDIA Nemotron agents. It asks before it sends anything, and it
 learns from each run. The short version, with clips from a real run, is the landing page at
-https://nimbus-production-6f7b.up.railway.app/welcome.
+https://nimbus-production-6f7b.up.railway.app/welcome, and the 2:40 video is at
+https://www.youtube.com/watch?v=obMWKCewVTY.
 
 I built it alone in three days for the Nebius x NVIDIA Global AI Hackathon (Personal AI track), starting 2026-10-27.
 
