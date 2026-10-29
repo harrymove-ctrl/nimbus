@@ -15,9 +15,9 @@ Hackathon page: https://nebiusglobalaihackathon.devpost.com/
 - [x] Devpost "Additional info" form answers and Nebius/NVIDIA feedback filled out with zero placeholders (below)
 - [x] New project started Oct 27, 2026 after the Submission Period opened
 - [x] Three doors told on `/welcome`, in the README and in the story below (web, Telegram, CLI and MCP), each with its proof line
-- [ ] Redeploy and check the three doors section on Railway at 1280 and 390 wide (verified on `pnpm dev` only so far)
-- [ ] Close the pending lines in section 6 ("Unverified") or leave them there, by name
-- [ ] Keys stay valid until judging ends on Dec 15, 2026, because the demo must stay free and unrestricted through judging; rotate the Nebius, Tavily and Telegram keys after that, not before
+- [x] Redeployed (46629ce2); the three doors section checked on Railway at 1440 and 390 wide on Oct 30, 00:05 ICT
+- [x] Close the pending lines in section 6 ("Unverified") or leave them there, by name
+- [x] Keys stay valid until judging ends on Dec 15, 2026, because the demo must stay free and unrestricted through judging; rotate the Nebius, Tavily and Telegram keys after that, not before
 
 ---
 
@@ -353,7 +353,7 @@ Say "mock-tested" or "pending" for each of these until a real run exists, and mo
 
 - **Telegram, real run from a phone: pending.** Only the mock test exists: `pnpm check:telegram` 40/40 against a stub Bot API. The bot token was not on Railway when this was written.
 - **MCP from a chat agent: not done.** The real MCP run (`run_e8b4dff2`, transcript `docs/mcp/2026-10-29-release-watch.md`) was driven by an MCP client script, not by Claude Code or Cursor with a person at the keyboard. In that run `read_artifact` answered "no artifact yet", and the run record shows trigger `manual`, not `api`.
-- **CLI, real `nimbus run checkout` against production: pending.** `nimbus doctor` against production is real (every row green, the optional Telegram row not set); the `nimbus run` example in `docs/CLI.md` is on a local server.
+- **CLI, real run against production: done.** `nimbus ws import templates/study-coach.yaml` created `ws-u-study-coach-09bc` on production and `nimbus run ws-u-study-coach-09bc --yes` drove `run_b42b8b80` to the end from the terminal ($0.031, 94 s, lanes Tutor, Quizmaster, Checker, Learner, seven run_code calls in Nebius sandboxes); output in `docs/cli/2026-10-29-study-coach-run.txt`. `nimbus doctor` against production is green.
 - **`/v1/chat/completions` with a real OpenClaw or Hermes client: not done.** `run_6b393ab6` was started and approved over the endpoint itself, not from either client.
 - **Sandboxes scope.** Only `run_code` runs in Nebius Sandboxes. The Ship Nimbus `shell` commands (`pnpm eval`, `pnpm typecheck`) still run as an allow-listed subprocess on the server.
 - **`/welcome` three doors section on Railway: not checked yet.** Verified on `pnpm dev` (mock) at 1280 and 390 wide (`docs/ui-ux-qa/welcome-*.png`); Lighthouse not run on it.
