@@ -27,6 +27,7 @@
     "check:chat": "node --env-file-if-exists=.env.local --import tsx scripts/check-chat.mts",
     "check:cases": "node --env-file-if-exists=.env.local --import tsx scripts/check-cases.mts",
     "prune:runs": "node --env-file-if-exists=.env.local --import tsx scripts/prune-dev-runs.mts",
+    "prune:seed": "node --env-file-if-exists=.env.local --import tsx scripts/prune-seed.mts",
     "check:rules": "node --env-file-if-exists=.env.local --import tsx scripts/check-rules.mts"
   },
   "dependencies": {

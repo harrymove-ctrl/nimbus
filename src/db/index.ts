@@ -9,6 +9,17 @@ import { LEGACY_WORKSTREAM_IDS, WORKSTREAMS } from "@/lib/workstreams";
 
 export { schema };
 
+/**
+ * The demo history (src/db/history.ts), the recorded runs (fixtures/seed-runs) and the seed text's policy rows are
+ * fake data: written only in mock mode, or with NIMBUS_SEED_HISTORY=1. On the real models the app shows real runs only.
+ * (Same rule as modelMode() in lib/tokenfactory.ts, which this module cannot import without pulling in the providers.)
+ */
+export const seedsDemoData = () => {
+  if (process.env.NIMBUS_SEED_HISTORY === "1") return true;
+  const m = process.env.NIMBUS_MODEL;
+  return m === "mock" || (m !== "nebius" && !process.env.NEBIUS_API_KEY);
+};
+
 export const dataDir = () => path.resolve(process.env.NIMBUS_DATA_DIR || "./data");
 
 const DDL = [
@@ -104,14 +115,15 @@ export async function seedWorkstreams(db: Db) {
     });
     await db.insert(schema.skills).values({ workstreamId: w.id, content: w.skill, version: 1, updatedAt: Date.now() });
     // a standing rule in the seed text is a rule with a source: show it in the Memory & skill tab
-    for (const line of seedPolicyLines(w.skill)) await db.insert(schema.policies).values({ workstreamId: w.id, rule: line, sourceRunId: null, createdAt: Date.now() - 6 * 86400_000, usedCount: 1 }).onConflictDoNothing();
+    if (seedsDemoData()) for (const line of seedPolicyLines(w.skill)) await db.insert(schema.policies).values({ workstreamId: w.id, rule: line, sourceRunId: null, createdAt: Date.now() - 6 * 86400_000, usedCount: 1 }).onConflictDoNothing();
   }
+  if (!seedsDemoData()) return;
   await seedRecordedRuns(db);
   await seedHistory(db);
 }
 
 /** the lines under "## Policy" (runtime/skills.ts has the same parser; importing it here would be a cycle) */
-const seedPolicyLines = (skill: string) => (skill.split("## Policy")[1] ?? "").split("\n").map((l) => l.trim()).filter((l) => l && l !== "(none yet)");
+export const seedPolicyLines = (skill: string) => (skill.split("## Policy")[1] ?? "").split("\n").map((l) => l.trim()).filter((l) => l && l !== "(none yet)");
 
 type SeedRun = {
   workstreamId: string;

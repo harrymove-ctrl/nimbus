@@ -226,6 +226,9 @@ export function Overview({
                     label={`${h.title} · ${h.schedule}`}
                     days={h.days.map((x) => ({ date: x.date, uptime: x.status === "none" ? null : x.status === "failed" ? 0 : x.status === "waited" ? 0.6 : 1, note: x.note }))}
                   />
+                  {!last ? (
+                    <p className="text-[12px] text-neutral-500">No run in 30 days yet. The next one starts on its schedule ({h.schedule}).</p>
+                  ) : (
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-neutral-400">
                     <span>
                       {h.days.filter((x) => x.status === "ok").length} ok · {h.days.filter((x) => x.status === "waited").length} waited for approval · {h.days.filter((x) => x.status === "failed").length} failed
@@ -239,6 +242,7 @@ export function Overview({
                       </button>
                     ))}
                   </div>
+                  )}
                 </div>
               );
             })}
