@@ -44,5 +44,6 @@ USER node
 # /data is the volume: `docker run -v nimbus-data:/data`, or the platform's volume (Railway rejects a VOLUME line)
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s CMD wget -qO- http://127.0.0.1:3000/api/workstreams >/dev/null || exit 1
-# PORT from the platform when it sets one (Railway does), else 3000
-CMD ["sh", "-c", "exec pnpm exec next start -H 0.0.0.0 -p ${PORT:-3000}"]
+# PORT from the platform when it sets one (Railway does), else 3000. NIMBUS_PRUNE_SEED=dry|yes runs scripts/prune-seed.mts
+# on the volume first (the platform's shell may be out of reach); its counts land in the deploy logs. Unset it afterwards.
+CMD ["sh", "-c", "case \"$NIMBUS_PRUNE_SEED\" in dry) node --import tsx scripts/prune-seed.mts ;; yes) node --import tsx scripts/prune-seed.mts --yes ;; esac; exec pnpm exec next start -H 0.0.0.0 -p ${PORT:-3000}"]
