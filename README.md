@@ -9,11 +9,12 @@ learns from each run.
 I built it alone in three days for the Nebius x NVIDIA Global AI Hackathon (Personal AI track), starting 2026-10-27.
 
 > **Where it stands.** Everything below runs with **no API keys** against a scripted *mock model*; that is what
-> `pnpm dev` gives you. I have also run it for real on Nebius Token Factory (`pnpm smoke` passes on all three tiers,
-> and the Morning brief ran headless end to end). Those real runs found six bugs the mock never hit; they are fixed,
-> and the list is in [docs/video/RELEASE.md](docs/video/RELEASE.md). I don't have a recorded real-model take yet, so
-> the demo video uses the mock. Numbers marked *(mock)* are scripted token counts; numbers marked *(measured)* come
-> from the real runs.
+> `pnpm dev` gives you. The live demo at https://nimbus-production-6f7b.up.railway.app runs the real models on Nebius
+> Token Factory, and the demo video is cut from a recorded real-model take (Oct 29; two scenes, the radar and the
+> Token Factory watch, are from the scripted take because the real run never reached them, and
+> [docs/video/QA.md](docs/video/QA.md) says which). The real runs found six bugs the mock never hit; they are fixed, and
+> the list is in [docs/video/RELEASE.md](docs/video/RELEASE.md). Numbers marked *(mock)* are scripted token counts;
+> numbers marked *(measured)* come from the real runs.
 
 ## Run it in two minutes (no keys)
 
@@ -35,7 +36,7 @@ reword, reorder or add steps, then **Approve plan** (or press Enter). The crew r
 calendar, GitHub and what can wait. It also drafts replies to a client, a teammate and a reviewer. Each send waits for
 your OK as a card; on the reviewer's, **Approve & always allow** saves a rule. Afterwards the Learner writes memories
 and rewrites the workstream's `SKILL.md`. Run it again the next morning: it starts with what it learned, the reviewer's
-reply goes out under the rule with no card, and it costs less (*(mock)*: $0.024 → $0.016). In mock mode nothing is
+reply goes out under the rule with no card, and it costs less (*(measured, the recorded take)*: $0.0216 → $0.0209). In mock mode nothing is
 really sent; replies go to `data/outbox.log`. **Ship Nimbus** is the other deep case: the crew runs this repo's evals
 for real, fixes a failing golden, and waits for you before it opens a pull request. Open another workstream while a run goes and the **status pill** in the
 top bar follows it; its panel pauses, stops, opens it, or approves inline.
@@ -146,7 +147,11 @@ Serverless Jobs. **In chat apps:** model `nimbus` on `POST /v1/chat/completions`
   Structure comes from tool calls with zod schemas, not JSON mode. Role prompts are a stable prefix, so the cached-input
   price applies. The router (`src/runtime/router.ts`) picks the cheapest tier that can do each step and falls back on a
   429 or 5xx.
-- **What one real morning cost** *(measured, Oct 28, headless, every hop on its routed tier)*: run one of the Morning
+- **What one real morning cost** *(measured on the recorded take, Oct 29, every hop on its routed tier)*: run one of
+  the Morning brief (`run_724b8d9d`) was **$0.0216** for 58,950 tokens; with every hop at its role's ceiling tier it
+  would have cost $0.0283, so the router saved **24 %**. Run two (`run_915dfc1d`), after the Learner, was **$0.0209**,
+  and the reviewer's reply went out under the rule with no card. The workstream held 16 memories after both runs.
+- **The headless check before the take** *(measured, Oct 28, every hop on its routed tier)*: run one of the Morning
   brief was **$0.0276** for 75,291 tokens. The same run with every hop at its role's ceiling tier would have cost
   $0.0356, so the router saved **22 %**. The Learner on Nano saved 8 memories and rewrote the skill file. An earlier
   pair of runs, before the Learner fix, was $0.0225 then $0.0288 (27 % and 21 % saved).
@@ -180,14 +185,13 @@ All of these use the scripted mock model: token counts are scripted, so they sho
 
 ## What is not verified yet
 
-A recorded real-model take (the headless runs above are real; the video is the mock) · real embeddings and real
-Tavily searches · run two on the real models after the Learner fix · the real `open_pr` path (a
+Real embeddings and real Tavily searches · the radar and Token Factory watch beats on the real models (the take
+stopped before them) · the real `open_pr` path (a
 throwaway git worktree, push and `gh pr create` as harrymove-ctrl: written, never run; mock mode logs the PR) · the Docker
-image (the Dockerfile is written and `next build` passes locally in about 30 s, but no image was built: no Docker
-daemon in the dev environment) · the Nebius deployment · the GitHub Actions workflow (valid YAML, never run on GitHub) ·
+image on Nebius (Railway builds the same Dockerfile; no Docker daemon in the dev environment) · the Nebius Serverless Endpoint (the demo is on Railway instead) ·
 OpenClaw against `/v1` · the phone layout at 390 × 844 (seen at 541 px). `run_code` is a temp-dir subprocess with a
 stripped environment and a 30 s timeout (180 s for the allow-listed `pnpm eval`/`typecheck` commands); it does not block
-the network (OpenShell is the production path). The demo video was recorded by Playwright against the mock model.
+the network (OpenShell is the production path). The demo video was recorded by Playwright against the real models (`docs/video/RELEASE.md`, take 1915).
 
 ## Stack
 
