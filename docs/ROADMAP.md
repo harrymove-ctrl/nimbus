@@ -151,7 +151,7 @@ token redacted). Mock: `scripts/check-cli.mts` runs the commands against a mock 
 | 22:00 to 23:00 | Templates and roles (section 4), PR | planner, or session C if A and B are busy |
 | 02:00 to 03:00 | merge, deploy, real exit tests with the user's bot token, Telegram footage | planner + user |
 | morning Oct 30 | README, `/welcome` row 10, Devpost text, X clip | planner |
-| by 22:00 Oct 30 | freeze: final checklist in `docs/SUBMISSION.md`, keys rotated after judging opens | user |
+| by 22:00 Oct 30 | freeze: final checklist in `docs/SUBMISSION.md`, keys stay valid until judging ends on Dec 15 (the demo must stay free and unrestricted), rotation after | user |
 
 Checkpoint 3 before "done": each Lane 1 item has a **real** exit test on production and a recording, or it is
 listed in `docs/SUBMISSION.md` under "unverified" by name.
@@ -169,7 +169,7 @@ the deadline, in the order it lands, each with an owner and a real exit test:
 | 7.4 | **Real MCP run.** A Claude-driven client over `nimbus mcp` against production: list, start Release watch, wait for the approval, decide, read the artifact; transcript under `docs/mcp/`. | planner | the run id in the transcript exists on production with trigger from the API |
 | 7.5 | **Real Telegram run.** Token on Railway, pairing, `/run morning brief` from the phone, Approve tapped, screen recording. | user + planner | the run shows "from Telegram" and "Approved via telegram" on the web timeline |
 | 7.6 | **Footage.** Telegram phone recording (user) and a terminal recording of `nimbus run checkout` (planner, from the Terminal panel), cut into `/welcome` rows and a 45 s X clip. | planner | the clips are of the runs above, nothing staged |
-| 7.7 | **Freeze.** `pnpm demo`, `check:chat`, `check:telegram`, `check:cli` green on main; Devpost form filled; keys rotated once judging opens. | user | the checklist in `docs/SUBMISSION.md` |
+| 7.7 | **Freeze.** `pnpm demo`, `check:chat`, `check:telegram`, `check:cli` green on main; Devpost form filled; keys stay valid until Dec 15, rotated after judging ends. | user | the checklist in `docs/SUBMISSION.md` |
 
 ### Lane 2 additions (after the deadline)
 
