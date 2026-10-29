@@ -15,6 +15,14 @@ Every morning I read my inbox, my calendar, and GitHub notifications before I ha
 
 Built from scratch during the **Nebius × NVIDIA Global AI Hackathon** (Personal AI track, started October 27, 2026).
 
+## Three doors to the same crew
+
+One crew, one timeline, one set of rules: start a run, approve it and read it from whichever door is closest.
+
+- **Web: the ops room** ([live app](https://nimbus-production-6f7b.up.railway.app)). Every agent, every step and every cent on one live timeline, with the approval cards, the memories and the rewritten `SKILL.md` beside it. Proof: the production Checkout run [`run_668c7252`](https://nimbus-production-6f7b.up.railway.app/?run=run_668c7252) shows its three `run_code` calls with the **Nebius Sandbox** chip ([walkthrough](#quick-walkthrough-for-judges), [docs/SANDBOX.md](docs/SANDBOX.md)).
+- **Phone: Telegram.** Nimbus reads its own bot, so `/run morning brief` becomes one progress message edited in place, and approvals and crew questions arrive as buttons (**Approve · Always allow · Reject**) that the web timeline records as `via telegram`. Mock-tested 40/40 with `pnpm check:telegram`; the real run from a phone is pending ([docs/TELEGRAM.md](docs/TELEGRAM.md)).
+- **Terminal and coding agent: `nimbus` and `nimbus mcp`.** `pnpm nimbus run checkout` follows a run as text and asks for the plan, each approval and each question in the terminal, and `nimbus mcp` lets Claude Code, Cursor, OpenClaw or Hermes do the same over MCP. `nimbus doctor` is green against production, and the Release watch run [`run_e8b4dff2`](https://nimbus-production-6f7b.up.railway.app/?run=run_e8b4dff2) ($0.061) was driven on production only through `nimbus mcp` tools by an MCP client script, six decisions in all ([transcript](docs/mcp/2026-10-29-release-watch.md), [docs/CLI.md](docs/CLI.md)).
+
 ---
 
 ## Setup & Run Instructions (Full to Running in 2 Minutes)
@@ -93,7 +101,7 @@ Nimbus runs its own Telegram bot: send `/run morning brief` and one message foll
 
 ## How We Used NVIDIA Nemotron 3 & Open-Source Models
 
-Nimbus uses **all three tiers of the NVIDIA Nemotron 3 family** plus open-source embeddings on **Nebius Token Factory** (`src/lib/models.ts` and `src/lib/tokenfactory.ts`), matching each agent role to the smallest model tier that can reliably execute its job:
+Nimbus uses **all three tiers of the NVIDIA Nemotron 3 family** plus open-source embeddings on **Nebius Token Factory** (`src/lib/models.ts` and `src/lib/tokenfactory.ts`), matching each agent role to the smallest model tier that can reliably execute its job, in the track's own terms: **Ultra for serious reasoning** (the Orchestrator plans and decides), **Super for research and writing** (Researcher, Analyst, Writer), and **Nano for the fast everyday calls** (Checker, Learner and the router's classifier). Measured against pinning every hop to its role's ceiling tier, the router saved **24%** on the recorded take (`run_724b8d9d`, $0.0216 against $0.0283) and **30%** on the production Sandboxes run `run_668c7252` ($0.0092 against $0.0132, from its route and usage events).
 
 | Tier | Nebius Token Factory Model ID | Assigned Crew Roles | Token Factory Price (In / Out per 1M) | Why We Chose This Variant |
 | :--- | :--- | :--- | :--- | :--- |
@@ -121,7 +129,7 @@ Every clip in our 2:40 demo video and `/welcome` tour comes from real runs again
 2. **Transparent Per-Token Pricing & Cached-Input Prefixes (`Nebius Token Factory`)**:
    Because Token Factory exposes clear per-tier input, cached-input, and output pricing (`$0.06` to `$3.00` per 1M tokens) plus a public catalog endpoint (`/api/public/models_info`), Nimbus calculates exact dollar spend per agent call in real time, enforces hard per-run (`NIMBUS_RUN_CAP_USD`) and daily (`NIMBUS_DAY_CAP_USD`) spend caps, and includes a **Token Factory Watch** workstream (`ws-watch`) that audits its own 7-day SQLite call log against the live Token Factory catalog to propose cheaper routing rules.
 3. **Grounded Web Search for the Researcher Agent (`Tavily`, a Nebius Company)**:
-   Integrating `@tavily/core` into the Researcher agent's `web_search` tool (`src/runtime/tools.ts`) took 15 lines of code. When `TAVILY_API_KEY` is present, the Researcher queries the live Tavily API (`maxResults: 5, includeAnswer: true`) for grounded citations during competitor and release research, and cleanly falls back to local JSON fixtures (`fixtures/search/*.json`) in zero-key offline mode.
+   Integrating `@tavily/core` into the Researcher agent's `web_search` tool (`src/runtime/tools.ts`) took 15 lines of code. When `TAVILY_API_KEY` is present, the Researcher queries the live Tavily API (`maxResults: 5, includeAnswer: true`) for grounded citations during competitor and release research, and cleanly falls back to local JSON fixtures (`fixtures/search/*.json`) in zero-key offline mode. On production `TAVILY_API_KEY` is set on Railway, so `web_search` is a runtime Tavily call: Hackathon radar `run_3066dc6c` made three `web_search` calls, and every result came back tagged `source: tavily`.
 4. **Containerized App & Batch Cron Runner (`Nebius Serverless Endpoints & Jobs`)**:
    We structured Nimbus with a self-contained multi-stage `Dockerfile`, persistent SQLite volume (`/app/data`), and a headless CLI runner (`pnpm run:job --workstream <id> --yes` in `scripts/run-job.ts` and `docs/deploy.md`) so the exact same codebase runs as an interactive web console on a Serverless Endpoint or as a scheduled batch job.
 5. **Drop-In Bridge for the NVIDIA Agent Ecosystem (`OpenClaw`, `Hermes Agent`, `NemoClaw`, `OpenShell`)**:
@@ -131,7 +139,11 @@ Every clip in our 2:40 demo video and `/welcome` tour comes from real runs again
 
 ## Nebius Token Factory Sandboxes (Beta)
 
-Set `NEBIUS_PROJECT_ID` (tokenfactory.nebius.com/project/api-keys) next to `NEBIUS_API_KEY` and the crew's `run_code` tool stops running model-written code on your machine: each call uploads the script and the attached data to Nebius Token Factory Sandboxes, spawns one disposable VM from `python:3.12-slim` or `node:20-slim` with networking off, polls the operation and brings back stdout, stderr and the exit code. Agent I/O shows a **Nebius Sandbox** chip on the call with the image, the elapsed time and the operation id. Without the project id, or if the sandbox call fails, the same code runs as a local subprocess and the result says so. `pnpm sandbox:probe` checks the key, lists the public images and does one real run. Design notes: `docs/SANDBOX.md`.
+Set `NEBIUS_PROJECT_ID` next to `NEBIUS_API_KEY` and the crew's `run_code` tool stops running model-written code on your machine: each call uploads the script and the attached files to `https://api.tokenfactory.nebius.com/sandboxes/v1`, spawns one disposable VM with networking off, polls the operation and brings back stdout, stderr and the exit code. Agent I/O marks the call with a **Nebius Sandbox** chip (image, elapsed time, operation id). Without the project id, or if the sandbox call fails, the same code runs as a local subprocess and the result says so. Design notes: [docs/SANDBOX.md](docs/SANDBOX.md).
+
+**On production.** Checkout [`run_668c7252`](https://nimbus-production-6f7b.up.railway.app/?run=run_668c7252) ($0.009, 51 s) made three `run_code` calls on `data.csv` and `inbox.csv`, each in its own Nebius VM: 4.9, 3.5 and 3.5 s per call end to end, of which 0.63, 0.75 and 0.71 s ran inside the VM (all from the run's events).
+
+**An image with pandas.** The public catalog has `python:3.12-slim` and `node:20-slim` but no data-science image, so production imports `amancevice/pandas:slim` once (`POST /images/import`, about 17 s the first time) and sets `NIMBUS_SANDBOX_IMAGE_PYTHON` to the returned UUID. Spawning by that UUID takes about 3.6 s, the same as `python:3.12-slim`, with pandas 3.0 and numpy 2.5. UUIDs are per project, so import your own, and keep the UUID in the environment: the imported image does not show under `GET /images?tag=`.
 
 Turn it on in four steps:
 
@@ -140,7 +152,7 @@ Turn it on in four steps:
 3. Run `pnpm sandbox:probe`. It prints who the key is, the image catalog and one real run that reads an uploaded CSV. Expected last lines: `run: SUCCESS exit 0` and `stdout: ok ...`.
 4. Hosted: `railway variables --service nimbus --set NEBIUS_PROJECT_ID=aiproject-...` and redeploy. Start any workstream with `run_code` (Checkout, Audit, Ship Nimbus) and open Agent I/O: the tool call shows the **Nebius Sandbox** chip.
 
-Measured on 2026-10-29: `python:3.12-slim` and `node:20-slim` runs complete in about 3 s end to end (the sandbox itself reports under 0.1 s of execution); the beta allows 50 concurrent instances and a 3600 s timeout. Where this goes next (images with pandas, files out, networking on for the repo crew) is in `docs/ROADMAP.md`.
+Measured with `pnpm sandbox:probe` on 2026-10-29: `python:3.12-slim` and `node:20-slim` runs complete in about 3 s end to end (under 0.1 s of execution inside the sandbox); the beta allows 50 concurrent instances and a 3600 s timeout. What comes next for Sandboxes is in [Where this goes](#where-this-goes).
 
 ## What Real Nemotron 3 Models Taught Us Beyond the Mock (7 Engineering Fixes)
 
@@ -235,6 +247,17 @@ flowchart LR
 Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS v4, shadcn/ui, React Bits Pro (Sorbet), [dithercn](https://dithercn.dev) (Bayer-8 ordered dither charts and backgrounds), Vercel AI SDK (`@ai-sdk/openai`), Nebius Token Factory (`Nemotron 3 Ultra / Super / Nano` + `BAAI/bge-en-icl`), Tavily Search (`@tavily/core`), SQLite (`@libsql/client` + Drizzle ORM), `node-cron`, Playwright, and Remotion.
 
 Additional documentation: [docs/SUBMISSION.md](docs/SUBMISSION.md) · [docs/video/RELEASE.md](docs/video/RELEASE.md) · [docs/deploy.md](docs/deploy.md) · [docs/openclaw.md](docs/openclaw.md) · [docs/CASES.md](docs/CASES.md) · [docs/SPEC.md](docs/SPEC.md).
+
+## Where this goes
+
+Lane 2 of [docs/ROADMAP.md](docs/ROADMAP.md), the open-source future after the hackathon:
+
+- **MCP both ways.** Nimbus as an MCP client too: you list your own servers (Gmail, Calendar, GitHub, Notion, Linear) and the crew gets their tools behind the same approval cards and always-allow rules, which retires the fixture `send_message`.
+- **Sandbox-first execution.** Ship Nimbus runs its evals inside a Nebius Sandbox on a clone of the repo, each workstream names its own image (imported once, UUID pinned), the crew's charts and CSVs come back out as artifacts, and one sandbox serves every step of a run.
+- **More doors on one intent router.** Webhook Telegram with voice notes, then Discord and Slack, with group chats and per-person allowlists.
+- **Multi-user and one-line self-host.** Accounts with per-user data and day caps for a household or a class, `docker compose up` plus `nimbus init`, and a GitHub Action that runs a workstream on a schedule for people without a server.
+- **Crews people share.** `nimbus ws export` folders (workstream YAML, `SKILL.md`, memories by opt-in), a `community/` templates folder whose CI runs every template in mock mode, and a run exported as one `.nimbus.json` anyone can open.
+- **Release discipline and local models.** `pnpm eval` on every PR, a nightly real-model canary under a cap, semver releases with a changelog, and an `ollama` provider so the Checker and Learner can run on a laptop while Nebius stays the default for Ultra and Super.
 
 ## License
 
