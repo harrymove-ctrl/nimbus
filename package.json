@@ -25,6 +25,7 @@
     "check:tools": "node --env-file-if-exists=.env.local --import tsx scripts/check-tools.mts",
     "seed:run": "node --env-file-if-exists=.env.local --import tsx scripts/seed-run.mts",
     "check:chat": "node --env-file-if-exists=.env.local --import tsx scripts/check-chat.mts",
+    "check:telegram": "node --env-file-if-exists=.env.local --import tsx scripts/check-telegram.mts",
     "check:cases": "node --env-file-if-exists=.env.local --import tsx scripts/check-cases.mts",
     "prune:runs": "node --env-file-if-exists=.env.local --import tsx scripts/prune-dev-runs.mts",
     "prune:seed": "node --env-file-if-exists=.env.local --import tsx scripts/prune-seed.mts",

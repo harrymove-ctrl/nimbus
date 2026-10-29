@@ -13,12 +13,12 @@ export type StartRunInput = {
   tier?: "auto" | "cheap" | "max";
   tools?: string[];
   files?: string[];
-  trigger?: "manual" | "cron" | "chat" | "job";
+  trigger?: "manual" | "cron" | "chat" | "telegram" | "job";
   /** the plan is a draft until the person approves it (UI-started runs; scheduled, chat and CLI runs keep the 3 s window) */
   review?: boolean;
 };
 
-export type ApprovalDecision = { decision: "approved" | "rejected"; always?: boolean; note?: string; /** where the decision came from; "you" (the web app) when absent */ by?: "you" | "chat" };
+export type ApprovalDecision = { decision: "approved" | "rejected"; always?: boolean; note?: string; /** where the decision came from; "you" (the web app) when absent */ by?: "you" | "chat" | "telegram" };
 
 export interface RunHandle {
   id: string;
@@ -33,7 +33,7 @@ export interface RunHandle {
   resolveApproval(approvalId: string, d: ApprovalDecision): boolean;
   setPaused(paused: boolean): boolean;
   planAction(a: { action: "approve" | "revise"; steps: PlanStep[] }): boolean;
-  postMessage(m: { text: string; kind: "steer" | "answer"; questionId?: string; via?: "chat" | "auto" }): boolean;
+  postMessage(m: { text: string; kind: "steer" | "answer"; questionId?: string; via?: "chat" | "telegram" | "auto" }): boolean;
   stop(reason: "stop" | "cancel"): void;
 }
 

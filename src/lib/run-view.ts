@@ -48,7 +48,7 @@ export type Artifact = {
 };
 
 export type TItem =
-  | { t: "user"; seq: number; tMs: number; id: string; text: string; queued: boolean; via?: "chat" | "auto" }
+  | { t: "user"; seq: number; tMs: number; id: string; text: string; queued: boolean; via?: "chat" | "telegram" | "auto" }
   | { t: "agent"; seq: number; tMs: number; instance: string; role: AgentRole; text: string }
   | { t: "plan"; seq: number; tMs: number; agents: PlanAgent[]; tools: string[]; estimate: { costUsd: number; tokens: number; label: string }; steps: PlanStep[]; /** a person is reviewing this draft */ awaiting: boolean; approved: boolean; edited: boolean; revision: number; /** when the person approved it (ms since run start) */ approvedMs?: number }
   | { t: "handoff"; seq: number; tMs: number; from: string; to: string; context: string }
@@ -72,7 +72,7 @@ export type RunView = {
   goal: string;
   startedAt: number;
   /** what started the run: a person, the scheduler, a chat app, a job */
-  trigger?: "manual" | "cron" | "chat" | "job";
+  trigger?: "manual" | "cron" | "chat" | "telegram" | "job";
   status: ViewStatus;
   /** true until run.end (the learner may still run after it) */
   active: boolean;

@@ -129,3 +129,14 @@ export const chatThreads = sqliteTable("chat_threads", {
   pendingQuestionId: text("pending_question_id"),
   updatedAt: integer("updated_at").notNull(),
 });
+
+/**
+ * One row (id 1): which server process reads the Telegram bot's updates (`getUpdates`), its heartbeat, and the next update
+ * offset. A second dev server or a deploy overlap sees a fresh heartbeat and waits, so no update is handled twice.
+ */
+export const telegramPoller = sqliteTable("telegram_poller", {
+  id: integer("id").primaryKey(),
+  owner: text("owner"),
+  heartbeatAt: integer("heartbeat_at").notNull().default(0),
+  updateOffset: integer("update_offset").notNull().default(0),
+});

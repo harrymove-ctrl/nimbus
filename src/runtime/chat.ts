@@ -10,7 +10,7 @@ import { TIERS } from "@/lib/models";
 import { WORKSTREAMS, type Workstream } from "@/lib/workstreams";
 import { checkDayBudget } from "./budget";
 import { lastUserText, messagesOf, textOf, type ChatBody, type Usage } from "./chat-api";
-import { PHONE_MAX, ago, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
+import { PHONE_MAX, ago, pickDoc, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
 import { markFollowed } from "./notify";
 import { cacheGet, cachePut, sha } from "./router";
 import { getRun, liveRuns, startRun, type RunHandle } from "./source";
@@ -164,10 +164,14 @@ async function* say(text: string): AsyncGenerator<string> {
   yield text;
 }
 
-/** `ws` set = the client asked for nimbus/<workstream>: no routing, the message starts that workstream (the pre-chat-apps behaviour). */
-export async function handleChat(body: ChatBody, o: { token: string; origin: string; ws?: Workstream }): Promise<Turn | ChatFailure> {
+/**
+ * `ws` set = the client asked for nimbus/<workstream>: no routing, the message starts that workstream (the pre-chat-apps behaviour).
+ * `key` and `via` are for the Nimbus Telegram bot (src/runtime/telegram.ts): its own thread, and decisions and runs tagged "telegram".
+ */
+export async function handleChat(body: ChatBody, o: { token: string; origin: string; ws?: Workstream; key?: string; via?: "chat" | "telegram" }): Promise<Turn | ChatFailure> {
   const text = lastUserText(body) ?? "";
-  const key = threadKey(o.token, body);
+  const key = o.key ?? threadKey(o.token, body);
+  const via = o.via ?? "chat";
   const th = await getThread(key);
   const base = publicBase(o.origin);
   let tokens = { in: 0, out: 0 };
@@ -195,7 +199,7 @@ export async function handleChat(body: ChatBody, o: { token: string; origin: str
       const labels: string[] = [];
       for (const id of ids) {
         const w = waitingFromEvents(target.run.events).find((x) => x.kind === "approval" && x.id === id);
-        if (w?.kind === "approval" && target.run.resolveApproval(id, { decision: approved ? "approved" : "rejected", note: approved ? undefined : intent.note, by: "chat" })) labels.push(w.summary);
+        if (w?.kind === "approval" && target.run.resolveApproval(id, { decision: approved ? "approved" : "rejected", note: approved ? undefined : intent.note, by: via })) labels.push(w.summary);
       }
       await saveThread(key, { lastRunId: target.run.id, pendingApprovalId: null });
       const left = approved && intent.all ? 0 : others;
@@ -213,7 +217,7 @@ export async function handleChat(body: ChatBody, o: { token: string; origin: str
       const n = /^\d+$/.test(text.trim()) ? Number(text.trim()) : 0;
       if (n && opts.length && (n < 1 || n > opts.length)) return done("answer", say(`Pick a number from 1 to ${opts.length}, or type your answer.`));
       const answer = n && opts.length ? opts[n - 1] : (opts.find((x) => x.toLowerCase() === text.trim().toLowerCase()) ?? text.trim());
-      target.run.postMessage({ kind: "answer", text: answer, questionId: target.w.id, via: "chat" });
+      target.run.postMessage({ kind: "answer", text: answer, questionId: target.w.id, via });
       await saveThread(key, { lastRunId: target.run.id, pendingQuestionId: null });
       const head = `Answered ${target.w.agent}: ${answer}.\n`;
       return done("answer", (async function* () {
@@ -234,7 +238,7 @@ export async function handleChat(body: ChatBody, o: { token: string; origin: str
       if (!ws) return done("run", say(`Which one?\n${WORKSTREAMS.filter((w) => !w.archived).map((w, i) => `${i + 1}) ${w.title}`).join("\n")}\nSay "run <name>".`));
       const budget = await checkDayBudget();
       if (!budget.ok) return { error: { status: 429, message: budget.message ?? "Daily spend cap reached", code: "day_cap" } };
-      const run = startRun({ workstreamId: ws.id, title: ws.title, goal: text || ws.goal, trigger: "chat", mode: "ask", tools: ws.tools });
+      const run = startRun({ workstreamId: ws.id, title: ws.title, goal: text || ws.goal, trigger: via, mode: "ask", tools: ws.tools });
       await saveThread(key, { lastRunId: run.id, pendingApprovalId: null, pendingQuestionId: null });
       const ack = `On it: ${ws.title}.\n`; // first token at once
       return done("run", (async function* () {
@@ -297,12 +301,6 @@ async function* follow(run: RunHandle, o: FollowOpts): AsyncGenerator<string> {
     off();
     unmark();
   }
-}
-
-/** The document that answers for a run: the one titled like the workstream ("Morning brief · Tue Oct 27"), else the last. Drafts it also wrote come later. */
-function pickDoc<T extends { title: string }>(docs: T[], wsTitle: string): T | undefined {
-  const t = wsTitle.toLowerCase();
-  return docs.find((d) => d.title.toLowerCase().startsWith(t)) ?? docs[docs.length - 1];
 }
 
 function finalText(run: RunHandle, status: string, link: string, used: number): string {

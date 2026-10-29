@@ -27,7 +27,7 @@ export type RunSummary = {
 export type RunEndStatus = "done" | "failed" | "cancelled" | "stopped";
 
 export interface PayloadMap {
-  "run.start": { title: string; workstreamId: string; goal: string; startedAt: number; trigger: "manual" | "cron" | "chat" | "job"; /** what this run loaded from earlier runs: memories in the prompt and policy lines from SKILL.md */ learned?: { memories: number; policies: number } };
+  "run.start": { title: string; workstreamId: string; goal: string; startedAt: number; trigger: "manual" | "cron" | "chat" | "telegram" | "job"; /** what this run loaded from earlier runs: memories in the prompt and policy lines from SKILL.md */ learned?: { memories: number; policies: number } };
   "run.end": { status: RunEndStatus; summary?: string };
   "run.error": { message: string; kind?: "spend_cap"; spentUsd?: number; capUsd?: number };
   "agent.spawn": { by: string; role: AgentRole; instance: string; brief: string };
@@ -54,8 +54,8 @@ export interface PayloadMap {
     ackOf?: string;
     /** this message answers the question with this id */
     answerTo?: string;
-    /** where the person said it: "chat" (a chat app) or "auto" (nobody answered in time and the crew picked an option) */
-    via?: "chat" | "auto";
+    /** where the person said it: "chat" (a chat app), "telegram" (the Nimbus bot) or "auto" (nobody answered in time and the crew picked an option) */
+    via?: "chat" | "telegram" | "auto";
     card?: "summary";
     summary?: RunSummary;
   };

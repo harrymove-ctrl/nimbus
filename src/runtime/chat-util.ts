@@ -1,4 +1,4 @@
-// Small pure helpers shared by the chat endpoint (chat.ts) and the Telegram notifier (notify.ts).
+// Small pure helpers shared by the chat endpoint (chat.ts), the Telegram notifier (notify.ts) and the Telegram bot (telegram.ts).
 import type { AnyRunEvent } from "@/lib/events";
 
 export type Waiting =
@@ -19,6 +19,12 @@ export function waitingFromEvents(events: readonly AnyRunEvent[]): Waiting[] {
 function remove(list: Waiting[], kind: Waiting["kind"], id: string) {
   const i = list.findIndex((w) => w.kind === kind && w.id === id);
   if (i >= 0) list.splice(i, 1);
+}
+
+/** The document that answers for a run: the one titled like the workstream ("Morning brief · Tue Oct 27"), else the last. Drafts it also wrote come later. */
+export function pickDoc<T extends { title: string }>(docs: T[], wsTitle: string): T | undefined {
+  const t = wsTitle.toLowerCase();
+  return docs.find((d) => d.title.toLowerCase().startsWith(t)) ?? docs[docs.length - 1];
 }
 
 /** The base URL for links in chat: NIMBUS_PUBLIC_URL when set (the phone cannot reach localhost), else where the request came in. */

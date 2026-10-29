@@ -1,6 +1,7 @@
 // Chat apps in mock mode ($0, no server, no real bot): docs/CHAT-APPS.md Phase A and B.
 // The route handler is called directly with Requests; Telegram is a local stub standing in for api.telegram.org.
 //   pnpm check:chat
+/* eslint-disable @typescript-eslint/no-explicit-any -- response bodies are read loosely here */
 process.env.NIMBUS_DATA_DIR = "./data/check-chat"; // own database; .env.local already names ./data
 process.env.NIMBUS_MODEL = "mock";
 process.env.NIMBUS_MOCK_FAST = "1";
@@ -11,6 +12,7 @@ process.env.NIMBUS_PUBLIC_URL = "https://nimbus.test";
 process.env.NIMBUS_API_TOKEN = "secret-token-123";
 process.env.NIMBUS_CHAT_QUESTION_WAIT_MS = "1500";
 process.env.NIMBUS_NOTIFY_BATCH_MS = "400";
+process.env.NIMBUS_TELEGRAM_MODE = "off"; // Phase B: OpenClaw owns the bot, Nimbus only sends (pnpm check:telegram covers the Nimbus bot)
 import { createServer } from "node:http";
 import { readFileSync, readdirSync, rmSync } from "node:fs";
 import path from "node:path";
