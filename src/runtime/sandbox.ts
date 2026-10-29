@@ -13,7 +13,7 @@ import { modelMode } from "@/lib/tokenfactory";
 const BASE = () => (process.env.NEBIUS_SANDBOX_BASE_URL || "https://api.tokenfactory.nebius.com/sandboxes/v1").replace(/\/$/, "");
 const IMAGES: Record<"python" | "node", () => string> = {
   python: () => process.env.NIMBUS_SANDBOX_IMAGE_PYTHON || "python:3.12-slim",
-  node: () => process.env.NIMBUS_SANDBOX_IMAGE_NODE || "node:22-slim",
+  node: () => process.env.NIMBUS_SANDBOX_IMAGE_NODE || "node:20-slim",
 };
 
 export function sandboxEnabled(): boolean {

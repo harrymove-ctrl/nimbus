@@ -9,7 +9,7 @@ directory on the demo server, and the app shows it. One integration, no new depe
 - `src/runtime/sandbox.ts`: a REST client for `https://api.tokenfactory.nebius.com/sandboxes/v1` (the official SDK is
   Python; Nimbus is Node). `POST /files` uploads the script and the attached CSVs (content-addressed, cached per
   process), `POST /instances` spawns one disposable instance from a public image (`python:3.12-slim` or
-  `node:22-slim`, `NIMBUS_SANDBOX_IMAGE_*` to change) with **networking off**, cwd `/work`, a 60 s timeout; then
+  `node:20-slim`, `NIMBUS_SANDBOX_IMAGE_*` to change) with **networking off**, cwd `/work`, a 60 s timeout; then
   `GET /operations/{uuid}` is polled (honouring `Retry-After`) until `SUCCESS`, `FAILED` or `CANCELLED`, and
   `metadata.result` gives stdout, stderr, the exit code and the elapsed time.
 - `run_code` (`src/runtime/tools.ts`) uses it when `NEBIUS_API_KEY` and `NEBIUS_PROJECT_ID` are set, the model mode is
