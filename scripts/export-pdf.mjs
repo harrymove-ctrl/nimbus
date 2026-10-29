@@ -23,7 +23,7 @@ await page.screenshot({ path: png, fullPage: true });
 if (slidesDir) {
   const { mkdirSync } = await import("node:fs");
   mkdirSync(slidesDir, { recursive: true });
-  const wraps = page.locator(".wrap");
+  const wraps = page.locator(".wrap, .slide-wrap");
   const n = await wraps.count();
   for (let i = 0; i < n; i++) await wraps.nth(i).screenshot({ path: resolve(slidesDir, `slide-${i + 1}.png`), scale: "css" });
   console.log("wrote", n, "slides to", slidesDir);

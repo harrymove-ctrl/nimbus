@@ -1,1005 +1,309 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nimbus · Personal Operations Room on Nebius Token Factory</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #09090b;
-      --card: #111114;
-      --card-elevated: #16161a;
-      --border: rgba(255, 255, 255, 0.09);
-      --border-strong: rgba(255, 255, 255, 0.16);
-      --text: #fafafa;
-      --muted: #a1a1aa;
-      --subtle: #71717a;
-      --mint: #34d399;
-      --mint-dim: #064e3b;
-      --sky: #38bdf8;
-      --amber: #fb923c;
-      --violet: #a78bfa;
-      --dither-cell: 4;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Nimbus USP deck</title>
+<meta name="description" content="Six 1280x720 slides: Nimbus, a personal operations room on Nebius Token Factory. Three dithercn patterns: a radial glow behind the headline, a conic palette sweep, and still dither cards. Print to PDF with backgrounds on." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --background: #0a0a0b; --card: #131316; --fg: #fafafa; --muted: #a1a1aa; --subtle: #71717a;
+    --line: rgba(255,255,255,.1); --mint: #34d399; --mint-ink: #1f7a5c; --sky: #38bdf8; --sky-ink: #1e4f8a;
+    --amber: #fb923c; --amber-ink: #8a4a1a; --violet: #a78bfa; --violet-ink: #4c2d9a; --grey-ink: #3f3f46;
+    --chart-1: #1f7a5c; --chart-3: #1e3a8a;
+    --deck-scale: 1; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #050507; color: var(--fg); font-family: Manrope, ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 0 16px 48px; }
+  code, .mono { font-family: "JetBrains Mono", ui-monospace, Menlo, monospace; }
+  .toolbar { position: sticky; top: 0; z-index: 10; width: calc(100% + 32px); margin: 0 -16px 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: rgba(10,10,11,.88); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); font-size: 13px; font-weight: 600; color: var(--muted); }
+  .btn { height: 36px; padding: 0 14px; border-radius: 10px; border: 0; background: var(--mint); color: #042f2e; font: inherit; font-weight: 800; cursor: pointer; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
+  .wrap { width: calc(1280px * var(--deck-scale)); height: calc(720px * var(--deck-scale)); flex: none; }
+  .slide { position: relative; isolation: isolate; width: 1280px; height: 720px; overflow: hidden; background: var(--background); border: 1px solid var(--line); border-radius: 18px; display: flex; flex-direction: column; padding: 40px 56px 30px; transform: scale(var(--deck-scale)); transform-origin: top left; }
+  .slide > * { position: relative; z-index: 1; }
+  .slide > canvas.bg { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; }
 
-    body {
-      background: #050507;
-      color: var(--text);
-      font-family: "Manrope", -apple-system, BlinkMacSystemFont, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 32px;
-      padding: 32px 0 64px;
-    }
+  .top { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--subtle); }
+  .top .brand { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 800; color: var(--fg); }
+  .top .brand i { width: 9px; height: 9px; border-radius: 50%; background: var(--sky); box-shadow: 0 0 10px var(--sky); }
+  .top .grow { flex: 1; }
+  .body { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 14px 0; }
+  .foot { display: flex; align-items: center; gap: 16px; font-size: 12px; font-weight: 600; color: var(--subtle); border-top: 1px solid var(--line); padding-top: 12px; }
+  .foot .grow { flex: 1; }
 
-    .toolbar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      width: 100%;
-      margin-top: -32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: rgba(17, 17, 20, 0.9);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-strong);
-      padding: 10px 24px;
-      font-size: 13px;
-      font-weight: 700;
-    }
+  .eyebrow { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; border: 1px solid rgba(52,211,153,.45); background: #0f1a16; color: var(--mint); font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+  h1, h2 { margin: 0; font-weight: 800; letter-spacing: -.025em; text-wrap: balance; }
+  h1 { font-size: 50px; line-height: 1.06; }
+  h2 { font-size: 36px; line-height: 1.1; }
+  .sub { margin: 0; font-size: 17px; line-height: 1.5; font-weight: 600; color: var(--muted); }
 
-    /* On screen each slide is scaled to the window width; --deck-scale is set by the script. */
+  /* DitherGradientStatic card: paper surface, a still bayer8 band in the lower third, text on clean paper above it. */
+  .card { position: relative; isolation: isolate; overflow: hidden; border-radius: 16px; background: var(--card); border: 1px solid var(--line); padding: 18px 20px 0; display: flex; flex-direction: column; gap: 4px; }
+  .card canvas { position: absolute; left: 0; right: 0; bottom: 0; z-index: 0; width: 100%; height: 30%; display: block; }
+  .card > * { position: relative; z-index: 1; }
+  .card .label { font-size: 13px; font-weight: 600; color: var(--muted); }
+  .card .value { font-size: 30px; line-height: 1.1; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .card .delta { padding-top: 10px; padding-bottom: 26px; font-size: 12px; line-height: 1.4; font-weight: 600; color: var(--muted); }
+  .card .delta.accent { color: var(--acc, var(--mint)); }
+  .card .delta p { margin: 0; color: var(--muted); font-size: 12.5px; }
+  .card .delta p + span { display: block; margin-top: 10px; }
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .row4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid32 { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: 1fr 1fr; gap: 16px; }
+  .split { display: grid; grid-template-columns: 560px 1fr; gap: 40px; align-items: center; }
+
+  /* Product UI mockups */
+  .win { border-radius: 14px; border: 1px solid rgba(255,255,255,.14); background: #101013; box-shadow: 0 30px 80px rgba(0,0,0,.6); overflow: hidden; font-size: 12px; }
+  .win-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .win-head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .win-head b { font-size: 13px; }
+  .win-head .grow { flex: 1; }
+  .pill { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; border: 1px solid; font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .pill.ok { color: var(--mint); border-color: rgba(52,211,153,.4); background: rgba(52,211,153,.1); }
+  .pill.warn { color: var(--amber); border-color: rgba(251,146,60,.45); background: rgba(251,146,60,.1); }
+  .lane { display: grid; grid-template-columns: 150px 1fr 64px; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .lane .who b { display: block; font-size: 12.5px; }
+  .badge { display: inline-flex; align-items: center; height: 18px; padding: 0 7px; border-radius: 6px; font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 600; margin-top: 3px; border: 1px solid; }
+  .badge.ultra { color: var(--violet); border-color: rgba(167,139,250,.45); background: rgba(167,139,250,.1); }
+  .badge.super { color: var(--sky); border-color: rgba(56,189,248,.45); background: rgba(56,189,248,.1); }
+  .badge.nano { color: var(--mint); border-color: rgba(52,211,153,.45); background: rgba(52,211,153,.1); }
+  .track { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+  .seg { display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 600; white-space: nowrap; color: #0b0b0d; }
+  .seg.ultra { background: var(--violet); } .seg.super { background: var(--sky); } .seg.nano { background: var(--mint); }
+  .seg.ghost { background: transparent; color: var(--muted); border: 1px dashed rgba(255,255,255,.25); }
+  .seg.gate { background: var(--amber); }
+  .gap { flex: 0 0 auto; width: 18px; height: 2px; background: rgba(255,255,255,.12); border-radius: 2px; }
+  .lane .cost { text-align: right; font-family: "JetBrains Mono", monospace; color: var(--muted); }
+  .gate { margin: 12px 14px 14px; border-radius: 12px; border: 1px solid rgba(251,146,60,.45); border-left-width: 3px; background: #141416; padding: 12px 14px; }
+  .gate .t { display: flex; justify-content: space-between; gap: 12px; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--amber); font-weight: 600; }
+  .gate .t span:last-child { color: var(--muted); }
+  .gate .draft { margin: 10px 0; padding: 10px 12px; border-radius: 8px; background: #0b0b0d; border: 1px solid var(--line); font-family: "JetBrains Mono", monospace; font-size: 11.5px; line-height: 1.5; color: #d4d4d8; }
+  .gate .acts { display: flex; gap: 8px; }
+  .act { display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 8px; font-size: 12px; font-weight: 700; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .act.primary { background: var(--mint); color: #042f2e; border-color: transparent; }
+  .act.rule { color: var(--mint); border-color: rgba(52,211,153,.45); background: rgba(52,211,153,.08); }
+
+  .diff { border-radius: 14px; border: 1px solid rgba(255,255,255,.14); background: #101013; box-shadow: 0 30px 80px rgba(0,0,0,.6); padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+  .diff .h { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 700; }
+  .diff .h code { font-size: 12px; }
+  .diff .revert { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--mint); border: 1px solid rgba(52,211,153,.45); border-radius: 8px; padding: 5px 10px; white-space: nowrap; }
+  .diff pre { margin: 0; padding: 14px 16px; border-radius: 10px; background: #0b0b0d; border: 1px solid var(--line); font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.65; color: #d4d4d8; white-space: pre-wrap; }
+  .diff pre .add { color: var(--mint); } .diff pre .hd { color: var(--sky); } .diff pre .c { color: var(--subtle); }
+  .diff .f { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .diff .f b { color: var(--fg); } .diff .f .ok { color: var(--mint); }
+
+  .cmd { display: inline-flex; align-items: center; font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--mint); background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; white-space: nowrap; }
+
+  @page { size: 338.67mm 190.5mm; margin: 0; }
+  @media print {
     :root { --deck-scale: 1; }
-    .slide-wrap {
-      width: calc(1280px * var(--deck-scale));
-      height: calc(720px * var(--deck-scale));
-      flex: none;
-    }
-    .slide-wrap > .slide {
-      transform: scale(var(--deck-scale));
-      transform-origin: top left;
-    }
-
-    .toolbar button {
-      background: var(--mint);
-      color: #042f2e;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-family: inherit;
-      font-weight: 800;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .slide {
-      position: relative;
-      isolation: isolate;
-      width: 1280px;
-      height: 720px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 52px 64px;
-      page-break-after: always;
-      break-after: page;
-    }
-
-    .dither-canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -10;
-      image-rendering: pixelated;
-      pointer-events: none;
-    }
-
-    .dither-card-bg {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 68%;
-      width: 100%;
-      z-index: -10;
-      image-rendering: pixelated;
-      pointer-events: none;
-    }
-
-    .slide-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--muted);
-      letter-spacing: -0.01em;
-    }
-
-    .brand-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text);
-      font-weight: 800;
-      font-size: 15px;
-    }
-
-    .cloud-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--sky);
-      box-shadow: 0 0 12px var(--sky);
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--mint);
-      background: rgba(52, 211, 153, 0.1);
-      border: 1px solid rgba(52, 211, 153, 0.25);
-      padding: 5px 12px;
-      border-radius: 999px;
-      width: fit-content;
-    }
-
-    h1 {
-      font-size: 58px;
-      line-height: 1.05;
-      font-weight: 800;
-      letter-spacing: -0.035em;
-      color: var(--text);
-    }
-
-    h2 {
-      font-size: 40px;
-      line-height: 1.1;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      color: var(--text);
-    }
-
-    .lead {
-      font-size: 19px;
-      line-height: 1.5;
-      font-weight: 500;
-      color: var(--muted);
-      max-width: 760px;
-    }
-
-    /* DitherGradientStatic Card */
-    .dither-card {
-      position: relative;
-      isolation: isolate;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 22px 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-    }
-
-    .dither-card .card-label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-    }
-
-    .dither-card .card-value {
-      font-size: 38px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      font-variant-numeric: tabular-nums;
-      color: var(--text);
-      margin-top: 6px;
-    }
-
-    .dither-card .card-meta {
-      font-size: 12px;
-      font-weight: 600;
-      color: #d4d4d8;
-      margin-top: 28px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 28px;
-      align-items: stretch;
-    }
-
-    /* UI Product Mockup Shell */
-    .ui-window {
-      background: #0d0d10;
-      border: 1px solid var(--border-strong);
-      border-radius: 16px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
-    }
-
-    .ui-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 18px;
-      background: #131317;
-      border-bottom: 1px solid var(--border);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 6px;
-      border: 1px solid var(--border-strong);
-    }
-
-    .badge-ultra { background: rgba(167, 139, 250, 0.14); color: #c4b5fd; border-color: rgba(167, 139, 250, 0.35); }
-    .badge-super { background: rgba(56, 189, 248, 0.14); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.35); }
-    .badge-nano  { background: rgba(52, 211, 153, 0.14); color: #6ee7b7; border-color: rgba(52, 211, 153, 0.35); }
-    .badge-warn  { background: rgba(251, 146, 60, 0.16); color: #fdba74; border-color: rgba(251, 146, 60, 0.4); }
-
-    .lane-row {
-      display: grid;
-      grid-template-columns: 190px 1fr 90px;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-      font-size: 13px;
-    }
-
-    .lane-track {
-      position: relative;
-      height: 26px;
-      background: rgba(255, 255, 255, 0.03);
-      border-radius: 6px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-    }
-
-    .lane-seg {
-      height: 100%;
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      font-weight: 600;
-      color: #09090b;
-      white-space: nowrap;
-    }
-
-    .slide-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--subtle);
-      border-top: 1px solid var(--border);
-      padding-top: 16px;
-    }
-
-    code {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.92em;
-    }
-
-    @media print {
-      @page {
-        size: 1280px 720px;
-        margin: 0;
-      }
-      body {
-        padding: 0;
-        gap: 0;
-        background: var(--bg);
-      }
-      .toolbar {
-        display: none !important;
-      }
-      :root { --deck-scale: 1; }
-      .slide-wrap { width: 1280px; height: 720px; }
-      .slide-wrap > .slide { transform: none; }
-      .slide {
-        border: none;
-        border-radius: 0;
-        width: 1280px;
-        height: 720px;
-      }
-    }
-  </style>
+    html, body { background: var(--background); }
+    body { display: block; padding: 0; }
+    .toolbar { display: none !important; }
+    .wrap { width: 1280px; height: 720px; break-after: page; page-break-after: always; }
+    .wrap:last-child { break-after: auto; page-break-after: auto; }
+    .slide { transform: none; border: 0; border-radius: 0; }
+  }
+</style>
 </head>
 <body>
-
   <div class="toolbar">
-    <span>Nimbus · 6-Slide DitherGradient Deck (1280×720 PDF Ready)</span>
-    <button onclick="window.print()">Export to PDF (Cmd+P)</button>
+    <span>Nimbus USP deck · 6 slides · 1280×720</span>
+    <span>Print: "Save as PDF", paper size from the page, "Background graphics" on. Or <code>node scripts/export-pdf.mjs docs/posters/nimbus-deck.html</code>.</span>
+    <button class="btn" type="button" onclick="window.print()">Export PDF</button>
   </div>
 
-  <!-- =====================================================================
-       SLIDE 1: HERO (Glow behind a headline: mode="radial", center=[0.5, 1.15])
-       ===================================================================== -->
-  <section class="slide">
-    <canvas
-      class="dither-canvas"
-      data-mode="radial"
-      data-center="0.5,1.12"
-      data-radius="0.68"
-      data-from="0.85"
-      data-to="0"
-      data-matrix="bayer8"
-      data-cell="4"
-      data-ink="#1e3a8a"
-      data-ink-mid="#38bdf8"
-    ></canvas>
-
-    <div class="slide-top">
-      <div class="brand-pill"><span class="cloud-dot"></span> Nimbus</div>
-      <span>Nebius × NVIDIA Global AI Hackathon · Personal AI Track</span>
+  <!-- SLIDE 1 · Hero: DitherGradientRadial glow behind the headline + 3 DitherGradientStatic cards -->
+  <div class="wrap"><section class="slide">
+    <canvas class="bg" data-dither data-mode="radial" data-center="0.5,1.15" data-radius="0.5" data-from="1" data-to="0" data-ink="#1f7a5c" data-paper="#0a0a0b" aria-hidden="true"></canvas>
+    <header class="top"><span class="brand"><i></i>Nimbus</span><span class="grow"></span><span>Nebius × NVIDIA Global AI Hackathon · Personal AI Track</span></header>
+    <div class="body" style="align-items: center; text-align: center; gap: 18px">
+      <span class="eyebrow">NVIDIA Nemotron 3 · Nebius Token Factory</span>
+      <h1 style="max-width: 980px">Your standing work, done every morning by a crew that asks before it acts.</h1>
+      <p class="sub" style="max-width: 760px">A visual personal operations room where NVIDIA Nemotron 3 Ultra plans, Super reads and writes, Nano checks and learns, and every outgoing action waits for your approval.</p>
+      <div class="row3" style="width: 100%; max-width: 1000px; margin-top: 14px; text-align: left">
+        <div class="card" style="--acc: var(--mint)"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1f7a5c" aria-hidden="true"></canvas><span class="label">Morning 1 (58,950 tokens)</span><span class="value">$0.0216</span><span class="delta accent">24% saved by the 3-tier cost router</span></div>
+        <div class="card" style="--acc: var(--sky)"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1e4f8a" aria-hidden="true"></canvas><span class="label">Morning 2 (learned rule active)</span><span class="value">$0.0209</span><span class="delta accent">27% saved · 16 memories learned</span></div>
+        <div class="card" style="--acc: var(--amber)"><canvas data-dither data-from="0" data-to="0.55" data-ink="#8a4a1a" aria-hidden="true"></canvas><span class="label">Replies sent without your OK</span><span class="value">0</span><span class="delta accent">Hard approval gate on every side effect</span></div>
+      </div>
     </div>
+    <footer class="foot"><span>github.com/harrymove-ctrl/nimbus · MIT License</span><span class="grow"></span><span>01 / 06</span></footer>
+  </section></div>
 
-    <div style="display:flex; flex-direction:column; align-items:center; text-align:center; gap:22px; margin:auto 0;">
-      <div class="eyebrow">NVIDIA Nemotron 3 · Nebius Token Factory</div>
-      <h1 style="max-width: 960px;">
-        Your standing work, done every morning by a crew that asks before it acts.
-      </h1>
-      <p class="lead" style="max-width: 680px;">
-        A visual personal operations room where Ultra plans, Super reads and writes, Nano checks and learns, and every outgoing action waits for your approval.
-      </p>
+  <!-- SLIDE 2 · The Problem: linear dither background + 3 USP cards -->
+  <div class="wrap"><section class="slide">
+    <canvas class="bg" data-dither data-mode="linear" data-angle="160" data-from="0" data-to="0.18" data-ink="#27272a" data-paper="#0a0a0b" aria-hidden="true"></canvas>
+    <header class="top"><span class="brand"><i></i>Nimbus · The Problem</span><span class="grow"></span><span>Why chat windows are not enough</span></header>
+    <div class="body" style="gap: 14px">
+      <span class="eyebrow" style="align-self: flex-start">Three walls of always-on agents</span>
+      <h2 style="font-size: 40px">Chat bubbles hide the work. Flagship models burn the budget.</h2>
+      <p class="sub" style="max-width: 820px">Plenty of agents can read an inbox on a schedule. The real walls appear when you leave personal agents running every day.</p>
+      <div class="row3" style="margin-top: 12px">
+        <div class="card" style="--acc: var(--mint); min-height: 250px"><canvas data-dither data-from="0" data-to="0.55" data-ink="#3f3f46" aria-hidden="true"></canvas><span class="label">Wall 01 · Unit Economics</span><span class="value">16× Overpaying</span><div class="delta"><p>Routing every file read, retry, verification check, and memory write through one flagship model makes daily chores too expensive.</p><span class="accent" style="color: var(--mint)">Solved by 3-tier Nemotron routing</span></div></div>
+        <div class="card" style="--acc: var(--sky); min-height: 250px"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1e4f8a" aria-hidden="true"></canvas><span class="label">Wall 02 · Blind Execution</span><span class="value">40 Hidden Calls</span><div class="delta"><p>OpenClaw and Hermes give you a chat thread, not an operations room. You cannot see which agent read which file, why a command retried, or what each hop cost.</p><span style="color: var(--sky)">Solved by the Live Timeline</span></div></div>
+        <div class="card" style="--acc: var(--amber); min-height: 250px"><canvas data-dither data-from="0" data-to="0.55" data-ink="#8a4a1a" aria-hidden="true"></canvas><span class="label">Wall 03 · Static Prompts</span><span class="value">Repeat Questions</span><div class="delta"><p>Most assistants ask for the exact same permission every morning because yesterday's approval never updates the agent's skill file.</p><span style="color: var(--amber)">Solved by Policy-Compiling Gates</span></div></div>
+      </div>
+    </div>
+    <footer class="foot"><span>Built for Nebius Token Factory and NVIDIA Nemotron 3</span><span class="grow"></span><span>02 / 06</span></footer>
+  </section></div>
 
-      <div class="grid-3" style="width: 100%; max-width: 880px; margin-top: 14px; text-align: left;">
-        <div class="dither-card">
-          <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#065f46"></canvas>
-          <span class="card-label">Morning 1 (58,950 tokens)</span>
-          <span class="card-value">$0.0216</span>
-          <span class="card-meta" style="color: var(--mint);">24% saved by the cost router</span>
+  <!-- SLIDE 3 · Product UI and USP: live multi-agent timeline + 3-tier Nemotron router -->
+  <div class="wrap"><section class="slide">
+    <canvas class="bg" data-dither data-mode="radial" data-center="0.82,0.5" data-radius="0.65" data-from="0.45" data-to="0" data-ink="#1f7a5c" data-paper="#0a0a0b" aria-hidden="true"></canvas>
+    <header class="top"><span class="brand"><i></i>Nimbus · Product UI</span><span class="grow"></span><span>One row per agent · model badge and live price on every hop</span></header>
+    <div class="body split" style="grid-template-columns: 520px 1fr; gap: 36px">
+      <div style="display: flex; flex-direction: column; gap: 14px">
+        <span class="eyebrow" style="align-self: flex-start">Visual multi-agent operations room</span>
+        <h2>See who did what, which model ran it, and what it cost.</h2>
+        <p class="sub" style="font-size: 14.5px">Instead of a spinner in a chat box, Nimbus renders every agent on a live timeline. Click any segment to open the Loop Inspector and read the exact email, calendar invite, or test output that agent saw.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px">
+          <div class="card" style="padding: 12px 16px 12px; gap: 2px"><canvas data-dither data-from="0" data-to="0.45" data-ink="#4c2d9a" data-cell="3" aria-hidden="true"></canvas><span class="label mono" style="font-size: 11.5px; color: var(--violet)">nvidia/Nemotron-3-Ultra-550b-a55b</span><span class="value" style="font-size: 20px">$1.00 / $3.00 <small style="font-size: 11px; color: var(--subtle); font-weight: 600">per 1M in / out</small></span><span class="delta" style="padding-top: 8px">Orchestrator · Plans the run, coordinates handoffs, gates side effects</span></div>
+          <div class="card" style="padding: 12px 16px 12px; gap: 2px"><canvas data-dither data-from="0" data-to="0.45" data-ink="#1e4f8a" data-cell="3" aria-hidden="true"></canvas><span class="label mono" style="font-size: 11.5px; color: var(--sky)">nvidia/nemotron-3-super-120b-a12b</span><span class="value" style="font-size: 20px">$0.30 / $0.90</span><span class="delta" style="padding-top: 8px">Researcher, Analyst &amp; Writer · 256K context for inbox, code &amp; drafts</span></div>
+          <div class="card" style="padding: 12px 16px 12px; gap: 2px"><canvas data-dither data-from="0" data-to="0.45" data-ink="#1f7a5c" data-cell="3" aria-hidden="true"></canvas><span class="label mono" style="font-size: 11.5px; color: var(--mint)">nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B</span><span class="value" style="font-size: 20px">$0.06 / $0.24 <small style="font-size: 11px; color: var(--mint); font-weight: 600">1/16th the input cost of Ultra</small></span><span class="delta" style="padding-top: 8px">Checker, Learner &amp; Router Classifier</span></div>
         </div>
-        <div class="dither-card">
-          <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#1e40af"></canvas>
-          <span class="card-label">Morning 2 (learned rule active)</span>
-          <span class="card-value">$0.0209</span>
-          <span class="card-meta" style="color: var(--sky);">27% saved · 16 memories learned</span>
-        </div>
-        <div class="dither-card">
-          <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#7c2d12"></canvas>
-          <span class="card-label">Replies sent without your OK</span>
-          <span class="card-value">0</span>
-          <span class="card-meta" style="color: var(--amber);">Hard approval gate on every side effect</span>
+      </div>
+      <div class="win">
+        <div class="win-head"><span class="dot"></span><b>Morning Brief · <span class="mono" style="font-weight: 600; color: var(--muted)">run_724b8d9d</span></b><span class="grow"></span><span class="pill ok">$0.0216 · 24% saved</span><span class="pill warn">1 Approval Waiting</span></div>
+        <div class="lane"><div class="who"><b>Orchestrator</b><span class="badge ultra">Ultra 550B</span></div><div class="track"><span class="seg ultra">Plan · 4 steps</span><span class="gap"></span><span class="seg ultra">Handoff</span></div><div class="cost">$0.0064</div></div>
+        <div class="lane"><div class="who"><b>Researcher</b><span class="badge super">Super 120B</span></div><div class="track"><span class="gap" style="width: 60px"></span><span class="seg super">read_repo · inbox + calendar + github</span></div><div class="cost">$0.0071</div></div>
+        <div class="lane"><div class="who"><b>Writer</b><span class="badge super">Super 120B</span></div><div class="track"><span class="gap" style="width: 40px"></span><span class="seg super">write_artifact · brief v1</span><span class="gap"></span><span class="seg gate">Gate</span></div><div class="cost">$0.0068</div></div>
+        <div class="lane" style="border-bottom: 0"><div class="who"><b>Checker &amp; Learner</b><span class="badge nano">Nano 30B ↓</span></div><div class="track"><span class="gap" style="width: 90px"></span><span class="seg nano">save_learning · 8 memories</span></div><div class="cost" style="color: var(--mint)">$0.0013</div></div>
+        <div class="gate">
+          <div class="t"><span>APPROVAL GATE · send_message to reviewer@example.com</span><span>Writer · Super 120B</span></div>
+          <div class="draft">"Re: PR #42 login fix: I reviewed your comments and updated the session check. Ready for another look."</div>
+          <div class="acts"><span class="act primary">Approve</span><span class="act rule">Approve &amp; always allow → writes to SKILL.md</span><span class="act">Reject with note</span></div>
         </div>
       </div>
     </div>
+    <footer class="foot"><span>Live tour: nimbus-production-6f7b.up.railway.app/welcome</span><span class="grow"></span><span>03 / 06</span></footer>
+  </section></div>
 
-    <div class="slide-footer">
-      <span>github.com/harrymove-ctrl/nimbus · MIT License</span>
-      <span>01 / 06</span>
-    </div>
-  </section>
+  <!-- SLIDE 4 · Trust and the self-rewriting skill: DitherGradientConic palette sweep + SKILL.md diff -->
+  <div class="wrap"><section class="slide">
+    <canvas class="bg" data-dither data-mode="conic" data-angle="45" data-matrix="blue-noise" data-palette="#0a0a0b,#1f7a5c,#1e3a8a,#1f7a5c,#0a0a0b" data-strength="0.2" data-paper="#0a0a0b" aria-hidden="true"></canvas>
+    <header class="top"><span class="brand"><i></i>Nimbus · Trust &amp; Learning Loop</span><span class="grow"></span><span>Approvals compile into rules · Nano rewrites SKILL.md</span></header>
+    <div class="body" style="gap: 16px">
+      <span class="eyebrow" style="align-self: flex-start">Run 2 starts where run 1 left off</span>
+      <h2 style="max-width: 1000px">Nothing leaves without you. Approved actions become rules you can revoke.</h2>
+      <div class="split" style="grid-template-columns: 1fr 440px; gap: 28px; align-items: stretch; margin-top: 6px">
+        <div class="diff">
+          <div class="h"><span><code>workstreams/ws-brief/SKILL.md</code> · Rewritten by Nano Learner</span><span class="revert">Revert skill change</span></div>
+          <pre><span class="c"># Morning Brief skill and learned rules</span>
+<span class="add">+ allow: send_message to reviewer@example.com</span>
+<span class="add">+ source: fixtures/inbox/*.eml, fixtures/calendar.ics</span>
 
-  <!-- =====================================================================
-       SLIDE 2: WHY PERSONAL AGENTS HIT A WALL IN 2026 (3 DitherGradient Cards)
-       ===================================================================== -->
-  <section class="slide">
-    <canvas
-      class="dither-canvas"
-      data-mode="linear"
-      data-angle="160"
-      data-from="0"
-      data-to="0.22"
-      data-matrix="bayer8"
-      data-cell="4"
-      data-ink="#18181b"
-    ></canvas>
-
-    <div class="slide-top">
-      <div class="brand-pill"><span class="cloud-dot"></span> Nimbus · The Problem</div>
-      <span>Why Chat Windows Are Not Enough</span>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:14px;">
-      <div class="eyebrow">Three Walls of Always-On Agents</div>
-      <h2>Chat bubbles hide the work. Flagship models burn the budget.</h2>
-      <p class="lead">
-        Plenty of agents can read an inbox on a schedule. The real failure modes happen when you leave them running every day across your inbox, codebase, and research.
-      </p>
-    </div>
-
-    <div class="grid-3">
-      <div class="dither-card" style="min-height: 290px;">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#3f3f46"></canvas>
-        <div>
-          <span class="card-label">Wall 01 · Unit Economics</span>
-          <div class="card-value" style="font-size: 28px; margin-top: 10px;">16× Overpaying</div>
-          <p style="font-size: 14px; color: var(--muted); margin-top: 12px; line-height: 1.55;">
-            Routing every file read, retry loop, verification check, and memory extraction through one flagship model makes daily background chores too expensive to keep on.
-          </p>
+<span class="hd">## Learned Memories (16 active, top-k injected via BAAI/bge-en-icl)</span>
+• Rank client contract deadlines above internal sync notes.
+• Call send_message once per drafted reply so the approval card appears.
+• Ground PR status strictly in github-notifications.json ("in review" vs "merged").</pre>
+          <div class="f"><span>Learner output with <code>enable_thinking: false</code>: <b>102 tokens</b></span><span class="ok">Run 2 sends the reviewer reply with 0 cards</span></div>
         </div>
-        <span class="card-meta" style="color: var(--mint);">Solved by 3-Tier Nemotron Routing</span>
-      </div>
-
-      <div class="dither-card" style="min-height: 290px;">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#1e3a8a"></canvas>
-        <div>
-          <span class="card-label">Wall 02 · Blind Execution</span>
-          <div class="card-value" style="font-size: 28px; margin-top: 10px;">40 Hidden Calls</div>
-          <p style="font-size: 14px; color: var(--muted); margin-top: 12px; line-height: 1.55;">
-            OpenClaw and Hermes give you a chat window, but a single bubble cannot show which agent read which file, why a command retried, or what each step cost.
-          </p>
-        </div>
-        <span class="card-meta" style="color: var(--sky);">Solved by Live Multi-Agent Timeline</span>
-      </div>
-
-      <div class="dither-card" style="min-height: 290px;">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#7c2d12"></canvas>
-        <div>
-          <span class="card-label">Wall 03 · Static Prompts</span>
-          <div class="card-value" style="font-size: 28px; margin-top: 10px;">Repeat Questions</div>
-          <p style="font-size: 14px; color: var(--muted); margin-top: 12px; line-height: 1.55;">
-            Agents either act without asking or ask the exact same permission every morning because yesterday's approval never compiles into a revocable rule in <code>SKILL.md</code>.
-          </p>
-        </div>
-        <span class="card-meta" style="color: var(--amber);">Solved by Policy-Compiling Gates</span>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Built for Nebius Token Factory &amp; NVIDIA Nemotron 3</span>
-      <span>02 / 06</span>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       SLIDE 3: PRODUCT UI & USP: LIVE TIMELINE + MODEL ROUTING
-       ===================================================================== -->
-  <section class="slide">
-    <canvas
-      class="dither-canvas"
-      data-mode="radial"
-      data-center="0.82,0.5"
-      data-radius="0.65"
-      data-from="0.45"
-      data-to="0"
-      data-matrix="bayer8"
-      data-cell="4"
-      data-ink="#064e3b"
-    ></canvas>
-
-    <div class="slide-top">
-      <div class="brand-pill"><span class="cloud-dot"></span> Nimbus · Product UI</div>
-      <span>One Row Per Agent · Model Badge &amp; Live Price on Every Hop</span>
-    </div>
-
-    <div class="grid-2" style="margin: auto 0;">
-      <div style="display:flex; flex-direction:column; justify-content:center; gap:18px;">
-        <div class="eyebrow">Visual Multi-Agent Operations Room</div>
-        <h2 style="font-size: 36px;">See who did what, which model ran it, and what it cost.</h2>
-        <p style="font-size: 15px; line-height: 1.6; color: var(--muted);">
-          Instead of a spinner in a chat box, Nimbus renders every agent on a live timeline. Click any segment to open the <strong>Loop Inspector</strong> (Gather, Act, Verify) and read the exact email, calendar invite, or test output that agent saw.
-        </p>
-
-        <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
-          <div class="dither-card" style="padding: 14px 18px;">
-            <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.45" data-matrix="bayer8" data-cell="4" data-ink="#4c1d95"></canvas>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="badge badge-ultra">Nemotron-3-Ultra-550b-a55b</span>
-              <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);">$1.00 / $3.00 per 1M</span>
-            </div>
-            <span style="font-size:13px; color:var(--text); font-weight:700; margin-top:6px;">Orchestrator · Plans the run, coordinates handoffs, gates side effects</span>
-          </div>
-
-          <div class="dither-card" style="padding: 14px 18px;">
-            <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.45" data-matrix="bayer8" data-cell="4" data-ink="#0c4a6e"></canvas>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="badge badge-super">nemotron-3-super-120b-a12b</span>
-              <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted);">$0.30 / $0.90 per 1M</span>
-            </div>
-            <span style="font-size:13px; color:var(--text); font-weight:700; margin-top:6px;">Researcher, Analyst &amp; Writer · 256K context for search, code &amp; drafts</span>
-          </div>
-
-          <div class="dither-card" style="padding: 14px 18px;">
-            <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.45" data-matrix="bayer8" data-cell="4" data-ink="#064e3b"></canvas>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="badge badge-nano">NVIDIA-Nemotron-3-Nano-30B-A3B</span>
-              <span style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--mint);">$0.06 / $0.24 (1/16th Ultra)</span>
-            </div>
-            <span style="font-size:13px; color:var(--text); font-weight:700; margin-top:6px;">Checker, Learner &amp; Router Classifier · Fast verification &amp; memory</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: Live Timeline & Inspector UI Product View -->
-      <div class="ui-window">
-        <div class="ui-header">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="width:8px; height:8px; border-radius:99px; background:var(--amber);"></span>
-            <span>Morning Brief · run_724b8d9d</span>
-          </div>
-          <div style="display:flex; gap:8px; align-items:center;">
-            <span class="badge badge-nano">$0.0216 · −24% vs ceiling</span>
-            <span class="badge badge-warn">1 Approval Waiting</span>
-          </div>
-        </div>
-
-        <div class="lane-row">
-          <div>
-            <div style="font-weight:800;">Orchestrator</div>
-            <span class="badge badge-ultra" style="margin-top:3px;">Ultra 550B</span>
-          </div>
-          <div class="lane-track">
-            <div class="lane-seg" style="width:26%; background:#a78bfa;">Plan · 4 steps</div>
-            <div class="lane-seg" style="width:22%; margin-left:44%; background:#c4b5fd;">Handoff</div>
-          </div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; text-align:right; color:var(--muted);">$0.0064</div>
-        </div>
-
-        <div class="lane-row">
-          <div>
-            <div style="font-weight:800;">Researcher</div>
-            <span class="badge badge-super" style="margin-top:3px;">Super 120B</span>
-          </div>
-          <div class="lane-track">
-            <div class="lane-seg" style="width:42%; margin-left:18%; background:#38bdf8;">read_repo · inbox + calendar + gh</div>
-          </div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; text-align:right; color:var(--muted);">$0.0071</div>
-        </div>
-
-        <div class="lane-row">
-          <div>
-            <div style="font-weight:800;">Writer</div>
-            <span class="badge badge-super" style="margin-top:3px;">Super 120B</span>
-          </div>
-          <div class="lane-track">
-            <div class="lane-seg" style="width:34%; margin-left:52%; background:#7dd3fc;">write_artifact · brief v1</div>
-            <div class="lane-seg" style="width:12%; margin-left:2%; background:#fb923c;">Gate</div>
-          </div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; text-align:right; color:var(--muted);">$0.0068</div>
-        </div>
-
-        <div class="lane-row" style="border-bottom:1px solid var(--border);">
-          <div>
-            <div style="font-weight:800;">Checker &amp; Learner</div>
-            <span class="badge badge-nano" style="margin-top:3px;">Nano 30B ↓</span>
-          </div>
-          <div class="lane-track">
-            <div class="lane-seg" style="width:28%; margin-left:70%; background:#34d399;">save_learning · 8 mem</div>
-          </div>
-          <div style="font-family:'JetBrains Mono',monospace; font-size:12px; text-align:right; color:var(--mint);">$0.0013</div>
-        </div>
-
-        <!-- Embedded Approval Card inside the UI Window -->
-        <div style="padding:18px; background:#141418; display:flex; flex-direction:column; gap:10px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:12px; font-weight:800; color:var(--amber);">APPROVAL GATE · send_message to reviewer@example.com</span>
-            <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted);">Writer · Super 120B</span>
-          </div>
-          <div style="font-size:12px; color:#d4d4d8; background:#09090b; border:1px solid var(--border); padding:10px 12px; border-radius:8px; font-family:'JetBrains Mono',monospace;">
-            "Re: PR #42 login fix: I reviewed your comments and updated the session check. Ready for another look."
-          </div>
-          <div style="display:flex; gap:8px; margin-top:2px;">
-            <span style="background:var(--mint); color:#042f2e; font-size:12px; font-weight:800; padding:6px 12px; border-radius:8px;">Approve</span>
-            <span style="background:rgba(52,211,153,0.14); color:var(--mint); border:1px solid rgba(52,211,153,0.35); font-size:12px; font-weight:800; padding:6px 12px; border-radius:8px;">Approve &amp; always allow → writes to SKILL.md</span>
-            <span style="background:rgba(255,255,255,0.06); color:var(--muted); font-size:12px; font-weight:700; padding:6px 12px; border-radius:8px;">Reject with note</span>
-          </div>
+        <div style="display: grid; grid-template-rows: 1fr 1fr; gap: 16px">
+          <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1f7a5c" style="height: 20%" aria-hidden="true"></canvas><span class="label">Ship Nimbus Workstream (ws-ship)</span><span class="value" style="font-size: 24px">Self-Fixing Repo</span><span class="delta">Runs pnpm eval and pnpm typecheck in a sandbox, reproduces failing router goldens, writes a unified diff patch, and waits for your OK before opening a GitHub PR.</span></div>
+          <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1e4f8a" style="height: 20%" aria-hidden="true"></canvas><span class="label">OpenClaw &amp; Hermes Bridge</span><span class="value mono" style="font-size: 24px">POST /v1/chat</span><span class="delta">Point OpenClaw or Hermes at Nimbus in 10 lines of config. Ask "what needs me?" and approve pending cards from Telegram or Slack while keeping one web timeline.</span></div>
         </div>
       </div>
     </div>
+    <footer class="foot"><span>Every rule and memory can be forgotten or revoked in one click</span><span class="grow"></span><span>04 / 06</span></footer>
+  </section></div>
 
-    <div class="slide-footer">
-      <span>Live Tour: nimbus-production-6f7b.up.railway.app/welcome</span>
-      <span>03 / 06</span>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       SLIDE 4: APPROVALS THAT BECOME RULES + SELF-REWRITING SKILL.MD
-       ===================================================================== -->
-  <section class="slide">
-    <canvas
-      class="dither-canvas"
-      data-mode="conic"
-      data-angle="45"
-      data-center="0.5,0.5"
-      data-from="0"
-      data-to="1"
-      data-noise="0.15"
-      data-palette="#09090b,#064e3b,#1e3a8a,#064e3b,#09090b"
-      data-matrix="bayer8"
-      data-cell="4"
-    ></canvas>
-
-    <div class="slide-top">
-      <div class="brand-pill"><span class="cloud-dot"></span> Nimbus · Trust &amp; Learning Loop</div>
-      <span>Approvals Compile Into Rules · Nano Rewrites SKILL.md</span>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:12px;">
-      <div class="eyebrow">Run 2 Starts Where Run 1 Left Off</div>
-      <h2>Nothing leaves without you. Approved actions become rules you can revoke.</h2>
-    </div>
-
-    <div class="grid-2" style="margin:auto 0;">
-      <div class="ui-window" style="padding:22px; gap:14px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-weight:800; font-size:14px;">workstreams/ws-brief/SKILL.md · Rewritten by Nano Learner</span>
-          <span class="badge badge-nano">Revert skill change</span>
-        </div>
-        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.65; background:#09090b; border:1px solid var(--border); border-radius:10px; padding:16px; color:#d4d4d8;">
-          <div style="color:var(--subtle);"># Morning Brief Skill &amp; Learned Rules</div>
-          <div style="color:var(--mint); margin-top:6px;">+ allow: send_message to reviewer@example.com</div>
-          <div style="color:var(--mint);">+ source: fixtures/inbox/*.eml, fixtures/calendar.ics</div>
-          <div style="color:var(--sky); margin-top:6px;">## Learned Memories (16 active, top-k injected)</div>
-          <div>• Rank client contract deadlines above internal sync notes.</div>
-          <div>• Call send_message once per drafted reply so the approval card appears.</div>
-          <div>• Ground PR status strictly in github-notifications.json ("in review" vs "merged").</div>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--muted);">
-          <span>Learner output with <code>enable_thinking: false</code>: <strong>102 tokens</strong></span>
-          <span style="color:var(--mint);">Run 2 sends reviewer reply with 0 cards</span>
-        </div>
-      </div>
-
-      <div style="display:flex; flex-direction:column; gap:14px; justify-content:space-between;">
-        <div class="dither-card" style="flex:1;">
-          <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#065f46"></canvas>
-          <span class="card-label">Ship Nimbus Workstream</span>
-          <div class="card-value" style="font-size:24px;">Self-Maintaining Repo Crew</div>
-          <p style="font-size:13px; color:var(--muted); margin-top:8px; line-height:1.5;">
-            Runs <code>pnpm eval</code> and <code>pnpm typecheck</code> in a sandbox, reproduces failing router goldens, writes a unified diff patch, and pauses for your OK before opening a GitHub PR.
-          </p>
-        </div>
-
-        <div class="dither-card" style="flex:1;">
-          <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#1e3a8a"></canvas>
-          <span class="card-label">OpenClaw &amp; Hermes Bridge</span>
-          <div class="card-value" style="font-size:24px;">POST /v1/chat/completions</div>
-          <p style="font-size:13px; color:var(--muted); margin-top:8px; line-height:1.5;">
-            Point OpenClaw or Hermes at Nimbus in 10 lines of config. Ask <code>"what needs me?"</code> and approve pending cards from Telegram or Slack while keeping one unified web timeline.
-          </p>
-        </div>
+  <!-- SLIDE 5 · What real models taught us: linear dither + 4 engineering cards -->
+  <div class="wrap"><section class="slide">
+    <canvas class="bg" data-dither data-mode="linear" data-angle="180" data-from="0" data-to="0.2" data-ink="#27272a" data-paper="#0a0a0b" aria-hidden="true"></canvas>
+    <header class="top"><span class="brand"><i></i>Nimbus · Engineering Deep Dive</span><span class="grow"></span><span>198 live Nebius Token Factory calls · 19 trajectory goldens (145 assertions)</span></header>
+    <div class="body" style="gap: 14px">
+      <span class="eyebrow" style="align-self: flex-start">What real models taught us beyond the mock</span>
+      <h2 style="font-size: 38px; max-width: 1100px">198 live Nebius Token Factory calls ($0.49 total) exposed 7 real agent lessons.</h2>
+      <div class="row4" style="margin-top: 10px">
+        <div class="card" style="min-height: 290px"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1f7a5c" aria-hidden="true"></canvas><span class="label">01 · Nano 30B Thinking Toggle</span><span class="value" style="font-size: 26px">690 → 102 tok</span><div class="delta"><p>With &lt;think&gt; on, Nano 30B spent its whole 1,500-token ceiling thinking and never called save_learning. Setting enable_thinking: false made it 6× smaller and 100% reliable.</p><span style="color: var(--mint)">Commit 23f32be</span></div></div>
+        <div class="card" style="min-height: 290px"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1e4f8a" aria-hidden="true"></canvas><span class="label">02 · Turn Budget &amp; Synthesis</span><span class="value" style="font-size: 26px">12 Turns + Report</span><div class="delta"><p>The Researcher read one file per turn and exited at turn 8 with no report. Raising the budget to 12 with a tool-free final synthesis turn guaranteed a summary every run.</p><span style="color: var(--sky)">Commit be3ddc0</span></div></div>
+        <div class="card" style="min-height: 290px"><canvas data-dither data-from="0" data-to="0.55" data-ink="#4c2d9a" aria-hidden="true"></canvas><span class="label">03 · Automatic Bus Handoffs</span><span class="value" style="font-size: 26px">0 File Re-reads</span><div class="delta"><p>Ultra wrote "(include the report)" instead of pasting it, forcing the Writer to re-read every raw file. The runtime bus now attaches prior crew reports automatically.</p><span style="color: var(--violet)">Commit 3e117e6</span></div></div>
+        <div class="card" style="min-height: 290px"><canvas data-dither data-from="0" data-to="0.55" data-ink="#8a4a1a" aria-hidden="true"></canvas><span class="label">04 · Rule Key Normalization</span><span class="value" style="font-size: 26px">100% Rule Match</span><div class="delta"><p>Normalizing { to, body } and { channel, text } across roles ensured saved allow: rules in SKILL.md matched automatically on Run 2 with zero friction.</p><span style="color: var(--amber)">Verified in take 1915</span></div></div>
       </div>
     </div>
+    <footer class="foot"><span>Full release log and run ids: docs/video/RELEASE.md · README "What real models taught us"</span><span class="grow"></span><span>05 / 06</span></footer>
+  </section></div>
 
-    <div class="slide-footer">
-      <span>Every rule and memory can be forgotten or revoked in one click</span>
-      <span>04 / 06</span>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       SLIDE 5: 7 REAL-MODEL LESSONS ON NEBIUS TOKEN FACTORY
-       ===================================================================== -->
-  <section class="slide">
-    <canvas
-      class="dither-canvas"
-      data-mode="linear"
-      data-angle="180"
-      data-from="0"
-      data-to="0.28"
-      data-matrix="bayer8"
-      data-cell="4"
-      data-ink="#1e1b4b"
-    ></canvas>
-
-    <div class="slide-top">
-      <div class="brand-pill"><span class="cloud-dot"></span> Nimbus · Engineering Deep Dive</div>
-      <span>198 Live Nebius Token Factory Calls · 19 Trajectory Goldens (145 Assertions)</span>
-    </div>
-
-    <div style="display:flex; flex-direction:column; gap:10px;">
-      <div class="eyebrow">What Real Models Taught Us Beyond the Mock</div>
-      <h2>Six live recording attempts ($0.49 total) exposed 7 real agent lessons.</h2>
-    </div>
-
-    <div class="grid-4" style="margin:auto 0;">
-      <div class="dither-card" style="min-height:240px;">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#065f46"></canvas>
-        <div>
-          <span class="card-label">01 · Nano 30B Thinking Budget</span>
-          <div class="card-value" style="font-size:28px;">690 → 102 tok</div>
-          <p style="font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.5;">
-            With <code>&lt;think&gt;</code> on, Nano 30B spent its whole 1,500-token ceiling thinking and never called <code>save_learning</code>. Setting <code>enable_thinking: false</code> made it 6× smaller and 100% reliable.
-          </p>
-        </div>
-        <span class="card-meta" style="color:var(--mint);">Commit 23f32be</span>
+  <!-- SLIDE 6 · Measured impact and 2-minute setup: radial glow + 6 metric cards -->
+  <div class="wrap"><section class="slide">
+    <canvas class="bg" data-dither data-mode="radial" data-center="0.5,1.3" data-radius="0.45" data-from="0.5" data-to="0" data-ink="#1f7a5c" data-paper="#0a0a0b" aria-hidden="true"></canvas>
+    <header class="top"><span class="brand"><i></i>Nimbus · Measured Impact</span><span class="grow"></span><span>Recorded on real NVIDIA Nemotron 3 models via Nebius Token Factory</span></header>
+    <div class="body" style="gap: 16px">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 12px"><span class="eyebrow" style="align-self: flex-start">Zero mock footage · 100% measured</span><h2 style="max-width: 640px; font-size: 32px">Try it in two minutes with zero keys, or live on Nebius Token Factory.</h2></div>
+        <span class="cmd" style="font-size: 12px">git clone https://github.com/harrymove-ctrl/nimbus &amp;&amp; cd nimbus &amp;&amp; pnpm install &amp;&amp; pnpm dev</span>
       </div>
-
-      <div class="dither-card" style="min-height:240px;">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#1e3a8a"></canvas>
-        <div>
-          <span class="card-label">02 · Turn Budget &amp; Synthesis</span>
-          <div class="card-value" style="font-size:28px;">12 Turns + Report</div>
-          <p style="font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.5;">
-            The Researcher read one file per turn and exited at turn 8 with no report. Raising the budget to 12 with a tool-free final turn guaranteed a synthesis every run.
-          </p>
-        </div>
-        <span class="card-meta" style="color:var(--sky);">Commit be3ddc0</span>
-      </div>
-
-      <div class="dither-card" style="min-height:240px;">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#4c1d95"></canvas>
-        <div>
-          <span class="card-label">03 · Automatic Bus Handoffs</span>
-          <div class="card-value" style="font-size:28px;">0 Re-reads</div>
-          <p style="font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.5;">
-            Ultra wrote <code>"(include the report)"</code> instead of pasting it, forcing the Writer to re-read every raw file. The runtime bus now attaches prior crew reports automatically.
-          </p>
-        </div>
-        <span class="card-meta" style="color:var(--violet);">Commit 3e117e6</span>
-      </div>
-
-      <div class="dither-card" style="min-height:240px;">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#7c2d12"></canvas>
-        <div>
-          <span class="card-label">04 · Rule Key Normalization</span>
-          <div class="card-value" style="font-size:28px;">100% Policy Match</div>
-          <p style="font-size:12.5px; color:var(--muted); margin-top:10px; line-height:1.5;">
-            Normalizing <code>{ to, body }</code> and <code>{ channel, text }</code> across roles ensured saved <code>allow:</code> rules in <code>SKILL.md</code> matched on Run 2 with zero friction.
-          </p>
-        </div>
-        <span class="card-meta" style="color:var(--amber);">Verified in take 1915</span>
+      <div class="grid32" style="flex: 1; min-height: 0">
+        <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1f7a5c" aria-hidden="true"></canvas><span class="label">One morning, the first run</span><span class="value">$0.0216</span><span class="delta">58,950 tokens · 23 model calls (run_724b8d9d)</span></div>
+        <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1e4f8a" aria-hidden="true"></canvas><span class="label">The next morning (Run 2)</span><span class="value">$0.0209</span><span class="delta">3% cheaper · starts from what Run 1 learned (run_915dfc1d)</span></div>
+        <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#4c2d9a" aria-hidden="true"></canvas><span class="label">Saved by the 3-tier router</span><span class="value">24% → 27%</span><span class="delta">vs. pinning every hop to its role's ceiling model</span></div>
+        <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#3f3f46" aria-hidden="true"></canvas><span class="label">A/B Trajectory Eval Suite</span><span class="value">19 / 19</span><span class="delta">145 per-hop assertions passing · 47.9% routed spend reduction</span></div>
+        <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#1e4f8a" aria-hidden="true"></canvas><span class="label">Live Chat API Run (/v1)</span><span class="value">$0.0282</span><span class="delta">Started and approved via /v1/chat/completions (run_6b393ab6)</span></div>
+        <div class="card"><canvas data-dither data-from="0" data-to="0.55" data-ink="#8a4a1a" aria-hidden="true"></canvas><span class="label">Replies sent without your OK</span><span class="value">0</span><span class="delta">Every side effect waits for human approval or an explicit rule</span></div>
       </div>
     </div>
+    <footer class="foot"><span>Live demo: nimbus-production-6f7b.up.railway.app/welcome · Video: youtu.be/obMWKCewVTY · Repo: github.com/harrymove-ctrl/nimbus</span><span class="grow"></span><span>06 / 06</span></footer>
+  </section></div>
 
-    <div class="slide-footer">
-      <span>Full release log &amp; run IDs: docs/video/RELEASE.md</span>
-      <span>05 / 06</span>
-    </div>
-  </section>
-
-  <!-- =====================================================================
-       SLIDE 6: NINE MEASURED NUMBERS & TRY IT IN 2 MINUTES
-       ===================================================================== -->
-  <section class="slide">
-    <canvas
-      class="dither-canvas"
-      data-mode="radial"
-      data-center="0.5,1.15"
-      data-radius="0.62"
-      data-from="0.8"
-      data-to="0"
-      data-matrix="bayer8"
-      data-cell="4"
-      data-ink="#065f46"
-    ></canvas>
-
-    <div class="slide-top">
-      <div class="brand-pill"><span class="cloud-dot"></span> Nimbus · Measured Impact</div>
-      <span>Recorded on Real NVIDIA Nemotron 3 Models via Nebius Token Factory</span>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; align-items:flex-end;">
-      <div>
-        <div class="eyebrow">Zero Mock Footage · 100% Measured</div>
-        <h2 style="margin-top:10px;">Try it in two minutes with zero keys, or live on Nebius.</h2>
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:13px; background:#111114; border:1px solid var(--border-strong); padding:10px 16px; border-radius:10px; color:var(--mint);">
-        git clone github.com/harrymove-ctrl/nimbus &amp;&amp; pnpm dev
-      </div>
-    </div>
-
-    <div class="grid-3" style="margin:auto 0;">
-      <div class="dither-card">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#065f46"></canvas>
-        <span class="card-label">One morning, the first run</span>
-        <span class="card-value">$0.0216</span>
-        <span class="card-meta">58,950 tokens · 23 model calls</span>
-      </div>
-      <div class="dither-card">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#0c4a6e"></canvas>
-        <span class="card-label">The next morning (Run 2)</span>
-        <span class="card-value">$0.0209</span>
-        <span class="card-meta">3% cheaper · starts from what Run 1 learned</span>
-      </div>
-      <div class="dither-card">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#4c1d95"></canvas>
-        <span class="card-label">Saved by the 3-tier router</span>
-        <span class="card-value">24% → 27%</span>
-        <span class="card-meta">vs. pinning every hop to its ceiling model</span>
-      </div>
-      <div class="dither-card">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#3f3f46"></canvas>
-        <span class="card-label">A/B Trajectory Eval Suite</span>
-        <span class="card-value">19 / 19</span>
-        <span class="card-meta">145 per-hop assertions · −47.9% router spend</span>
-      </div>
-      <div class="dither-card">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#1e3a8a"></canvas>
-        <span class="card-label">Live Chat API Run (/v1)</span>
-        <span class="card-value">$0.0282</span>
-        <span class="card-meta">Started &amp; approved via /v1/chat/completions</span>
-      </div>
-      <div class="dither-card">
-        <canvas class="dither-card-bg" data-mode="linear" data-angle="0" data-from="0" data-to="0.55" data-matrix="bayer8" data-cell="4" data-ink="#7c2d12"></canvas>
-        <span class="card-label">Replies sent without your OK</span>
-        <span class="card-value">0</span>
-        <span class="card-meta">Every side effect waits for approval or rule</span>
-      </div>
-    </div>
-
-    <div class="slide-footer">
-      <span>Live Demo: nimbus-production-6f7b.up.railway.app/welcome · Video: youtu.be/obMWKCewVTY · Repo: github.com/harrymove-ctrl/nimbus</span>
-      <span>06 / 06</span>
-    </div>
-  </section>
-
-  <script>
-    // Exact Bayer 8x8 ordered dither matrix from src/lib/dither/matrices.ts
-    function buildBayer8() {
-      const size = 8;
-      const thresholds = new Float32Array(64);
-      for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-          let rank = 0;
-          for (let bit = 1; bit < size; bit *= 2) {
-            const xBit = Math.floor(x / bit) % 2;
-            const yBit = Math.floor(y / bit) % 2;
-            rank = rank * 4 + 2 * ((xBit + yBit) % 2) + yBit;
-          }
-          thresholds[y * size + x] = (rank + 0.5) / 64;
-        }
+<script>
+// A still dither engine with the three dithercn patterns: linear, radial and conic gradients; bayer8 or blue-noise
+// thresholds; a two-colour paper/ink ramp or a multi-stop palette. One filled square per cell, drawn once.
+(function () {
+  var B8 = [[0,32,8,40,2,34,10,42],[48,16,56,24,50,18,58,26],[12,44,4,36,14,46,6,38],[60,28,52,20,62,30,54,22],[3,35,11,43,1,33,9,41],[51,19,59,27,49,17,57,25],[15,47,7,39,13,45,5,37],[63,31,55,23,61,29,53,21]];
+  function num(v, d) { var n = parseFloat(v); return isNaN(n) ? d : n; }
+  function frac(x) { return x - Math.floor(x); }
+  function thresholdAt(matrix, x, y) {
+    if (matrix === "blue-noise") return frac(52.9829189 * frac(0.06711056 * x + 0.00583715 * y)); // interleaved gradient noise
+    return (B8[y & 7][x & 7] + 0.5) / 64;
+  }
+  function draw(c) {
+    var d = c.dataset, w = c.offsetWidth, h = c.offsetHeight;
+    if (!w || !h) return;
+    var cell = num(d.cell, 4), from = num(d.from, 0), to = num(d.to, 1), mode = d.mode || "linear", matrix = d.matrix || "bayer8", dpr = 2;
+    var cols = Math.ceil(w / cell), rows = Math.ceil(h / cell), px = cell * dpr;
+    c.width = cols * px; c.height = rows * px;
+    var ctx = c.getContext("2d");
+    var paper = d.paper || getComputedStyle(c.parentElement).backgroundColor || "#131316";
+    ctx.fillStyle = paper; ctx.fillRect(0, 0, c.width, c.height);
+    var palette = d.palette ? d.palette.split(",").map(function (s) { return s.trim(); }) : null;
+    var strength = num(d.strength, 1);
+    var cc = (d.center || "0.5,0.5").split(","), cx = num(cc[0], .5), cy = num(cc[1], .5), rad = num(d.radius, 1), aspect = w / h;
+    var ang = num(d.angle, mode === "linear" ? 180 : 0) * Math.PI / 180, sx = Math.sin(ang), sy = -Math.cos(ang);
+    var ext = Math.abs(sx) * aspect + Math.abs(sy); // projection half-extent of the box onto the direction
+    var lastFill = null;
+    for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
+      var u = (x + .5) / cols, v = (y + .5) / rows, pos;
+      if (mode === "radial") { var dx = (u - cx) * aspect, dy = v - cy; pos = Math.min(1, Math.sqrt(dx * dx + dy * dy) / rad); }
+      else if (mode === "conic") { var a = Math.atan2(v - cy, (u - cx) * aspect) - ang + Math.PI / 2; pos = frac(a / (2 * Math.PI)); }
+      else { pos = (((u - .5) * aspect * sx + (v - .5) * sy) / ext + 1) / 2; } // CSS angle: 0 points up, 180 points down
+      var th = thresholdAt(matrix, x, y), fill = null;
+      if (palette) {
+        var f = pos * (palette.length - 1), seg = Math.min(palette.length - 2, Math.floor(f)), t = (f - seg) * strength + (1 - strength) * 0;
+        // dither between the two neighbouring stops; strength < 1 keeps the sweep closer to the first stop (the background)
+        var pick = (f - seg) > th ? seg + 1 : seg;
+        if (strength < 1 && th > strength) pick = 0; // thin the sweep so text stays readable
+        fill = palette[pick];
+        if (fill === palette[0]) fill = null;
+      } else {
+        var tone = from + (to - from) * pos;
+        if (tone > th) fill = d.ink || "#9ff5cf";
       }
-      return thresholds;
+      if (fill) { if (fill !== lastFill) { ctx.fillStyle = fill; lastFill = fill; } ctx.fillRect(x * px, y * px, px, px); }
     }
-
-    function hexToRgb(hex) {
-      const clean = hex.replace("#", "");
-      const num = parseInt(clean, 16);
-      return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
-    }
-
-    const BAYER8 = buildBayer8();
-
-    function renderDitherCanvas(canvas) {
-      const rect = { width: canvas.offsetWidth, height: canvas.offsetHeight };
-      const cell = parseInt(canvas.dataset.cell || "4", 10);
-      const cols = Math.max(1, Math.ceil(rect.width / cell));
-      const rows = Math.max(1, Math.ceil(rect.height / cell));
-      canvas.width = cols;
-      canvas.height = rows;
-
-      const ctx = canvas.getContext("2d");
-      const img = ctx.createImageData(cols, rows);
-      const data = img.data;
-
-      const mode = canvas.dataset.mode || "linear";
-      const angleDeg = parseFloat(canvas.dataset.angle || "0");
-      const angleRad = (angleDeg * Math.PI) / 180;
-      const from = parseFloat(canvas.dataset.from || "0");
-      const to = parseFloat(canvas.dataset.to || "0.55");
-      const radius = parseFloat(canvas.dataset.radius || "1");
-      const noiseAmt = parseFloat(canvas.dataset.noise || "0");
-      const [cx, cy] = (canvas.dataset.center || "0.5,0.5").split(",").map(Number);
-      const defaultPaper = canvas.classList.contains("dither-card-bg") ? "#111114" : "#09090b";
-      const paletteHexes = canvas.dataset.palette
-        ? canvas.dataset.palette.split(",").map((s) => hexToRgb(s.trim()))
-        : [hexToRgb(canvas.dataset.paper || defaultPaper), hexToRgb(canvas.dataset.ink || "#27272a")];
-
-      const aspect = cols / rows;
-
-      for (let y = 0; y < rows; y++) {
-        const v = y / rows;
-        for (let x = 0; x < cols; x++) {
-          const u = x / cols;
-          let t = 0;
-
-          if (mode === "radial") {
-            const dx = (u - cx) * aspect;
-            const dy = v - cy;
-            const dist = Math.sqrt(dx * dx + dy * dy) / radius;
-            t = Math.min(1, Math.max(0, dist));
-          } else if (mode === "conic") {
-            const dx = (u - cx) * aspect;
-            const dy = v - cy;
-            const a = (Math.atan2(dy, dx) + Math.PI - angleRad) / (2 * Math.PI);
-            t = ((a % 1) + 1) % 1;
-          } else {
-            // linear: angle=0 goes from top (0) to bottom (1)
-            const sin = Math.sin(angleRad);
-            const cos = Math.cos(angleRad);
-            t = Math.min(1, Math.max(0, (u - 0.5) * sin + (v - 0.5) * cos + 0.5));
-          }
-
-          if (noiseAmt > 0) {
-            const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
-            const frac = n - Math.floor(n);
-            t = Math.min(1, Math.max(0, t + (frac - 0.5) * noiseAmt));
-          }
-
-          const tone = from + (to - from) * t;
-          const scaled = Math.min(0.9999, Math.max(0, tone)) * (paletteHexes.length - 1);
-          const seg = Math.floor(scaled);
-          const localTone = scaled - seg;
-          const c0 = paletteHexes[seg];
-          const c1 = paletteHexes[Math.min(paletteHexes.length - 1, seg + 1)];
-
-          const threshold = BAYER8[(y % 8) * 8 + (x % 8)];
-          const chosen = localTone > threshold ? c1 : c0;
-
-          const idx = (y * cols + x) * 4;
-          data[idx] = chosen[0];
-          data[idx + 1] = chosen[1];
-          data[idx + 2] = chosen[2];
-          data[idx + 3] = 255;
-        }
-      }
-      ctx.putImageData(img, 0, 0);
-    }
-
-    function renderAll() {
-      document.querySelectorAll("canvas[data-mode]").forEach(renderDitherCanvas);
-    }
-
-    // Wrap each slide so the scaled slide still reserves its scaled space in the column.
-    function wrapSlides() {
-      document.querySelectorAll("section.slide").forEach((slide) => {
-        if (slide.parentElement.classList.contains("slide-wrap")) return;
-        const wrap = document.createElement("div");
-        wrap.className = "slide-wrap";
-        slide.replaceWith(wrap);
-        wrap.appendChild(slide);
-      });
-    }
-    function fitSlides() {
-      const scale = Math.min(1, (window.innerWidth - 32) / 1280);
-      document.documentElement.style.setProperty("--deck-scale", scale.toFixed(4));
-    }
-    window.addEventListener("DOMContentLoaded", () => { wrapSlides(); fitSlides(); renderAll(); });
-    window.addEventListener("resize", fitSlides);
-    window.addEventListener("beforeprint", renderAll);
-  </script>
+  }
+  function all() { document.querySelectorAll("canvas[data-dither]").forEach(draw); }
+  function fit() { document.documentElement.style.setProperty("--deck-scale", Math.min(1, (window.innerWidth - 32) / 1280).toFixed(4)); }
+  fit(); all();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(all);
+  window.addEventListener("load", all);
+  window.addEventListener("resize", fit);
+  window.addEventListener("beforeprint", function () { document.documentElement.style.setProperty("--deck-scale", "1"); all(); });
+  window.addEventListener("afterprint", fit);
+})();
+</script>
 </body>
 </html>
