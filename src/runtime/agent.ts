@@ -107,6 +107,7 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
     const label = hopLabel(role, turn, ctx.script, instance);
     ctx.emit(`segment.think`, role, instance, { segId, label, startMs: now() });
     let call;
+    const callStart = Date.now();
     try {
       call = await callHop(ctx, {
         role, instance, turn, hopNo, ceiling, tier, system: spec.system, messages, tools: hopTools,
@@ -118,7 +119,8 @@ export async function runAgent(ctx: RunCtx, ref: AgentRef, brief: string, exec: 
     } finally {
       ctx.emit("segment.think", role, instance, { segId, label, endMs: now() });
     }
-    ctx.emit("usage", role, instance, { tier: call.tier, in: call.usage.in, out: call.usage.out, cached: call.cached || undefined });
+    // `ms` is the model call's wall time. The client does not stream (generateText), so there is no first-token time to report.
+    ctx.emit("usage", role, instance, { tier: call.tier, in: call.usage.in, out: call.usage.out, cached: call.cached || undefined, ms: Date.now() - callStart });
     ctx.usage.in += call.usage.in;
     ctx.usage.out += call.usage.out;
     const bt = ctx.usageByTier[call.tier];
