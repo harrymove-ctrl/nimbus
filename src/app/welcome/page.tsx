@@ -50,10 +50,12 @@ const LOOPS = [
 
 // Three doors to the same crew. Each proof line is what was checked, and nothing more: the web line is the production
 // run run_668c7252 (its events: three run_code calls with where "nebius-sandbox", 0.63, 0.75 and 0.71 s inside the
-// VM); the phone and MCP lines say "pending" until a real run exists, so each is one string to change.
+// VM); the MCP line is the production run run_e8b4dff2 (docs/mcp/2026-10-29-release-watch.md); the phone line says
+// "pending" until a real run exists, so it is one string to change.
 const SANDBOX_RUN = "run_668c7252";
 const TELEGRAM_PROOF = "Mock-tested 40/40 against a stub Bot API (pnpm check:telegram). Real run from a phone: pending.";
-const MCP_PROOF = "nimbus mcp: mock-tested with the CLI, 36/36 (pnpm check:cli). Real run from Claude Code: pending.";
+const MCP_RUN = "run_e8b4dff2";
+const MCP_PROOF = "was driven on production only through nimbus mcp tools by an MCP client script: five crew questions answered and one approval, $0.061.";
 // docs/CLI.md "nimbus doctor", read only against production on Oct 29. The Telegram row is optional and was not set.
 const DOCTOR = [
   { ok: true, name: "Nimbus", detail: "production answers · real Nemotron models" },
@@ -222,7 +224,15 @@ export default function Welcome() {
               </ul>
             </div>
             <p>
-              <span className="text-neutral-200">Proof:</span> the rows above are nimbus doctor against production on Oct 29. {MCP_PROOF}{" "}
+              <span className="text-neutral-200">Proof:</span> the rows above are nimbus doctor against production on Oct 29. The Release watch run{" "}
+              <Link href={`/?run=${MCP_RUN}`} className={cx(proofLink, "font-mono text-[12px]")}>
+                {MCP_RUN}
+              </Link>{" "}
+              {MCP_PROOF}{" "}
+              <a href={DOC("mcp/2026-10-29-release-watch.md")} className={proofLink}>
+                Transcript
+              </a>
+              {" · "}
               <a href={DOC("CLI.md")} className={proofLink}>
                 Commands
               </a>
