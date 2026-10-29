@@ -181,3 +181,63 @@ the deadline, in the order it lands, each with an owner and a real exit test:
 - **Crew marketplace in the repo.** `templates/` with a `community/` folder and a CI check that every template runs in mock mode.
 - **Per-workstream sandbox images.** `image:` in the template; Nimbus imports it once and pins the UUID.
 - **Multi-user and a hosted free tier** under a per-user day cap, so a household or a class shares one deployment.
+
+## 8 · What production showed on the night of Oct 29 (added Oct 30, 00:30 ICT)
+
+Three screens the user sent, read against the run logs. Nothing here is a mock; everything is on
+nimbus-production-6f7b.up.railway.app.
+
+### Is it real? Yes, with one wording fix
+
+- **Study coach run_b42b8b80.** Real crew from the template (Tutor, Quizmaster, Checker, Learner), 94 s, $0.031, seven
+  `run_code` calls, every one in a Nebius sandbox (the Agent I/O chip shows the image and operation id). The three red
+  marks on the Tutor lane are the model's own errors, not sandbox failures: `KeyError: 'card_id'` (it guessed a column
+  name), a pandas dtype error, and `FileNotFoundError: flashcards_updated.csv` (it expected a file from an earlier call
+  to survive; every call is a fresh VM). The Tutor recovered on its own and finished.
+- **Overview, Impact this week.** Counted from the run events of the last 7 days, archived workstreams included: 19
+  finished runs, 19 documents, $0.18 saved by the router, 0 pull requests. "14 messages sent" was the wrong word:
+  `send_message` records an approved send in the log, it does not deliver to Slack or email yet (Lane 2, MCP client).
+  The row now says **messages approved**. The time saved is an estimate and says so under the row.
+- **Scheduled workstreams, 30 days.** The dotted history is the dither background; only the green cells are runs. Four
+  schedules, 100 % of their runs finished. Real.
+- **New workstream sheet.** Nine templates with their crews, the Crew chips, the default five. Real; the third card is
+  cut at the right edge because the gallery scrolls sideways (cosmetic, see below).
+
+### Fixed on Oct 30 (deployment after main d933d67)
+
+1. Every agent's first prompt now lists each attached CSV with its **columns** and says that **every run_code call
+   starts fresh**; the tool description says the same. Expected effect: fewer failed calls, cheaper runs.
+2. Overview impact row: "messages approved".
+3. The timeline's trace and replay toolbar sits in a backed pill, so it no longer collides with the Orchestrator lane.
+
+### Sandboxes today, in numbers
+
+| Item | Value |
+|---|---|
+| Image for Python | imported `amancevice/pandas:slim` pinned by UUID (pandas 3.0.5, numpy 2.5.2) |
+| Image for Node | `node:20-slim` |
+| Round trip per call | about 3.6 s (0.6 to 0.8 s inside the VM) |
+| Beta limits | 50 concurrent instances, 3600 s max timeout, 12 GB image layer |
+| Production proof | run_668c7252 (3 calls), run_b42b8b80 (7 calls), run_e8b4dff2 via MCP |
+
+### Develop it more (ordered by value for a person, not for a demo)
+
+1. **Workspace that persists across calls within one run.** Keep one sandbox instance alive for the run (the API allows
+   non-disposable instances) or upload the previous call's outputs with the next call. Removes the "file is gone" class
+   of errors entirely. Lane 1 if the API's instance reuse is confirmed in an hour; else Lane 2.
+2. **Files out of the sandbox.** Charts and CSVs the crew writes become artifacts (base64 on stdout as a stopgap, a
+   proper files endpoint when Nebius adds one).
+3. **A data card per attachment.** Row count, columns with types, three sample rows, computed once at run start in a
+   sandbox call and fed to the crew. Cuts the exploratory calls (the Tutor spent three of seven on that).
+4. **Real delivery behind the same approvals.** `send_message` to Telegram first (the bot exists now), then Slack and
+   email through the person's own MCP servers. Then "messages sent" becomes true.
+5. **Template gallery polish.** Scroll affordance for the card row, a "Use" button on hover, and a preview of the
+   SKILL.md seed. Plan card: show the tier for custom roles (blank today).
+6. **A run cost forecast per template** from the last three runs, shown on the card before you create the workstream.
+7. **Learner quality.** It wrote 8 memories and left SKILL.md unchanged on the Study coach run; a rule for "when the
+   deck's columns differ from the seed, record them" would have saved the next run its first failed call.
+
+### GitHub state
+
+Main carries all of it (docs, templates, CLI, MCP, Telegram, Sandboxes). The main checkout on the laptop still holds
+uncommitted edits to the plan card and timeline from another agent; they are not on GitHub and not deployed.
