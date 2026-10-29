@@ -1,6 +1,8 @@
 // The landing page (docs/LANDING.md §2): static, dark, on the app's own tokens. One headline, one button, nine captioned
-// loops cut from the recorded real-model take, the feature list, how it uses Nebius, a footer. The app stays at /.
+// loops cut from the recorded real-model take, the three doors (web, phone, terminal), the feature list, how it uses
+// Nebius, a footer. The app stays at /.
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Aurora } from "@/components/dithercn/aurora";
@@ -46,12 +48,34 @@ const LOOPS = [
   { what: "The 60-second tour", why: "blur, focus, one thing at a time" },
 ];
 
+// Three doors to the same crew. Each proof line is what was checked, and nothing more: the web line is the production
+// run run_668c7252 (its events: three run_code calls with where "nebius-sandbox", 0.63, 0.75 and 0.71 s inside the
+// VM); the phone and MCP lines say "pending" until a real run exists, so each is one string to change.
+const SANDBOX_RUN = "run_668c7252";
+const TELEGRAM_PROOF = "Mock-tested 40/40 against a stub Bot API (pnpm check:telegram). Real run from a phone: pending.";
+const MCP_PROOF = "nimbus mcp: mock-tested with the CLI, 36/36 (pnpm check:cli). Real run from Claude Code: pending.";
+// docs/CLI.md "nimbus doctor", read only against production on Oct 29. The Telegram row is optional and was not set.
+const DOCTOR = [
+  { ok: true, name: "Nimbus", detail: "production answers · real Nemotron models" },
+  { ok: true, name: "Token Factory models", detail: "the key works · Ultra, Super and Nano listed" },
+  { ok: true, name: "Sandboxes whoami", detail: "key and project accepted · instance_max_timeout 3600" },
+  { ok: true, name: "Sandbox images", detail: "python:3.12-slim and node:20-slim ready" },
+  { ok: false, name: "Telegram", detail: "NIMBUS_TELEGRAM_BOT_TOKEN not set (optional)" },
+  { ok: true, name: "Data", detail: "on the server · 7 workstreams, 7 with a SKILL.md" },
+  { ok: true, name: "Day cap", detail: "today $0.31 of $1.00 · run cap $0.25" },
+];
+const DOC = (f: string) => `${REPO}/blob/main/docs/${f}`;
+
 const FEATURES = [
   { label: "Asks first", text: "Every side effect is a card. An approved one can become a rule, and you can revoke it." },
   { label: "Learns", text: "Memories and a rewritten skill file after every run, so the next one asks less." },
   { label: "Priced per step", text: "Three Nemotron sizes, routed by job, with the bill on screen while it runs." },
+  {
+    label: "Runs code in Nebius Sandboxes",
+    text: "The code the crew writes runs in a disposable VM at Nebius, networking off, pandas and numpy ready: 3.5 to 4.9 s a call, under 0.8 s of it inside the VM.",
+  },
   { label: "Yours", text: "Your database, your keys, the tools you list. Nothing runs that you did not allow." },
-  { label: "Always on", text: "Schedules in the app, and an OpenAI-compatible endpoint for OpenClaw and Hermes." },
+  { label: "Always on", text: "Schedules in the app, your own Telegram bot, a CLI with MCP, and an OpenAI-compatible endpoint for OpenClaw and Hermes." },
   { label: "Open source", text: "MIT. pnpm dev runs it with no keys at all, on a scripted mock model." },
 ];
 
@@ -62,6 +86,30 @@ const MODELS = [
 ];
 
 const navLink = "text-[14px] font-bold text-neutral-300 transition-colors hover:text-neutral-50";
+const proofLink = "underline decoration-white/25 underline-offset-2 hover:text-neutral-200";
+
+/** One door: a typographic card on a static ordered-dither glow (public/landing/door-dither.svg, tinted mint by a mask). */
+function Door({ label, where, what, why, children }: { label: string; where: string; what: string; why: string; children: ReactNode }) {
+  return (
+    <article className="relative overflow-hidden rounded-[calc(var(--rb-r-6xl,26px))] border border-white/10 bg-neutral-900 px-5 py-5 sm:px-7 sm:py-6">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-y-0 right-0 w-full bg-[var(--rb-accent)] opacity-[0.13] [mask-image:url(/landing/door-dither.svg)] [mask-size:100%_100%] sm:w-3/4"
+      />
+      <div className="relative flex flex-col gap-4">
+        <div className="flex items-center gap-2.5">
+          <span className="shrink-0 whitespace-nowrap rounded-[calc(var(--rb-r-full,999px))] border border-white/15 bg-neutral-950/70 px-2.5 py-0.5 text-[12px] font-bold text-neutral-50">{label}</span>
+          <code className="truncate font-mono text-[12px] text-neutral-500">{where}</code>
+        </div>
+        <p className="flex flex-col gap-0.5 text-[18px]/[26px] sm:text-[20px]/[28px]">
+          <span className="font-extrabold tracking-tight text-neutral-50">{what}</span>
+          <span className="font-medium text-neutral-400">{why}</span>
+        </p>
+        <div className="flex flex-col gap-2 text-[13px]/[20px] font-semibold text-neutral-400">{children}</div>
+      </div>
+    </article>
+  );
+}
 
 export default function Welcome() {
   return (
@@ -133,6 +181,55 @@ export default function Welcome() {
           <p className="text-center text-[13px] font-semibold text-neutral-500">Every clip is a recorded run on the real models.</p>
         </section>
 
+        <section className="mt-20 flex flex-col gap-6" aria-labelledby="doors">
+          <div className="flex flex-col gap-2">
+            <h2 id="doors" className="text-[22px] font-extrabold tracking-tight text-neutral-50">
+              Three doors to the same crew
+            </h2>
+            <p className="text-[15px]/[23px] font-medium text-neutral-400">One crew, one timeline, one set of rules. Start a run, approve it and read it from whichever door is closest.</p>
+          </div>
+
+          <Door label="Web" where="/" what="The ops room" why="every agent, every step and every cent on one timeline">
+            <p>
+              <span className="text-neutral-200">Proof:</span> the Checkout run{" "}
+              <Link href={`/?run=${SANDBOX_RUN}`} className={cx(proofLink, "font-mono text-[12px]")}>
+                {SANDBOX_RUN}
+              </Link>{" "}
+              on production. Its three run_code calls each ran in a Nebius Sandbox VM (0.63, 0.75 and 0.71 s inside the VM), and the timeline marks each one with the Nebius Sandbox chip.
+            </p>
+          </Door>
+
+          <Door label="Phone" where="Telegram" what="Approvals as buttons" why="Approve, Always allow or Reject from your phone, and the web timeline records it">
+            <p>
+              <span className="text-neutral-200">Proof:</span> {TELEGRAM_PROOF}{" "}
+              <a href={DOC("TELEGRAM.md")} className={proofLink}>
+                Setup
+              </a>
+            </p>
+          </Door>
+
+          <Door label="Terminal and coding agent" where="nimbus · nimbus mcp" what="The crew from your shell" why="run, approve and read it in the terminal, or let Claude Code or Cursor do it over MCP">
+            <div className="rounded-[calc(var(--rb-r-xl,12px))] border border-white/10 bg-neutral-950/80 px-3.5 py-3 font-mono text-[11.5px]/[18px] font-normal sm:text-[12px]/[19px]">
+              <p className="text-neutral-500">$ NIMBUS_URL=…railway.app pnpm nimbus doctor</p>
+              <ul className="mt-1.5 flex flex-col gap-0.5">
+                {DOCTOR.map((r) => (
+                  <li key={r.name} className="grid grid-cols-[1.25rem_1fr] sm:grid-cols-[1.25rem_11.5rem_1fr]">
+                    <span className={r.ok ? "text-[var(--rb-accent)]" : "text-neutral-500"}>{r.ok ? "✓" : "·"}</span>
+                    <span className="text-neutral-200">{r.name}</span>
+                    <span className="col-start-2 text-neutral-400 sm:col-start-3">{r.detail}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <p>
+              <span className="text-neutral-200">Proof:</span> the rows above are nimbus doctor against production on Oct 29. {MCP_PROOF}{" "}
+              <a href={DOC("CLI.md")} className={proofLink}>
+                Commands
+              </a>
+            </p>
+          </Door>
+        </section>
+
         <section className="mt-20 flex flex-col gap-6" aria-labelledby="features">
           <h2 id="features" className="text-[22px] font-extrabold tracking-tight text-neutral-50">
             What it does
@@ -162,6 +259,10 @@ export default function Welcome() {
           <p className="text-[14px]/[21px] font-medium text-neutral-400">
             Every model call goes to <code className="font-mono text-[13px] text-neutral-200">api.tokenfactory.nebius.com</code>, the OpenAI-compatible endpoint of Nebius Token Factory. The router picks the tier per hop, and the saving against
             running every hop on its ceiling tier is on the run summary.
+          </p>
+          <p className="text-[14px]/[21px] font-medium text-neutral-400">
+            Every run_code call goes to <code className="font-mono text-[13px] text-neutral-200">api.tokenfactory.nebius.com/sandboxes/v1</code>, Nebius Token Factory Sandboxes: one disposable instance per call, from an
+            image with pandas 3.0 and numpy, networking off, with the operation id on the timeline. The same key works for the models and the sandboxes.
           </p>
         </section>
 
