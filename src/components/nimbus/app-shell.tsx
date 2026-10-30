@@ -25,7 +25,7 @@ import { Rail } from "./rail";
 import { RunHeader, type RunMode } from "./run-header";
 import { cue, SoundToggle, useRunCues, useSound } from "./sound";
 import { Timeline, type SegRef } from "./timeline";
-import { Trace } from "./trace";
+import { Trace, TraceDock } from "./trace";
 import { isFilter, type TraceFilter } from "@/lib/trace";
 import { Transcript } from "./transcript";
 import { cx } from "./ui";
@@ -48,6 +48,8 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
   const [traceSpan, setTraceSpan] = useState<string | null>(null);
   const [traceFilter, setTraceFilter] = useState<TraceFilter>("all");
   const [hoverSeg, setHoverSeg] = useState<SegRef | null>(null);
+  // Fill: the trace takes the whole main column and the chat hides (remembered per browser)
+  const [traceFill, setTraceFill] = useState(false);
   const [modeReady, setModeReady] = useState(false);
   const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number; mock?: boolean } | undefined>(initialBudget);
   const [notice, setNotice] = useState<string | null>(null);
@@ -91,6 +93,11 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     const v = q.get("view");
     if (v === "trace" || v === "lanes") m = v;
     setRunMode(m);
+    try {
+      setTraceFill(window.localStorage.getItem("nimbus.traceFill") === "1");
+    } catch {
+      /* no storage: the chat stays */
+    }
     const f = q.get("filter");
     if (isFilter(f)) setTraceFilter(f);
     setTraceSpan(q.get("span"));
@@ -100,6 +107,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     if (!modeReady) return;
     try {
       window.localStorage.setItem("nimbus.runView", runMode);
+      window.localStorage.setItem("nimbus.traceFill", traceFill ? "1" : "0");
     } catch {
       /* not remembered */
     }
@@ -109,7 +117,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     put("span", runMode === "trace" ? traceSpan : null);
     put("filter", runMode === "trace" && traceFilter !== "all" ? traceFilter : null);
     if (u.href !== window.location.href) window.history.replaceState(null, "", u);
-  }, [modeReady, runMode, traceSpan, traceFilter]);
+  }, [modeReady, runMode, traceFill, traceSpan, traceFilter]);
 
   const ws = workstreams.find((w) => w.id === selectedId);
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
@@ -477,8 +485,9 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
             <Overview titles={Object.fromEntries(workstreams.map((w) => [w.id, w.title]))} onOpenRun={openRun} refreshKey={view.status === "done" ? 1 : 0} empty={<PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />} />
           ) : (
             <>
-              <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} mode={runMode} onMode={setRunMode} />
+              <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} mode={runMode} onMode={setRunMode} picker={{ workstreamId: ws.id, runId, onPick: (id) => openRun(ws.id, id) }} />
               {(!isPhone || phoneTab === "run") && traceOn && (
+                <TraceDock fill={traceFill || isPhone}>
                 <Trace
                   key={runId}
                   events={events}
@@ -493,14 +502,17 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
                   filter={traceFilter}
                   onFilter={setTraceFilter}
                   phone={isPhone}
+                  fill={traceFill}
+                  onFill={() => setTraceFill((v) => !v)}
                   reducedMotion={reduced}
                 />
+                </TraceDock>
               )}
               {(!isPhone || phoneTab === "run") && !traceOn && <Timeline fill={isPhone} view={view} now={now} selected={selSeg} onSelect={selectSeg} onClearSelection={() => setSelSeg(null)} scrubMs={scrub} onScrub={(ms) => (setReplaying(false), setScrub(ms))} replay={{ playing: replaying, speed, onSpeed: setSpeed, onToggle: () => (replaying ? setReplaying(false) : (setScrub(0), setReplaying(true))) }} collapsed={collapsed && !isPhone} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />}
               {isPhone && phoneTab === "chat" && tray}
               {(!isPhone || phoneTab === "chat") && (
               <>
-              {(isPhone || !traceOn) && <Transcript
+              {(isPhone || !(traceOn && traceFill)) && <Transcript
                 waitingForCrew={!!runId && (events.length === 0 || (view.status === "planning" && !view.plan))}
                 view={shown}
                 now={now}
