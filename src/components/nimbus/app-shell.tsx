@@ -429,24 +429,25 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
         </span>
         <span className="flex-1" />
         <StatusPill runs={active.runs} fetchedAt={active.fetchedAt} reload={active.reload} currentRunId={runId} onOpenRun={(wsId, rid) => openRun(wsId, rid)} />
-        <div className="relative">
-          <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-bold text-neutral-300 hover:bg-white/10 hover:text-neutral-100">
-            <Compass className="size-4" aria-hidden="true" /> <span className="hidden sm:inline">Take the tour</span>
-          </button>
-          {nudge && !touring && (
-            <div className="nb-rise-fast absolute right-0 top-full z-40 mt-2 flex items-center gap-1 whitespace-nowrap rounded-full border border-white/10 bg-neutral-900/92 py-1 ps-3 pe-1 text-[12px] font-bold text-neutral-200 shadow-lg backdrop-blur-md">
-              <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="hover:text-white">
-                New here? 60-second tour
-              </button>
-              <button type="button" aria-label="Dismiss the tour hint" onClick={dismissNudge} className="grid size-6 place-items-center rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
-                ×
-              </button>
-            </div>
-          )}
-        </div>
+        {/* the one-time chip sits in the header row, left of the tour button: below the header it covered the run header and the Inspector's tabs; on a phone the tour button alone is enough */}
+        {nudge && !touring && (
+          <div className="nb-rise-fast hidden shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-white/10 bg-neutral-900/92 py-0.5 ps-3 pe-0.5 text-[12px] font-bold text-neutral-200 md:flex">
+            <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="hover:text-white">
+              New here? 60-second tour
+            </button>
+            <button type="button" aria-label="Dismiss the tour hint" onClick={dismissNudge} className="grid size-6 place-items-center rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
+              ×
+            </button>
+          </div>
+        )}
+        <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-[12px] font-bold text-neutral-300 hover:bg-white/10 hover:text-neutral-100">
+          <Compass className="size-4" aria-hidden="true" /> <span className="hidden sm:inline">Take the tour</span>
+        </button>
         <SoundToggle enabled={sound.enabled} onToggle={sound.toggle} />
-        <button type="button" aria-label="Inspector" data-cuelume-open={drawer === "inspector" ? undefined : ""} data-cuelume-close={drawer === "inspector" ? "" : undefined} onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden", ws && isPhone ? "hidden" : "grid")}>
-          <PanelRight className="size-4" />
+        <button type="button" aria-label="Inspector" data-cuelume-open={drawer === "inspector" ? undefined : ""} data-cuelume-close={drawer === "inspector" ? "" : undefined} onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("h-8 min-w-8 shrink-0 place-items-center rounded-md text-neutral-300 hover:bg-white/10 md:px-2 xl:hidden", ws && isPhone ? "hidden" : "flex items-center justify-center md:gap-1.5")}>
+          <PanelRight className="size-4" aria-hidden="true" />
+          {/* from 768 to 1279 px the Inspector is a drawer: say what is in it (an icon alone hid the Artifact, Agent I/O and Memory tabs) */}
+          <span className="hidden whitespace-nowrap text-[11px] font-bold md:inline">Doc · I/O · Memory</span>
         </button>
       </div>
 
