@@ -5,7 +5,7 @@
 // the panel: headline, filter chips, rows with bars on a shared axis, hover cursor, drag zoom, keyboard, live growth,
 // the comparison with the workstream's last run, the export and the detail card.
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent, type ReactNode } from "react";
-import { ArrowUpRight, Box, Copy, Download, Ellipsis, FileText, FolderGit2, Globe, GitPullRequest, Hand, Link2, MessageSquare, Send, Sparkles, Terminal, Wrench, X, ZoomOut, CircleQuestionMark, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, Maximize2, Minimize2, Box, Copy, Download, Ellipsis, FileText, FolderGit2, Globe, GitPullRequest, Hand, Link2, MessageSquare, Send, Sparkles, Terminal, Wrench, X, ZoomOut, CircleQuestionMark, type LucideIcon } from "lucide-react";
 import { useTween } from "@/hooks/use-tween";
 import type { AnyRunEvent } from "@/lib/events";
 import { ROLE_COLOR, TIER_LABEL, TIER_SHORT } from "@/lib/run-view";
@@ -18,7 +18,6 @@ import {
   fmtAxis,
   fmtDelta,
   fmtDur,
-  fmtPct,
   fmtTok,
   headline,
   ioBytes,
@@ -61,6 +60,9 @@ export type TraceProps = {
   onOpenAgentIO: (ref: SegRef) => void;
   /** a phone (under 768 px): the detail card is a bottom sheet above the tab bar */
   phone: boolean;
+  /** the panel fills the whole main column (the transcript is hidden); with onFill undefined there is no Fill button */
+  fill?: boolean;
+  onFill?: () => void;
   filter: TraceFilter;
   onFilter: (f: TraceFilter) => void;
   reducedMotion: boolean;
@@ -69,7 +71,7 @@ export type TraceProps = {
 const sameRef = (a: SegRef | null | undefined, b: SegRef | null | undefined) => !!a && !!b && a.instance === b.instance && a.id === b.id;
 const spanName = (s: Span) => (s.kind === "tool" ? s.label : s.kind === "model" ? (s.note ?? s.label) : s.label);
 
-export function Trace({ events, now, workstreamId, runId, selectedSpan, selSeg, onPin, onHover, onOpenAgentIO, phone, filter, onFilter, reducedMotion }: TraceProps) {
+export function Trace({ events, now, workstreamId, runId, selectedSpan, selSeg, onPin, onHover, onOpenAgentIO, phone, fill, onFill, filter, onFilter, reducedMotion }: TraceProps) {
   const trace = useMemo(() => buildTrace(events), [events]);
   const rootRef = useRef<HTMLElement>(null);
   const plotRef = useRef<HTMLDivElement>(null);
@@ -438,6 +440,11 @@ export function Trace({ events, now, workstreamId, runId, selectedSpan, selSeg, 
                 vs last run
               </button>
             )}
+            {onFill && !phone && (
+              <button type="button" data-cuelume-select="" aria-pressed={!!fill} onClick={onFill} title={fill ? "Show the chat again" : "Fill the column: hide the chat"} className="flex h-7 items-center gap-1.5 rounded-full border border-white/12 px-2.5 text-[12px] font-bold text-neutral-200 hover:bg-white/10 aria-pressed:border-[var(--rb-accent)]/50 aria-pressed:bg-[var(--rb-accent)]/15 aria-pressed:text-[var(--rb-accent)]">
+                {fill ? <Minimize2 className="size-3.5" aria-hidden="true" /> : <Maximize2 className="size-3.5" aria-hidden="true" />} Fill
+              </button>
+            )}
             <button type="button" aria-label="Share the trace" aria-haspopup="menu" aria-expanded={menu} data-cuelume-open="" data-cuelume-emphasis="subtle" onClick={() => setMenu((v) => !v)} className="grid size-7 place-items-center rounded-full text-neutral-300 hover:bg-white/10 aria-expanded:bg-white/10">
               <Ellipsis className="size-4" aria-hidden="true" />
             </button>
@@ -491,7 +498,7 @@ export function Trace({ events, now, workstreamId, runId, selectedSpan, selSeg, 
       {/* rows */}
       <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden border-t border-white/10">
         {trace.spans.length === 0 ? (
-          <div className="grid h-full min-h-40 place-items-center px-6 text-center text-[14px] text-neutral-500">The trace fills as soon as the crew makes its first call.</div>
+          <div className="grid h-full min-h-40 place-items-center px-6 text-center text-[14px] text-neutral-500">{trace.live || events.length === 0 ? "The trace fills as soon as the crew makes its first call." : "No calls were recorded for this run."}</div>
         ) : (
           <div
             ref={wrapRef}
@@ -763,7 +770,7 @@ function Card({ span: s, openEnd, sheet, tab, tabs, onTab, onClose, onCopy, onOp
     <div
       role="region"
       aria-label={`Details of ${spanName(s)}`}
-      className={cx("nb-rise-fast flex shrink-0 flex-col gap-3 overflow-y-auto border-white/10 bg-neutral-950 p-4", sheet ? "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 max-h-[62dvh] rounded-t-2xl border-x border-t shadow-[0_-12px_40px_rgb(0_0_0/0.6)]" : "max-h-[42%] border-t")}
+      className={cx("nb-rise-fast flex shrink-0 flex-col gap-3 overflow-y-auto border-white/10 bg-neutral-950 p-4", sheet ? "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-30 max-h-[62dvh] rounded-t-2xl border-x border-t shadow-[0_-12px_40px_rgb(0_0_0/0.6)]" : "max-h-1/2 border-t")}
     >
       <div className="flex min-w-0 items-center gap-2">
         {s.model ? (
@@ -904,5 +911,78 @@ function Stats({ items }: { items: [string, string][] }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+
+/**
+ * Where the panel sits above the chat: the lane strip's slot, a share of the main column (default 60 %, at least 240 px)
+ * with a drag handle on its bottom edge (drag, ↑ ↓, double-click resets), remembered in localStorage `nimbus.traceHeight`.
+ * With `fill` it is the whole column and the chat is hidden.
+ */
+export function TraceDock({ fill, children }: { fill: boolean; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [col, setCol] = useState(0);
+  const [h, setH] = useState<number | null>(null);
+  const drag = useRef<{ y: number; h: number } | null>(null);
+  useEffect(() => {
+    try {
+      const v = Number(window.localStorage.getItem("nimbus.traceHeight"));
+      if (v > 0) setH(v);
+    } catch {
+      /* no storage: the default share */
+    }
+  }, []);
+  useEffect(() => {
+    const el = ref.current?.parentElement;
+    if (!el) return;
+    setCol(el.clientHeight); // at once; the observer only fires on the next paint, which a background tab never gets
+    const ro = new ResizeObserver(([e]) => setCol(e.contentRect.height));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [fill]);
+  const clamp = (v: number) => Math.round(Math.min(Math.max(240, v), Math.max(240, col - 200)));
+  const height = clamp(h ?? col * 0.6);
+  const save = (v: number | null) => {
+    setH(v);
+    try {
+      if (v === null) window.localStorage.removeItem("nimbus.traceHeight");
+      else window.localStorage.setItem("nimbus.traceHeight", String(v));
+    } catch {
+      /* not remembered */
+    }
+  };
+  if (fill) return <div className="flex min-h-0 flex-1 flex-col">{children}</div>;
+  return (
+    <div ref={ref} style={{ height: col ? height : "60%" }} className="relative flex shrink-0 flex-col border-b border-white/10">
+      {children}
+      <div
+        role="separator"
+        aria-orientation="horizontal"
+        aria-label="Resize the trace"
+        aria-valuemin={240}
+        aria-valuemax={Math.max(240, col - 200)}
+        aria-valuenow={height}
+        tabIndex={0}
+        title="Drag to resize, double-click resets"
+        onPointerDown={(e) => {
+          drag.current = { y: e.clientY, h: height };
+          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => drag.current && setH(clamp(drag.current.h + (e.clientY - drag.current.y)))}
+        onPointerUp={() => {
+          drag.current = null;
+          save(h === null ? null : clamp(h));
+        }}
+        onDoubleClick={() => save(null)}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowDown") (e.preventDefault(), save(clamp(height + 24)));
+          if (e.key === "ArrowUp") (e.preventDefault(), save(clamp(height - 24)));
+        }}
+        className="group absolute inset-x-0 -bottom-1.5 z-30 flex h-3 cursor-row-resize items-center justify-center outline-none"
+      >
+        <span className="h-0.5 w-10 rounded-full bg-white/15 transition-colors group-hover:bg-white/40 group-focus-visible:bg-[var(--rb-accent)]" />
+      </div>
+    </div>
   );
 }

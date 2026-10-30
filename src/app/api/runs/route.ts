@@ -32,10 +32,13 @@ export async function POST(req: Request) {
 
 // GET /api/runs?workstreamId=ws-… — the workstream's recent runs, newest first (the run view opens the latest, frozen).
 export async function GET(req: Request) {
-  const wsId = new URL(req.url).searchParams.get("workstreamId");
+  const params = new URL(req.url).searchParams;
+  const wsId = params.get("workstreamId");
+  // `limit` (default 10, at most 30): the run picker in the run header asks for more than the run view does
+  const limit = Math.min(30, Math.max(1, Number(params.get("limit")) || 10));
   const db = await getDb();
-  const q = db.select({ id: schema.runs.id, status: schema.runs.status, trigger: schema.runs.trigger, startedAt: schema.runs.startedAt, costUsd: schema.runs.costUsd }).from(schema.runs);
-  const rows = await (wsId ? q.where(eq(schema.runs.workstreamId, wsId)) : q).orderBy(desc(schema.runs.startedAt)).limit(10);
+  const q = db.select({ id: schema.runs.id, title: schema.runs.title, status: schema.runs.status, trigger: schema.runs.trigger, startedAt: schema.runs.startedAt, endedAt: schema.runs.endedAt, costUsd: schema.runs.costUsd }).from(schema.runs);
+  const rows = await (wsId ? q.where(eq(schema.runs.workstreamId, wsId)) : q).orderBy(desc(schema.runs.startedAt)).limit(limit);
   // A run that says "running" but is not in memory died with its server process (a redeploy mid-run): show it, and
   // store it, as stopped, so history never lists a run that is running forever.
   const orphans = rows.filter((r) => r.status === "running" && !getRun(r.id));

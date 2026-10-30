@@ -2,6 +2,7 @@
 
 import { DitherNumber } from "@/components/dithercn/dither-number";
 import { fmtCost, fmtSecs, fmtTokens, type RunView, type ViewStatus } from "@/lib/run-view";
+import { RunPicker } from "./run-picker";
 import { cx } from "./ui";
 
 const PILL: Record<ViewStatus, { label: string; cls: string }> = {
@@ -18,7 +19,7 @@ const PILL: Record<ViewStatus, { label: string; cls: string }> = {
 
 export type RunMode = "lanes" | "trace";
 
-export function RunHeader({ view, now, fallbackTitle, runCapUsd, mode, onMode }: { view: RunView; now: number; fallbackTitle: string; runCapUsd?: number; mode?: RunMode; onMode?: (m: RunMode) => void }) {
+export function RunHeader({ view, now, fallbackTitle, runCapUsd, mode, onMode, picker }: { view: RunView; now: number; fallbackTitle: string; runCapUsd?: number; mode?: RunMode; onMode?: (m: RunMode) => void; /** the run picker: this workstream's runs, and what to do when one is picked */ picker?: { workstreamId: string; runId: string | null; onPick: (id: string) => void } }) {
   const pill = view.capHit ? { label: "Cap hit", cls: "bg-red-500/15 text-red-300" } : PILL[view.status];
   const frac = runCapUsd ? Math.min(1, view.costUsd / runCapUsd) : 0;
   const elapsed = view.endedMs ?? (view.active ? now - view.startedAt : view.lastTMs);
@@ -31,6 +32,7 @@ export function RunHeader({ view, now, fallbackTitle, runCapUsd, mode, onMode }:
         {(view.status === "running" || view.status === "planning") && <span className="size-1.5 animate-pulse rounded-full bg-emerald-400 motion-reduce:animate-none" />}
         {pill.label}
       </span>
+      {picker && <RunPicker workstreamId={picker.workstreamId} runId={picker.runId} startedAt={hasRun ? view.startedAt : 0} onPick={picker.onPick} />}
       {hasRun && mode && onMode && (
         <div role="group" aria-label="Run view" className="flex h-7 shrink-0 items-center rounded-full bg-white/8 p-0.5 text-[12px] font-bold">
           {(["lanes", "trace"] as const).map((m) => (

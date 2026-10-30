@@ -25,7 +25,7 @@ import { Rail } from "./rail";
 import { RunHeader, type RunMode } from "./run-header";
 import { cue, SoundToggle, useRunCues, useSound } from "./sound";
 import { Timeline, type SegRef } from "./timeline";
-import { Trace } from "./trace";
+import { Trace, TraceDock } from "./trace";
 import { isFilter, type TraceFilter } from "@/lib/trace";
 import { Transcript } from "./transcript";
 import { cx } from "./ui";
@@ -48,6 +48,8 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
   const [traceSpan, setTraceSpan] = useState<string | null>(null);
   const [traceFilter, setTraceFilter] = useState<TraceFilter>("all");
   const [hoverSeg, setHoverSeg] = useState<SegRef | null>(null);
+  // Fill: the trace takes the whole main column and the chat hides (remembered per browser)
+  const [traceFill, setTraceFill] = useState(false);
   const [modeReady, setModeReady] = useState(false);
   const [budget, setBudget] = useState<{ todayUsd: number; dayCapUsd: number; runCapUsd: number; mock?: boolean } | undefined>(initialBudget);
   const [notice, setNotice] = useState<string | null>(null);
@@ -91,6 +93,11 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     const v = q.get("view");
     if (v === "trace" || v === "lanes") m = v;
     setRunMode(m);
+    try {
+      setTraceFill(window.localStorage.getItem("nimbus.traceFill") === "1");
+    } catch {
+      /* no storage: the chat stays */
+    }
     const f = q.get("filter");
     if (isFilter(f)) setTraceFilter(f);
     setTraceSpan(q.get("span"));
@@ -100,6 +107,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     if (!modeReady) return;
     try {
       window.localStorage.setItem("nimbus.runView", runMode);
+      window.localStorage.setItem("nimbus.traceFill", traceFill ? "1" : "0");
     } catch {
       /* not remembered */
     }
@@ -109,7 +117,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     put("span", runMode === "trace" ? traceSpan : null);
     put("filter", runMode === "trace" && traceFilter !== "all" ? traceFilter : null);
     if (u.href !== window.location.href) window.history.replaceState(null, "", u);
-  }, [modeReady, runMode, traceSpan, traceFilter]);
+  }, [modeReady, runMode, traceFill, traceSpan, traceFilter]);
 
   const ws = workstreams.find((w) => w.id === selectedId);
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
@@ -421,24 +429,25 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
         </span>
         <span className="flex-1" />
         <StatusPill runs={active.runs} fetchedAt={active.fetchedAt} reload={active.reload} currentRunId={runId} onOpenRun={(wsId, rid) => openRun(wsId, rid)} />
-        <div className="relative">
-          <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="flex h-8 items-center gap-1.5 rounded-md px-2 text-[12px] font-bold text-neutral-300 hover:bg-white/10 hover:text-neutral-100">
-            <Compass className="size-4" aria-hidden="true" /> <span className="hidden sm:inline">Take the tour</span>
-          </button>
-          {nudge && !touring && (
-            <div className="nb-rise-fast absolute right-0 top-full z-40 mt-2 flex items-center gap-1 whitespace-nowrap rounded-full border border-white/10 bg-neutral-900/92 py-1 ps-3 pe-1 text-[12px] font-bold text-neutral-200 shadow-lg backdrop-blur-md">
-              <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="hover:text-white">
-                New here? 60-second tour
-              </button>
-              <button type="button" aria-label="Dismiss the tour hint" onClick={dismissNudge} className="grid size-6 place-items-center rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
-                ×
-              </button>
-            </div>
-          )}
-        </div>
+        {/* the one-time chip sits in the header row, left of the tour button: below the header it covered the run header and the Inspector's tabs; on a phone the tour button alone is enough */}
+        {nudge && !touring && (
+          <div className="nb-rise-fast hidden shrink-0 items-center gap-1 whitespace-nowrap rounded-full border border-white/10 bg-neutral-900/92 py-0.5 ps-3 pe-0.5 text-[12px] font-bold text-neutral-200 md:flex">
+            <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="hover:text-white">
+              New here? 60-second tour
+            </button>
+            <button type="button" aria-label="Dismiss the tour hint" onClick={dismissNudge} className="grid size-6 place-items-center rounded-full text-neutral-400 hover:bg-white/10 hover:text-neutral-100">
+              ×
+            </button>
+          </div>
+        )}
+        <button type="button" onClick={() => (dismissNudge(), setTouring(true))} className="flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2 text-[12px] font-bold text-neutral-300 hover:bg-white/10 hover:text-neutral-100">
+          <Compass className="size-4" aria-hidden="true" /> <span className="hidden sm:inline">Take the tour</span>
+        </button>
         <SoundToggle enabled={sound.enabled} onToggle={sound.toggle} />
-        <button type="button" aria-label="Inspector" data-cuelume-open={drawer === "inspector" ? undefined : ""} data-cuelume-close={drawer === "inspector" ? "" : undefined} onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("size-8 place-items-center rounded-md text-neutral-300 hover:bg-white/10 xl:hidden", ws && isPhone ? "hidden" : "grid")}>
-          <PanelRight className="size-4" />
+        <button type="button" aria-label="Inspector" data-cuelume-open={drawer === "inspector" ? undefined : ""} data-cuelume-close={drawer === "inspector" ? "" : undefined} onClick={() => setDrawer(drawer === "inspector" ? null : "inspector")} className={cx("h-8 min-w-8 shrink-0 place-items-center rounded-md text-neutral-300 hover:bg-white/10 md:px-2 xl:hidden", ws && isPhone ? "hidden" : "flex items-center justify-center md:gap-1.5")}>
+          <PanelRight className="size-4" aria-hidden="true" />
+          {/* from 768 to 1279 px the Inspector is a drawer: say what is in it (an icon alone hid the Artifact, Agent I/O and Memory tabs) */}
+          <span className="hidden whitespace-nowrap text-[11px] font-bold md:inline">Doc · I/O · Memory</span>
         </button>
       </div>
 
@@ -477,8 +486,9 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
             <Overview titles={Object.fromEntries(workstreams.map((w) => [w.id, w.title]))} onOpenRun={openRun} refreshKey={view.status === "done" ? 1 : 0} empty={<PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />} />
           ) : (
             <>
-              <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} mode={runMode} onMode={setRunMode} />
+              <RunHeader view={view} now={now} fallbackTitle={ws.title} runCapUsd={budget?.runCapUsd} mode={runMode} onMode={setRunMode} picker={{ workstreamId: ws.id, runId, onPick: (id) => openRun(ws.id, id) }} />
               {(!isPhone || phoneTab === "run") && traceOn && (
+                <TraceDock fill={traceFill || isPhone}>
                 <Trace
                   key={runId}
                   events={events}
@@ -493,14 +503,17 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
                   filter={traceFilter}
                   onFilter={setTraceFilter}
                   phone={isPhone}
+                  fill={traceFill}
+                  onFill={() => setTraceFill((v) => !v)}
                   reducedMotion={reduced}
                 />
+                </TraceDock>
               )}
               {(!isPhone || phoneTab === "run") && !traceOn && <Timeline fill={isPhone} view={view} now={now} selected={selSeg} onSelect={selectSeg} onClearSelection={() => setSelSeg(null)} scrubMs={scrub} onScrub={(ms) => (setReplaying(false), setScrub(ms))} replay={{ playing: replaying, speed, onSpeed: setSpeed, onToggle: () => (replaying ? setReplaying(false) : (setScrub(0), setReplaying(true))) }} collapsed={collapsed && !isPhone} onToggle={() => setCollapsed((c) => !c)} reducedMotion={reduced} />}
               {isPhone && phoneTab === "chat" && tray}
               {(!isPhone || phoneTab === "chat") && (
               <>
-              {(isPhone || !traceOn) && <Transcript
+              {(isPhone || !(traceOn && traceFill)) && <Transcript
                 waitingForCrew={!!runId && (events.length === 0 || (view.status === "planning" && !view.plan))}
                 view={shown}
                 now={now}
