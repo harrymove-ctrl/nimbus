@@ -40,7 +40,7 @@ function structure(name: string, events: AnyRunEvent[]) {
   return t;
 }
 
-console.log("— Recorded runs");
+console.log("· Recorded runs");
 const recorded: [string, AnyRunEvent[]][] = [];
 const norm = (list: Record<string, unknown>[], runId: string) => list.map((e, seq) => ({ runId, seq, ...e })) as unknown as AnyRunEvent[];
 recorded.push(["demo-run", norm(JSON.parse(readFileSync("fixtures/demo-run.events.json", "utf8")), "run_demo")]);
@@ -50,7 +50,7 @@ for (const [name, events] of recorded) {
   check(`${name}: old events carry no usage.ms, so the model spans fall back to the segment's duration for tokens per second`, t.spans.filter((s) => s.model && s.model.out > 0).every((s) => s.model!.ms === undefined && (spanDur(s) === 0 || s.model!.tokPerS !== undefined)));
 }
 
-console.log("— A live mock run (Checkout)");
+console.log("· A live mock run (Checkout)");
 let live: Trace;
 {
   const ws = WORKSTREAMS.find((w) => w.id === "ws-checkout")!;
@@ -93,7 +93,7 @@ let live: Trace;
   check(`the plan gate (${gate ? spanDur(gate) : "none"} ms until you approve) and the approval waits are spans of their own`, planGate > 0 && !!gate && spanDur(gate) >= 300 && live.spans.some((s) => s.kind === "wait" && s.wait?.what === "approval" && s.wait.decision === "approved"));
 }
 
-console.log("— Filters");
+console.log("· Filters");
 {
   const ids = (f: (typeof FILTERS)[number]["key"]) => filterIds(live, f);
   const counts = filterCounts(live);
