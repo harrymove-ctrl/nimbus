@@ -60,6 +60,12 @@ export function firstPrompt(ctx: RunCtx, brief: string, role?: AgentRole) {
   if (ctx.skill.trim()) parts.push(`SKILL.md for this workstream:\n${ctx.skill.trim()}`);
   if (ctx.memories.length) parts.push(`Memories from earlier runs:\n${ctx.memories.map((m) => `- ${m}`).join("\n")}`);
   parts.push(`Goal: ${ctx.goal}`);
+  // a follow-up (C2): the finished run's result and what the person asked next, so the crew edits instead of starting over
+  if (ctx.followUp) {
+    const arts = ctx.followUp.artifacts.map((a) => `[${a.artifactId} v${a.version}: ${a.title}]\n${a.content.slice(0, 4000)}`).join("\n\n");
+    parts.push(`This run follows up on a finished run of this goal.${arts ? ` Its result, latest versions:\n${arts}` : " It left no artifact."}`);
+    parts.push(`The person's follow-up: ${ctx.followUp.text}\nDo only what the follow-up asks. ${role === "orchestrator" ? "Hand off to the one worker it needs, then finish; no new plan." : "Write the next version of the same artifactId."}`);
+  }
   const attached = attachedSentence(ctx.attached ?? [], ctx.workspace);
   if (attached) parts.push(attached);
   parts.push(`Your brief: ${brief}`);

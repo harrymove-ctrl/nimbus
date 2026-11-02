@@ -179,10 +179,11 @@ async function onMessage(m: TgMessage) {
   if ("error" in turn) return void (await reply(chat, turn.error.message));
   // Only the turn's first piece is read: the reply itself. The rest of a turn follows the run as text for /v1 clients; here the
   // progress message below and the cards notify.ts pushes do that job, with buttons.
-  if (turn.intent === "run" && turn.runId) {
+  // a follow-up that started a continuation run (C2) is followed like a new run; one answered from the run is a reply
+  const started = turn.runId ? getRun(turn.runId) : undefined;
+  if (turn.runId && (turn.intent === "run" || (turn.intent === "followup" && started && !started.finished))) {
     await turn.pieces.return(undefined);
-    const run = getRun(turn.runId);
-    if (run) void followRun(run, chat).catch((e) => console.error("[nimbus] telegram progress failed:", e instanceof Error ? e.message : e));
+    if (started) void followRun(started, chat).catch((e) => console.error("[nimbus] telegram progress failed:", e instanceof Error ? e.message : e));
     return;
   }
   const first = await turn.pieces.next();

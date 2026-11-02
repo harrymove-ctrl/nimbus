@@ -39,7 +39,8 @@
     "check:templates": "node --import tsx scripts/check-templates.mts",
     "check:trace": "node --env-file-if-exists=.env.local --import tsx scripts/check-trace.mts",
     "check:inbox": "node --env-file-if-exists=.env.local --import tsx scripts/check-inbox.mts",
-    "check:result": "node --env-file-if-exists=.env.local --import tsx scripts/check-result.mts"
+    "check:result": "node --env-file-if-exists=.env.local --import tsx scripts/check-result.mts",
+    "check:followup": "node --env-file-if-exists=.env.local --import tsx scripts/check-followup.mts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^3.0.79",

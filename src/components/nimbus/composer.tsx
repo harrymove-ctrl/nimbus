@@ -55,6 +55,8 @@ export type ComposerProps = {
   onCancel: () => void;
   onStop: () => void;
   onSteer: (text: string) => void;
+  /** C2: a message on a finished run follows it up (answered from the run, or a continuation run); absent = always a new run */
+  onFollowUp?: (text: string) => void;
   onAnswer: (text: string) => void;
   onApproveFirst: () => void;
   onNew?: () => void;
@@ -105,6 +107,9 @@ export function Composer(p: ComposerProps) {
   const cache = useRef(new Map<string, { cost: number; rest: string }>());
 
   const state = deriveComposerState(view, p.draft, p.files, menuClosed);
+  // C2: on a finished run the composer follows it up, until "Start fresh" (per run) brings back today's new-run behaviour
+  const [freshFor, setFreshFor] = useState<string | null>(null);
+  const following = !!p.onFollowUp && !!view.runId && view.status === "done" && !view.active && freshFor !== view.runId && (state === "idle" || state === "drafting" || state === "slash");
   const live = state === "running" || state === "asked" || state === "waiting" || state === "plan";
   const locked = live || state === "planning";
   const onLocked = () => {
@@ -192,6 +197,7 @@ export function Composer(p: ComposerProps) {
     if (state === "asked") return hasText && p.onAnswer(p.draft.trim());
     if (state === "running" || state === "waiting") return hasText && p.onSteer(p.draft.trim());
     if (state === "idle") return;
+    if (following && !max) return hasText && p.onFollowUp?.(p.draft.trim());
     p.onRun({ max });
   };
 
@@ -242,15 +248,23 @@ export function Composer(p: ComposerProps) {
       case "asked":
         return { label: "REPLY", disabled: !hasText, onClick: () => send() };
       case "idle":
-        return { label: "RUN", disabled: true, onClick: () => {} };
+        return { label: following ? "FOLLOW UP" : "RUN", disabled: true, onClick: () => {} };
       default:
-        return { label: "RUN", disabled: false, onClick: () => send() };
+        return following ? { label: "FOLLOW UP", disabled: false, onClick: () => send() } : { label: "RUN", disabled: false, onClick: () => send() };
     }
   })();
 
   return (
     <div className="mx-auto w-full max-w-[720px]">
-      {state === "idle" && (
+      {following && (
+        <div className="mb-2 flex items-center justify-between gap-2 px-1 text-[12.5px] font-semibold text-neutral-400">
+          <span>Ask about this run or ask for a change; a change starts a linked follow-up run.</span>
+          <button type="button" data-cuelume-tap="" data-cuelume-emphasis="subtle" onClick={() => (setFreshFor(view.runId ?? null), areaRef.current?.focus())} className="shrink-0 font-bold text-neutral-300 underline decoration-white/30 underline-offset-4 hover:text-neutral-100">
+            Start fresh
+          </button>
+        </div>
+      )}
+      {state === "idle" && !following && (
         <div className="mb-2 flex flex-wrap gap-1.5" role="group" aria-label="Goal templates">
           {TEMPLATES.map((t, i) => (
             <button
@@ -314,7 +328,7 @@ export function Composer(p: ComposerProps) {
           readOnly={state === "planning"}
           rows={1}
           aria-label="Message the crew"
-          placeholder={PLACEHOLDER[state]}
+          placeholder={following ? "Follow up on this run" : PLACEHOLDER[state]}
           className="max-h-40 min-h-11 w-full flex-auto resize-none bg-transparent px-4 py-3 text-[15px]/[22px] font-medium text-neutral-100 outline-none [field-sizing:content] placeholder:text-neutral-500"
         />
 
@@ -380,7 +394,7 @@ export function Composer(p: ComposerProps) {
         </div>
       </div>
       <p className="mt-1.5 hidden px-1 text-center text-[11px] font-medium text-neutral-500 sm:block">
-        Enter {state === "plan" ? "approves the plan" : state === "running" || state === "waiting" ? "steers" : state === "asked" ? "replies" : "runs"} · Shift+Enter newline · ⌘Enter runs on Max · Esc clears · / commands · @ agents
+        Enter {state === "plan" ? "approves the plan" : state === "running" || state === "waiting" ? "steers" : state === "asked" ? "replies" : following ? "follows up" : "runs"} · Shift+Enter newline · ⌘Enter {following ? "starts a new run on Max" : "runs on Max"} · Esc clears · / commands · @ agents
       </p>
     </div>
   );

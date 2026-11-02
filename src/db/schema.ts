@@ -38,6 +38,8 @@ export const runs = sqliteTable("runs", {
   model: text("model"),
   /** tokens and spend per tier, for the Overview charts */
   usageByTier: text("usage_by_tier", { mode: "json" }).$type<UsageByTier>(),
+  /** a follow-up on a finished run (docs/CONVERSATION.md C2): the run it continues */
+  parentRunId: text("parent_run_id"),
 });
 
 export const runEvents = sqliteTable(

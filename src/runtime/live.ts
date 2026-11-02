@@ -6,6 +6,8 @@ import { dataDir, getDb, retryBusy, schema } from "@/db";
 import type { AnyRunEvent, PayloadMap, ProposedAction, RunEventType, PlanStep } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
 import { DEFAULT_ROLES, crewOf, isDefaultCrew } from "@/lib/roles";
+import { getTemplate } from "@/lib/templates";
+import { WORKSTREAMS } from "@/lib/workstreams";
 import { modelMode, setMockCrew } from "@/lib/tokenfactory";
 import { SpendCapError, inflight } from "./budget";
 import { prepareAttachments } from "./attachments";
@@ -160,14 +162,24 @@ export function createLiveRun(input: StartRunInput): RunHandle {
     const freeze = process.env.NIMBUS_FREEZE_CONTEXT === "1";
     ctx.skill = freeze ? "" : await loadSkill(input.workstreamId);
     ctx.memories = freeze ? [] : await topMemories(input.workstreamId, input.goal);
-    const [crew] = await retryBusy(() => db.select({ roles: schema.workstreams.roles }).from(schema.workstreams).where(eq(schema.workstreams.id, input.workstreamId)));
+    const [crew] = await retryBusy(() => db.select({ roles: schema.workstreams.roles, goal: schema.workstreams.goal }).from(schema.workstreams).where(eq(schema.workstreams.id, input.workstreamId)));
     ctx.roles = crewOf(crew?.roles);
     // mock mode: a crew of its own without a scripted fixture plans and spawns its own roles (tokenfactory.ts)
     if (!isDefaultCrew(ctx.roles)) setMockCrew(input.workstreamId, crewNames(ctx), ctx.skill);
     ctx.attached = await prepareAttachments(ctx, input.files);
     if (ctx.memories.length) ctx.script = `${input.workstreamId}~2`; // mock mode: run two plays its "~2" scripts where they exist
-    await retryBusy(() => db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt, model: modelMode() }));
-    emit("run.start", "orchestrator", "orchestrator", { title: input.title, workstreamId: input.workstreamId, goal: input.goal, startedAt, trigger: input.trigger ?? "manual", learned: { memories: ctx.memories.length, policies: policySection(ctx.skill).length } });
+    const fu = input.followUp;
+    if (fu) {
+      // C2: the continuation writes the next version of the parent's artifacts (morning-brief v1 → v2), and the mock plays "+followup"
+      ctx.followUp = fu;
+      for (const a of fu.artifacts) {
+        ctx.artifactVersions.set(a.artifactId, a.version);
+        ctx.artifactContent.set(a.artifactId, a.content);
+      }
+      ctx.script = `${input.workstreamId}+followup`;
+    } else if (typedGoal(input, crew?.goal ?? "")) ctx.intake = { wsGoal: crew?.goal ?? "" };
+    await retryBusy(() => db.insert(schema.runs).values({ id, workstreamId: input.workstreamId, title: input.title, goal: input.goal, status: "running", trigger: input.trigger ?? "manual", startedAt, model: modelMode(), parentRunId: fu?.parentRunId ?? null }));
+    emit("run.start", "orchestrator", "orchestrator", { title: input.title, workstreamId: input.workstreamId, goal: input.goal, startedAt, trigger: input.trigger ?? "manual", learned: { memories: ctx.memories.length, policies: policySection(ctx.skill).length }, ...(fu ? { parentRunId: fu.parentRunId, followUp: fu.text } : {}) });
 
     let status: "done" | "failed" | "cancelled" | "stopped" = "done";
     try {
@@ -298,8 +310,23 @@ export function createLiveRun(input: StartRunInput): RunHandle {
   };
 }
 
+/**
+ * C1: is this a goal a person typed, so the Orchestrator may ask its intake questions first? Not for scheduled runs or
+ * jobs, and not when a seeded or template workstream runs its own (complete) goal, or a short command that names it
+ * ("run morning brief"). A workstream a person made from their own words is checked as typed.
+ */
+function typedGoal(input: StartRunInput, wsGoal: string): boolean {
+  const trigger = input.trigger ?? "manual";
+  if (trigger !== "manual" && trigger !== "chat" && trigger !== "telegram") return false;
+  const tpl = input.workstreamId.match(/^ws-u-(.+)-[0-9a-f]{4}$/)?.[1];
+  const preset = WORKSTREAMS.some((w) => w.id === input.workstreamId) || (!!tpl && !!getTemplate(tpl));
+  if (!preset) return true;
+  const goal = input.goal.trim();
+  return goal !== wsGoal.trim() && goal.split(/\s+/).length > 6;
+}
+
 /** A short plain-text digest of the run for the learner. */
-function transcriptOf(events: AnyRunEvent[]): string {
+export function transcriptOf(events: AnyRunEvent[]): string {
   const lines: string[] = [];
   for (const e of events) {
     if (e.type === "message" && !e.payload.card) lines.push(`${e.payload.role === "user" ? "person" : e.agentInstance}: ${e.payload.text}`);

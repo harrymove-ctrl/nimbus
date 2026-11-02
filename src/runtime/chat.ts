@@ -1,5 +1,5 @@
 // The conversation layer behind POST /v1/chat/completions when `model` is "nimbus" (docs/CHAT-APPS.md Phase A):
-// one message in, one intent out (approve, deny, answer, status, ask, run, help), an answer short enough for a phone.
+// one message in, one intent out (approve, deny, answer, status, ask, run, followup, help), an answer short enough for a phone.
 // Rules decide first (free, instant); only a message no rule recognises goes to the cached Nano classifier.
 import { and, desc, eq } from "drizzle-orm";
 import { generateText } from "ai";
@@ -11,11 +11,14 @@ import { WORKSTREAMS, type Workstream } from "@/lib/workstreams";
 import { checkDayBudget } from "./budget";
 import { lastUserText, messagesOf, textOf, type ChatBody, type Usage } from "./chat-api";
 import { PHONE_MAX, ago, phoneResultText, pickDoc, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
+import { followUp } from "./followup";
 import { markFollowed } from "./notify";
 import { cacheGet, cachePut, sha } from "./router";
 import { getRun, liveRuns, startRun, type RunHandle } from "./source";
 
-export type IntentName = "approve" | "deny" | "answer" | "status" | "ask" | "run" | "help";
+export type IntentName = "approve" | "deny" | "answer" | "status" | "ask" | "run" | "followup" | "help";
+/** What the rules know about the conversation: something waits for the person, or its last run is done (C2: a follow-up). */
+export type IntentCtx = { approval: boolean; question: boolean; followup?: boolean; followupWs?: string | null };
 export type Intent = { name: IntentName; note?: string; all?: boolean; ws?: Workstream | null; via: "rule" | "classifier" };
 
 export type Thread = { key: string; lastRunId: string | null; pendingApprovalId: string | null; pendingQuestionId: string | null; updatedAt: number };
@@ -110,7 +113,7 @@ const ASK_START = /^(what|when|where|why|how|did|does|do you|is|are|was|were|whi
 const WORDS = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
 /** Rules first. Returns null when no rule is sure, which sends the message to the classifier. */
-export function ruleIntent(raw: string, ctx: { approval: boolean; question: boolean }): Intent | null {
+export function ruleIntent(raw: string, ctx: IntentCtx): Intent | null {
   const text = raw.trim();
   const t = text.replace(/[!.\s]+$/, "");
   const intent = (name: IntentName, extra: Partial<Intent> = {}): Intent => ({ name, via: "rule", ...extra });
@@ -124,31 +127,33 @@ export function ruleIntent(raw: string, ctx: { approval: boolean; question: bool
   if (d && (WORDS(t) <= 12 || /[:,]/.test(t))) return intent("deny", { note: d[4]?.trim() || undefined });
   if (ctx.question) return intent("answer"); // both wait: explicit approve/deny words went to the approval above
   const ws = matchWorkstream(t);
+  // C2: the thread's last run is done, and this is not a new run verb, a bare workstream name, or about another workstream
+  if (ctx.followup && !RUN_VERB.test(t) && !(ws && WORDS(t) <= 4) && (!ws || ws.id === ctx.followupWs)) return intent("followup", { ws });
   if (RUN_VERB.test(t) && !/\?$/.test(t)) return intent("run", { ws });
   if (/\?$/.test(t) || ASK_START.test(t)) return intent("ask", { ws });
   if (ws && WORDS(t) <= 4) return intent("run", { ws });
   return null;
 }
 
-const INTENT_NAMES: IntentName[] = ["approve", "deny", "answer", "status", "ask", "run", "help"];
+const INTENT_NAMES: IntentName[] = ["approve", "deny", "answer", "status", "ask", "run", "followup", "help"];
 
 /** Nano classifier for what the rules could not place. Mock mode has no model to call: a fixed, documented fallback. */
-async function classify(text: string, ctx: { approval: boolean; question: boolean }): Promise<{ name: IntentName; usage: { in: number; out: number } }> {
+async function classify(text: string, ctx: IntentCtx): Promise<{ name: IntentName; usage: { in: number; out: number } }> {
   if (modelMode() === "mock") return { name: matchWorkstream(text) ? "run" : "ask", usage: { in: 0, out: 0 } };
-  const prompt = `You route one chat message sent to a work assistant. Reply with exactly one word from: approve, deny, answer, status, ask, run, help.\napprove/deny = decide a waiting request${ctx.approval ? " (one is waiting)" : ""}; answer = reply to the crew's question${ctx.question ? " (one is waiting)" : ""}; status = what is running or waiting; ask = a question about past work; run = start work now; help = what can you do.\nMessage: ${text.slice(0, 400)}`;
+  const prompt = `You route one chat message sent to a work assistant. Reply with exactly one word from: approve, deny, answer, status, ask, run,${ctx.followup ? " followup," : ""} help.\napprove/deny = decide a waiting request${ctx.approval ? " (one is waiting)" : ""}; answer = reply to the crew's question${ctx.question ? " (one is waiting)" : ""}; status = what is running or waiting; ask = a question about past work; run = start work now;${ctx.followup ? " followup = a question or a change about the run that just finished;" : ""} help = what can you do.\nMessage: ${text.slice(0, 400)}`;
   const key = sha(`intent|${prompt}`);
   const hit = await cacheGet(key);
   const word = hit ? String((hit.response as { text: string }).text) : "";
-  if (INTENT_NAMES.includes(word as IntentName)) return { name: word as IntentName, usage: { in: 0, out: 0 } };
+  if (INTENT_NAMES.includes(word as IntentName) && (word !== "followup" || ctx.followup)) return { name: word as IntentName, usage: { in: 0, out: 0 } };
   const r = await generateText({ model: getModel({ tier: "nano", role: "router", turn: 1 }), prompt, maxOutputTokens: 8, maxRetries: 0 });
   const got = r.text.trim().toLowerCase().split(/[^a-z]+/)[0] as IntentName;
-  const name = INTENT_NAMES.includes(got) ? got : "ask";
+  const name = INTENT_NAMES.includes(got) && (got !== "followup" || ctx.followup) ? got : "ask";
   const usage = { in: r.usage.inputTokens ?? 0, out: r.usage.outputTokens ?? 0 };
   await cachePut(key, TIERS.nano, { text: name }, usage);
   return { name, usage };
 }
 
-export async function routeIntent(text: string, ctx: { approval: boolean; question: boolean }): Promise<{ intent: Intent; usage: { in: number; out: number } }> {
+export async function routeIntent(text: string, ctx: IntentCtx): Promise<{ intent: Intent; usage: { in: number; out: number } }> {
   const rule = ruleIntent(text, ctx);
   if (rule) return { intent: rule, usage: { in: 0, out: 0 } };
   const c = await classify(text, ctx);
@@ -158,7 +163,7 @@ export async function routeIntent(text: string, ctx: { approval: boolean; questi
 /* ------------------------------------------------------------------ the turn */
 
 const QUESTION_WAIT_MS = () => Number(process.env.NIMBUS_CHAT_QUESTION_WAIT_MS) || 10 * 60_000;
-const HELP_TEXT = "Nimbus: your crew, from this chat.\n• run morning brief\n• what needs me?\n• what did the radar find today?\n• approve  /  deny: too long";
+const HELP_TEXT = "Nimbus: your crew, from this chat.\n• run morning brief\n• what needs me?\n• what did the radar find today?\n• approve  /  deny: too long\n• after a run: shorter, top three only";
 
 async function* say(text: string): AsyncGenerator<string> {
   yield text;
@@ -180,7 +185,8 @@ export async function handleChat(body: ChatBody, o: { token: string; origin: str
 
   const none = { target: null, others: 0 };
   const [apr, qst] = o.ws ? [none, none] : await Promise.all([findTarget(th, "approval"), findTarget(th, "question")]);
-  const { intent, usage: u } = o.ws ? { intent: { name: "run", ws: o.ws, via: "rule" } as Intent, usage: { in: 0, out: 0 } } : await routeIntent(text, { approval: !!apr.target, question: !!qst.target });
+  const last = o.ws || apr.target || qst.target ? null : await lastDoneRun(th);
+  const { intent, usage: u } = o.ws ? { intent: { name: "run", ws: o.ws, via: "rule" } as Intent, usage: { in: 0, out: 0 } } : await routeIntent(text, { approval: !!apr.target, question: !!qst.target, followup: !!last, followupWs: last?.workstreamId ?? null });
   tokens = { in: u.in, out: u.out };
 
   switch (intent.name) {
@@ -233,6 +239,24 @@ export async function handleChat(body: ChatBody, o: { token: string; origin: str
       return done("ask", say(a.text));
     }
 
+    case "followup": {
+      // C2: answered from the finished run, or a continuation run this conversation now follows
+      if (!last) return done("followup", say("There is no finished run here to follow up.\nSay \"run <name>\" to start one."));
+      const r = await followUp(last.id, text, { via });
+      if (r.kind === "error") return r.status === 429 ? { error: { status: 429, message: r.error, code: "day_cap" } } : done("followup", say(r.error));
+      if (r.kind === "answer") {
+        tokens = { in: tokens.in + r.usage.in, out: tokens.out + r.usage.out };
+        const link = runLink(last.id, base);
+        return done("followup", say(`${toPhone(r.text, { maxLines: 6, maxChars: PHONE_MAX - link.length - 2 })}\n${link}\n`), { runId: last.id, link });
+      }
+      await saveThread(key, { lastRunId: r.run.id, pendingApprovalId: null, pendingQuestionId: null });
+      const ack = `On it: ${r.title}.\n`;
+      return done("followup", (async function* () {
+        yield ack;
+        yield* follow(r.run, { key, base, from: 0, used: ack.length });
+      })(), { runId: r.run.id, link: runLink(r.run.id, base) });
+    }
+
     case "run": {
       const ws = intent.ws;
       if (!ws) return done("run", say(`Which one?\n${WORKSTREAMS.filter((w) => !w.archived).map((w, i) => `${i + 1}) ${w.title}`).join("\n")}\nSay "run <name>".`));
@@ -247,6 +271,19 @@ export async function handleChat(body: ChatBody, o: { token: string; origin: str
       })(), { runId: run.id, link: runLink(run.id, base) });
     }
   }
+}
+
+/** The thread's last run, when it has ended with "done": a message that is not a new run is a follow-up on it (C2). */
+async function lastDoneRun(th: Thread): Promise<{ id: string; workstreamId: string } | null> {
+  if (!th.lastRunId) return null;
+  const live = getRun(th.lastRunId);
+  if (live) {
+    const end = live.events.find((e) => e.type === "run.end");
+    return end?.type === "run.end" && end.payload.status === "done" ? { id: live.id, workstreamId: live.workstreamId } : null;
+  }
+  const db = await getDb();
+  const [r] = await db.select({ id: schema.runs.id, workstreamId: schema.runs.workstreamId, status: schema.runs.status }).from(schema.runs).where(eq(schema.runs.id, th.lastRunId));
+  return r?.status === "done" ? { id: r.id, workstreamId: r.workstreamId } : null;
 }
 
 /* ------------------------------------------------------------------ following a run (A5, A6) */
