@@ -38,10 +38,10 @@ const short = (rows: Conversation[]) => rows.map((r) => `${r.runId.slice(0, 10)}
 const db = await getDb();
 for (const t of [schema.runs, schema.runEvents, schema.approvals, schema.artifacts]) await db.delete(t);
 
-console.log("— Doors (pure)");
+console.log("· Doors (pure)");
 check("triggers map to doors: manual web, cron schedule, telegram telegram, chat chat, job terminal, anything else api", doorOf("manual") === "web" && doorOf("cron") === "schedule" && doorOf("telegram") === "telegram" && doorOf("chat") === "chat" && doorOf("job") === "terminal" && doorOf("mcp") === "api");
 
-console.log("— Empty");
+console.log("· Empty");
 {
   const e = await inbox();
   check("an empty database gives no rows and zero counts (the UI shows the starter cards)", e.status === 200 && e.rows.length === 0 && e.counts.all === 0 && e.counts.needs === 0, JSON.stringify(e).slice(0, 300));
@@ -49,7 +49,7 @@ console.log("— Empty");
   check("an unknown filter is a 400", bad.status === 400);
 }
 
-console.log("— Three doors, one waiting");
+console.log("· Three doors, one waiting");
 // the Telegram run starts first, so it is the oldest: it must still sit at the top while it waits
 const tg = startRun({ workstreamId: "ws-brief", title: "Morning brief", goal: "Brief me on today\nwith the calendar first", trigger: "telegram", mode: "ask", tools: tools("ws-brief") });
 const waiting = await waitFor(() => tg.events.some((e) => e.type === "approval.request"));
@@ -90,7 +90,7 @@ await gone.settled.catch(() => {});
   check("the default filter is all", (await inbox()).rows.length === 4);
 }
 
-console.log("— Search");
+console.log("· Search");
 {
   const g = await inbox("?q=ZEBRA");
   check("q searches goals, any case ('ZEBRA' finds the web run only)", ids(g.rows).join() === web.id && g.counts.all === 1, short(g.rows));
@@ -108,7 +108,7 @@ console.log("— Search");
   check("filter and q combine (scheduled + zebra: nothing)", fq.rows.length === 0 && fq.counts.all === 1);
 }
 
-console.log("— Archived");
+console.log("· Archived");
 {
   await db.update(schema.workstreams).set({ archived: 1 }).where(eq(schema.workstreams.id, "ws-release"));
   const all = await inbox();
@@ -117,7 +117,7 @@ console.log("— Archived");
   check("restored, they are back", ids((await inbox()).rows).includes(gone.id));
 }
 
-console.log("— Approved, it leaves the top");
+console.log("· Approved, it leaves the top");
 {
   for (let i = 0; i < 6 && !tg.finished; i++) {
     const open = tg.events.filter((e) => e.type === "approval.request").map((e) => (e.type === "approval.request" ? e.payload.approvalId : ""));
@@ -129,9 +129,11 @@ console.log("— Approved, it leaves the top");
   const all = await inbox();
   const t = all.rows.find((r) => r.runId === tg.id);
   check("once approved and finished, the Telegram run is done, waits on nothing and sorts by time", t?.state === "done" && t.waiting === 0 && all.rows[0]?.runId !== tg.id && all.counts.needs === 0, short(all.rows));
+  const said = tg.events.filter((e) => e.type === "message" && !e.payload.card).at(-1);
+  check(`its \`last\` is the crew's final words, not the summary card's label ("${t?.last}")`, tg.events.some((e) => e.type === "message" && e.payload.card === "summary") && said?.type === "message" && t?.last === said.payload.text.split("\n")[0].trim(), t?.last);
 }
 
-console.log("— Scan cap");
+console.log("· Scan cap");
 {
   const old = Date.now() - 400 * 86_400_000;
   await db.insert(schema.runs).values(Array.from({ length: SCAN_CAP + 10 }, (_, i) => ({ id: `run-old-${i}`, workstreamId: "ws-audit", title: "Old", goal: `old run ${i}`, status: "done", trigger: "cron", startedAt: old + i * 1000, endedAt: old + i * 1000 + 10, model: "mock" })));

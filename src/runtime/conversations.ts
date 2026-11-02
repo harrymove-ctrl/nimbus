@@ -21,7 +21,7 @@ export type Conversation = {
   door: Door;
   /** the run's goal, first line */
   asked: string;
-  /** what is waiting on the person, else the latest message (first line), else the latest artifact title */
+  /** what is waiting on the person, else the latest message (first line, not the summary card), else the latest artifact title */
   last: string;
   costUsd: number;
   startedAt: number;
@@ -96,7 +96,8 @@ export function conversationRow(r: RunInput): Conversation {
   else {
     for (let i = r.events.length - 1; i >= 0 && !last; i--) {
       const e = r.events[i];
-      if (e.type === "message") last = firstLine((e.payload as { text: string }).text);
+      // the summary card's message is a label ("Run summary"), not something anyone said
+      if (e.type === "message" && !(e.payload as { card?: string }).card) last = firstLine((e.payload as { text: string }).text);
     }
     if (!last && r.artifacts.length) last = r.artifacts[r.artifacts.length - 1];
   }
