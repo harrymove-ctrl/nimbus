@@ -131,7 +131,8 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     else if (phoneTab === "doc") setTab((t) => (t === "memory" ? "artifact" : t));
   }, [phoneTab]);
   const restored = useRef(false);
-  const { events } = useRunEvents(runId);
+  const [followUpReload, setFollowUpReload] = useState(0);
+  const { events } = useRunEvents(runId, followUpReload);
   // another run: its spans are not this one's (the first run id, which a deep link names, keeps its span)
   const prevRunId = useRef<string | null>(null);
   useEffect(() => {
@@ -378,6 +379,20 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     void post(`/api/runs/${runId}/messages`, { text, kind: "steer" });
     setDraft("");
   };
+  // C2: a follow-up on a finished run. An answer joins that run's conversation; work opens the continuation run.
+  const followUp = async (text: string) => {
+    if (!runId || !selectedId) return;
+    setDraft("");
+    const res = await post(`/api/runs/${runId}/messages`, { text, kind: "followup" });
+    const j = (await res.json().catch(() => ({}))) as { kind?: string; runId?: string; error?: string; message?: string };
+    if (!res.ok) return void (setDraft(text), setNotice(j.message ?? j.error ?? "The follow-up did not go through."));
+    if (j.kind === "continuation" && j.runId) {
+      freshRun.current = j.runId;
+      cue("loading", { emphasis: "subtle" });
+      setRunByWs((m) => ({ ...m, [selectedId]: j.runId! }));
+      setSelSeg(null);
+    } else setFollowUpReload((n) => n + 1);
+  };
 
   const selectSeg = (s: Seg) => {
     setSelSeg({ instance: s.instance, id: s.id });
@@ -576,6 +591,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
                   onCancel={() => void stop("cancel")}
                   onStop={() => void stop("stop")}
                   onSteer={steer}
+                  onFollowUp={(t) => void followUp(t)}
                   onAnswer={(t) => view.openQuestion && answer(view.openQuestion, t)}
                   onApproveFirst={() => view.pendingApprovals[0] && void decide(view.pendingApprovals[0], "approve")}
                   onOpenTab={(t) => (setTab(t), setDrawer("inspector"))}

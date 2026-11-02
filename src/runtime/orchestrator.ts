@@ -11,6 +11,7 @@ import { SpendCapError } from "./budget";
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { dataDir } from "@/db";
+import { runIntake } from "./intake";
 import { SCHEMAS, openPr, sendMessage } from "./tools";
 
 const ORCH: AgentRef = { role: "orchestrator", instance: "orchestrator" };
@@ -167,6 +168,8 @@ export async function runOrchestrator(ctx: RunCtx): Promise<string> {
     },
   } as Exec;
 
+  // C1: a vague goal a person typed gets up to three questions in one card before the plan
+  if (ctx.intake) await runIntake(ctx);
   return runAgent(ctx, ORCH, ctx.goal, exec);
 }
 

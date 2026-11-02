@@ -3,17 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import type { AnyRunEvent } from "@/lib/events";
 
-/** Streams a run's events over SSE, resuming from the last seq on reconnect. */
-export function useRunEvents(runId: string | null) {
+/**
+ * Streams a run's events over SSE, resuming from the last seq on reconnect. A new `reload` value on the same run reads
+ * what was added after it ended (a follow-up's question and answer, C2) without replaying the rest.
+ */
+export function useRunEvents(runId: string | null, reload = 0) {
   const [events, setEvents] = useState<AnyRunEvent[]>([]);
   const [done, setDone] = useState(false);
+  const seen = useRef<{ runId: string | null; count: number }>({ runId: null, count: 0 });
 
   useEffect(() => {
-    setEvents([]);
+    const same = seen.current.runId === runId && runId !== null;
+    if (!same) {
+      setEvents([]);
+      seen.current = { runId, count: 0 };
+    }
     setDone(false);
     if (!runId) return;
     const buffer: AnyRunEvent[] = [];
-    let count = 0;
+    let count = same ? seen.current.count : 0;
     let es: EventSource | null = null;
     let finished = false;
     let flushTimer: ReturnType<typeof setTimeout> | undefined;
@@ -33,6 +41,7 @@ export function useRunEvents(runId: string | null) {
         const e = JSON.parse(m.data) as AnyRunEvent;
         if (e.seq !== count) return; // already have it (reconnect overlap)
         count++;
+        seen.current.count = count;
         buffer.push(e);
         flushTimer ??= setTimeout(flush, 40);
       };
@@ -54,7 +63,7 @@ export function useRunEvents(runId: string | null) {
       clearTimeout(retry);
       clearTimeout(flushTimer);
     };
-  }, [runId]);
+  }, [runId, reload]);
 
   return { events, done };
 }

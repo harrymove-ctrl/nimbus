@@ -1,0 +1,39 @@
+{
+ "role": "orchestrator",
+ "turns": [
+  {
+   "label": "Reading the follow-up",
+   "complexity": 2,
+   "usage": {
+    "in": 1800,
+    "out": 120
+   },
+   "toolCalls": [
+    {
+     "name": "handoff",
+     "input": {
+      "to": "writer",
+      "context": "Follow-up from the person: shorter, top three only. Write version 2 of morning-brief: the three asks that need them today, one line each. Drop the calendar table, GitHub and can-wait sections. Do not send anything."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Wrapping up",
+   "complexity": 0,
+   "usage": {
+    "in": 2200,
+    "out": 80
+   },
+   "text": "Done. Version 2 of the brief keeps the top three; nothing was sent.",
+   "toolCalls": [
+    {
+     "name": "finish",
+     "input": {
+      "summary": "Morning brief v2: the top three asks only."
+     }
+    }
+   ]
+  }
+ ]
+}

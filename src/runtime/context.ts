@@ -1,6 +1,7 @@
 import type { PayloadMap, PlanStep, ProposedAction, RunEventType } from "@/lib/events";
 import type { AgentRole } from "@/lib/models";
 import type { CrewRole } from "@/lib/roles";
+import type { FollowUpArtifact } from "./source";
 
 export type Emit = <T extends RunEventType>(type: T, agent: AgentRole, instance: string, payload: PayloadMap[T]) => void;
 
@@ -49,6 +50,10 @@ export type RunCtx = {
   /** steering notes queued since the last orchestrator turn boundary */
   drainSteering(): { id: string; text: string }[];
   ackSteering(id: string, text: string): void;
+  /** a follow-up run (C2): the person's words and the parent run's latest artifacts, in every agent's first prompt */
+  followUp?: { parentRunId: string; text: string; artifacts: FollowUpArtifact[] };
+  /** a goal a person typed (C1): the Orchestrator may ask its intake questions before it plans; the workstream's stored goal rides along */
+  intake?: { wsGoal: string };
   /** persist helpers (no-ops when the DB is unavailable) */
   saveArtifact(a: { artifactId: string; kind: string; title: string; version: number; content: string; language?: string }): Promise<void>;
 };

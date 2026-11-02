@@ -27,7 +27,7 @@ export type RunSummary = {
 export type RunEndStatus = "done" | "failed" | "cancelled" | "stopped";
 
 export interface PayloadMap {
-  "run.start": { title: string; workstreamId: string; goal: string; startedAt: number; trigger: "manual" | "cron" | "chat" | "telegram" | "job"; /** what this run loaded from earlier runs: memories in the prompt and policy lines from SKILL.md */ learned?: { memories: number; policies: number } };
+  "run.start": { title: string; workstreamId: string; goal: string; startedAt: number; trigger: "manual" | "cron" | "chat" | "telegram" | "job"; /** what this run loaded from earlier runs: memories in the prompt and policy lines from SKILL.md */ learned?: { memories: number; policies: number }; /** a follow-up (docs/CONVERSATION.md C2): the finished run it continues and what the person asked */ parentRunId?: string; followUp?: string };
   "run.end": { status: RunEndStatus; summary?: string };
   "run.error": { message: string; kind?: "spend_cap"; spentUsd?: number; capUsd?: number };
   "agent.spawn": { by: string; role: AgentRole; instance: string; brief: string };
@@ -56,6 +56,8 @@ export interface PayloadMap {
     answerTo?: string;
     /** where the person said it: "chat" (a chat app), "telegram" (the Nimbus bot) or "auto" (nobody answered in time and the crew picked an option) */
     via?: "chat" | "telegram" | "auto";
+    /** said after the run ended (C2): the person's follow-up, the crew's answer, or the continuation run it started */
+    followUp?: { continuationRunId?: string };
     card?: "summary";
     summary?: RunSummary;
   };

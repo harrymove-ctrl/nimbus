@@ -20,6 +20,13 @@ export const ROLE_TIER = {
 /** The built-in crew. A workstream may name its own roles (src/lib/roles.ts), so a role is any lane name. */
 export type BuiltinRole = keyof typeof ROLE_TIER;
 export type AgentRole = BuiltinRole | (string & {});
+/**
+ * Two small Orchestrator calls outside the hop loop (docs/CONVERSATION.md): the intake slot check of a typed goal (C1)
+ * and the follow-up on a finished run, which answers from the run or asks for a continuation run (C2).
+ */
+export const INTAKE_TIER: Tier = "nano";
+export const FOLLOWUP_TIER: Tier = "super";
+
 /** The default tier ceiling of a role: its built-in tier, Super for a role a workstream named itself. */
 export const roleTier = (role: AgentRole): Tier => (ROLE_TIER as Record<string, Tier>)[role] ?? "super";
 

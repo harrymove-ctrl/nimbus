@@ -9,6 +9,7 @@
 //
 // Needs NIMBUS_TELEGRAM_BOT_TOKEN and NIMBUS_TELEGRAM_CHAT_ID. NIMBUS_TELEGRAM_API_BASE points at a local stub in tests.
 // The token is only ever put in the request path; it is never logged.
+import { INTAKE_HEAD } from "./intake";
 import type { AnyRunEvent } from "@/lib/events";
 import { PHONE_MAX, pickDoc, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
 
@@ -104,7 +105,9 @@ async function pushCard(r: Source, w: Waiting) {
     keyboard = approvalKeyboard(r.runId, w.id);
   } else {
     const opts = w.options ?? [];
-    text = toPhone(`${r.title}: ${who(w.agent)} asks: ${w.text}\n${opts.length ? "Tap an option or type your answer." : "Reply with your answer."}\n${link}`, { maxLines: 8 });
+    // the intake card (C1) is several numbered questions: answered in one typed message, or one tap leaves them to the crew
+    const intake = w.text.startsWith(INTAKE_HEAD);
+    text = toPhone(`${r.title}: ${who(w.agent)} asks: ${w.text}\n${intake ? "Or tap below and the crew decides." : opts.length ? "Tap an option or type your answer." : "Reply with your answer."}\n${link}`, { maxLines: intake ? 10 : 8 });
     keyboard = questionKeyboard(r.runId, w.id, opts);
   }
   cards.set(key, { messageId: 0, text, runId: r.runId, title: r.title, w }); // claimed before the send: a second batch must not push it again

@@ -1,0 +1,33 @@
+{
+ "role": "writer",
+ "turns": [
+  {
+   "label": "Shortening the brief",
+   "complexity": 1,
+   "usage": {
+    "in": 2600,
+    "out": 380
+   },
+   "toolCalls": [
+    {
+     "name": "write_artifact",
+     "input": {
+      "artifactId": "morning-brief",
+      "kind": "doc",
+      "title": "Morning brief · Tue Oct 27",
+      "content": "# Morning brief · Tue Oct 27\n\n## Needs you today\n\n1. **Client · contract review: signature by Fri Nov 7.** Call at 14:00 today; Draft 1 walks through the two open clauses.\n2. **Teammate · demo link: confirm the 11:30 dry run by 5 pm.** Draft 2 confirms and sends the link.\n3. **Reviewer · login fix: shipped yet?** Draft 3: not yet, the fix is in review.\n\nEverything else can wait. Nothing was sent."
+     }
+    }
+   ]
+  },
+  {
+   "label": "Reporting",
+   "complexity": 0,
+   "usage": {
+    "in": 3000,
+    "out": 40
+   },
+   "text": "Version 2 written: the three asks, one line each."
+  }
+ ]
+}

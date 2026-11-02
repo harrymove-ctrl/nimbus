@@ -1,0 +1,24 @@
+{
+ "role": "learner",
+ "turns": [
+  {
+   "label": "Extracting memories",
+   "complexity": 0,
+   "usage": {
+    "in": 3000,
+    "out": 300
+   },
+   "toolCalls": [
+    {
+     "name": "save_learning",
+     "input": {
+      "memories": [
+       "When asked for a shorter brief, keep only the top three asks, one line each."
+      ],
+      "skill": "## Morning brief\n1. Rank by who is waiting and by the date they gave.\n2. Draft replies as artifacts; each send waits for approval.\n3. Put the calendar after the three asks; invoices and digests under \"can wait\".\n\n## Policy\n(none yet)"
+     }
+    }
+   ]
+  }
+ ]
+}

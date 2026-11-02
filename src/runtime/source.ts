@@ -16,7 +16,11 @@ export type StartRunInput = {
   trigger?: "manual" | "cron" | "chat" | "telegram" | "job";
   /** the plan is a draft until the person approves it (UI-started runs; scheduled, chat and CLI runs keep the 3 s window) */
   review?: boolean;
+  /** a follow-up on a finished run (docs/CONVERSATION.md C2): the run it continues, what the person asked, and that run's latest artifacts */
+  followUp?: { parentRunId: string; text: string; artifacts: FollowUpArtifact[] };
 };
+
+export type FollowUpArtifact = { artifactId: string; kind: string; title: string; version: number; content: string; language?: string | null };
 
 export type ApprovalDecision = { decision: "approved" | "rejected"; always?: boolean; note?: string; /** where the decision came from; "you" (the web app) when absent */ by?: "you" | "chat" | "telegram" };
 

@@ -17,12 +17,13 @@ export async function topMemories(workstreamId: string, query: string, k = 6): P
   return top.map((r) => r.text);
 }
 
-export async function saveMemories(workstreamId: string, runId: string, texts: string[]) {
+/** `tag` keeps ids apart when one run saves twice (the intake answers before the plan, the Learner after the run). */
+export async function saveMemories(workstreamId: string, runId: string, texts: string[], tag = "m") {
   if (!texts.length) return;
   const db = await getDb();
   const have = new Set((await db.select({ text: schema.memories.text }).from(schema.memories).where(eq(schema.memories.workstreamId, workstreamId))).map((r) => r.text));
   const fresh = texts.filter((t) => !have.has(t)); // the same lesson learned twice is stored once
   if (!fresh.length) return;
   const vecs = await embedTexts(fresh);
-  await db.insert(schema.memories).values(fresh.map((text, i) => ({ id: `${runId}-m${i}`, workstreamId, text, embedding: vecs[i], sourceRunId: runId, createdAt: Date.now() })));
+  await db.insert(schema.memories).values(fresh.map((text, i) => ({ id: `${runId}-${tag}${i}`, workstreamId, text, embedding: vecs[i], sourceRunId: runId, createdAt: Date.now() })));
 }
