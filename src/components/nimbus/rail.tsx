@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Archive, Clock, LayoutDashboard, MoreHorizontal, Pencil, Play, RotateCcw, Plus } from "lucide-react";
+import { Archive, Clock, Inbox as InboxIcon, LayoutDashboard, MoreHorizontal, Pencil, Play, RotateCcw, Plus } from "lucide-react";
 import type { Workstream } from "@/lib/workstreams";
 import { RailSkeleton } from "./loading";
 import { Why } from "./why";
@@ -14,6 +14,7 @@ export function Rail({
   busyWs,
   onSelect,
   onOverview,
+  inbox,
   onNew,
   onRun,
   onArchive,
@@ -29,6 +30,8 @@ export function Rail({
   onSelect: (id: string) => void;
   /** the Overview item at the top of the rail; selected when no workstream is */
   onOverview?: () => void;
+  /** the Inbox item above Overview (docs/CONVERSATION.md C0): selected while the inbox shows, badged with what needs you */
+  inbox?: { active: boolean; needs: number; onOpen: () => void };
   /** "+ New workstream" */
   onNew?: () => void;
   onRun: (id: string) => void;
@@ -47,9 +50,18 @@ export function Rail({
   const archived = workstreams.filter((w) => w.archived);
   return (
     <nav aria-label="Workstreams" className={cx("flex min-h-0 w-full flex-col border-r border-white/10 bg-neutral-950", className)}>
-      {onOverview && (
+      {inbox && (
         <div className="px-2 pt-3">
-          <button type="button" data-cuelume-navigate="" onClick={onOverview} aria-current={selectedId === null ? "page" : undefined} className={cx("flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-left text-[14px] font-semibold text-neutral-100 transition-colors", selectedId === null ? "bg-white/10" : "hover:bg-white/5")}>
+          <button type="button" data-cuelume-navigate="" onClick={inbox.onOpen} aria-current={selectedId === null && inbox.active ? "page" : undefined} aria-label={inbox.needs ? `Inbox, ${inbox.needs} need you` : "Inbox"} className={cx("flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-left text-[14px] font-semibold text-neutral-100 transition-colors", selectedId === null && inbox.active ? "bg-white/10" : "hover:bg-white/5")}>
+            <InboxIcon className="size-4 text-neutral-400" aria-hidden="true" />
+            <span className="flex-1">Inbox</span>
+            {inbox.needs > 0 && <span key={inbox.needs} className="nb-pop-slow grid h-5 min-w-5 place-items-center rounded-full bg-[var(--rb-accent)] px-1.5 text-[11px] font-extrabold text-[var(--rb-accent-fg)]">{inbox.needs}</span>}
+          </button>
+        </div>
+      )}
+      {onOverview && (
+        <div className={cx("px-2", inbox ? "pt-0.5" : "pt-3")}>
+          <button type="button" data-cuelume-navigate="" onClick={onOverview} aria-current={selectedId === null && !inbox?.active ? "page" : undefined} className={cx("flex h-10 w-full items-center gap-2.5 rounded-lg px-3 text-left text-[14px] font-semibold text-neutral-100 transition-colors", selectedId === null && !inbox?.active ? "bg-white/10" : "hover:bg-white/5")}>
             <LayoutDashboard className="size-4 text-neutral-400" aria-hidden="true" />
             Overview
           </button>

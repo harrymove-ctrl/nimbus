@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PanelLeft, PanelRight, Brain, Compass, FileText, GanttChart, MessageSquare } from "lucide-react";
+import { PanelLeft, PanelRight, Brain, Compass, FileText, GanttChart, Inbox as InboxIcon, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { GlowCloud } from "@/components/glow-cloud";
 import { useNow, useReducedMotion, useRunEvents } from "@/hooks/use-run";
@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/dithercn/empty-state";
 import { Aurora } from "@/components/dithercn/aurora";
 import { Ripples } from "@/components/dithercn/ripples";
 import { useMedia } from "@/hooks/use-media";
+import { Inbox, STARTERS, useInboxNeeds } from "./inbox";
 import { Overview } from "./overview";
 import { StatusPill, useActiveRuns } from "./status-pill";
 import { AmbientGlow } from "./loading";
@@ -55,6 +56,10 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
   const [notice, setNotice] = useState<string | null>(null);
   const [focusArtifact, setFocusArtifact] = useState<{ id: string; version: number; n: number }>();
   const [creating, setCreating] = useState(false);
+  // the centre column with no workstream open: the Inbox (docs/CONVERSATION.md C0) or the Overview; ?view=inbox links here
+  const [inbox, setInbox] = useState(false);
+  const [starter, setStarter] = useState<(typeof STARTERS)[number] | undefined>();
+  const [inboxNeeds, setInboxNeeds] = useInboxNeeds();
   const [touring, setTouring] = useState(false);
   // the one-time "New here?" chip: never in a demo recording, never again once the tour was seen or dismissed
   const [nudge, setNudge] = useState(false);
@@ -92,6 +97,7 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     }
     const v = q.get("view");
     if (v === "trace" || v === "lanes") m = v;
+    if (v === "inbox") setInbox(true);
     setRunMode(m);
     try {
       setTraceFill(window.localStorage.getItem("nimbus.traceFill") === "1");
@@ -113,11 +119,11 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
     }
     const u = new URL(window.location.href);
     const put = (k: string, v: string | null) => (v ? u.searchParams.set(k, v) : u.searchParams.delete(k));
-    put("view", runMode === "trace" ? "trace" : null);
+    put("view", inbox && !selectedId ? "inbox" : runMode === "trace" ? "trace" : null);
     put("span", runMode === "trace" ? traceSpan : null);
     put("filter", runMode === "trace" && traceFilter !== "all" ? traceFilter : null);
     if (u.href !== window.location.href) window.history.replaceState(null, "", u);
-  }, [modeReady, runMode, traceFill, traceSpan, traceFilter]);
+  }, [modeReady, runMode, traceFill, traceSpan, traceFilter, inbox, selectedId]);
 
   const ws = workstreams.find((w) => w.id === selectedId);
   const runId = selectedId ? (runByWs[selectedId] ?? null) : null;
@@ -177,11 +183,11 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
   useEffect(() => {
     if (!restored.current) return;
     try {
-      window.sessionStorage.setItem("nimbus:view", JSON.stringify({ selectedId, runByWs }));
+      window.sessionStorage.setItem("nimbus:view", JSON.stringify({ selectedId, runByWs, inbox }));
     } catch {
       /* private mode: nothing to remember */
     }
-  }, [selectedId, runByWs]);
+  }, [selectedId, runByWs, inbox]);
 
   // Boot: first GET /api/workstreams resolves → cloud fades out (kept up at least 1.2 s so it reads as a preloader).
   useEffect(() => {
@@ -217,9 +223,12 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
       setWorkstreams(d.workstreams);
       // a reload (a dev refresh, F5) lands back on the workstream and run you were looking at
       try {
-        const saved = JSON.parse(window.sessionStorage.getItem("nimbus:view") ?? "null") as { selectedId: string | null; runByWs: Record<string, string> } | null;
-        if (saved && !new URLSearchParams(window.location.search).has("run")) {
-          if (saved.selectedId && d.workstreams.some((w) => w.id === saved.selectedId)) setSelectedId(saved.selectedId);
+        const saved = JSON.parse(window.sessionStorage.getItem("nimbus:view") ?? "null") as { selectedId: string | null; runByWs: Record<string, string>; inbox?: boolean } | null;
+        const sp = new URLSearchParams(window.location.search);
+        if (saved && !sp.has("run")) {
+          // ?view=inbox lands on the inbox, not on the workstream the tab had open
+          if (sp.get("view") !== "inbox" && saved.selectedId && d.workstreams.some((w) => w.id === saved.selectedId)) setSelectedId(saved.selectedId);
+          if (saved.inbox && !sp.get("view")) setInbox(true);
           setRunByWs((m) => ({ ...saved.runByWs, ...m }));
         }
       } catch {
@@ -459,7 +468,8 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
           pendingByWs={pendingByWs}
           busyWs={busyWs}
           onSelect={(id) => void openWorkstream(id)}
-          onOverview={() => (setSelectedId(null), setDrawer(null))}
+          onOverview={() => (setSelectedId(null), setInbox(false), setDrawer(null))}
+          inbox={{ active: inbox, needs: inboxNeeds, onOpen: () => (setSelectedId(null), setInbox(true), setDrawer(null)) }}
           onRun={(id) => void startRun({ saved: true }, id)}
           onNew={() => (setCreating(true), setDrawer(null))}
           onArchive={async (id, archived) => {
@@ -482,7 +492,19 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
           {/* ambient dither: behind the run view and the empty state only; never the boot screen, composer, cards or cloud */}
           {/* one animated background per column (SPEC §17.6): the run view has the glow, which holds still while ripples run at an approval and at four or more running lanes; the Overview has its contours; the empty state its aurora */}
           {boot === "gone" && ws && <AmbientGlow paused={(view.lanes.length >= 4 && clock) || view.pendingApprovals.length > 0} />}
-          {!ws ? (
+          {!ws && inbox ? (
+            <Inbox
+              phone={isPhone}
+              onNeeds={setInboxNeeds}
+              onOpen={(wsId, rid) => {
+                openRun(wsId, rid);
+                // the conversation gets the room: the timeline strip folds to its header
+                setCollapsed(true);
+                setPhoneTab("chat");
+              }}
+              onStarter={(s) => (setStarter(s), setCreating(true))}
+            />
+          ) : !ws ? (
             <Overview titles={Object.fromEntries(workstreams.map((w) => [w.id, w.title]))} onOpenRun={openRun} refreshKey={view.status === "done" ? 1 : 0} empty={<PickWorkstream workstreams={workstreams} onPick={(id) => void openWorkstream(id)} />} />
           ) : (
             <>
@@ -601,12 +623,15 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
           )}
           {creating && (
               <NewWorkstream
+                prefill={starter}
                 onCancel={() => {
                   setCreating(false);
+                  setStarter(undefined);
                   setTimeout(() => document.querySelector<HTMLButtonElement>('button[aria-label="New workstream"]')?.focus(), 0);
                 }}
                 onCreated={async ({ id, goal }) => {
                   setCreating(false);
+                  setStarter(undefined);
                   await refreshWorkstreams();
                   setSelectedId(id);
                   setDraft(goal);
@@ -630,6 +655,11 @@ export function AppShell({ initialBudget, demo = false }: { initialBudget?: { to
       </div>
       {ws && isPhone && (
         <nav aria-label="Run sections" className="flex shrink-0 border-t border-white/10 bg-neutral-950 pb-[env(safe-area-inset-bottom)]">
+          <button type="button" data-cuelume-navigate="" onClick={() => (setSelectedId(null), setInbox(true))} className="relative flex h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[11px] font-extrabold tracking-wider text-neutral-500">
+            <InboxIcon className="size-5" aria-hidden="true" />
+            INBOX
+            {inboxNeeds > 0 && <span className="nb-pop-slow absolute right-[calc(50%-24px)] top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[var(--rb-accent)] px-1 text-[10px] font-extrabold text-[var(--rb-accent-fg)]">{inboxNeeds}</span>}
+          </button>
           {(
             [
               ["run", "RUN", GanttChart],

@@ -21,12 +21,12 @@ const KINDS = [
 
 const field = "h-9 w-full rounded-lg border border-white/12 bg-neutral-950/60 px-3 text-[14px] text-neutral-100 outline-none placeholder:text-neutral-500 focus:border-white/30";
 
-export function NewWorkstream({ onCancel, onCreated }: { onCancel: () => void; onCreated: (ws: { id: string; goal: string }) => void }) {
-  const [title, setTitle] = useState("");
-  const [goal, setGoal] = useState("");
+export function NewWorkstream({ onCancel, onCreated, prefill }: { onCancel: () => void; onCreated: (ws: { id: string; goal: string }) => void; /** a starter prompt (the Inbox's empty state): name, goal and tools filled in, no template */ prefill?: { title: string; goal: string; tools: string[] } }) {
+  const [title, setTitle] = useState(prefill?.title ?? "");
+  const [goal, setGoal] = useState(prefill?.goal ?? "");
   const [kind, setKind] = useState<(typeof KINDS)[number]["key"]>("");
   const [time, setTime] = useState("08:00");
-  const [tools, setTools] = useState<string[]>(["web_search", "fetch_url", "write_artifact"]);
+  const [tools, setTools] = useState<string[]>(prefill?.tools.filter((x) => x in TOOL_LABELS) ?? ["web_search", "fetch_url", "write_artifact"]);
   const [roles, setRoles] = useState<CrewRole[]>(DEFAULT_ROLES);
   const [template, setTemplate] = useState<TemplateCard | null>(null);
   const [error, setError] = useState<string | null>(null);
