@@ -1,0 +1,15 @@
+business,category,neighbourhood,website,rating,reviews,staff,online_booking,site_last_updated,contact,email,notes
+Hearth & Grain Bakery,bakery cafe,Old Mill,hearthandgrain.example,4.7,312,9,no,2019,Dana Whitfield (owner),dana@hearthandgrain.example,takes custom cake orders by phone only; menu is a photo of the board
+Alder Street Physio,physiotherapy clinic,Alder Street,alderphysio.example,4.8,141,6,phone and email only,2018,Dr. Ken Morales (clinic lead),ken@alderphysio.example,reviews mention it is hard to get through on the phone
+Bright Paws Grooming,pet groomer,Eastside,,4.6,88,4,no,,Lucia Ferreira (owner),brightpawsgrooming@mail.example,"no website, bookings via social media messages"
+Kessler Family Dental,dental practice,Northgate,kesslerdental.example,4.4,203,18,yes,2024,Maria Kessler (practice manager),office@kesslerdental.example,new site last year with online booking
+Riverbend Auto Care,auto repair,Riverbend,riverbendauto.example,4.5,264,11,no,2016,Tom Agarwal (owner),tom@riverbendauto.example,site is not mobile friendly; reviews praise honest quotes
+Sol y Luna Yoga,yoga studio,Old Mill,solylunayoga.example,4.9,97,5,"yes, through a class app",2023,Inés Carvalho (owner),hola@solylunayoga.example,already uses a booking app
+Fernwood Florist,florist,Fernwood,fernwoodflowers.example,4.3,65,3,no,2015,Grace Obi (owner),grace@fernwoodflowers.example,wedding enquiries by email form that reviews say gets no reply
+Northgate Tutoring Collective,tutoring centre,Northgate,northgatetutoring.example,4.6,54,14,no,2020,Sam Lindgren (director),sam@northgatetutoring.example,uses a paper sign-up sheet at the front desk
+Copper Kettle Diner,diner,Riverbend,copperkettlediner.example,3.9,511,22,no,2017,Rita Novak (general manager),rita@copperkettlediner.example,reservations not taken; mixed reviews on service
+Greenline Bike Repair,bike shop,Eastside,greenlinebikes.example,4.8,176,4,no,2021,Jonah Pike (owner),jonah@greenlinebikes.example,repair queue tracked on a whiteboard; reviews ask for online drop-off slots
+Lakeside Law Office,law firm,Downtown,lakesidelaw.example,4.2,38,35,yes,2025,Office manager,info@lakesidelaw.example,"larger firm, recent website"
+Maple & Thread Tailoring,tailor and alterations,Fernwood,,4.7,129,2,no,,Hyun-woo Park (owner),mapleandthread@mail.example,no website; customers find it through maps listings
+Summit Home Inspections,home inspection,Northgate,summitinspect.example,4.9,71,3,online form,2022,Priya Raman (owner),priya@summitinspect.example,busy season backlog mentioned in reviews
+Old Mill Barbers,barbershop,Old Mill,oldmillbarbers.example,4.5,402,6,walk-in only,2014,Dev Castillo (owner),dev@oldmillbarbers.example,reviews complain about long waits on Saturdays

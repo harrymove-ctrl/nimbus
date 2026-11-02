@@ -1,0 +1,43 @@
+FLIGHT DELAY: BOOKING AND WHAT HAPPENED
+Sample facts for the Nimbus flight delay claim template. The airline, people and booking are invented.
+
+BOOKING
+Airline: SkyBridge Airways (an EU airline, licensed in Portugal)
+Booking reference: K7QM2D
+Booked on: 2026-08-30, through skybridge.example, paid by card
+Fare paid: EUR 486.40 for two passengers (one way, economy, 1 checked bag)
+Passengers: Jordan Ellis, Sam Ellis (adults)
+Contact email used for the booking: jordan.ellis@mail.example
+
+FLIGHT
+Flight: SB 2417
+Date: Sunday 2026-10-18
+Route: Lisbon (LIS) to Amsterdam (AMS), direct
+Scheduled departure: 07:05 local time (Lisbon)
+Scheduled arrival: 10:55 local time (Amsterdam)
+Actual departure: 11:02 local time
+Actual arrival (doors opened at the gate): 15:07 local time
+Arrival delay: 4 hours 12 minutes
+
+WHAT WE WERE TOLD
+06:20 Gate agent announced a "technical issue with the aircraft" and a new departure of 08:30.
+08:15 Delay extended to 10:00, then 11:00. Reason given again: technical problem, waiting for a spare part from the hangar.
+09:10 Staff handed out one meal voucher of EUR 8 per person. The airport cafe charged more than that for a sandwich and a drink.
+Nobody gave us a written notice of our passenger rights. No weather or strike was mentioned at any point.
+At Amsterdam the desk told us to "submit a claim online".
+
+WHAT IT COST US
+Food at Lisbon airport beyond the vouchers: EUR 23.70 (card receipt, cafe "Miradouro", 2026-10-18 09:24)
+Missed the 12:30 train from Amsterdam Centraal to Utrecht we had booked for a client meeting; new train tickets EUR 19.80 (receipt)
+Taxi from Utrecht station to the meeting because we were late: EUR 21.50 (receipt)
+
+DOCUMENTS WE HAVE
+1. Booking confirmation email (PDF) with booking reference K7QM2D
+2. Both boarding passes (mobile, screenshots)
+3. Photo of the departure board showing SB 2417 "delayed 11:00"
+4. Cafe receipt, new train tickets, taxi receipt
+5. Bank statement line for the fare
+
+WHAT WE WANT
+The compensation we are owed for the delay, plus the extra costs, from SkyBridge Airways directly, without a claims company taking a cut.
+SkyBridge claims address from their website: claims@skybridge.example

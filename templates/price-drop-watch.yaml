@@ -1,0 +1,62 @@
+# Source: "Watch item prices and email on drops", https://agentusecases.ai/use-case/watch-item-prices-and-email-on-drops
+# Nimbus template: Price drop watch. Two real product pages checked every morning; a message only on a drop over 10%.
+# Adapted: one item at two real retailers (Raspberry Pi 5 8GB at Adafruit and PiShop.us, both serve their price to a plain
+# fetch). price-history.csv is invented sample history: the PiShop.us line was last $199.95, so a first run at today's
+# price shows the alert path. The message goes through send_message (approval) instead of email.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "price-drop-watch" },
+# or: nimbus ws import templates/price-drop-watch.yaml. Put your own URLs in the SKILL.md and price-history.csv.
+title: Price drop watch
+goal: "Every morning, check the Raspberry Pi 5 8GB at Adafruit and PiShop.us, compare each price with the last one in price-history.csv, and message me only when a price has dropped by more than 10%. Don't buy anything; just tell me what you checked and the price you found for each item."
+schedule: daily 08:00
+tools:
+  - fetch_url
+  - run_code
+  - write_artifact
+  - send_message
+roles:
+  - role: scout
+    tier: super
+    tools: [fetch_url]
+    brief: >
+      Call fetch_url once for each URL in the SKILL.md watch list. From each page take the current price of exactly
+      the item named there (the Adafruit page lists every RAM size: use the 8GB RAM line) and whether it is in
+      stock. Quote the words around each price you used. If a page shows no price, fails or blocks the fetch, say
+      so; never guess a price.
+  - role: analyst
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Use run_code with the Scout's prices typed into the script and price-history.csv: for each URL, the last
+      recorded price, today's price, the change in dollars and in percent, and whether it dropped by more than 10%.
+      Append today's rows (checked, retailer, item, url, price, currency, stock) without changing the old ones and
+      save the whole updated file with write_artifact as a code artifact named price-history.csv. Print the table.
+  - role: writer
+    tier: super
+    tools: [write_artifact, send_message]
+    brief: >
+      Write a short check log with write_artifact: each item, retailer, last price, today's price, the change in
+      percent, stock. Only if an item dropped by more than 10%, send one message with send_message to me: the
+      item, the retailer, old and new price, the percent and the URL. No drop, no message. send_message asks for
+      approval itself.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Price drop watch
+  ### Watch list
+  1. Raspberry Pi 5 (8GB RAM) at Adafruit: https://www.adafruit.com/product/5813 (the page lists every RAM size; use the 8GB RAM line)
+  2. Raspberry Pi 5 8GB (SC1112) at PiShop.us: https://www.pishop.us/product/raspberry-pi-5-8gb/
+
+  ### Rules
+  1. Alert only when today's price is more than 10% below the last recorded price for that URL.
+  2. Out of stock is a note in the log, not an alert.
+  3. Never buy and never add to a cart.
+  4. If a page shows no price, keep the last price in the history and say so; do not guess.
+  5. Prices are before shipping and tax.
+  6. Messages go to me only, and nothing is sent without approval.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/price-drop-watch/price-history.csv
+order: 3.02

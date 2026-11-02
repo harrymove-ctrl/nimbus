@@ -1,0 +1,63 @@
+# Source: "Claim refunds for delayed or cancelled flights with Claude", https://agentusecases.ai/use-case/claim-refunds-for-delayed-or-cancelled-flights-with-claude
+# Nimbus template: Flight delay claim. The facts from flight.txt, the rule from a primary source, and a claim email to
+# the airline sent only after approval.
+# Adapted: the source case was a US flight under US DOT refund rules; this one is an invented EU departure (Lisbon to
+# Amsterdam, 4 h 12 min late on arrival), so EU Regulation 261/2004 applies and the claim is compensation, not a refund.
+# The person sends the claim themselves in the source; here send_message waits for approval. On demand.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "flight-delay-claim" },
+# or: nimbus ws import templates/flight-delay-claim.yaml. Replace flight.txt with your own booking and delay facts.
+title: Flight delay claim
+goal: "My flight SB 2417 on 2026-10-18 from Lisbon to Amsterdam arrived 4 hours 12 minutes late; the facts are in flight.txt. Research which compensation rules apply to this route, then draft a claim email to the airline with the facts, the rule, the amount I'm claiming and a reply deadline, and list the documents to attach. Show it to me before it is sent."
+tools:
+  - run_code
+  - web_search
+  - fetch_url
+  - write_artifact
+  - send_message
+roles:
+  - role: analyst
+    tier: super
+    tools: [run_code]
+    brief: >
+      Read flight.txt with run_code and list the facts a claim needs: airline and where it is licensed, flight,
+      date, route, scheduled and actual arrival, arrival delay, passengers, the reason the airline gave, what was
+      given (vouchers) and the extra costs with receipts. Compute the great circle distance from Lisbon (38.7813 N,
+      9.1359 W) to Amsterdam (52.3086 N, 4.7639 E) in km, and the total of the extra costs.
+  - role: researcher
+    tier: super
+    tools: [web_search, fetch_url]
+    brief: >
+      Find, from primary sources (eur-lex.europa.eu, europa.eu, the national enforcement body), the rule for this
+      flight: whether Regulation (EC) 261/2004 covers it, the compensation for its distance band and an arrival
+      delay of 3 hours or more (Articles 5 to 7 and the Sturgeon ruling), whether a technical problem counts as
+      an extraordinary circumstance (Wallentin-Hermann, C-549/07), the right to care (Article 9), and the time
+      limit to claim. Fetch the pages you cite and quote the lines you rely on, with their URLs.
+  - role: writer
+    tier: super
+    tools: [write_artifact, send_message]
+    brief: >
+      Write the claim email with write_artifact: subject with booking reference and flight; the facts in order;
+      the rule with article numbers and the source URL; the amount per passenger and in total in EUR, and the
+      extra costs claimed separately with their receipts; bank transfer within 14 days as the reply deadline; the
+      list of documents to attach. Plain and firm, no threats. Then send it with send_message to
+      claims@skybridge.example. send_message asks for approval itself.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Flight delay claim
+  Passengers: Jordan Ellis and Sam Ellis. Reply email: jordan.ellis@mail.example.
+
+  ### Rules
+  1. Claim directly from the airline; never suggest a claims company.
+  2. Every rule cited names its article or case and links a primary source; if a point cannot be confirmed, say so.
+  3. Compensation is per passenger; extra costs are claimed on their own line with receipts.
+  4. Never claim more than the rule gives, and never call the delay weather or a strike unless flight.txt says so.
+  5. The claim gives a reply deadline of 14 days and asks for payment by bank transfer, not vouchers.
+  6. Nothing is sent without approval.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/flight-delay-claim/flight.txt
+order: 3.05

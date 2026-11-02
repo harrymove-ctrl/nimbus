@@ -1,0 +1,59 @@
+# Source: "Track home maintenance from receipts and inspection reports", https://agentusecases.ai/use-case/track-home-maintenance-from-receipts-and-inspection-reports
+# Nimbus template: Home maintenance. The home log sorted by system, what is due or overdue this month, and vendor
+# messages drafted for the top tasks, sent only after approval.
+# Adapted: the folder of receipts and inspection reports is one log, home-log.csv (22 invented lines with the receipt
+# or report each came from). Weekly on Monday, because the schedule offers daily, weekdays or Mondays.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "home-maintenance" },
+# or: nimbus ws import templates/home-maintenance.yaml. Keep your own log with the same columns.
+title: Home maintenance
+goal: "Every Monday, go through my home log (home-log.csv: past jobs, receipts and inspection notes), sort it by system, and tell me what is due or overdue this month with suggested timing and the source line for each. Draft messages to the vendors for the top 2 tasks, but show them to me first and don't send anything without my approval."
+schedule: mondays 08:30
+tools:
+  - run_code
+  - write_artifact
+  - send_message
+roles:
+  - role: coordinator
+    tier: super
+    tools: [run_code]
+    brief: >
+      Read home-log.csv with run_code (system, task, last_done, every_months, who, phone, email, last_cost, notes).
+      Take today's date from the run. For each recurring task the next due date is last_done plus every_months;
+      list the tasks due this month or overdue, with days overdue. Add open issues (no last_done), inspection
+      notes with a recheck window, and warranties that ended or end within a year. Rank the list by risk before
+      winter (gas and CO, chimney, freezing pipes, water damage first), then by days overdue. Report a table with
+      the source line of each row.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      With run_code, recompute every due date in the Coordinator's table from home-log.csv and check that no task
+      due this month or overdue is missing. Report what holds and each mismatch.
+  - role: writer
+    tier: super
+    tools: [write_artifact, send_message]
+    brief: >
+      Write the maintenance list with write_artifact: overdue first, then due this month, by system, each with
+      suggested timing, the last cost and the source line. Then pick the top 2 tasks that need a vendor and draft
+      one message each, asking for a quote and two visit times on Saturday mornings, and send each with
+      send_message to the vendor's email from the log. send_message asks for approval itself.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Home maintenance
+  House: two storeys, built 1998, gas furnace, gas water heater (2016), wood stove used on winter weekends.
+
+  ### Rules
+  1. Nothing is booked, paid or sent without my approval; one approval per vendor message.
+  2. Vendor messages ask for a quote and two visit times; they never share door codes, alarm codes or when we are away.
+  3. Visits on Saturday mornings; weekdays only after 16:00.
+  4. Safety first: gas, CO, smoke alarms and the chimney go to the top of the list.
+  5. Jobs I do myself (who = self) get a short how-to line, not a vendor message.
+  6. Up to $300 a job is fine to ask a quote for; above that, say the last cost and ask me first.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/home-maintenance/home-log.csv
+order: 3.09

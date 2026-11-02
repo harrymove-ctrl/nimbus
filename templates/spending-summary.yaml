@@ -1,0 +1,60 @@
+# Source: "Consolidate bank statements into a spending dashboard with Claude", https://agentusecases.ai/use-case/consolidate-bank-statements-into-a-spending-dashboard-with-c
+# Nimbus template: Spending summary. Three months of checking and card transactions categorized, totalled by month, and
+# three ways to cut with the dollars behind each.
+# Adapted: the statements are one merged export, transactions.csv (187 invented rows, August to October 2026); the
+# dashboard is a summary document and a categorized CSV; the portfolio part is left out (no holdings file).
+# Weekly on Monday, because the schedule offers daily, weekdays or Mondays.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "spending-summary" },
+# or: nimbus ws import templates/spending-summary.yaml. Export your own transactions with the same columns.
+title: Spending summary
+goal: "Every Monday morning, take my bank and card transactions in transactions.csv, categorize each one, and show spending by category, monthly totals and my savings rate. Tell me the three biggest things you notice and three ways to cut that would save the most, with the dollar amount for each. Do not change or delete my original file."
+schedule: mondays 07:00
+tools:
+  - run_code
+  - write_artifact
+roles:
+  - role: analyst
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Use run_code with pandas on transactions.csv (date, description, amount, account; spending is negative).
+      Categorize every row with the SKILL.md categories by keywords in the description. Leave out transfers
+      between my own accounts (both sides of a card payment); count the savings transfer as saving. Per month:
+      income, spending by category, total spending, saved, savings rate. Also: recurring charges with their
+      monthly amount, fees, and categories that grew month over month. Save the categorized rows with
+      write_artifact as a code artifact (CSV) and print the tables.
+  - role: advisor
+    tier: super
+    tools: [write_artifact]
+    brief: >
+      From the Analyst's numbers only, write the summary with write_artifact: monthly totals and savings rate, a
+      table by category and month, the three biggest things you notice, and three ways to cut ranked by dollars
+      saved a month. Each way names the transactions behind it and how the saving is computed. No generic advice.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      With run_code, check the Analyst's tables: every row of transactions.csv is either in a category or a
+      transfer, card payments are not counted as spending, categories add up to each month's total, and the
+      savings rate follows from income and spending. Report what holds and each mismatch.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Spending summary
+  ### Categories
+  housing, utilities, phone and internet, groceries, eating out, food delivery, coffee, transport, subscriptions,
+  health and fitness, shopping, pets, fees, cash, other.
+
+  ### Rules
+  1. "PAYMENT TO CREDIT CARD" and "CREDIT CARD PAYMENT THANK YOU" are transfers, not spending; count each purchase once.
+  2. "TRANSFER TO SAVINGS" is saving, not spending.
+  3. Savings rate = (income minus spending) / income, per month.
+  4. A way to cut names its transactions and a monthly saving in dollars.
+  5. Never change or delete transactions.csv; new files are artifacts.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/spending-summary/transactions.csv
+order: 3.06

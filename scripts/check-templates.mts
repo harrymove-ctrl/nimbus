@@ -1,7 +1,8 @@
 // Crews per workstream and the templates gallery (docs/TEMPLATES.md, docs/ROADMAP.md rows 7.1 and 7.2) in mock mode ($0):
 // an old database gets the default crew, every template starts through the API and through `nimbus ws import`, a
 // Study coach run has Tutor, Quizmaster and Checker lanes, a crew nobody scripted still runs, the default workstreams keep
-// their five lanes and their exact role prompts, and `ws export` then `import` carries the crew and the SKILL.md.
+// their five lanes and their exact role prompts, the twelve templates from agentusecases.ai name their source and run
+// unscripted, and `ws export` then `import` carries the crew and the SKILL.md.
 //   pnpm check:templates      (--verbose prints the terminal run)
 process.env.NIMBUS_DATA_DIR = "./data/check-templates";
 process.env.NIMBUS_MODEL = "mock";
@@ -9,7 +10,7 @@ process.env.NIMBUS_MOCK_FAST = "1";
 process.env.NIMBUS_CACHE = "off";
 process.env.NIMBUS_SCHEDULER = "off";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
@@ -152,11 +153,21 @@ console.log("· role prompts and lanes");
 
 console.log("· GET /api/templates");
 const templates = listTemplates();
+const FROM_USE_CASES = ["school-email-digest", "price-drop-watch", "subscription-renewals", "lease-review", "flight-delay-claim", "spending-summary", "macro-morning-brief", "fridge-meal-plan", "home-maintenance", "local-leads", "tax-deductions", "arxiv-triage"];
 {
   const r = await http<{ templates: (CrewRole & { slug: string; title: string; goal: string; tools: string[]; roles: CrewRole[]; skill: string; attachments: string[]; scheduleLabel: string })[] }>("/api/templates");
   const t = r.json.templates ?? [];
   const slugs = t.map((x) => x.slug);
-  check("nine templates, the three personal ones first", r.status === 200 && t.length === 9 && same(slugs.slice(0, 3), ["job-hunt-radar", "study-coach", "household-ops"]) && ["morning-brief", "hackathon-radar", "ship-nimbus", "cost-audit", "release-watch", "checkout-drop"].every((s) => slugs.includes(s)), slugs.join(", "));
+  check("twenty-one templates: the three personal ones first, then the twelve from real use cases", r.status === 200 && t.length === 21 && same(slugs.slice(0, 3), ["job-hunt-radar", "study-coach", "household-ops"]) && same(slugs.slice(3, 15), FROM_USE_CASES) && ["morning-brief", "hackathon-radar", "ship-nimbus", "cost-audit", "release-watch", "checkout-drop"].every((s) => slugs.includes(s)), slugs.join(", "));
+  // each names its agentusecases.ai source on its first line, keeps its goal under the API's 600 characters, has 3 or
+  // 4 roles (Super or Nano, the learner Nano; Ultra is the orchestrator's) and small sample files
+  const badSource = FROM_USE_CASES.filter((s) => {
+    const x = t.find((y) => y.slug === s);
+    const first = readFileSync(`templates/${s}.yaml`, "utf8").split("\n")[0];
+    const files = templates.find((y) => y.slug === s)?.attachments ?? [];
+    return !x || !/^# Source: ".+", https:\/\/agentusecases\.ai\/use-case\/[\w-]+$/.test(first) || x.goal.length > 600 || x.roles.length < 3 || x.roles.length > 4 || x.roles.some((r) => r.tier === "ultra") || x.roles.find((r) => r.role === "learner")?.tier !== "nano" || !files.length || files.some((f) => statSync(path.resolve("templates", f)).size > 100_000);
+  });
+  check("the twelve from real use cases: a source line, a goal under 600 characters, 3 or 4 roles with no Ultra, files under 100 KB", !badSource.length, badSource.join(", "));
   check("each has a title, a goal, tools, a crew, a SKILL.md seed with a Policy section and a schedule label", t.every((x) => x.title && x.goal && x.tools.length && x.roles.length && /^## Policy$/m.test(x.skill) && x.scheduleLabel), JSON.stringify(t.find((x) => !x.skill)));
   const seeded = t.filter((x) => WORKSTREAMS.some((w) => w.title === x.title));
   check("the six seeded templates match the seed (title, goal, tools, SKILL.md, the default crew)", seeded.length === 6 && seeded.every((x) => { const w = WORKSTREAMS.find((s) => s.title === x.title)!; return x.goal === w.goal && same(x.tools, w.tools) && x.skill === w.skill && same(x.roles, DEFAULT_ROLES); }), seeded.map((x) => x.slug).join());
@@ -176,7 +187,7 @@ const made: Record<string, string> = {};
     if (!ok) bad.push(`${t.slug}: ${r.status} ${JSON.stringify(r.json).slice(0, 200)}`);
     else made[t.slug] = w.id;
   }
-  check("API: all nine create a workstream with the template's crew, SKILL.md, tools and files", !bad.length, bad.join("\n"));
+  check("API: all twenty-one create a workstream with the template's crew, SKILL.md, tools and files", !bad.length, bad.join("\n"));
   const fileOk = existsSync(path.join(dataDir(), "workstreams", made["study-coach"], "files", "flashcards.csv")) && readFileSync(path.join(dataDir(), "workstreams", made["study-coach"], "files", "flashcards.csv"), "utf8") === readFileSync("fixtures/templates/study-coach/flashcards.csv", "utf8");
   check("the attachments are copied into the workstream's files", fileOk);
 
@@ -188,7 +199,7 @@ const made: Record<string, string> = {};
     const w = all.find((x) => x.id === id);
     if (outs[i].code !== 0 || !w || !same(w.roles, t.roles) || w.skill !== t.skill || !same(w.files, t.attachments.map((a) => path.basename(a)).sort())) cliBad.push(`${t.slug}: ${outs[i].out.trim().slice(0, 300)}`);
   });
-  check("CLI: nimbus ws import templates/<slug>.yaml creates all nine the same way (crew, skill, files)", !cliBad.length, cliBad.join("\n"));
+  check("CLI: nimbus ws import templates/<slug>.yaml creates all twenty-one the same way (crew, skill, files)", !cliBad.length, cliBad.join("\n"));
   const sc = outs[templates.findIndex((t) => t.slug === "study-coach")].out;
   check("the import line names the crew and the files", /crew tutor, quizmaster, checker, learner · files flashcards\.csv, review-log\.csv/.test(sc), sc);
 }
@@ -240,6 +251,13 @@ console.log("· a crew nobody scripted (Job hunt radar), and the default crew");
   const jh = templates.find((t) => t.slug === "job-hunt-radar")!;
   const v1 = await go(made["job-hunt-radar"], jh.title, jh.goal, jh.tools);
   check("Job hunt radar runs with lanes scout, screener and writer, and ends done", v1.status === "done" && ["orchestrator", "scout-1", "screener-1", "writer-1", "learner-1"].every((l) => v1.lanes.some((x) => x.instance === l)) && !v1.lanes.some((l) => ["researcher", "analyst"].includes(l.role)), v1.lanes.map((l) => l.instance).join());
+  const ucBad: string[] = [];
+  for (const s of FROM_USE_CASES) {
+    const tp = templates.find((t) => t.slug === s)!;
+    const v = await go(made[s], tp.title, tp.goal, tp.tools);
+    if (v.status !== "done" || !tp.roles.every((r) => v.lanes.some((l) => l.instance === `${r.role}-1`))) ucBad.push(`${s}: ${v.status} ${v.lanes.map((l) => l.instance).join()}`);
+  }
+  check("each of the twelve from real use cases runs in mock mode with a lane per role, and ends done", !ucBad.length, ucBad.join("\n"));
   const ck = WORKSTREAMS.find((w) => w.id === "ws-checkout")!;
   const v2 = await go(ck.id, ck.title, ck.goal, ck.tools);
   const roles = [...new Set(v2.lanes.map((l) => l.role))].filter((r) => r !== "orchestrator").sort();

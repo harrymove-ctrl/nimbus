@@ -1,0 +1,62 @@
+# Source: "Summarize school emails for parents", https://agentusecases.ai/use-case/summarize-school-emails-for-parents
+# Nimbus template: School email digest. The kids' school emails read every evening into what to pack, wear, sign or pay.
+# Adapted: Nimbus has no inbox connection, so the emails arrive as school-emails.csv (15 invented emails from two schools).
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "school-email-digest" },
+# or: nimbus ws import templates/school-email-digest.yaml. Export your school mail to the same columns to use your own.
+title: School email digest
+goal: "Every evening at 19:30, read the new emails from the kids' schools in school-emails.csv and send me a summary of what to pack, wear, sign or pay for tomorrow and this week. Put deadlines and sign-ups with their dates in plain text at the top. If nothing needs action, say so in one line. Don't reply to or pay for anything without showing me first."
+schedule: daily 19:30
+tools:
+  - run_code
+  - write_artifact
+  - send_message
+roles:
+  - role: reader
+    tier: super
+    tools: [run_code]
+    brief: >
+      Read school-emails.csv with run_code (columns received, from, subject, body; print it whole, it is under
+      8,000 characters). Take the newest email's date as today unless the run says otherwise. Turn every email into
+      action items: kid, kind (pack, wear, sign, pay, sign-up, bring back, info), what exactly, the date it is due,
+      the amount and how to pay when there is money. A later email that corrects an earlier one replaces it; say
+      what changed. Note any email that asks for something but leaves out what or when. Report the items as a table,
+      tomorrow first, then the rest of the week.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      Check the Reader's table against school-emails.csv with run_code: every date and amount appears in its email,
+      corrections are applied (the newest amount wins), no email that asks for an action is missing, and nothing
+      for a day with no school is listed as due that day. Report what holds and each mismatch.
+  - role: writer
+    tier: super
+    tools: [write_artifact, send_message]
+    brief: >
+      Write the digest with write_artifact: first the deadlines and sign-ups with their dates in plain text, then
+      tomorrow by kid (pack, wear, sign, pay), then the rest of the week, then one line for emails with no action.
+      Money lines say the amount, who to pay and how, and never that it is paid. When an email is missing
+      information, draft a short reply to the sender inside the digest and mark it as a draft for me to send.
+      Then send the parents a short version with send_message to parents-chat: at most 8 lines, tomorrow first.
+      send_message asks for approval itself.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## School email digest
+  Kids: Maya (8, Grade 3 at Maplewood Elementary, teacher Ms. Okafor) and Theo (11, Grade 6 at Cedar Ridge Middle,
+  homeroom Mr. Lindqvist). PE at Maplewood is Tuesdays and Thursdays.
+
+  ### Rules
+  1. Group by kid; tomorrow first, then the rest of the week.
+  2. A later email that corrects an earlier one wins; say what changed.
+  3. Money: the amount, who to pay and how (portal or cash). Never pay, never say it is paid.
+  4. Never reply to the school. Draft a reply only when an email asks for something but leaves out what or when.
+  5. Newsletters and notices with no action get one line together at the end.
+  6. If nothing needs action, one line: "Nothing for tomorrow."
+  7. Messages go to parents-chat only, and nothing is sent without approval.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/school-email-digest/school-emails.csv
+order: 3.01

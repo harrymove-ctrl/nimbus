@@ -1,0 +1,58 @@
+# Source: "Monitor investing news and produce morning macro summaries", https://agentusecases.ai/use-case/monitor-investing-news-and-produce-morning-macro-summaries
+# Nimbus template: Macro morning brief. News and filings for a watchlist plus the macro calendar, one summary with links.
+# Adapted: Nimbus has no X or podcast tool, so the brief comes from web_search and fetch_url on news and official
+# sources; the watchlist and the macro items are in watchlist.txt (an invented example). No trades, nothing posted.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "macro-morning-brief" },
+# or: nimbus ws import templates/macro-morning-brief.yaml. Edit watchlist.txt to your own names.
+title: Macro morning brief
+goal: "Every weekday morning, check the news and regulatory updates for my watchlist in watchlist.txt, plus the macro items listed there, and send me one summary of the most important items with source links. This is finished when I have a single readable summary; do not make any trades or post anything."
+schedule: weekdays 07:00
+tools:
+  - run_code
+  - web_search
+  - fetch_url
+  - write_artifact
+roles:
+  - role: scout
+    tier: super
+    tools: [run_code, web_search, fetch_url]
+    brief: >
+      Read watchlist.txt with run_code. For each ticker under Holdings and Thinking about, search the news of the
+      last 24 hours (earnings dates, guidance, filings, regulation, export rules, big contracts) and fetch the
+      source when the snippet is thin. Report only items with a date in the last 48 hours: ticker, what happened in
+      one sentence, why it matters to the reason in watchlist.txt, the source URL and its date.
+  - role: economist
+    tier: super
+    tools: [web_search, fetch_url]
+    brief: >
+      For the macro items in watchlist.txt, find the latest value and what changed since yesterday: the next Fed
+      and ECB meeting dates and what markets price, the last and next CPI and jobs report dates, the US 10-year
+      yield, the dollar index, Brent and EUR/USD. Prefer official sources (federalreserve.gov, ecb.europa.eu,
+      bls.gov) for dates. Every number with its source URL and time.
+  - role: writer
+    tier: super
+    tools: [write_artifact]
+    brief: >
+      Write the brief with write_artifact: three lines on what matters today first, then the watchlist items by
+      ticker, then macro, then the calendar for the next 7 days. At most 12 bullets in all, each with its link.
+      Drop any item without a URL and a date. No buy or sell calls and no price targets. If it was a quiet day,
+      say so in one line.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Macro morning brief
+  I invest for the long term, I am paid in euros, and I do not day trade.
+
+  ### Rules
+  1. Never make a trade, never post anything, never give buy or sell advice or price targets.
+  2. What changed since yesterday comes first; repeat an old story only if something new happened.
+  3. Every item has a source link and a date; no link, no item.
+  4. Flag any holding that moved more than 3% since the last close, with the reason if a source gives one.
+  5. At most 12 bullets; a quiet day is one line.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/macro-morning-brief/watchlist.txt
+order: 3.07

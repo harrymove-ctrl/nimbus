@@ -1,0 +1,66 @@
+# Source: "Find local business leads and send personalized cold emails", https://agentusecases.ai/use-case/find-local-business-leads-and-send-personalized-cold-emails
+# Nimbus template: Local leads. Local businesses scored against my ideal customer profile, three openers each for the
+# good fits, and sending only the ones I approve.
+# Adapted: Nimbus has no Google Maps scraper or Apollo, so the leads arrive as leads.csv (14 invented Riverton businesses
+# with the fields a maps listing gives). The three openers (intro, follow-up, final) follow the n8n lead scoring pattern
+# on the same site. Sending is send_message behind approval, never automatic.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "local-leads" },
+# or: nimbus ws import templates/local-leads.yaml. Put your offer and profile in the SKILL.md.
+title: Local leads
+goal: "Every Monday, take the local businesses in leads.csv, score each from 1 to 10 against my ideal customer profile with the reasoning, and write three short personalized openers for each lead that scores 7 or more, based on my offer. Log the scores and drafts in one table. Don't send anything automatically: show me the drafts and send only the ones I approve."
+schedule: mondays 09:00
+tools:
+  - run_code
+  - write_artifact
+  - send_message
+roles:
+  - role: scorer
+    tier: super
+    tools: [run_code]
+    brief: >
+      Read leads.csv with run_code. Score every business from 1 to 10 with the profile in the SKILL.md: start from
+      the points listed there, and give 1 to anything on the anti-profile. For each: the score, two lines of
+      reasoning that name the fields used, and qualified (7 or more) or not. Report the table sorted by score.
+  - role: copywriter
+    tier: super
+    tools: [write_artifact, send_message]
+    brief: >
+      For each qualified lead, write three openers: an intro, a follow-up for 5 business days later, and a short
+      final one. Each under 90 words, addressed to the contact by name, built on one specific detail from that
+      lead's notes, and ending with one easy question. Write every score and draft in one table with
+      write_artifact. Then send the intro to the top 3 leads with send_message to their email, one message each.
+      send_message asks for approval itself.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      With run_code, check each draft against its row in leads.csv: names, details and claims all come from the
+      row, nothing claims we have met or worked together, and no draft goes to a lead under 7. Report what holds
+      and each problem.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Local leads
+  ### Offer
+  Rowan Hale, freelance web designer in Riverton: a simple mobile website with online booking for small service
+  businesses, from $1,200, live in two weeks, with one month of free changes.
+
+  ### Ideal customer profile (points)
+  1. Independent local service business with 2 to 20 staff: +3
+  2. No online booking: +2; no website or a site last updated before 2020: +2
+  3. Rating 4.3 or higher with at least 50 reviews (good service, weak online presence): +2
+  4. Reviews or notes mention phone trouble, waits or missed enquiries: +1
+  Anti-profile (score 1): chains, more than 30 staff, a site updated in 2024 or later with booking, rating under 4.0.
+
+  ### Rules
+  1. Nothing is sent without my approval; at most 3 intros a week.
+  2. No fake familiarity: never say we have met, worked together or that I am a customer.
+  3. Sign as Rowan Hale, and end with one line: "Not interested? Reply no and I will not write again."
+  4. A follow-up only 5 business days after an intro with no reply.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/local-leads/leads.csv
+order: 3.10

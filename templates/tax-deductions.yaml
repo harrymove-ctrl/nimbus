@@ -1,0 +1,68 @@
+# Source: "Compile deductions and Schedule C with Claude Code", https://agentusecases.ai/use-case/compile-deductions-and-schedule-c-with-claude-code
+# Nimbus template: Tax deductions. A year of receipts sorted into Schedule C and itemized categories, with every
+# receipt that is missing proof flagged and a list of open questions.
+# Adapted: no Gmail or statement folders; the receipts are receipts.csv (107 invented lines for 2026 so far, with the
+# proof file each has or a blank). It sorts and flags; it does not file or fill in tax forms.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "tax-deductions" },
+# or: nimbus ws import templates/tax-deductions.yaml. Keep your own receipts log with the same columns.
+title: Tax deductions
+goal: "Every Monday, go through my receipts for 2026 in receipts.csv and sort them into deduction categories for my freelance design business (Schedule C) and my personal itemized deductions, with date, payee, amount and source file. Mark any line you couldn't categorize with confidence, flag every receipt that is missing proof, and finish with a list of open questions for me to resolve."
+schedule: mondays 10:00
+tools:
+  - run_code
+  - web_search
+  - fetch_url
+  - write_artifact
+roles:
+  - role: bookkeeper
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Read receipts.csv with run_code (date, vendor, amount, paid_with, what, proof_file, note). Put every line in
+      one category from the SKILL.md with a confidence (high, medium, low), apply the business use shares there,
+      and mark personal lines as not deductible. Flag missing proof: a blank proof_file, a donation of $250 or
+      more without a written acknowledgment, a donation of goods without a list, travel by car without a mileage
+      log. Total each category. Save the categorized lines with write_artifact as a code artifact (CSV) and print
+      the totals and the flags.
+  - role: researcher
+    tier: super
+    tools: [web_search, fetch_url, write_artifact]
+    brief: >
+      Check on irs.gov the rules the Bookkeeper relies on and quote them with their URLs: the business meal limit,
+      written acknowledgment for donations of $250 or more, the simplified home office method, deducting
+      equipment, self-employed health insurance, and the child and dependent care credit. Say when a rule could
+      not be confirmed for the tax year. Then write the summary with write_artifact from the Bookkeeper's numbers:
+      totals by Schedule C line and by itemized category, the low-confidence lines, the missing proof, the rules
+      with their links, and the open questions for me, with a line saying it is not tax advice.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      With run_code, check that every line of receipts.csv is in exactly one category, the totals add up, the
+      meal limit and business shares are applied, and every blank proof_file is flagged. Report what holds and
+      each mismatch.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Tax deductions
+  I am a freelance UX designer in the US (sole proprietor, Schedule C), married filing jointly. Kids: Mia (9) and Leo (3).
+
+  ### Categories
+  Schedule C: advertising, car and travel, meals (50%), office expense, supplies, software and subscriptions,
+  phone and internet (business share), education, equipment, home office.
+  Personal: charitable gifts, medical, self-employed health insurance (adjustment), child care (credit, not a
+  deduction), not deductible.
+
+  ### Rules
+  1. Business shares: phone 70%, internet 40%. Mixed-use items are flagged, never guessed.
+  2. Home office: the simplified method unless I say otherwise; the room is 120 sq ft and used only for work.
+  3. Never file, never fill in a tax form, never ask for or store an SSN or account number.
+  4. Every flag says what proof is missing and where it would come from.
+  5. This is not tax advice; open questions go to me or my accountant.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/tax-deductions/receipts.csv
+order: 3.11
