@@ -1,0 +1,66 @@
+# Source: "Automate a weekly arXiv paper triage", https://agentusecases.ai/use-case/automate-a-weekly-arxiv-paper-triage
+# Nimbus template: arXiv triage. New arXiv papers on my topics each week, logged once and sorted into keep, skim or drop.
+# Adapted: no Zotero or vector database; the CSV log is papers-log.csv (12 invented earlier entries) and the updated log
+# comes back as an artifact. arXiv is read with fetch_url on its public listing and abstract pages.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "arxiv-triage" },
+# or: nimbus ws import templates/arxiv-triage.yaml. Put your own topics in the SKILL.md.
+title: arXiv triage
+goal: "Every Monday, search arXiv for new papers on tool-using LLM agents and agent evaluation, log them to papers-log.csv with title, authors, date, link and a one-line summary, and sort each into keep, skim or drop based on my research interests. Stop when the log is updated and give me the keep list. Don't delete past entries."
+schedule: mondays 08:00
+tools:
+  - fetch_url
+  - web_search
+  - run_code
+  - write_artifact
+roles:
+  - role: scout
+    tier: super
+    tools: [fetch_url, web_search]
+    brief: >
+      Call fetch_url on the arXiv listing pages in the SKILL.md (each shows the newest 50 papers of a category).
+      Pick the papers whose titles match my topics, then fetch the abstract page of each pick
+      (https://arxiv.org/abs/<id>), at most 12. If a listing fails, use web_search with site:arxiv.org and the
+      topic words instead. Report per paper: arXiv id, title, authors, submitted date, link, and the abstract in
+      two sentences.
+  - role: triager
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Read papers-log.csv with run_code. Drop the Scout's papers already in the log (same id, or a new version of a
+      logged id; label those duplicate). Label each new paper keep, skim, drop, outside scope or weak method with
+      the rules in the SKILL.md, and write its one-line summary from the abstract only. Report the new rows, and
+      write the keep list with write_artifact: title, link and one line each.
+  - role: archivist
+    tier: nano
+    tools: [run_code, write_artifact]
+    brief: >
+      With run_code, append the Triager's new rows to papers-log.csv (arxiv_id, title, authors, submitted, link,
+      one_line, label, first_seen = today), keeping every old row unchanged, and check that no id appears twice.
+      Save the whole log with write_artifact as a code artifact named papers-log.csv and print the row counts
+      (old, new, total).
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## arXiv triage
+  ### Sources
+  1. https://arxiv.org/list/cs.AI/recent?skip=0&show=50
+  2. https://arxiv.org/list/cs.CL/recent?skip=0&show=50
+
+  ### My interests
+  Tool-using LLM agents, function calling, agent evaluation and benchmarks, cost aware routing between models, and
+  agents that verify their own tool outputs.
+
+  ### Rules
+  1. Keep: a new method or benchmark on my topics with a real evaluation (more than one task suite or 100+ tasks).
+  2. Skim: on topic but incremental, or a useful dataset without a method.
+  3. Drop: surveys with nothing new, position papers, and work outside my topics (label it outside scope).
+  4. Weak method: on topic but evaluated on fewer than 50 tasks or one model.
+  5. Never delete or edit past entries; a new version of a logged paper is a duplicate.
+  6. The keep list has at most 5 papers. I read them myself; summaries come from the abstract only.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/arxiv-triage/papers-log.csv
+order: 3.12

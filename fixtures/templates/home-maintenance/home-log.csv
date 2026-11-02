@@ -1,0 +1,23 @@
+system,task,last_done,every_months,who,phone,email,last_cost,notes
+HVAC,"replace furnace filter (16x25x1, MERV 8)",2026-08-02,3,self,,,18.50,receipt: HomeMart 2026-08-02
+HVAC,furnace tune-up and safety check,2025-10-21,12,Alder Heating & Air,555 0198,service@alderheating.example,149.00,"invoice AHA-77812; tech noted the flame sensor is dirty, clean next visit"
+HVAC,AC condenser clean and check,2026-05-12,12,Alder Heating & Air,555 0198,service@alderheating.example,129.00,invoice AHA-80344
+Plumbing,"flush water heater (50 gal gas, installed 2016)",2025-11-09,12,self,,,0.00,sediment was heavy; inspection report says unit is near end of life
+Plumbing,shut off and drain outdoor faucets,2025-11-15,12,self,,,0.00,"two hose bibs, north and east walls"
+Plumbing,test sump pump,2026-04-04,6,self,,,0.00,pump cycled fine; float sticks a little
+Plumbing,kitchen sink drain slow,,,Riverton Rooter,555 0177,book@riverton-rooter.example,,"issue logged 2026-10-19, not yet fixed"
+Roof and gutters,clean gutters and downspouts,2025-11-22,12,ClearFlow Gutters,555 0163,jobs@clearflow.example,185.00,receipt CF-2291; big oak over the back gutter
+Roof and gutters,roof inspection,2025-03-14,24,home inspector,,,0.00,"inspection report 2025-03: flashing around the chimney shows wear, recheck within 18 months"
+Chimney,chimney sweep and inspection,2024-10-30,12,Top Hat Chimney,555 0120,office@tophatchimney.example,210.00,receipt TH-5520; wood stove used most winter weekends
+Safety,test smoke and CO alarms,2026-05-03,6,self,,,0.00,"7 smoke alarms, 2 CO alarms"
+Safety,replace smoke alarm batteries,2025-11-02,12,self,,,21.00,9V x 9
+Safety,fire extinguisher check,2026-01-10,12,self,,,0.00,kitchen and garage
+Laundry,clean dryer vent duct,2025-09-20,12,DuctPro,555 0155,hello@ductpro.example,99.00,receipt DP-1408; lint was heavy
+Exterior,reseal deck,2024-06-15,24,self,,,86.00,receipt HomeMart 2024-06-15
+Exterior,check and caulk window exteriors,2025-10-05,12,self,,,14.00,south windows worst
+Garage,lubricate garage door rollers and springs,2026-04-12,6,self,,,9.00,
+Appliances,clean refrigerator coils,2025-12-01,12,self,,,0.00,
+Appliances,replace refrigerator water filter,2026-05-18,6,self,,,44.99,receipt ApplianceParts 2026-05-18
+Yard,aerate and overseed lawn,2025-09-27,12,GreenStep Lawn,555 0109,crew@greenstep.example,160.00,receipt GS-3317
+Warranty,water heater warranty,2016-04-02,,,,,,10 year tank warranty expired 2026-04-02
+Warranty,roof warranty (replaced 2019),2019-07-01,,,,,,"25 year shingle warranty, 10 year workmanship until 2029-07-01"

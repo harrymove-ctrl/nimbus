@@ -1,0 +1,59 @@
+# Source: "Order family groceries from fridge contents", https://agentusecases.ai/use-case/order-family-groceries-from-fridge-contents
+# Nimbus template: Fridge meal plan. A week of dinners for four from what is in the fridge and pantry, and the shopping
+# list for the rest.
+# Adapted: no fridge camera and no store login; what is on hand is pantry.csv (36 invented items with use-by dates).
+# The agent plans and writes the list; it does not order or pay, which the source also held back for approval.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "fridge-meal-plan" },
+# or: nimbus ws import templates/fridge-meal-plan.yaml. Keep pantry.csv up to date with the same columns.
+title: Fridge meal plan
+goal: "Every Monday evening, check what's in my fridge and pantry (pantry.csv) and plan seven dinners for my household of four, using up what expires first. Then give me the shopping list for what's missing, with quantities, sorted by store section. Don't order or pay for anything; I do the shopping myself."
+schedule: mondays 17:30
+tools:
+  - run_code
+  - write_artifact
+roles:
+  - role: planner
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Read pantry.csv with run_code (item, quantity, unit, where, use_by) and sort it by use_by. Plan seven dinners,
+      Monday to Sunday, for four people, following every rule in the SKILL.md: what expires in the next 5 days
+      goes into the first three dinners. For each dinner: the name, the ingredients with quantities for four,
+      which come from pantry.csv and which must be bought, and the time it takes. Write the plan with
+      write_artifact.
+  - role: shopper
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      From the Planner's dinners, compute with run_code what to buy: the total of each ingredient across the week
+      minus what pantry.csv already has, in shop units, plus the weekly staples in the SKILL.md. Write the
+      shopping list with write_artifact, sorted by store section (produce, meat and fish, dairy, bakery, pantry,
+      frozen), one line per item with its quantity.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      With run_code, check the plan and the list against pantry.csv: every ingredient is either on hand in enough
+      quantity or on the list, items with the nearest use_by are used before that date, nothing breaks an allergy
+      or dislike in the SKILL.md, and weeknight dinners fit the time limit. Report what holds and each problem.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Fridge meal plan
+  Household: Ana and Chris, Zoe (10) and Ben (7).
+
+  ### Rules
+  1. Ben is allergic to tree nuts and peanuts: none in any dinner, and check sauces and pesto.
+  2. Zoe does not eat mushrooms.
+  3. Weeknight dinners take at most 35 minutes.
+  4. Sunday is family day: one longer dish we cook together, and no plans that need a shop run on Sunday.
+  5. Fish once a week, one vegetarian dinner a week, no dish twice in a week.
+  6. Weekly staples always on the list: milk 2 l, bread 1 loaf, bananas 6, apples 6.
+  7. Never order or pay; the list is for me.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/fridge-meal-plan/pantry.csv
+order: 3.08

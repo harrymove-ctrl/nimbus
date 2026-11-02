@@ -1,0 +1,23 @@
+# My watchlist for the morning brief. Long-term holdings and names I am thinking about; I do not day trade.
+# ticker | name | why I watch it | what would make me look closer
+
+## Holdings
+NVDA | NVIDIA | biggest single position, AI data centre spending | guidance change, export rules, a big customer cutting capex
+TSM | Taiwan Semiconductor | makes the chips for most of the names below | monthly sales, Taiwan news, US fab delays
+MSFT | Microsoft | cloud and AI software | Azure growth, capex guidance
+ASML | ASML Holding | lithography monopoly | order bookings, China export licences
+BRK.B | Berkshire Hathaway | the boring anchor | cash pile, buybacks
+VWRL | Vanguard FTSE All-World ETF | core index holding | nothing, unless markets move more than 3% in a day
+
+## Thinking about
+AVGO | Broadcom | custom AI chips | earnings date, big customer wins
+NBIS | Nebius Group | AI cloud capacity | new data centre announcements, contracts
+SHOP | Shopify | merchant growth | holiday season data
+
+## Macro I care about
+US Federal Reserve: next meeting date, what the market prices for it
+US CPI and jobs report: dates and the last print
+US 10-year Treasury yield and the dollar index
+Brent crude oil
+EUR/USD (I am paid in euros)
+European Central Bank: next decision

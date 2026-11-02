@@ -1,0 +1,60 @@
+# Source: "Flag risks in a 50-page contract before signing", https://agentusecases.ai/use-case/flag-risks-in-a-50-page-contract-before-signing
+# Nimbus template: Lease review. A residential lease read clause by clause before signing: auto-renewal, liability,
+# fees and anything buried near the end.
+# Adapted: the contract is lease.txt, an invented 5 page residential lease (27 sections) with an auto-renewal clause near
+# the end, a one-sided liability and indemnity clause and a relocation clause planted. Text instead of PDF because
+# run_code reads text files. On demand: a contract review is run when a contract arrives.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "lease-review" },
+# or: nimbus ws import templates/lease-review.yaml. Replace lease.txt with your own contract as text.
+title: Lease review
+goal: "I'm about to sign the attached residential lease (lease.txt, about 5 pages). Read the whole thing and flag risks for me as the tenant, especially auto-renewal clauses, liability and indemnity terms, termination and fees, and anything buried near the end. Give me the issues with clause numbers, a plain-English explanation, what I could ask to change, and the three points to push back on hardest. Note that this isn't legal advice."
+tools:
+  - run_code
+  - web_search
+  - write_artifact
+roles:
+  - role: reviewer
+    tier: super
+    tools: [run_code, web_search]
+    brief: >
+      Read lease.txt with run_code in three parts (print(open('lease.txt').read()[0:6000]), then [6000:12000],
+      then [12000:]); read every part, the end as closely as the start. List every clause that costs the tenant
+      money, limits the landlord's duties, shifts liability, renews or ends the lease, or lets the landlord change
+      terms alone. For each: the clause number, its exact words (short quote), what it means in plain English, the
+      money at risk, and what a tenant could ask instead. Use web_search only to check whether a kind of clause is
+      commonly limited by tenant law, and cite the source; say when it depends on the state.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      With run_code, check that every clause number and quote in the Reviewer's list appears word for word in
+      lease.txt, and that no clause about renewal, liability, indemnity, termination, fees, entry or relocation is
+      missing from the list. Report what holds and each mismatch.
+  - role: writer
+    tier: super
+    tools: [write_artifact]
+    brief: >
+      Write the review with write_artifact: one line saying it is not legal advice; the three points to push back
+      on hardest, each with the clause number and the change to ask for; then every issue as a table (clause,
+      plain English, risk, ask), most money at risk first; then the dates and deadlines I must not miss (notice
+      periods); then questions to take to a lawyer or tenant union. Use only the Reviewer's quotes and sources.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Lease review
+  I am the tenant. I work from home two days a week, I may get a cat next year, and I might move for work within 18 months.
+
+  ### Rules
+  1. Read every clause; the end of the document counts as much as the start.
+  2. Every flag names its clause number and quotes its exact words.
+  3. Rank by money at risk, then by how hard it is to undo after signing.
+  4. Always say this is not legal advice and which points to take to a lawyer or tenant union.
+  5. Do not invent local law. When a point depends on the state, say so, and cite a source if you looked it up.
+  6. Asks must be concrete: the words to strike or the number to change.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/lease-review/lease.txt
+order: 3.04

@@ -85,7 +85,55 @@ The format is the one `nimbus ws export` writes and `nimbus ws import` reads: `k
 
 The last six are the seeded workstreams written out (same title, goal, schedule, tools and SKILL.md); `pnpm
 check:templates` fails if they drift from `src/lib/workstreams.ts`. Household ops sends to `family-chat` with
-`send_message`, which always asks for approval first.
+`send_message`, which always asks for approval first. The twelve below sit between the personal three and the seeded
+six in the gallery (`order: 3.01` to `3.12`).
+
+## From real use cases
+
+Twelve templates come from [agentusecases.ai](https://agentusecases.ai), a catalogue of things people actually do with
+agents, each with the prompt they used and how it went. Each file's first line names its source (`# Source: "<title>",
+<url>`), its goal is the person's prompt in the first person with the blanks filled in, and its SKILL.md seed holds
+the person's rules ("ask before cancelling", "Sunday is family day"). Every one runs with Nimbus's own tools and the
+sample files next to it: no inbox, bank or store logins. Inbox-like inputs are attached CSV or text files, invented and
+under 15 KB each. Anything that leaves Nimbus (a message, a claim, a cancellation, a cold email) goes through
+`send_message`, which waits for approval.
+
+| Template | Source use case | What a run produces | Tools | Schedule | Sample files |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `school-email-digest` | [Summarize school emails for parents](https://agentusecases.ai/use-case/summarize-school-emails-for-parents) | What to pack, wear, sign or pay per kid for tomorrow and the week, deadlines on top, drafts for emails missing information, an 8 line note to `parents-chat` | run_code, write_artifact, send_message | daily 19:30 | `school-emails.csv` (15 emails, two schools, one fee correction, one blank "form attached") |
+| `price-drop-watch` | [Watch item prices and email on drops](https://agentusecases.ai/use-case/watch-item-prices-and-email-on-drops) | Today's price at two real product pages (Raspberry Pi 5 8GB at Adafruit and PiShop.us), the change against the history, the updated history CSV, a message only on a drop over 10% | fetch_url, run_code, write_artifact, send_message | daily 08:00 | `price-history.csv` (8 weeks, invented) |
+| `subscription-renewals` | [Track subscriptions and renewals from Gmail](https://agentusecases.ai/use-case/track-subscriptions-and-renewals-from-gmail) | Every subscription with next renewal date, cost, monthly and yearly totals and flags (unused, price rise, trial turned paid); asks which to cancel and sends cancellation emails only for the ones picked | run_code, write_artifact, send_message (plus ask_user on the Writer) | mondays 08:00 | `renewal-emails.csv` (22 emails over 12 months) |
+| `lease-review` | [Flag risks in a 50-page contract before signing](https://agentusecases.ai/use-case/flag-risks-in-a-50-page-contract-before-signing) | Every risky clause with its number, quote, plain English and what to ask instead; the three points to push back on hardest; notice deadlines; not legal advice | run_code, web_search, write_artifact | on demand | `lease.txt` (5 pages, 27 sections; auto-renewal near the end, one-sided liability and indemnity, relocation) |
+| `flight-delay-claim` | [Claim refunds for delayed or cancelled flights with Claude](https://agentusecases.ai/use-case/claim-refunds-for-delayed-or-cancelled-flights-with-claude) | The EU261 rule with article numbers and primary source links, the distance band and amount for two passengers, a claim email with a 14 day deadline and the documents to attach, sent after approval | run_code, web_search, fetch_url, write_artifact, send_message | on demand | `flight.txt` (Lisbon to Amsterdam, 4 h 12 min late, technical fault) |
+| `spending-summary` | [Consolidate bank statements into a spending dashboard with Claude](https://agentusecases.ai/use-case/consolidate-bank-statements-into-a-spending-dashboard-with-c) | Every transaction categorized (card payments not double counted), spending by category and month, savings rate, three observations, three ways to cut with dollars a month | run_code, write_artifact | mondays 07:00 | `transactions.csv` (187 rows, August to October 2026) |
+| `macro-morning-brief` | [Monitor investing news and produce morning macro summaries](https://agentusecases.ai/use-case/monitor-investing-news-and-produce-morning-macro-summaries) | One brief: what matters today, watchlist news by ticker, the macro numbers and the 7 day calendar, every item with a link and date; no trades or advice | run_code, web_search, fetch_url, write_artifact | weekdays 07:00 | `watchlist.txt` (9 tickers, macro items) |
+| `fridge-meal-plan` | [Order family groceries from fridge contents](https://agentusecases.ai/use-case/order-family-groceries-from-fridge-contents) | Seven dinners for four that use what expires first, within the family's rules, and a shopping list by store section with quantities | run_code, write_artifact | mondays 17:30 | `pantry.csv` (36 items with use-by dates) |
+| `home-maintenance` | [Track home maintenance from receipts and inspection reports](https://agentusecases.ai/use-case/track-home-maintenance-from-receipts-and-inspection-reports) | What is overdue and due this month by system, with timing and the source line; quote requests to vendors for the top 2 tasks, sent after approval | run_code, write_artifact, send_message | mondays 08:30 | `home-log.csv` (22 jobs, receipts, inspection notes, warranties) |
+| `local-leads` | [Find local business leads and send personalized cold emails](https://agentusecases.ai/use-case/find-local-business-leads-and-send-personalized-cold-emails) | A 1 to 10 score and reasoning per business against the ideal customer profile, three openers (intro, follow-up, final) per qualified lead, intros to the top 3 sent after approval | run_code, write_artifact, send_message | mondays 09:00 | `leads.csv` (14 local businesses) |
+| `tax-deductions` | [Compile deductions and Schedule C with Claude Code](https://agentusecases.ai/use-case/compile-deductions-and-schedule-c-with-claude-code) | Every receipt in a Schedule C or itemized category with a confidence, totals, the receipts missing proof, the IRS rules used with links, open questions; not tax advice | run_code, web_search, fetch_url, write_artifact | mondays 10:00 | `receipts.csv` (107 receipts, 2026 so far) |
+| `arxiv-triage` | [Automate a weekly arXiv paper triage](https://agentusecases.ai/use-case/automate-a-weekly-arxiv-paper-triage) | New cs.AI and cs.CL papers on my topics labelled keep, skim, drop, duplicate, outside scope or weak method, the log updated without losing a row, and the keep list | fetch_url, web_search, run_code, write_artifact | mondays 08:00 | `papers-log.csv` (12 earlier entries) |
+
+What had to change from the original, and why:
+
+1. **Inboxes, banks and stores become files.** Gmail searches (school emails, renewals, receipts), bank exports, a
+   fridge camera, Google Maps scraping and Apollo enrichment have no Nimbus tool, so their output arrives as an
+   attached CSV or text file with the columns those sources give.
+2. **Sending waits for approval.** Where the person sent the email themselves, or an n8n flow sent it, Nimbus drafts it
+   and `send_message` asks first. Nothing is bought, paid, filed or traded.
+3. **The flight claim is EU261.** The source was a US flight under US DOT refund rules; the sample flight leaves Lisbon,
+   so EU Regulation 261/2004 sets a fixed compensation and the researcher must cite the regulation and the case law.
+4. **The macro brief has no X or podcasts.** It reads the news and official sources through `web_search` and
+   `fetch_url` instead.
+5. **Weekly instead of monthly.** The template schedule takes `daily`, `weekdays` or `mondays HH:MM` through the API and
+   the New workstream sheet (a cron line is dropped there today), so the spending summary and home maintenance run on
+   Mondays. A contract review and a flight claim run on demand.
+6. **Prices from two real pages.** The price watch uses two pages that serve their price to a plain fetch; the history
+   file is invented, with the PiShop.us line last at $199.95, so a first run at today's price shows the alert path.
+7. **Text, not PDF.** The lease is a text file because `run_code` reads text; it is about 14,000 characters, and the
+   Reviewer prints it in three parts because a run's output is cut at 8,000 characters.
+
+Replace a sample file with your own (same columns) before the first real run; the SKILL.md seed is where the
+person's names, rules and limits go.
 
 ## Start one
 
@@ -113,8 +161,10 @@ line.
 
 ## Test
 
-`pnpm check:templates` (mock, $0, about 3 s): an old database gets the default crew; the default crew's prompts and
-tools are exactly the old ones; all nine templates start through the API and through `nimbus ws import` with their
-crew, SKILL.md and files; bad crews are refused with a reason; a Study coach run from `nimbus run` has Tutor,
-Quizmaster and Checker lanes, runs SM-2 on the attached deck and writes the quiz; Job hunt radar runs unscripted;
-Checkout still has its five lanes; `ws export` then `import` carries the crew and the SKILL.md.
+`pnpm check:templates` (mock, $0, about 12 s): an old database gets the default crew; the default crew's prompts and
+tools are exactly the old ones; all twenty-one templates start through the API and through `nimbus ws import` with
+their crew, SKILL.md and files; the twelve from real use cases each name their source on the first line, keep the goal
+under the API's 600 characters, have 3 or 4 roles with no Ultra and files under 100 KB, and each runs unscripted with a
+lane per role; bad crews are refused with a reason; a Study coach run from `nimbus run` has Tutor, Quizmaster and
+Checker lanes, runs SM-2 on the attached deck and writes the quiz; Job hunt radar runs unscripted; Checkout still has
+its five lanes; `ws export` then `import` carries the crew and the SKILL.md.

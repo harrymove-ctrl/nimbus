@@ -1,0 +1,62 @@
+# Source: "Track subscriptions and renewals from Gmail", https://agentusecases.ai/use-case/track-subscriptions-and-renewals-from-gmail
+# Nimbus template: Subscription renewals. Renewal emails into one list with service, date and cost, and cancellation
+# drafts only for the ones I pick.
+# Adapted: no Gmail connection; the inbox search is replaced by renewal-emails.csv (22 invented emails over 12 months).
+# Cancelling is a drafted email sent with send_message after I pick it and approve it.
+# Start it from the New workstream sheet, POST /api/workstreams { "template": "subscription-renewals" },
+# or: nimbus ws import templates/subscription-renewals.yaml.
+title: Subscription renewals
+goal: "Every Monday, go through the subscription and renewal emails in renewal-emails.csv from the last 12 months and build a list with service name, next renewal date and cost. Sort it by upcoming renewal date and tell me the total monthly and yearly spend. Ask me before you cancel anything, and only draft cancellation emails for the ones I pick."
+schedule: mondays 08:00
+tools:
+  - run_code
+  - write_artifact
+  - send_message
+roles:
+  - role: auditor
+    tier: super
+    tools: [run_code, write_artifact]
+    brief: >
+      Read renewal-emails.csv with run_code (received, from, subject, body). Keep only real subscriptions (an
+      appointment reminder is not one). Per service, from its newest email: plan, billing period, current price
+      (after any announced increase), next renewal date, the billing address it came from, and any sign of no use
+      (0 workouts, no sign-in for months, 0 books). Compute the monthly equivalent and the yearly cost per service
+      and the totals. Flag price increases, trials that became paid plans and renewals in the next 30 days. Save
+      the list with write_artifact as a code artifact (CSV), sorted by next renewal date, and print it.
+  - role: checker
+    tier: nano
+    tools: [run_code]
+    brief: >
+      Check the Auditor's list against renewal-emails.csv with run_code: each price is the newest one for that
+      service, each next renewal date follows from its last charge and period, the monthly and yearly totals add
+      up, and no service appears twice. Report what holds and each mismatch.
+  - role: writer
+    tier: super
+    tools: [write_artifact, ask_user, send_message]
+    brief: >
+      Write the renewal list with write_artifact: renewals in the next 30 days first, then the rest by date, the
+      monthly and yearly totals, and the flags. Then ask me once with ask_user which ones to cancel, offering the
+      flagged services as options. For each one I pick, and only those, write a short polite cancellation email
+      (the plan, the account email jordan.ellis@mail.example, cancel at the end of the paid period, confirm in
+      writing) and send it with send_message to that service's billing address, one message per service.
+      send_message asks for approval itself. If I pick none, send nothing.
+  - role: learner
+    tier: nano
+    brief: From the run summary, call save_learning once with at most 8 durable memories and the rewritten SKILL.md (keep its structure).
+skill: |
+  ## Subscription renewals
+  Household: two adults, two kids. Account email: jordan.ellis@mail.example.
+
+  ### Rules
+  1. Never cancel anything without asking me first; draft cancellations only for the services I pick, one approval each.
+  2. Keep Tunewave Family and KeyKeeper: the whole family uses them. Do not offer them for cancelling.
+  3. Flag anything with no use in the emails, any price increase, and any trial that turned into a paid plan.
+  4. Monthly equivalent: yearly price / 12; weekly x 52 / 12; every 4 weeks x 13 / 12.
+  5. Renewals in the next 30 days go at the top, with the date to cancel by.
+  6. Cancellations end at the end of the paid period; never ask for a refund unless I say so.
+
+  ## Policy
+  (none yet)
+attachments:
+  - ../fixtures/templates/subscription-renewals/renewal-emails.csv
+order: 3.03
