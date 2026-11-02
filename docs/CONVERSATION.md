@@ -32,6 +32,25 @@ Five patterns repeat across the catalogue, and the "how it went" notes are as us
   the result; nothing turns a good one-off run into a standing workstream from the chat; there is no "only tell me
   when"; the run summary does not say plainly what was not done; Telegram cannot take a voice note.
 
+## C0 · A Conversations inbox (added after the user asked "where do I see more conversations?")
+
+Today every conversation is the transcript of one run, in the centre column under the timeline. To see another you
+pick a workstream in the rail, then a run in the header's runs picker. Production holds 27 runs (16 started by hand,
+10 by schedule, 1 from chat), and Telegram and OpenClaw threads are stored in `chat_threads` but shown nowhere. There
+is no single list of conversations, which is what every chat product on the use-case site gives its users.
+
+**Build:** an **Inbox** entry at the top of the rail, above Overview. It lists every conversation across workstreams
+and doors, newest first: one row per run (or per follow-up chain once C2 lands) with the door icon (web, Telegram,
+chat API, terminal, schedule), the workstream, the first line of what was asked, the last message, the cost, and a
+state chip: **Needs you** (open approval or question, pinned to the top), **Running**, **Done**, **Quiet** (a C4 run
+with nothing to report). Filters: Needs you, Scheduled, From my phone, All. A search box over goals, messages and
+artifact titles. Selecting a row opens that run's conversation in the centre column with the timeline collapsed, so
+the chat gets the space. Empty state: the five starter prompts from the catalogue as cards.
+Files: `GET /api/conversations` (runs joined with workstreams and the latest message, chat threads for the door),
+`src/components/nimbus/inbox.tsx`, one rail entry in `app-shell.tsx`. Exit test: on staging the inbox shows all runs
+with the right doors and states, a Telegram-started run carries the phone icon, and a run waiting on an approval sits
+at the top until approved.
+
 ## The plan: seven changes, in order of value
 
 Each change names its files and a real exit test. Mock mode (`NIMBUS_MODEL=mock`) for the build, one real run each
@@ -122,6 +141,7 @@ mapped to tools Nimbus has today (Lane 2 items need the person's own MCP servers
 
 | # | Change | Effort | Builder |
 |---|---|---|---|
+| 0 | C0 conversations inbox | 4 h | Opus session, worktree |
 | 1 | C5 honest result | 3 h | Sonnet session, worktree |
 | 2 | C2 follow-ups | 4 h | Opus session, worktree |
 | 3 | C1 intake | 3 h | Opus session (same as C2, shares the orchestrator) |
