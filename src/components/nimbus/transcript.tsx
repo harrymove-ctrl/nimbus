@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ComponentProps } from "react";
-import { ArrowRight, Check, FileText, Shield, X } from "lucide-react";
+import { ArrowRight, Check, FileText, Hand, Shield, X } from "lucide-react";
 import {
   ROLE_COLOR,
   ROLE_LABEL,
@@ -16,6 +16,7 @@ import {
   type RunView,
   type TItem,
 } from "@/lib/run-view";
+import type { ResultItem } from "@/lib/result";
 import { DitherNumber } from "@/components/dithercn/dither-number";
 import { Divider } from "@/components/dithercn/divider";
 import { PlanSkeleton } from "./loading";
@@ -336,6 +337,7 @@ function SummaryCard({ item, view, onRevert, manualMinutes }: { item: Extract<TI
         <p className="text-[15px] font-extrabold">Run summary</p>
       </div>
       <div className={cx(panelBody, "gap-4 p-3")}>
+        <ResultLists view={view} />
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
           {tiles.map(([k, val, num]) => (
             <div key={k} data-demo={k === "Cost" ? "summary-cost" : k === "vs baseline" ? "vs-baseline" : undefined} className="rounded-lg bg-white/5 px-3 py-2">
@@ -389,6 +391,43 @@ function SummaryCard({ item, view, onRevert, manualMinutes }: { item: Extract<TI
           <SkillDiff rows={item.summary.skillDiff} />
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Done, not done, needs you: built from the run's events (src/lib/result.ts). Each item scrolls the transcript to where it happened. */
+function ResultLists({ view }: { view: RunView }) {
+  const groups = [
+    { key: "done", title: "Done", items: view.result.done, icon: Check, tone: "text-emerald-300" },
+    { key: "notDone", title: "Not done", items: view.result.notDone, icon: X, tone: "text-red-300" },
+    { key: "needsYou", title: "Needs you", items: view.result.needsYou, icon: Hand, tone: "text-amber-300" },
+  ].filter((g) => g.items.length > 0);
+  if (groups.length === 0) return null;
+  // the transcript item at or just before the event (tool results and steps have no row of their own)
+  const jump = (it: ResultItem) => {
+    if (it.seq === undefined) return;
+    const row = [...view.transcript].reverse().find((t) => t.seq <= it.seq!) ?? view.transcript[0];
+    if (row) document.getElementById(`tr-${row.seq}`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+  };
+  return (
+    <div data-demo="result-lists" className="flex flex-col gap-3">
+      {groups.map((g) => (
+        <div key={g.key} data-result={g.key}>
+          <p className={cx("mb-1 flex items-center gap-1.5 text-[12px] font-bold uppercase tracking-wide", g.tone)}>
+            <g.icon className="size-3.5" aria-hidden="true" />
+            {g.title} <span className="rounded-full bg-white/10 px-1.5 text-[11px] tabular-nums text-neutral-200">{g.items.length}</span>
+          </p>
+          <ul className="flex flex-col">
+            {g.items.map((it, i) => (
+              <li key={`${it.eventId ?? i}-${i}`}>
+                <button type="button" onClick={() => jump(it)} disabled={it.seq === undefined} className="w-full rounded-md px-1.5 py-1 text-left text-[13px]/[19px] text-neutral-100 [overflow-wrap:anywhere] hover:bg-white/5 enabled:cursor-pointer">
+                  {it.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

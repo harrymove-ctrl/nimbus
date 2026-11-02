@@ -10,7 +10,7 @@ import { TIERS } from "@/lib/models";
 import { WORKSTREAMS, type Workstream } from "@/lib/workstreams";
 import { checkDayBudget } from "./budget";
 import { lastUserText, messagesOf, textOf, type ChatBody, type Usage } from "./chat-api";
-import { PHONE_MAX, ago, pickDoc, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
+import { PHONE_MAX, ago, phoneResultText, pickDoc, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
 import { markFollowed } from "./notify";
 import { cacheGet, cachePut, sha } from "./router";
 import { getRun, liveRuns, startRun, type RunHandle } from "./source";
@@ -304,15 +304,18 @@ async function* follow(run: RunHandle, o: FollowOpts): AsyncGenerator<string> {
 }
 
 function finalText(run: RunHandle, status: string, link: string, used: number): string {
-  if (status !== "done") return `Run ${status}.\n${link}\n`;
+  // the honest result leads (done, not done, needs you, from the events), then the document, then the link
+  const lists = phoneResultText(run.events, PHONE_MAX - used - link.length - 2 - (status === "done" ? 200 : 0));
+  const lead = lists ? `${lists}\n` : "";
+  if (status !== "done") return `Run ${status}.\n${lead}${link}\n`;
   const title = (run.events.find((e) => e.type === "run.start") as Extract<AnyRunEvent, { type: "run.start" }> | undefined)?.payload.title ?? "";
   const docs = run.events.flatMap((e) => (e.type === "artifact.version" && e.payload.kind === "doc" ? [e.payload] : []));
   // the newest version of each document
   const latest = [...new Map(docs.map((d) => [d.artifactId, d])).values()];
   const last = [...run.events].reverse().find((e) => e.type === "message" && e.agentInstance === "orchestrator" && e.payload.role === "agent" && !e.payload.card);
   const md = pickDoc(latest, title)?.content ?? (last && last.type === "message" ? last.payload.text : "Done.");
-  const room = Math.max(300, PHONE_MAX - used - link.length - 2);
-  return `${toPhone(md, { maxLines: 6, maxChars: room })}\n${link}\n`;
+  const room = Math.max(120, PHONE_MAX - used - link.length - 2 - (lists ? lists.length + 1 : 0));
+  return `${lead}${toPhone(md, { maxLines: 6, maxChars: room })}\n${link}\n`;
 }
 
 /** The notice for an approval or a question; records it in the thread so the next message resolves it. */

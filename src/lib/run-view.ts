@@ -3,6 +3,7 @@
 import type { AnyRunEvent, PlanAgent, PlanStep, ProposedAction, RunEndStatus, RunSummary } from "./events";
 import { costUsd, roleTier, type AgentRole, type Tier } from "./models";
 import { roleTitle } from "./roles";
+import { resultLists, type ResultLists } from "./result";
 
 export type RouteInfo = { hop: number; chosen: Tier; ceiling: Tier; reason: string; fallback?: boolean };
 
@@ -108,6 +109,8 @@ export type RunView = {
   /** the run stopped because its spend passed NIMBUS_RUN_CAP_USD (header pill "Cap hit") */
   capHit: boolean;
   error?: string;
+  /** done, not done, needs you: derived from the events alone (src/lib/result.ts) */
+  result: ResultLists;
 };
 
 /**
@@ -186,6 +189,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
     savings: null,
     routedHops: 0,
     capHit: false,
+    result: { done: [], notDone: [], needsYou: [] },
   };
   const lanes = new Map<string, Lane>();
   const segs = new Map<string, Seg>();
@@ -460,6 +464,7 @@ export function buildView(events: AnyRunEvent[]): RunView {
   v.pendingApprovals = [...approvals.values()].filter((a) => a.status === "pending");
   v.openQuestion = [...questions.values()].find((q) => q.answer === undefined);
   v.artifacts.sort((a, b) => a.id.localeCompare(b.id));
+  v.result = resultLists(events);
   v.savings = v.baselineUsd > 0 ? Math.max(0, 1 - v.costUsd / v.baselineUsd) : null;
 
   v.planAwaiting = !!v.plan?.awaiting && !endStatus;

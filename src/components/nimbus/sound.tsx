@@ -149,4 +149,4 @@ export function useRunCues(view: RunView, runId: string | null, fresh: MutableRe
   }, [view, runId, fresh]);
 }
 
-const EMPTY: RunView = { title: "", goal: "", startedAt: 0, status: "idle", active: false, lastTMs: 0, spawned: false, lanes: [], connectors: [], transcript: [], pendingApprovals: [], stepState: {}, planAwaiting: false, paused: false, artifacts: [], policies: [], toolCalls: [], usage: [], tokens: 0, costUsd: 0, baselineUsd: 0, savings: null, routedHops: 0, capHit: false };
+const EMPTY: RunView = { title: "", goal: "", startedAt: 0, status: "idle", active: false, lastTMs: 0, spawned: false, lanes: [], connectors: [], transcript: [], pendingApprovals: [], stepState: {}, planAwaiting: false, paused: false, artifacts: [], policies: [], toolCalls: [], usage: [], tokens: 0, costUsd: 0, baselineUsd: 0, savings: null, routedHops: 0, capHit: false, result: { done: [], notDone: [], needsYou: [] } };
