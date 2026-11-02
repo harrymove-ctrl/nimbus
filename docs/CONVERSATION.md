@@ -106,6 +106,7 @@ from the model's words, so it cannot claim a send that did not happen.
 Files: `src/lib/run-view.ts` (derive the lists), `src/components/nimbus/transcript.tsx` summary card (coordinate: that
 file had uncommitted edits by another agent), `src/runtime/chat-util.ts`. Exit test: the Checkout run with one
 rejected approval shows it under Not done with the note; Telegram's end message carries the same three lists.
+Built: `resultLists` in `src/lib/result.ts` (events only), `RunView.result`, the summary card's three lists (click an item to scroll to its card), `phoneResultText` in `chat-util.ts` for the chat and Telegram end text, `pnpm check:result`. Screenshots: `docs/ui-ux-qa/result-1440.jpg`, `result-390.jpg`.
 
 ### C6 · "Check this first": a second opinion before approving
 

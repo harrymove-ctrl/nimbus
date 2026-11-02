@@ -111,7 +111,8 @@ export function resultLists(events: readonly AnyRunEvent[]): ResultLists {
   const finished = !!ended;
   const consumed = new Set<string>(); // tool.result callIds already reported through their approval
 
-  // Approvals: a side effect that happened, a rejection, a failed send, a draft still waiting
+  // Approvals: a side effect that happened, a rejection, a failed send, a draft still waiting.
+  // They point at the approval card (a transcript row), not at the tool result, which has none.
   for (const [id, { e: req }] of requests) {
     const a = req.payload.action;
     const res = resolves.get(id);
@@ -122,8 +123,8 @@ export function resultLists(events: readonly AnyRunEvent[]): ResultLists {
     }
     const r = res.e.payload;
     if (r.decision === "rejected") {
-      if (r.by === "system") needsYou.push({ label: `Draft not sent: ${what}`, ...at(res.e) });
-      else notDone.push({ label: `Rejected: ${what}${r.note ? ` (“${clip(r.note, 80)}”)` : ""}`, ...at(res.e) });
+      if (r.by === "system") needsYou.push({ label: `Draft not sent: ${what}`, ...at(req) });
+      else notDone.push({ label: `Rejected: ${what}${r.note ? ` (“${clip(r.note, 80)}”)` : ""}`, ...at(req) });
       continue;
     }
     if (!SIDE_EFFECTS.has(a.kind)) continue;
@@ -131,20 +132,20 @@ export function resultLists(events: readonly AnyRunEvent[]): ResultLists {
     const d = isObj(a.details) ? a.details : {};
     const target = a.kind === "send_message" ? String(d.channel ?? d.to ?? d.recipient ?? "") : String(d.title ?? d.branch ?? "");
     if (!out) {
-      if (finished) notDone.push({ label: `Approved but no result was recorded: ${what}`, ...at(res.e) });
+      if (finished) notDone.push({ label: `Approved but no result was recorded: ${what}`, ...at(req) });
       continue; // still in flight otherwise
     }
     consumed.add(out.e.payload.callId);
     const o = isObj(out.e.payload.output) ? out.e.payload.output : {};
     const who = approver(r.by, r.always);
     if (out.fail) {
-      notDone.push({ label: `${a.kind === "send_message" ? "Send" : "PR"} failed after approval: ${what} (${clip(out.fail, 80)})`, ...at(out.e) });
+      notDone.push({ label: `${a.kind === "send_message" ? "Send" : "PR"} failed after approval: ${what} (${clip(out.fail, 80)})`, ...at(req) });
     } else if (a.kind === "send_message") {
       const real = o.sent === true;
-      done.push({ label: `${real ? "Sent to" : "Message to"} ${target || "a channel"}${real ? "" : ", logged and not delivered (demo mode)"}, ${who}`, ...at(out.e) });
+      done.push({ label: `${real ? "Sent to" : "Message to"} ${target || "a channel"}${real ? "" : ", logged and not delivered (demo mode)"}, ${who}`, ...at(req) });
     } else {
       const opened = o.opened === true;
-      done.push({ label: `${opened ? "Opened PR" : "PR logged, not opened (demo mode)"}: ${clip(target || what, 70)}, ${who}`, ...at(out.e) });
+      done.push({ label: `${opened ? "Opened PR" : "PR logged, not opened (demo mode)"}: ${clip(target || what, 70)}, ${who}`, ...at(req) });
     }
   }
 
