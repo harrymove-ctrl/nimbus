@@ -10,7 +10,7 @@
 // Needs NIMBUS_TELEGRAM_BOT_TOKEN and NIMBUS_TELEGRAM_CHAT_ID. NIMBUS_TELEGRAM_API_BASE points at a local stub in tests.
 // The token is only ever put in the request path; it is never logged.
 import type { AnyRunEvent } from "@/lib/events";
-import { PHONE_MAX, pickDoc, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
+import { PHONE_MAX, phoneResultText, pickDoc, publicBase, runLink, toPhone, waitingFromEvents, type Waiting } from "./chat-util";
 
 declare global {
   var __nimbusFollowed: Map<string, number> | undefined;
@@ -198,14 +198,19 @@ async function announceQuestion(r: Source, questionId: string) {
   await sendTelegram(`${r.title}: ${w.agent} asks: ${w.text}${list}\n${runLink(r.runId, publicBase())}`);
 }
 
-/** The run's answer for a phone: the first six lines of its document (the one titled like the workstream) and the deep link. */
+/**
+ * The run's end for a phone: the honest result first (done, not done, needs you, from the events), then the first six
+ * lines of the run's document (the one titled like the workstream) and the deep link, all within PHONE_MAX.
+ */
 export function endText(title: string, events: readonly AnyRunEvent[], status: string, link: string): string {
-  if (status !== "done") return `${title} ${status}.\n${link}`;
-  const docs = events.flatMap((e) => (e.type === "artifact.version" && e.payload.kind === "doc" ? [e.payload] : []));
+  const head = status === "done" ? `${title} finished.` : `${title} ${status}.`;
+  const lists = phoneResultText(events, PHONE_MAX - link.length - head.length - 2 - (status === "done" ? 200 : 0));
+  const docs = status === "done" ? events.flatMap((e) => (e.type === "artifact.version" && e.payload.kind === "doc" ? [e.payload] : [])) : [];
   const latest = [...new Map(docs.map((d) => [d.artifactId, d])).values()]; // the newest version of each document
   const doc = pickDoc(latest, title);
-  const body = doc ? toPhone(doc.content, { maxLines: 6, maxChars: PHONE_MAX - link.length - title.length - 20 }) : "";
-  return `${title} finished.${body ? `\n${body}` : ""}\n${link}`;
+  const room = PHONE_MAX - link.length - head.length - 4 - (lists ? lists.length + 1 : 0);
+  const body = doc && room > 40 ? toPhone(doc.content, { maxLines: 6, maxChars: room }) : "";
+  return `${head}${lists ? `\n${lists}` : ""}${body ? `\n${body}` : ""}\n${link}`;
 }
 
 async function announceEnd(r: Source, status: string) {

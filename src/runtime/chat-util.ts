@@ -1,5 +1,6 @@
 // Small pure helpers shared by the chat endpoint (chat.ts), the Telegram notifier (notify.ts) and the Telegram bot (telegram.ts).
 import type { AnyRunEvent } from "@/lib/events";
+import { phoneLists, resultLists } from "@/lib/result";
 
 export type Waiting =
   | { kind: "approval"; id: string; agent: string; summary: string; risk: string }
@@ -32,6 +33,9 @@ export const publicBase = (origin?: string) => (process.env.NIMBUS_PUBLIC_URL ||
 export const runLink = (runId: string, origin?: string) => `${publicBase(origin)}/?run=${runId}`;
 
 export const PHONE_MAX = 900;
+
+/** Done, not done and needs you for a run, in phone form (empty when the run has none of the three), within `maxChars`. */
+export const phoneResultText = (events: readonly AnyRunEvent[], maxChars: number) => phoneLists(resultLists(events), Math.max(0, maxChars));
 
 /** Markdown to what reads on a phone: no markup, tables as lines, at most `maxLines` lines and `maxChars` characters. */
 export function toPhone(md: string, o: { maxLines?: number; maxChars?: number } = {}): string {

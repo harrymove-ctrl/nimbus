@@ -169,7 +169,8 @@ let cron: RunHandle;
   await cron.settled;
   await waitFor(() => /^Morning brief finished\./.test(lastTo(OWNER) ?? ""), 5000);
   const end = lastTo(OWNER) ?? "";
-  check("run end: the document's first lines and the deep link, ≤ 900 characters, at most 8 lines", /^Morning brief finished\./.test(end) && end.trim().endsWith(`https://nimbus.test/?run=${cron.id}`) && end.length <= 900 && end.split("\n").length <= 8, end);
+  const body = end.split("\n").filter((l) => !/^(Done|Not done|Needs you) \(\d+\)$|^• /.test(l));
+  check("run end: the honest result first (Done, Not done, Needs you), then the document's first lines and the deep link, ≤ 900 characters, at most 8 other lines", /^Morning brief finished\.\nDone \(\d+\)\n• /.test(end) && /\nNot done \(1\)\n• Rejected: /.test(end) && end.trim().endsWith(`https://nimbus.test/?run=${cron.id}`) && end.length <= 900 && body.length <= 8, end);
 }
 
 console.log("· /run morning brief from Telegram");
